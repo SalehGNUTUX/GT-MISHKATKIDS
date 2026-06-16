@@ -35,9 +35,18 @@
       linear-gradient(180deg, #fff 0%, var(--cream) 100%);
     border-bottom:1px solid var(--line);
   }
-  .hero img.logo{width:160px;height:160px;border-radius:32px;box-shadow:var(--shadow)}
-  .hero h1{font-size:34px;margin:18px 0 4px;letter-spacing:.5px}
-  .hero .en{color:var(--sub);font-size:16px;margin:0 0 10px;font-style:italic}
+  .hero img.logo-full{
+    width:min(320px,82vw); height:auto; display:block; margin:0 auto;
+    filter:drop-shadow(0 10px 26px rgba(31,122,94,.18));
+    animation:floatY 3.6s ease-in-out infinite;
+  }
+  @keyframes floatY{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-12px)}
+  }
+  @media(prefers-reduced-motion:reduce){ .hero img.logo-full{animation:none} }
+  .hero h1.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:-1px}
+  .hero .en{color:var(--sub);font-size:16px;margin:6px 0 10px;font-style:italic}
   .hero .tag{
     display:inline-block;background:var(--green);color:#fff;
     padding:6px 16px;border-radius:999px;font-size:15px;margin-top:6px;
@@ -106,9 +115,8 @@
 
 <header class="hero">
   <div class="wrap">
-    <img class="logo" src="assets/logo-square.png" alt="شعار مِشكاة" width="160" height="160" />
-    <h1>مِشكاةُ الطفلِ والآليّ 🪔</h1>
-    <p class="en">Mishkat — The Child &amp; the Robot</p>
+    <h1 class="sr">مِشكاةُ الطفلِ والآليّ — Mishkat — The Child &amp; the Robot</h1>
+    <img class="logo-full" src="assets/logo-full.png" alt="مِشكاةُ الطفلِ والآليّ — GT-MISHKATKIDS" />
     <span class="tag">الطفلُ يُعلّم، والآليُّ يَستنير</span>
     <p class="lead">
       تطبيقٌ تعليميٌّ للأطفال (4–10 سنوات) بفكرةٍ معكوسة: <strong>الطفلُ هو المعلّم</strong> —

@@ -4,6 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > اللغة: كل ما يُكتب داخل المستودع (commits، CHANGELOG، README، التعليقات، نصوص الواجهة) **بالعربية الفصحى**. الـcommits باسم `SalehGNUTUX` فقط دون `Co-Authored-By`. **لا تحذف محتوًى/ميزةً/قسماً دون إذن المستخدم** — عند اكتشاف تكرار، أثرِ بمحتوًى مخصّص لا تحذف. خطة العمل الحيّة في [`docs/PLAN.md`](docs/PLAN.md).
 
+> **بنية المستودع (منذ 2026-06-16):** شِفرةُ التطبيق كلُّها في مجلّد **`GT-MK/`** (هذا المجلّد). جذرُ المستودع يحتوي **الموقعَ الرسميّ** `index.html` (صفحةُ هبوطٍ ثابتة تعرّف بالمشروع وخيارات استخدامه) + `assets/` (شعارات) + `README.md` + `LICENSE` + `.github/`. **تُنفَّذ كلُّ أوامر npm من داخل `GT-MK/`.** النشر (GitHub Pages عبر `.github/workflows/deploy.yml`): الموقعُ الرسميّ في الجذر `/`، والتطبيقُ مبنيّاً بـVite تحت `/app/` (يجمّع `_site/` = الجذر + `GT-MK/dist`→`/app`).
+
 ## الأوامر
 
 ```bash

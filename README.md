@@ -8,6 +8,16 @@
 
 **محليّ بالكامل · يعمل دون اتصال · بلا ذكاء اصطناعي وقت التشغيل · بلا تكلفة · بيانات الطفل لا تغادر الجهاز · إطارٌ إسلاميٌّ عقديّ.**
 
+### 🌐 جرّبه مباشرةً عبر المتصفّح
+**الموقع الرسميّ:** <https://salehgnutux.github.io/GT-MISHKATKIDS/> — صفحةُ تعريفٍ بخيارات الاستخدام.
+**التطبيق مباشرةً:** <https://salehgnutux.github.io/GT-MISHKATKIDS/app/home.html>
+
+| الاستخدام | الحالة |
+|---|---|
+| 🌐 عبر المتصفّح (PWA، قابلٌ للتثبيت ويعمل دون اتصال) | **متاحٌ الآن** |
+| 🐧 حزم غنو/لينكس (AppImage · DEB · RPM) | قريباً (صفحة الإصدارات) |
+| 🤖 أندرويد (APK) | قريباً (صفحة الإصدارات) |
+
 ---
 
 ## ✨ المبادئ
@@ -64,48 +74,54 @@
 ---
 
 ## ▶️ التشغيل
+شِفرةُ التطبيق كلُّها في مجلّد **`GT-MK/`** (جذرُ المستودع يحتوي الموقعَ الرسميّ `index.html` + `README` + `LICENSE`).
 ```bash
+cd GT-MK
 npm install
 npm run dev      # خادم تطوير (Vite)
-npm run build    # إنتاج → مجلّد dist/
+npm run build    # إنتاج → GT-MK/dist/
 ```
-ثمّ تُخدَم `dist/` كملفّاتٍ ثابتةٍ في أيّ مكان، أو تُفتح على اللوحية وتُثبَّت كتطبيق.
+ثمّ تُخدَم `GT-MK/dist/` كملفّاتٍ ثابتةٍ في أيّ مكان، أو تُفتح على اللوحية وتُثبَّت كتطبيق.
 ابدأ من **`home.html`** (الفهرس).
 
 ---
 
 ## 🗂️ البنية
 ```
-kidlearn/
-├─ index.html        # التطبيق (الحلقة) + لوحة الأهل
-├─ stories.html      # القصص المصوّرة (الأصيلة)
-├─ basics.html       # الأساسيّات: حروف · أرقام · حركات (أصيلة)
-├─ read.html         # سُلّم القراءة: مقاطع ← كلمات ← جُمل (أصيلة)
-├─ play.html         # ألعاب وأنشطة: ذاكرة + 7 ألعاب حروف + طباعة (أصيلة)
-├─ tales.html        # قصص وعِبَر + أسئلة فهم   (GT-SARARIM)
-├─ puzzles.html      # ألغاز ذكية              (GT-SARARIM)
-├─ quiz.html         # اختبارات تعليمية         (GT-SARARIM)
-├─ progress.html     # تقدّمي: نجوم · أوسمة · مهمّة اليوم · شهادة (أصيلة)
-├─ print.html        # المطبوعات
-├─ home.html         # الفهرس (لوحة رئيسيّة) + مهمّة اليوم
-├─ vite.config.js · package.json
-├─ src/
-│  ├─ art.js         # رسوم المجالات/العالم + مشاهد الذكريات
-│  ├─ story-art.js   # رسوم القصص الكبيرة
-│  └─ progress.js    # تتبّع التقدّم/الأوسمة/المهمّة (localStorage)
-├─ content/
-│  ├─ library.js            # 71 ذكرية (أصيلة)
-│  ├─ stories.js            # 8 قصص مصوّرة (أصيلة)
-│  ├─ words.js              # بنك كلمات (69 كلمة) لألعاب دمج الحروف (أصيل)
-│  ├─ letters.js            # الحروف الـ28 + الأرقام (أصيل)
-│  ├─ reading.js            # سُلّم القراءة: كلمات بمقاطعها + جُمل (أصيل)
-│  ├─ sararim-stories.js    # 51 قصّة + أسئلة فهم (GT-SARARIM)
-│  ├─ puzzles.js            # 61 لغزًا (GT-SARARIM)
-│  └─ quiz.js               # 94 سؤالًا (GT-SARARIM)
-│  (ملفّات البيانات وحداتُ ES `export default` — تعمل بلا أداة بناء)
-├─ tools/import-from-gtsararim.mjs  # أداة تحويل المحتوى من GT-SARARIM
-├─ public/icon.svg
-└─ docs/             # architecture · content-format · CREDITS
+GT-MISHKATKIDS/        # جذر المستودع
+├─ index.html          # الموقع الرسميّ (صفحةُ هبوطٍ تعريفيّة)
+├─ assets/             # شعارات الموقع
+├─ README.md · LICENSE # (GPL-3.0)
+└─ GT-MK/              # التطبيق كاملاً ↓
+   ├─ index.html        # التطبيق (الحلقة) + لوحة الأهل
+   ├─ stories.html      # القصص المصوّرة (الأصيلة)
+   ├─ basics.html       # الأساسيّات: حروف · أرقام · حركات (أصيلة)
+   ├─ read.html         # سُلّم القراءة: مقاطع ← كلمات ← جُمل (أصيلة)
+   ├─ play.html         # ألعاب وأنشطة: ذاكرة + 7 ألعاب حروف + طباعة (أصيلة)
+   ├─ tales.html        # قصص وعِبَر + أسئلة فهم   (GT-SARARIM)
+   ├─ puzzles.html      # ألغاز ذكية              (GT-SARARIM)
+   ├─ quiz.html         # اختبارات تعليمية         (GT-SARARIM)
+   ├─ progress.html     # تقدّمي: نجوم · أوسمة · مهمّة اليوم · شهادة (أصيلة)
+   ├─ print.html        # المطبوعات
+   ├─ home.html         # الفهرس (لوحة رئيسيّة) + مهمّة اليوم
+   ├─ vite.config.js · package.json
+   ├─ src/
+   │  ├─ art.js         # رسوم المجالات/العالم + مشاهد الذكريات
+   │  ├─ story-art.js   # رسوم القصص الكبيرة
+   │  └─ progress.js    # تتبّع التقدّم/الأوسمة/المهمّة (localStorage)
+   ├─ content/
+   │  ├─ library.js            # 71 ذكرية (أصيلة)
+   │  ├─ stories.js            # 8 قصص مصوّرة (أصيلة)
+   │  ├─ words.js              # بنك كلمات (69 كلمة) لألعاب دمج الحروف (أصيل)
+   │  ├─ letters.js            # الحروف الـ28 + الأرقام (أصيل)
+   │  ├─ reading.js            # سُلّم القراءة: كلمات بمقاطعها + جُمل (أصيل)
+   │  ├─ sararim-stories.js    # 51 قصّة + أسئلة فهم (GT-SARARIM)
+   │  ├─ puzzles.js            # 61 لغزًا (GT-SARARIM)
+   │  └─ quiz.js               # 94 سؤالًا (GT-SARARIM)
+   │  (ملفّات البيانات وحداتُ ES `export default` — تعمل بلا أداة بناء)
+   ├─ tools/import-from-gtsararim.mjs  # أداة تحويل المحتوى من GT-SARARIM
+   ├─ public/icon.svg
+   └─ docs/             # architecture · content-format · CREDITS
 ```
 
 ---

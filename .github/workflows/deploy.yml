@@ -1,4 +1,6 @@
-# نشرُ «مِشكاة» على GitHub Pages — بناءٌ آليّ بـVite ثمّ نشرُ dist/ (يعمل في المتصفّح مباشرةً).
+# نشرُ «مِشكاة» على GitHub Pages:
+#   /        ← الموقع الرسميّ (index.html + assets) في جذر المستودع
+#   /app/    ← التطبيق (PWA) مبنيّاً من GT-MK/ بـVite
 name: نشر مِشكاة (GitHub Pages)
 
 on:
@@ -24,11 +26,26 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
-      - run: npm run build
+          cache-dependency-path: GT-MK/package-lock.json
+
+      # بناء التطبيق داخل GT-MK ← GT-MK/dist
+      - name: تثبيت وبناء التطبيق
+        working-directory: GT-MK
+        run: |
+          npm ci
+          npm run build
+
+      # تجميع موقع النشر: الموقع الرسميّ في الجذر + التطبيق تحت /app
+      - name: تجميع _site
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r assets _site/
+          cp -r GT-MK/dist _site/app
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: _site
 
   deploy:
     needs: build

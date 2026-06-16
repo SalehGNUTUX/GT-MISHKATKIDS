@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<link rel="icon" type="image/png" href="icon-192.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#E07A5F" />
+<title>مِشكاة — روبو يتعافى</title>
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
+    --line:#ECE6DA; --primary:#E07A5F; --primary-d:#C7613F;
+    --robo:#B8C0CC; --dim:#D3D8DF; --good:#7BB661; --good-d:#5E9A47;
+    --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,input,textarea,select,.region,.toggle,.chip,.capbtn,[onclick]{touch-action:manipulation}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:760px;margin:0 auto;padding:16px 16px 48px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 14px}
+  header h1{font-size:22px;margin:0;letter-spacing:-.5px}
+  header .sub{color:var(--muted);font-size:13px}
+  .topbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink)}
+
+  .stage{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:16px;text-align:center}
+  .robo-svg{width:200px;height:240px;max-width:60%}
+  .part{fill:var(--dim);transition:fill .8s ease, filter .8s ease}
+  .part.lit{filter:drop-shadow(0 0 6px currentColor)}
+  .robo-base{fill:var(--robo)}
+
+  /* روبو متحرّك متجاوب: يتنفّس ويرمش وينبض هوائيُّه، ويتفاعل بمزاجه مع الطفل (لا يكون جامدًا) */
+  .robo-svg{transform-origin:50% 82%}
+  @media (prefers-reduced-motion: no-preference){
+    .robo-svg{animation:robo-breathe 3.6s ease-in-out infinite}
+    .robo-svg .eye{animation:robo-blink 5.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+    .robo-svg .antenna{animation:robo-pulse 2.6s ease-in-out infinite}
+    .robo-svg.thinking{animation:robo-think 1.8s ease-in-out infinite}
+    .robo-svg.thinking .antenna{animation:robo-pulse 1s ease-in-out infinite}
+    .robo-svg.happy{animation:robo-happy 1s ease-in-out}
+    .robo-svg.curious{animation:robo-curious 1.4s ease-in-out}
+  }
+  @keyframes robo-breathe{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.012)}}
+  @keyframes robo-blink{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.12)}}
+  @keyframes robo-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  @keyframes robo-think{0%,100%{transform:rotate(0)}50%{transform:rotate(-3.5deg)}}
+  @keyframes robo-happy{0%{transform:translateY(0) scale(1)}30%{transform:translateY(-13px) scale(1.05)}55%{transform:translateY(0) scale(1)}75%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+  @keyframes robo-curious{0%,100%{transform:rotate(0)}25%{transform:rotate(4deg)}60%{transform:rotate(-2deg)}}
+  /* شفاءٌ مرئيّ فرديّ: الجزء/العنصر الذي يُضاء الآن ينبثق فرحًا */
+  @keyframes pop-lit{0%{transform:scale(1)}45%{transform:scale(1.55)}100%{transform:scale(1)}}
+  .part.just-lit{animation:pop-lit .8s ease;transform-box:fill-box;transform-origin:center}
+  .we.just-lit{animation:pop-lit .8s ease}
+  .laugh{font-size:13px;color:var(--good-d);font-weight:700;min-height:18px;margin-top:4px}
+  .progress{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:8px;flex-wrap:wrap}
+  .pill{background:#F3EEE3;border-radius:999px;padding:4px 12px;font-size:13px;color:var(--muted)}
+  .world{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+  .we{display:flex;flex-direction:column;align-items:center;width:52px;opacity:.28;filter:grayscale(1);transition:.6s}
+  .we.on{opacity:1;filter:none}
+  .we .ico{font-size:24px;line-height:1.2}
+  .we .ico svg{width:30px;height:30px;display:block;margin:0 auto}
+  .mem-art{margin:4px auto 10px;display:flex;justify-content:center}
+  .mem-art svg{height:94px;width:auto;max-width:100%;display:block;background:#FBF4EF;border-radius:14px;padding:6px}
+  .we .lbl{font-size:10px;color:var(--muted)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:20px;margin-top:16px}
+  .stateTag{display:inline-block;font-size:12px;font-weight:700;color:var(--primary);background:#FBEDE7;border-radius:999px;padding:3px 12px;margin-bottom:10px}
+  .badge-pair{display:inline-block;font-size:12px;font-weight:700;color:#5E9A47;background:#EEF6E9;border:1px solid #CDE6BE;border-radius:999px;padding:3px 10px;margin-bottom:10px;margin-inline-start:6px}
+  .robo-says{font-size:19px;font-weight:700;margin:6px 0 4px}
+  .cue{color:var(--muted);font-size:13px;margin-bottom:8px}
+  .mtitle{font-size:16px;font-weight:800;margin:2px 0 8px}
+  .prompt{font-size:16px;margin:8px 0}
+  ol.steps{margin:8px 0;padding-inline-start:22px}
+  ol.steps li{margin:4px 0}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .chip{background:#F3EEE3;border-radius:10px;padding:6px 10px;font-size:13px}
+  .parent{background:#F6F3EC;border-right:3px solid var(--primary);border-radius:8px;padding:10px 12px;font-size:14px;color:#444;margin-top:10px}
+  .parent b{color:var(--primary-d)}
+  .succ{font-size:13px;color:var(--muted);margin-top:10px}
+  .capture{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+  .capture .lbl{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .capbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 14px;font-size:14px;cursor:pointer;font-family:inherit;margin-inline-end:6px}
+  .capbtn.rec{background:#FBEDE7;border-color:var(--primary);color:var(--primary-d)}
+  .capbtn.done{background:#EEF6E9;border-color:var(--good);color:var(--good-d)}
+  #capStatus{font-size:12px;color:var(--muted);margin-top:6px}
+
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  button.act{background:var(--primary);color:#fff;border:none;border-radius:14px;padding:13px 20px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(224,122,95,.3);font-family:inherit}
+  button.act:hover{background:var(--primary-d)}
+  button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:13px 18px;font-size:15px;cursor:pointer;font-family:inherit}
+  .filters{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .filters button{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 16px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
+  .filters button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .heal-reward{font-size:15px;font-weight:700;color:var(--good-d);margin-top:8px}
+  .err{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:16px}
+  .err code{background:#F3EEE3;padding:2px 7px;border-radius:6px;font-size:13px}
+  .center{text-align:center}.muted{color:var(--muted)}
+
+  /* Parent overlay */
+  .overlay{position:fixed;inset:0;background:rgba(43,43,43,.45);display:none;align-items:flex-start;justify-content:center;padding:20px;z-index:50;overflow:auto}
+  .overlay.show{display:flex}
+  .panel{background:var(--card);border-radius:20px;box-shadow:var(--shadow);width:100%;max-width:680px;padding:22px;margin-top:10px}
+  .panel h2{margin:0 0 2px;font-size:20px}
+  .panel .close{float:left;background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+  .sec{margin-top:18px}
+  .sec h3{font-size:15px;margin:0 0 8px;color:var(--primary-d)}
+  .statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+  .stat{background:#F6F3EC;border-radius:14px;padding:12px;text-align:center}
+  .stat .n{font-size:24px;font-weight:800}
+  .stat .t{font-size:12px;color:var(--muted)}
+  .dom-row{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;border-bottom:1px solid var(--line)}
+  .dom-row .bar{height:8px;background:#EFEADD;border-radius:6px;flex:1;margin:0 10px;overflow:hidden}
+  .dom-row .bar > i{display:block;height:100%;background:var(--good)}
+  .toggle{width:46px;height:26px;border-radius:999px;background:#D9D3C6;border:none;position:relative;cursor:pointer;flex:none}
+  .toggle.on{background:var(--good)}
+  .toggle::after{content:"";position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+  .toggle.on::after{right:23px}
+  .log{max-height:240px;overflow:auto}
+  .logitem{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--line);font-size:14px}
+  .logitem .when{color:var(--muted);font-size:12px;margin-inline-start:auto}
+  .logitem audio{height:30px}
+  .logitem img{width:42px;height:42px;object-fit:cover;border-radius:8px;cursor:pointer}
+  .capwrap{display:inline-flex;align-items:center;gap:4px}
+  .capdel{background:none;border:none;cursor:pointer;font-size:15px;opacity:.55;padding:2px}
+  .capdel:hover{opacity:1}
+  .lognote{background:#F6F3EC;border-radius:8px;padding:4px 8px;font-size:13px;color:#444;max-width:220px}
+  /* حقل الجواب المكتوب في خطوة التلقين */
+  .notefield{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;font-family:inherit;font-size:15px;resize:vertical;margin-top:6px;color:var(--ink)}
+  /* شريط التراجع عن الحذف */
+  .undobar{position:fixed;inset-inline:0;bottom:calc(18px + env(safe-area-inset-bottom));margin:0 auto;width:max-content;max-width:90%;display:none;align-items:center;gap:12px;
+    background:#2B2B2B;color:#fff;border-radius:14px;padding:10px 16px;font-size:14px;z-index:80;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+  .undobar.show{display:flex}
+  .undobar button{background:#fff;color:#2B2B2B;border:none;border-radius:10px;padding:6px 12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+  /* خريطة العالم: مناطق الاستكشاف */
+  .map{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:10px;margin-top:12px}
+  .region{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:12px 8px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
+  .region:hover{transform:translateY(-3px);border-color:var(--primary)}
+  .region.on{border-color:var(--primary);background:#FFF6F2}
+  .region svg{width:38px;height:38px}
+  .region .rt{font-size:13px;font-weight:700;margin-top:4px;line-height:1.3}
+  .region .rp{font-size:11px;color:var(--muted);margin-top:2px}
+  .region .rbar{height:6px;background:#EFEADD;border-radius:6px;overflow:hidden;margin-top:5px}
+  .region .rbar>i{display:block;height:100%;background:var(--good)}
+  .danger{background:#fff;border:1px solid #E5B5A8;color:#B5482F;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit}
+  .gate{max-width:360px;text-align:center}
+  .gate input{font-size:22px;text-align:center;width:120px;padding:8px;border:1px solid var(--line);border-radius:10px;font-family:inherit;margin:10px 0}
+  .gate .q{font-size:20px;font-weight:700}
+  .gate .bad{color:#B5482F;font-size:13px;min-height:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>تلميذي 🤖</h1>
+      <div class="sub">علّمْ روبو… فيتذكّر ويتعافى</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="topbtn" id="muteBtn" title="صوت روبو: تشغيل/كتم">🔊</button>
+      <a class="topbtn" href="home.html" style="text-decoration:none">🏠 الفهرس</a>
+      <button class="topbtn" id="parentBtn">👪 لوحة الأهل</button>
+    </div>
+  </header>
+
+  <div class="stage">
+    <svg class="robo-svg" viewBox="0 0 240 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="روبو">
+      <line x1="120" y1="40" x2="120" y2="22" stroke="#8A93A0" stroke-width="3"/>
+      <circle cx="120" cy="18" r="6" class="part antenna" data-part="الدماغ"/>
+      <rect x="70" y="44" width="100" height="84" rx="18" class="robo-base"/>
+      <rect x="104" y="52" width="32" height="13" rx="4" class="part" data-part="الدماغ"/>
+      <rect x="56" y="74" width="14" height="30" rx="6" class="part" data-part="الأذنان"/>
+      <rect x="170" y="74" width="14" height="30" rx="6" class="part" data-part="الأذنان"/>
+      <circle cx="98" cy="88" r="11" class="part eye" data-part="العينان"/>
+      <circle cx="142" cy="88" r="11" class="part eye" data-part="العينان"/>
+      <rect x="98" y="110" width="44" height="11" rx="5" class="part" data-part="الفم"/>
+      <rect x="76" y="138" width="88" height="86" rx="16" class="robo-base"/>
+      <path class="part" data-part="القلب" d="M120 196 l-15 -15 a9 9 0 0 1 13 -12 l2 2 l2 -2 a9 9 0 0 1 13 12 z"/>
+      <line x1="76" y1="160" x2="52" y2="168" stroke="#8A93A0" stroke-width="6" stroke-linecap="round"/>
+      <line x1="164" y1="160" x2="188" y2="168" stroke="#8A93A0" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="46" cy="170" r="11" class="part" data-part="اليدان"/>
+      <circle cx="194" cy="170" r="11" class="part" data-part="اليدان"/>
+      <rect x="92" y="224" width="18" height="40" rx="9" class="part" data-part="الساقان"/>
+      <rect x="130" y="224" width="18" height="40" rx="9" class="part" data-part="الساقان"/>
+    </svg>
+    <div class="laugh" id="laugh"></div>
+    <div class="progress">
+      <span class="pill" id="pillCount">0 ذكرى مُستعادة</span>
+      <span class="pill" id="pillParts">0 من 7 أجزاء أضاءت</span>
+    </div>
+    <div class="world" id="world"></div>
+  </div>
+
+  <div class="filters" id="filters">
+    <button data-f="all" class="on">الكلّ</button>
+    <button data-f="4-6">4–6 سنوات</button>
+    <button data-f="7-10">7–10 سنوات</button>
+  </div>
+  <div class="center muted" style="font-size:13px;margin-top:14px">🗺️ خريطة عالم روبو — اختر منطقةً لتستكشفها</div>
+  <div class="filters" id="domfilters"></div>
+
+  <div id="cardHost"></div>
+</div>
+
+<!-- Parent overlay -->
+<div class="overlay" id="parentOverlay">
+  <div class="panel" id="panelBody"></div>
+</div>
+
+<input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" />
+<div class="undobar" id="undoBar"><span>حُذِف التسجيل.</span><button id="undoBtn">↩️ تراجع</button></div>
+
+<script type="module">
+import library from "./content/library.js";
+// تقدّمٌ منفصلٌ لكل ملفّ نشط (يطابق منطق src/progress.js)؛ الضيف/بلا-ملفّ على المفتاح الأصليّ.
+const STORAGE_KEY = (() => { try { const u = getCurrentUser(); return (u && u.role !== "guest" && u.id) ? "tilmithi_progress_v1__" + u.id : "tilmithi_progress_v1"; } catch (e) { return "tilmithi_progress_v1"; } })();
+const PARTS = ["العينان","الأذنان","الفم","القلب","اليدان","الساقان","الدماغ"];
+const DOMAINS = ["أرقام وهندسة","حروف ولغة","أخلاق ومشاعر","علوم وطبيعة","تفكير وحلّ مشكلات"];
+const WORLD_EMOJI = {"قمر":"🌕","شمس":"☀️","شجرة":"🌳","صديق":"🧑‍🤝‍🧑","نهر":"🌊","نجمة":"⭐","طائر":"🐦"};
+const DOMAIN_ART={
+"أرقام وهندسة":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><circle cx="15" cy="19" r="9" fill="#6FB3D6"/><rect x="26" y="9" width="15" height="15" rx="3" fill="#F6BE3B"/><path d="M13 41 L23 25 L33 41 Z" fill="#E07A5F"/></svg>`,
+"حروف ولغة":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="11" width="30" height="27" rx="4" fill="#C9A0DC"/><rect x="23" y="11" width="16" height="27" rx="4" fill="#B98FD0"/><text x="17" y="31" text-anchor="middle" font-size="17" font-weight="800" fill="#fff" font-family="Tahoma,sans-serif">أ</text></svg>`,
+"أخلاق ومشاعر":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#E0566B" d="M24 40s-14-9.3-14-19a7 7 0 0 1 14-2 7 7 0 0 1 14 2c0 9.7-14 19-14 19z"/></svg>`,
+"علوم وطبيعة":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><circle cx="33" cy="14" r="7" fill="#F6BE3B"/><path d="M24 42 V24" stroke="#7BB661" stroke-width="3" stroke-linecap="round"/><path d="M24 30c-6 0-10-5-10-9 5 0 10 3 10 9z" fill="#7BB661"/><path d="M24 26c5 0 9-4 9-8-5 0-9 3-9 8z" fill="#9BCB6B"/></svg>`,
+"تفكير وحلّ مشكلات":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M24 7a13 13 0 0 0-8 23v4h16v-4a13 13 0 0 0-8-23z" fill="#FFD66B" stroke="#E8A33D" stroke-width="1.5"/><rect x="18" y="35" width="12" height="4" rx="2" fill="#9aa3ad"/><rect x="20" y="40" width="8" height="3" rx="1.5" fill="#9aa3ad"/></svg>`
+};
+const WORLD_ART={
+"قمر":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="15" fill="#F4C95D"/><circle cx="18" cy="19" r="3" fill="#E3B84C"/><circle cx="29" cy="28" r="2.5" fill="#E3B84C"/><circle cx="28" cy="16" r="1.8" fill="#E3B84C"/></svg>`,
+"شمس":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><g stroke="#F6BE3B" stroke-width="3" stroke-linecap="round"><path d="M24 4v6M24 38v6M4 24h6M38 24h6M10 10l4 4M34 34l4 4M38 10l-4 4M14 34l-4 4"/></g><circle cx="24" cy="24" r="9" fill="#F6BE3B"/></svg>`,
+"شجرة":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect x="21" y="29" width="6" height="13" rx="2" fill="#9c6b3f"/><circle cx="24" cy="19" r="12" fill="#7BB661"/><circle cx="16" cy="23" r="7" fill="#8CC472"/><circle cx="32" cy="23" r="7" fill="#6CA854"/></svg>`,
+"صديق":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><circle cx="17" cy="16" r="6" fill="#E0566B"/><path d="M7 41a10 10 0 0 1 20 0z" fill="#E0566B"/><circle cx="32" cy="18" r="5" fill="#6FB3D6"/><path d="M24 41a8 8 0 0 1 16 0z" fill="#6FB3D6"/></svg>`,
+"نهر":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><g stroke="#6FB3D6" stroke-width="3.5" fill="none" stroke-linecap="round"><path d="M6 16q6-5 12 0t12 0 12 0"/><path d="M6 26q6-5 12 0t12 0 12 0"/><path d="M6 36q6-5 12 0t12 0 12 0"/></g></svg>`,
+"نجمة":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#F6C84C" d="M24 5l5.5 11.6 12.8 1.6-9.4 8.8 2.4 12.7L24 33.6l-11.3 6.7 2.4-12.7-9.4-8.8 12.8-1.6z"/></svg>`,
+"طائر":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><ellipse cx="22" cy="27" rx="12" ry="9" fill="#6FB3D6"/><circle cx="32" cy="20" r="6" fill="#6FB3D6"/><circle cx="33" cy="19" r="1.6" fill="#fff"/><path d="M37 20l6-2-3 4z" fill="#F6BE3B"/><path d="M14 27q6-8 12-2-6 6-12 2z" fill="#5390B4"/></svg>`
+};
+import { ART } from "./src/art.js";
+import { logEvent, recordMastery, getAllMastery, isDueForReview, getChildAge, setChildAge } from "./src/progress.js";
+import * as sfx from "./src/sfx.js";
+import { roboSay, roboPhrase } from "./src/robo-voice.js";
+import { praise, tadabburFor } from "./src/islamic.js";
+import { deepenFor, roboWrongFor } from "./src/think.js";
+import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, getVoiceSet, setVoiceSet, CLIPS, getStoryVoice, setStoryVoice, isStoryReadOn, setStoryReadOn } from "./src/sound-prefs.js";
+import { listSets, primeVoices } from "./src/voices.js";
+import { practiceByAccount, clearAccount as clearPracticeAccount } from "./src/practice.js";
+import { verifyParentPassword, markParentAuthed, isParentAuthed, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser } from "./src/accounts.js";
+import { confirmWithPassword, undoable } from "./src/confirm-action.js";
+import voicesBundled from "./src/voices-bundled.json";
+const STATE_TAG = {spark:"1) الشرارة", task:"2) المهمة", teach:"3) التلقين", heal:"4) الشفاء"};
+const AR = n => String(n);
+
+let LIB=null, MEM=[], THRESH=8;
+let filter=getChildAge(), domFilter="all", current=null, state="idle", pending=[];
+let teachStage=0, wrongState=0; // حوار التلقين: 0=جواب الطفل، 1=تعميق التفكير | خطأ روبو: 0 مخفيّ،1 معروض،2 صُحِّح
+let pendingNote=""; // جواب الطفل المكتوب (اختياريّ) يُحفظ مع توثيق الجلسة
+let coopMode=false; // وضع الإخوة: يقتصر على ذكريات «لطفلين معًا»
+let mediaRec=null, recChunks=[];
+let progress = loadProgress();
+
+function loadProgress(){
+  let p; try{ p = JSON.parse(localStorage.getItem(STORAGE_KEY)); }catch(e){}
+  p = p || {};
+  p.completed = p.completed || [];
+  p.parts = p.parts || {};
+  p.world = p.world || {};
+  p.log = p.log || [];
+  p.settings = p.settings || {};
+  p.settings.enabledDomains = p.settings.enabledDomains || {};
+  DOMAINS.forEach(d=>{ if(p.settings.enabledDomains[d]===undefined) p.settings.enabledDomains[d]=true; });
+  if(p.settings.showPair===undefined) p.settings.showPair=true;
+  return p;
+}
+function saveProgress(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); }
+
+/* ---------- IndexedDB for local captures (audio/photo) ---------- */
+function idb(){ return new Promise((res,rej)=>{ const r=indexedDB.open("tilmithi",1);
+  r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains("captures")) r.result.createObjectStore("captures",{keyPath:"key"}); };
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function putCapture(rec){ const db=await idb(); return new Promise((res,rej)=>{ const tx=db.transaction("captures","readwrite"); tx.objectStore("captures").put(rec); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); }); }
+async function allCaptures(){ try{ const db=await idb(); return await new Promise(res=>{ const tx=db.transaction("captures","readonly"); const rq=tx.objectStore("captures").getAll(); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>res([]); }); }catch(e){ return []; } }
+async function clearCaptures(){ try{ const db=await idb(); return await new Promise(res=>{ const tx=db.transaction("captures","readwrite"); tx.objectStore("captures").clear(); tx.oncomplete=()=>res(); tx.onerror=()=>res(); }); }catch(e){} }
+async function delCapture(key){ try{ const db=await idb(); return await new Promise(res=>{ const tx=db.transaction("captures","readwrite"); tx.objectStore("captures").delete(key); tx.oncomplete=()=>res(); tx.onerror=()=>res(); }); }catch(e){} }
+
+function init(){
+  LIB=library;
+  MEM=LIB.memories||[];
+  THRESH=(LIB.healing_model&&LIB.healing_model.laughter_milestone&&LIB.healing_model.laughter_milestone.threshold)||8;
+  const params=new URLSearchParams(location.search);
+  const dom=params.get("domain");
+  if(dom && DOMAINS.includes(dom)){ domFilter=dom; renderMap(); }
+  document.querySelectorAll("#filters button").forEach(x=>x.classList.toggle("on", x.getAttribute("data-f")===filter));
+  renderRobo(); renderWorld(); renderProgress(); renderIdle();
+  const mid=params.get("memory");
+  if(mid){ const m=MEM.find(x=>x.id===mid); if(m){ current=m; pending=[]; state="spark"; renderCard(); } }
+  else if(params.get("parent")==="1"){ openGate(); }
+}
+
+function renderRobo(){
+  document.querySelectorAll(".part").forEach(el=>{
+    const c=progress.parts[el.getAttribute("data-part")];
+    if(c){ el.style.fill=c; el.style.color=c; el.classList.add("lit"); }
+    else { el.style.fill=""; el.classList.remove("lit"); }
+  });
+  document.getElementById("laugh").textContent =
+    progress.completed.length>=THRESH ? "🎉 عادت ضحكة روبو! لقد أعدتَ إليه كلّ ذكرياته." : "";
+}
+function renderWorld(){
+  document.getElementById("world").innerHTML = Object.keys(WORLD_EMOJI).map(w=>
+    `<div class="we ${progress.world[w]?"on":""}" data-w="${w}"><div class="ico">${WORLD_ART[w]||WORLD_EMOJI[w]}</div><div class="lbl">${w}</div></div>`).join("");
+}
+function renderProgress(){
+  document.getElementById("pillCount").textContent = `${AR(progress.completed.length)} ذكرى مُستعادة`;
+  document.getElementById("pillParts").textContent = `${AR(Object.keys(progress.parts).length)} من 7 أجزاء أضاءت`;
+}
+function candidates(){
+  const en=progress.settings.enabledDomains;
+  if(coopMode) return MEM.filter(m=>!progress.completed.includes(m.id) && m.mode==="pair" && (filter==="all"||m.age_band===filter));
+  return MEM.filter(m=>!progress.completed.includes(m.id) && (filter==="all"||m.age_band===filter) && (domFilter==="all"||m.domain===domFilter) && en[m.domain]!==false && (progress.settings.showPair!==false || m.mode!=="pair"));
+}
+function renderIdle(){
+  const left=candidates().length, host=document.getElementById("cardHost");
+  setMood("");
+  if(left===0){
+    host.innerHTML=`<div class="card center"><div class="robo-says">${coopMode?"أتممتما كلّ أنشطة الإخوة! 🌟":(progress.completed.length?"لا ذكريات متاحة الآن ضمن هذا الاختيار 🌟":"لا توجد ذكريات.")}</div>
+      <p class="muted">${coopMode?"اخرجا من وضع الإخوة لمتابعة بقيّة الذكريات.":"بدّل الفئة العمريّة، أو فعّل مجالاتٍ أخرى من لوحة الأهل."}</p>
+      ${coopMode?'<div class="btns" style="justify-content:center"><button class="ghost" onclick="toggleCoop()">↩ خروج من وضع الإخوة</button></div>':""}</div>`;
+    return;
+  }
+  const coopBar = coopMode
+    ? `<div class="parent" style="border-right-color:var(--violet);background:#F6F0FB;margin-bottom:10px"><b style="color:#7a4fa0">👯 وضع الإخوة</b> — نشاطٌ يفعله طفلان معًا.</div>`
+    : "";
+  host.innerHTML=`<div class="card center">${coopBar}<div class="robo-says">${coopMode?"روبو وصديقُه ينتظران نشاطًا للأخوين…":"روبو ينتظر ذكرى جديدة…"}</div>
+    <p class="muted">${coopMode?`أنشطةٌ للأخوين: ${AR(left)} متبقّية.`:`في ذاكرته ${AR(left)} ذكرى ناقصة. هل تساعده؟`}</p>
+    <div class="btns" style="justify-content:center"><button class="act" onclick="spark()">✨ شرارة ذكرى</button>
+    ${coopMode
+      ? '<button class="ghost" onclick="toggleCoop()">↩ خروج من وضع الإخوة</button>'
+      : '<button class="ghost" onclick="surprise()">🎲 فاجئني</button><button class="ghost" onclick="toggleCoop()">👯 وضع الإخوة</button>'}</div></div>`;
+}
+// وضع الإخوة: يقصر الذكريات على أنشطة «لطفلين معًا» ويؤطّرها لطفلين.
+function toggleCoop(){ coopMode=!coopMode; state="idle"; renderIdle(); }
+// فاجئني: ذكرى عشوائية من كلّ المناطق المُفعَّلة (تتجاوز اختيار المنطقة الحاليّ) — للاستكشاف.
+function surprise(){
+  const en=progress.settings.enabledDomains;
+  const pool=MEM.filter(m=>!progress.completed.includes(m.id) && (filter==="all"||m.age_band===filter) && en[m.domain]!==false && (progress.settings.showPair!==false || m.mode!=="pair"));
+  if(!pool.length){ renderIdle(); return; }
+  logEvent("explore_surprise"); // وسام المُغامِر
+  current=pool[Math.floor(Math.random()*pool.length)]; pending=[]; pendingNote=""; state="spark"; renderCard();
+}
+function spark(){
+  const c=candidates(); if(!c.length){ renderIdle(); return; }
+  current=c[Math.floor(Math.random()*c.length)]; pending=[]; state="spark"; renderCard();
+}
+function renderCard(){
+  const m=current, host=document.getElementById("cardHost");
+  setMood(state==="teach"?"thinking":state==="heal"?"happy":state==="spark"?"curious":"");
+  const pairBadge = (m&&m.mode==="pair") ? '<span class="badge-pair">👯 لطفلين معًا</span>' : "";
+  if(state==="spark"){
+    host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.spark}</span>${pairBadge}
+      <div class="mem-art">${ART[m.id]||DOMAIN_ART[m.domain]||""}</div>
+      <div class="robo-says">${m.spark.robo_line}</div>${m.spark.cue?`<div class="cue">📷 ${m.spark.cue}</div>`:""}
+      <div class="btns"><button class="act" onclick="go('task')">هيّا نبدأ المهمّة ←</button>
+      <button class="ghost" onclick="spark()">ذكرى أخرى</button></div></div>`;
+    roboSay(m.spark.robo_line, {mood:"curious"});
+  } else if(state==="task"){
+    host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.task}</span>
+      <div class="mem-art">${ART[m.id]||DOMAIN_ART[m.domain]||""}</div>
+      <div class="mtitle">${m.title} <span class="muted" style="font-weight:400">· ${m.domain} · ${m.age_band}</span></div>${pairBadge}
+      <div class="prompt">${m.task.prompt}</div>
+      <ol class="steps">${m.task.child_steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+      <div class="meta"><span class="chip">🧰 ${m.task.materials.join("، ")}</span>
+        <span class="chip">📍 ${m.task.location}</span>
+        <span class="chip">⏱️ ${AR(m.duration_min)} د${m.multi_day?" · عدّة أيّام":""}</span></div>
+      <div class="parent"><b>للأهل:</b> ${m.task.parent_role}</div>
+      <div class="btns"><button class="act" onclick="go('teach')">أنجزَ الطفلُ المهمّة ✋</button></div></div>`;
+    roboSay(roboPhrase("bismillah"), {mood:"ok"});
+  } else if(state==="teach" && teachStage===0){
+    const caps=m.teach.capture||[];
+    let capHtml="";
+    if(caps.includes("voice")||caps.includes("photo_local")){
+      capHtml=`<div class="capture"><div class="lbl">توثيق اختياريّ (يبقى على الجهاز فقط):</div>
+        ${caps.includes("voice")?`<button class="capbtn" id="recBtn" onclick="toggleRec()">🎤 سجّل جواب الطفل</button>`:""}
+        ${caps.includes("photo_local")?`<button class="capbtn" id="photoBtn" onclick="document.getElementById('photoInput').click()">📷 أضِف صورة</button>`:""}
+        <div id="capStatus"></div></div>`;
+    }
+    host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.teach}</span>
+      <div class="robo-says">🤖 ${m.teach.robo_question}</div>
+      <div class="cue">أجِبْ روبو بصوتك، أو اكتبْ جوابك، أو أرِهِ ما صنعت.</div>
+      <div class="succ">✅ علامة النجاح (يقرّرها الأهل): ${m.teach.success_signal}</div>
+      ${capHtml}
+      <div class="capture"><div class="lbl">✍️ اكتبْ جواب الطفل عن سؤال روبو (اختياريّ):</div>
+        <textarea id="noteField" class="notefield" rows="2" placeholder="${m.teach.robo_question}"></textarea></div>
+      <div class="btns"><button class="act" onclick="goTeach(1)">أجابَ الطفلُ روبو ←</button>
+      <button class="ghost" onclick="go('task')">→ لم نُنجِزها بعد</button></div></div>`;
+    updateCapStatus();
+    const nf=document.getElementById("noteField");
+    if(nf){ nf.value=pendingNote; nf.addEventListener("input",()=>{ pendingNote=nf.value; }); }
+  } else if(state==="teach" && teachStage===1){
+    const dq=deepenFor(m), rw=roboWrongFor(m);
+    let wrongHtml="";
+    if(rw){
+      if(wrongState===0) wrongHtml=`<div class="capture"><div class="lbl">🧠 تحدٍّ إضافيّ للتفكير:</div>
+        <button class="capbtn" onclick="askRoboWrong()">اسمعْ فكرة روبو… أصوابٌ هي؟</button></div>`;
+      else if(wrongState===1) wrongHtml=`<div class="capture"><div class="robo-says" style="font-size:16px">🤖 ${rw}</div>
+        <button class="capbtn rec" onclick="fixRoboWrong()">✋ لا يا روبو، الصوابُ غيرُ ذلك!</button></div>`;
+      else wrongHtml=`<div class="capture"><div class="succ done" style="color:var(--good-d)">🤖 صحّحتَني يا معلّمي! ما كنتُ لأعرفَ لولاك. 🌟</div></div>`;
+    }
+    host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.teach} · تفكير</span>
+      <div class="robo-says">🤖 ${dq}</div>
+      <div class="cue">اشرَحْ لروبو سببَ تفكيرك — لا توجد إجابةٌ واحدة.</div>
+      ${wrongHtml}
+      <div class="btns"><button class="act" onclick="heal()">علّمَ روبو! 💡</button>
+      <button class="ghost" onclick="goTeach(0)">→ رجوع</button></div></div>`;
+  } else if(state==="heal"){
+    const r=m.heal.reward;
+    const label=r.type==="world"?`أضاء ${r.target} في عالم روبو ${WORLD_EMOJI[r.target]||""}`:`أضاء ${r.target} في روبو`;
+    const isl=praise(progress.completed.length), td=tadabburFor(m.domain);
+    const cheer=roboPhrase("praise", progress.completed.length);
+    host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.heal}</span>
+      <div class="robo-says">${cheer} ${m.heal.robo_reaction}</div>
+      <div class="cue">${isl}${td?" "+td:""}</div>
+      <div class="heal-reward">✨ ${label}</div>
+      <div class="btns"><button class="act" onclick="spark()">ذكرى جديدة لروبو ←</button>
+      <button class="ghost" onclick="renderIdle()">توقّف الآن</button></div></div>`;
+    roboSay(`${cheer} ${m.heal.robo_reaction} ${isl}${td?" "+td:""}`, {mood:"happy"});
+  }
+}
+function go(s){ state=s; if(s==="teach"){teachStage=0; wrongState=0; pendingNote="";} renderCard(); if(s==="teach") roboSay(current.teach.robo_question,{mood:"ask"}); }
+
+// حوار التلقين: انتقالات تُنطَق فيها كلمات روبو في وقت الانتقال (لا في كل إعادة رسم).
+function goTeach(n){ teachStage=n; if(n===0) wrongState=0; renderCard();
+  if(n===1) logEvent("think_deep"); // وسام المُفكِّر
+  roboSay(n===1 ? deepenFor(current) : current.teach.robo_question, {mood:"ask"}); }
+function askRoboWrong(){ wrongState=1; renderCard(); roboSay(roboWrongFor(current), {mood:"talk"}); }
+function fixRoboWrong(){ wrongState=2; logEvent("wrong_fixed"); renderCard(); roboSay(`${roboPhrase("thanks")} صحّحتَني، شكرًا يا معلّمي!`, {mood:"happy"}); }
+
+// مزاج روبو: يجعل العلاقة تفاعلية نشطة — فضولٌ عند الشرارة، تفكيرٌ عند السؤال، فرحٌ عند الشفاء.
+function setMood(mood){
+  const svg=document.querySelector(".robo-svg"); if(!svg) return;
+  svg.classList.remove("thinking","happy","curious");
+  if(mood==="happy"||mood==="curious"){ void svg.offsetWidth; svg.classList.add(mood); } // إعادة تشغيل اللقطة الواحدة
+  else if(mood) svg.classList.add(mood);
+}
+
+/* capture */
+function updateCapStatus(){
+  const el=document.getElementById("capStatus"); if(!el) return;
+  const a=pending.filter(p=>p.type==="audio").length, ph=pending.filter(p=>p.type==="photo").length;
+  el.textContent = (a||ph)?`جاهز للحفظ: ${a?AR(a)+" تسجيل ":""}${ph?AR(ph)+" صورة":""}`.trim():"";
+  const pb=document.getElementById("photoBtn"); if(pb&&ph) pb.classList.add("done");
+}
+async function toggleRec(){
+  const btn=document.getElementById("recBtn");
+  if(mediaRec&&mediaRec.state==="recording"){ mediaRec.stop(); return; }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    recChunks=[]; mediaRec=new MediaRecorder(stream);
+    mediaRec.ondataavailable=e=>{ if(e.data.size) recChunks.push(e.data); };
+    mediaRec.onstop=()=>{ pending.push({type:"audio",blob:new Blob(recChunks,{type:"audio/webm"})});
+      stream.getTracks().forEach(t=>t.stop()); if(btn){btn.textContent="🎤 سجّل مجدّدًا";btn.classList.remove("rec");btn.classList.add("done");} updateCapStatus(); };
+    mediaRec.start(); if(btn){btn.textContent="■ إيقاف التسجيل";btn.classList.add("rec");}
+  }catch(e){ const el=document.getElementById("capStatus"); if(el) el.textContent="تعذّر الوصول إلى الميكروفون (التوثيق اختياريّ)."; }
+}
+document.getElementById("photoInput").addEventListener("change",e=>{
+  const f=e.target.files&&e.target.files[0]; if(f){ pending.push({type:"photo",blob:f}); } e.target.value=""; updateCapStatus();
+});
+
+async function heal(){
+  const m=current, r=m.heal.reward, ts=Date.now();
+  if(!progress.completed.includes(m.id)) progress.completed.push(m.id);
+  if(r.type==="robo_part") progress.parts[r.target]=r.color||"#E0566B";
+  else if(r.type==="world") progress.world[r.target]=r.color||"#7BB661";
+  recordMastery("M:"+m.id, true);
+  const entry={id:m.id,title:m.title,domain:m.domain,age_band:m.age_band,ts,hasAudio:false,hasPhoto:false,hasNote:false};
+  let i=0;
+  for(const c of pending){
+    try{ await putCapture({key:ts+"-"+(i++)+"-"+c.type,ts,memId:m.id,title:m.title,type:c.type,blob:c.blob});
+      if(c.type==="audio")entry.hasAudio=true; if(c.type==="photo")entry.hasPhoto=true; }catch(e){}
+  }
+  if(pendingNote.trim()){
+    try{ await putCapture({key:ts+"-"+(i++)+"-note",ts,memId:m.id,title:m.title,type:"note",text:pendingNote.trim()}); entry.hasNote=true; }catch(e){}
+  }
+  progress.log.push(entry); pending=[]; pendingNote=""; saveProgress();
+  logEvent("memory_heal");
+  if(m.mode==="pair") logEvent("coop_done"); // وسام رفيق الإخوة
+  state="heal"; renderRobo(); renderWorld(); renderProgress(); renderMap(); renderCard();
+  // شفاءٌ مرئيّ فرديّ: أبرِزِ الجزء/العنصر الذي أُضيء الآن
+  const sel = r.type==="world" ? `.we[data-w="${r.target}"]` : `.part[data-part="${r.target}"]`;
+  document.querySelectorAll(sel).forEach(el=>{ el.classList.add("just-lit"); setTimeout(()=>el.classList.remove("just-lit"),900); });
+  if(progress.completed.length>=THRESH) sfx.heal(); else sfx.success();
+}
+
+/* filters */
+document.getElementById("filters").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-f]"); if(!b) return;
+  filter=b.getAttribute("data-f");
+  document.querySelectorAll("#filters button").forEach(x=>x.classList.toggle("on",x===b));
+  if(state==="idle"||state==="heal") renderIdle();
+});
+// خريطة العالم: مناطقُ يستكشفها الطفل بحرّية، كلٌّ بتقدّمها.
+const domHost=document.getElementById("domfilters");
+function renderMap(){
+  const en=progress.settings.enabledDomains;
+  const all=`<div class="region ${domFilter==="all"?"on":""}" data-d="all"><div style="font-size:34px;line-height:38px">🗺️</div><div class="rt">كلّ العالم</div></div>`;
+  const cards=DOMAINS.filter(d=>en[d]!==false).map(d=>{
+    const tot=MEM.filter(m=>m.domain===d).length;
+    const dn=MEM.filter(m=>m.domain===d&&progress.completed.includes(m.id)).length;
+    const pct=tot?Math.round(dn/tot*100):0;
+    return `<div class="region ${domFilter===d?"on":""}" data-d="${d}">${DOMAIN_ART[d]||""}<div class="rt">${d}</div><div class="rp">${AR(dn)}/${AR(tot)}</div><div class="rbar"><i style="width:${pct}%"></i></div></div>`;
+  }).join("");
+  domHost.className="map"; domHost.innerHTML=all+cards;
+}
+domHost.addEventListener("click",e=>{
+  const b=e.target.closest(".region[data-d]"); if(!b) return;
+  domFilter=b.getAttribute("data-d");
+  renderMap();
+  if(state==="idle"||state==="heal") renderIdle();
+});
+renderMap();
+
+/* ---------- Parent dashboard (gated) ---------- */
+const overlay=document.getElementById("parentOverlay"), panel=document.getElementById("panelBody");
+document.getElementById("parentBtn").addEventListener("click", openGate);
+overlay.addEventListener("click",e=>{ if(e.target===overlay) closePanel(); });
+function closePanel(){ if(pendingDel) finalizeDel(); overlay.classList.remove("show"); panel.innerHTML=""; }
+
+/* حذف تسجيلٍ مفردٍ مع مهلة تراجع (6 ثوانٍ) — لا يُمَسّ IndexedDB إلّا بعد انقضاء المهلة */
+let pendingDel=null; // {key, el, timer}
+const undoBar=document.getElementById("undoBar");
+function finalizeDel(){ if(pendingDel){ const k=pendingDel.key; clearTimeout(pendingDel.timer); pendingDel=null; delCapture(k); } if(undoBar) undoBar.classList.remove("show"); }
+function askDeleteCapture(key, el){
+  if(pendingDel) finalizeDel();           // أنهِ الحذف السابق فورًا قبل بدء جديد
+  if(el) el.style.display="none";
+  pendingDel={ key, el, timer:setTimeout(finalizeDel, 6000) };
+  if(undoBar) undoBar.classList.add("show");
+}
+function undoDel(){ if(pendingDel){ clearTimeout(pendingDel.timer); if(pendingDel.el) pendingDel.el.style.display=""; pendingDel=null; } if(undoBar) undoBar.classList.remove("show"); }
+if(document.getElementById("undoBtn")) document.getElementById("undoBtn").addEventListener("click", undoDel);
+
+function openGate(){
+  if(isParentAuthed()){ openDashboard(); return; }   // جلسةٌ صالحة (5 دقائق)
+  panel.innerHTML=`<div class="gate"><button class="close" onclick="closePanel()">✕</button>
+    <h2>🛡️ لوحة الأهل</h2><p class="muted">أدخل كلمة المرور:</p>
+    <input id="ppw" type="password" autocomplete="off" placeholder="كلمة المرور" />
+    <div class="bad" id="ppwBad"></div>
+    <div class="btns" style="justify-content:center"><button class="act" id="ppwGo">دخول</button></div>
+    <button class="topbtn" id="forgot" style="margin-top:12px;font-size:13px">نسيتُ كلمة المرور</button>
+    ${isDefaultParentPassword()?'<p class="muted" style="font-size:12px;margin-top:10px">الافتراضيّة: <b>admin</b> — غيّرها من إعدادات اللوحة.</p>':''}</div>`;
+  overlay.classList.add("show");
+  const inp=document.getElementById("ppw"); inp.focus();
+  const go=()=>{ if(verifyParentPassword(inp.value)){ markParentAuthed(); openDashboard(); } else { document.getElementById("ppwBad").textContent="كلمة مرور غير صحيحة."; inp.value=""; inp.focus(); } };
+  document.getElementById("ppwGo").onclick=go;
+  inp.addEventListener("keydown",e=>{ if(e.key==="Enter") go(); });
+  document.getElementById("forgot").onclick=openRecover;
+}
+function openRecover(){
+  const sq=getSecurityQuestion();
+  panel.innerHTML=`<div class="gate"><button class="close" onclick="closePanel()">✕</button>
+    <h2>استعادة كلمة المرور</h2>
+    ${sq?`<p class="muted">${sq.question}</p>
+      <input id="recAns" placeholder="الإجابة" />
+      <input id="recNew" type="password" placeholder="كلمة مرور جديدة (فارغ = admin)" style="width:220px;margin-top:8px" />
+      <div class="bad" id="recBad"></div>
+      <div class="btns" style="justify-content:center"><button class="act" id="recGo">تأكيد</button> <button class="ghost" id="recBack">رجوع</button></div>`
+    :`<p class="muted">لا سؤال أمنيّ مضبوط. يمكنك إعادة التعيين إلى «admin».</p>
+      <div class="btns" style="justify-content:center"><button class="act" id="recReset">إعادة إلى admin</button> <button class="ghost" id="recBack">رجوع</button></div>`}</div>`;
+  overlay.classList.add("show");
+  const back=document.getElementById("recBack"); if(back) back.onclick=openGate;
+  if(sq){ document.getElementById("recGo").onclick=()=>{ if(verifySecurityAnswer(document.getElementById("recAns").value)){ changeParentPassword(document.getElementById("recNew").value||undefined); markParentAuthed(); openDashboard(); } else document.getElementById("recBad").textContent="الإجابة غير صحيحة."; }; }
+  else document.getElementById("recReset").onclick=()=>{ resetParentPasswordToDefault(); openGate(); };
+}
+
+async function openDashboard(){
+  const caps=await allCaptures();
+  const capByTs={}; caps.forEach(c=>{ (capByTs[c.ts]=capByTs[c.ts]||[]).push(c); });
+  const done=progress.completed.length, litP=Object.keys(progress.parts).length, litW=Object.keys(progress.world).length;
+  const perDom=DOMAINS.map(d=>{
+    const tot=MEM.filter(m=>m.domain===d).length, dn=MEM.filter(m=>m.domain===d&&progress.completed.includes(m.id)).length;
+    return {d,tot,dn,pct: tot?Math.round(dn/tot*100):0, on: progress.settings.enabledDomains[d]!==false};
+  });
+  const log=[...progress.log].sort((x,y)=>y.ts-x.ts);
+  const fmt=ts=>{ const dt=new Date(ts); return dt.toLocaleDateString("ar-EG-u-nu-latn")+" "+dt.toLocaleTimeString("ar-EG-u-nu-latn",{hour:"2-digit",minute:"2-digit"}); };
+
+  // رؤى الإتقان (تتبّع لايتنر): ماذا أتقن الطفل وما يحتاج مراجعة، بحسب نوع المهارة.
+  const MAST=getAllMastery(), mkeys=Object.keys(MAST);
+  const MLBL={L:"حروف",N:"أرقام",W:"كلمات",R:"قراءة",Q:"اختبارات",M:"ذكريات",H:"حركات"};
+  const mGroups={};
+  mkeys.forEach(k=>{ const t=k.split(":")[0]; const g=mGroups[t]||(mGroups[t]={tot:0,mastered:0,due:0});
+    g.tot++; if(MAST[k].box>=4) g.mastered++; if(isDueForReview(k)) g.due++; });
+  const childAge=getChildAge();
+  const ageOpt=(v,l)=>`<button class="chip ${childAge===v?"on":""}" data-age="${v}" style="background:${childAge===v?"var(--primary)":"#fff"};color:${childAge===v?"#fff":"var(--muted)"};border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer;font-family:inherit">${l}</button>`;
+
+  // مجموعات الصوت المتاحة: المقاطع الآلية + المُدمجة + ما سجّله المستخدم (بأسمائها).
+  const deviceSets = await listSets();
+  // دمجٌ بلا تكرار: clips، ثمّ المُدمجة، ثمّ مجموعات الجهاز — معرّفٌ واحدٌ مرّةً واحدة.
+  const seenSet = new Set([CLIPS]);
+  const voiceSets = [{id:CLIPS,name:"مقاطع مُولَّدة (آليّ)"}]; // بلا types = صالحٌ لكل الأنواع
+  (voicesBundled.sets||[]).forEach(s=>{ if(seenSet.has(s.id))return; seenSet.add(s.id); voiceSets.push({id:s.id,name:(s.name||s.id)+(s.kind==="tts"?" — عصبيّ":" — مُدمج"),types:s.types||null}); });
+  deviceSets.forEach(s=>{ if(seenSet.has(s.setId))return; seenSet.add(s.setId); voiceSets.push({id:s.setId,name:((s.meta&&s.meta.name)||s.setId)+" — تسجيلك ("+AR(s.count)+")"}); });
+  // يُعرَض ضمن نوعٍ ما إن لم تُقيَّد أنواعُه أو كان يسمح به (مثلاً النموذج العصبيّ لا يظهر للحروف).
+  const setsFor=(type)=>voiceSets.filter(o=>!o.types||o.types.includes(type));
+  const vOpts=(type)=>{ const cur=getVoiceSet(type); return setsFor(type).map(o=>`<option value="${o.id}" ${o.id===cur?"selected":""}>${o.name}</option>`).join(""); };
+  const storyOpts=()=>{ const cur=getStoryVoice(); return setsFor("story").map(o=>`<option value="${o.id}" ${o.id===cur?"selected":""}>${o.name}</option>`).join(""); };
+  const vSelStyle="flex:1;max-width:60%;padding:6px 8px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:13px;background:#fff";
+
+  panel.innerHTML=`
+    <button class="close" onclick="closePanel()">✕</button>
+    <h2>لوحة الأهل</h2><div class="muted" style="font-size:13px">كلّ البيانات محليّة على هذا الجهاز.</div>
+
+    <div class="sec"><h3>نظرة عامة</h3>
+      <div class="statgrid">
+        <div class="stat"><div class="n">${AR(done)}</div><div class="t">ذكرى مُستعادة</div></div>
+        <div class="stat"><div class="n">${AR(litP)}/7</div><div class="t">أجزاء روبو</div></div>
+        <div class="stat"><div class="n">${AR(litW)}/7</div><div class="t">عناصر العالم</div></div>
+        <div class="stat"><div class="n">${done>=THRESH?"🎉":AR(Math.max(0,THRESH-done))}</div><div class="t">${done>=THRESH?"عادت الضحكة":"تبقّى للضحكة"}</div></div>
+      </div>
+    </div>
+
+    <div class="sec"><h3>التقدّم حسب المجال (وتفعيله)</h3>
+      ${perDom.map(p=>`<div class="dom-row">
+        <span style="flex:none;width:130px;font-size:13px">${p.d}</span>
+        <span class="bar"><i style="width:${p.pct}%"></i></span>
+        <span class="muted" style="font-size:12px;width:54px;text-align:center">${AR(p.dn)}/${AR(p.tot)}</span>
+        <button class="toggle ${p.on?"on":""}" data-dom="${p.d}" title="تفعيل/تعطيل"></button>
+      </div>`).join("")}
+    </div>
+
+    <div class="sec"><h3>إتقان المهارات (مراجعة بالفواصل)</h3>
+      ${ mkeys.length ? `<div class="muted" style="font-size:12px;margin-bottom:6px">الأنشطة تعيد ما لم يُتقَن أكثر، وتخفّف ما أُتقِن.</div>
+      ${Object.keys(mGroups).map(t=>`<div class="dom-row">
+        <span style="flex:none;width:90px;font-size:13px">${MLBL[t]||t}</span>
+        <span class="bar"><i style="width:${mGroups[t].tot?Math.round(mGroups[t].mastered/mGroups[t].tot*100):0}%"></i></span>
+        <span class="muted" style="font-size:12px;width:120px;text-align:center">أتقن ${AR(mGroups[t].mastered)}/${AR(mGroups[t].tot)}${mGroups[t].due?` · للمراجعة ${AR(mGroups[t].due)}`:""}</span>
+      </div>`).join("")}` : `<p class="muted">لا تدرّب بعد — ستظهر هنا المهارات حين يلعب الطفل.</p>` }
+    </div>
+
+    <div class="sec"><h3>إعدادات</h3>
+      <div class="dom-row">
+        <span style="flex:none;width:210px;font-size:13px">🎂 عمر الطفل (تصفية تلقائية)</span>
+        <span class="chips" style="display:flex;gap:6px;flex:1;justify-content:flex-end">${ageOpt("all","الكل")}${ageOpt("4-6","4–6")}${ageOpt("7-10","7–10")}</span>
+      </div>
+      <div class="dom-row">
+        <span style="flex:none;width:210px;font-size:13px">👯 ذكريات الإخوة (لطفلين معًا)</span>
+        <span class="muted" style="font-size:12px;flex:1">إظهارها ضمن ذكريات روبو</span>
+        <button class="toggle ${progress.settings.showPair!==false?"on":""}" id="pairToggle" title="إظهار/إخفاء"></button>
+      </div>
+      <div class="dom-row">
+        <span style="flex:none;width:210px;font-size:13px">🎵 نغمات روبو</span>
+        <span class="muted" style="font-size:12px;flex:1">النبضات ومؤثّرات النجاح/الخطأ</span>
+        <button class="toggle ${isTonesOn()?"on":""}" id="tonesToggle" title="تشغيل/إيقاف النغمات"></button>
+      </div>
+      <div class="dom-row">
+        <span style="flex:none;width:210px;font-size:13px">🗣️ نطق روبو (الكلمات)</span>
+        <span class="muted" style="font-size:12px;flex:1">قراءة الكلمات والحروف بصوتٍ عربيّ</span>
+        <button class="toggle ${isVoiceOn()?"on":""}" id="voiceToggle" title="تشغيل/إيقاف النطق"></button>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin:6px 2px">🎙️ مصدر الصوت لكل نوع (اختر مجموعةً مُسجَّلةً بالاسم، أو المقاطع الآلية). النموذجُ العصبيّ متاحٌ للكلمات والجمل والنصوص، لا للحروف:</div>
+      ${[["letter","الحروف"],["word","الكلمات"],["sentence","الجمل والنصوص"]].map(([t,lbl])=>
+        `<div class="dom-row"><span style="flex:none;width:110px;font-size:13px">${lbl}</span>
+          <select class="vset" data-type="${t}" style="${vSelStyle}">${vOpts(t)}</select></div>`).join("")}
+      <div class="dom-row" style="border-top:1px dashed var(--line);padding-top:8px;margin-top:4px">
+        <span style="flex:none;width:110px;font-size:13px">📖 قراءة القصص</span>
+        <span class="muted" style="font-size:12px;flex:1">زرّ «اقرأ القصّة» في القصص وسُلّم القراءة</span>
+        <button class="toggle ${isStoryReadOn()?"on":""}" id="storyReadToggle" title="تفعيل/إيقاف قراءة القصص"></button>
+      </div>
+      <div class="dom-row"><span style="flex:none;width:110px;font-size:13px">📖 قارئ القصص</span>
+        <select class="storyvset" style="${vSelStyle}">${storyOpts()}</select></div>
+      <div class="dom-row">
+        <span class="muted" style="font-size:12px;flex:1">سجّل الأصوات البشرية (تُحفَظ على جهازك)</span>
+        <a class="topbtn" href="record.html" style="text-decoration:none;font-size:13px">🎙️ استوديو التسجيل</a>
+      </div>
+    </div>
+
+    <div class="sec"><h3>سجلّ الجلسات (${AR(log.length)})</h3>
+      <div class="muted" style="font-size:12px;margin-bottom:6px">يمكنك حذف أيّ تسجيلٍ على حدة (مع مهلة تراجع).</div>
+      <div class="log" id="logHost">${ log.length? log.map(e=>{
+        const cs=capByTs[e.ts]||[];
+        const media=cs.map(c=>{
+          let inner;
+          if(c.type==="note") inner=`<span class="lognote">📝 ${c.text||""}</span>`;
+          else { const url=URL.createObjectURL(c.blob); inner = c.type==="audio"?`<audio controls src="${url}"></audio>`:`<img src="${url}" onclick="window.open('${url}')" />`; }
+          return `<span class="capwrap" data-key="${c.key}">${inner}<button class="capdel" data-key="${c.key}" title="حذف هذا التسجيل">🗑️</button></span>`;
+        }).join("");
+        return `<div class="logitem"><span>${e.title}</span><span class="muted" style="font-size:12px">· ${e.domain} · ${e.age_band}</span>${media}<span class="when">${fmt(e.ts)}</span></div>`;
+      }).join(""):`<p class="muted">لا جلسات بعد.</p>` }</div>
+    </div>
+
+    <div class="sec"><h3>الحسابات والأمان</h3>
+      ${(() => { const st=getSettings(), sq=getSecurityQuestion(); return `
+      <div style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:4px 0">
+        <div style="font-size:13px;margin-bottom:6px">🔑 تغيير كلمة مرور اللوحة</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input id="oldPw" type="password" placeholder="القديمة" style="flex:1;min-width:90px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-family:inherit">
+          <input id="newPw" type="password" placeholder="الجديدة" style="flex:1;min-width:90px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-family:inherit">
+          <input id="newPw2" type="password" placeholder="تأكيد الجديدة" style="flex:1;min-width:90px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-family:inherit">
+          <button class="topbtn" id="savePw" style="font-size:13px">حفظ</button>
+        </div>
+        <div id="pwMsg" style="font-size:12px;min-height:16px;margin-top:4px"></div>
+      </div>
+      <div style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:4px 0">
+        <div class="dom-row" style="margin:0">
+          <span style="flex:1;font-size:13px">❓ سؤال الاستعادة: <b>${sq?"مضبوطٌ ✓":"غير مضبوط"}</b></span>
+          <button class="topbtn" id="sqReveal" style="font-size:13px">${sq?"👁️ مراجعة/تغيير":"➕ إضافة"}</button>
+        </div>
+        <div id="sqBox" style="margin-top:8px"></div>
+      </div>
+      <div class="dom-row"><span style="flex:none;width:210px;font-size:13px">👋 السماح بحساب الضيف</span>
+        <span class="muted" style="font-size:12px;flex:1">دخولٌ سريع دون ملفّ</span>
+        <button class="toggle ${st.guestEnabled!==false?"on":""}" id="guestToggle"></button></div>
+      <div style="font-size:12px;color:var(--muted);margin:8px 2px 4px">👦 الملفّات (تُدار من شاشة الدخول):</div>
+      <div id="profList">${listProfiles().length?listProfiles().map(p=>`<div class="dom-row"><span style="flex:1;font-size:13px">${p.avatar||"🙂"} ${p.name} <span class="muted">· ${p.ageGroup}${p.password?" · 🔒":""}</span></span><button class="capdel" data-pid="${p.id}" title="حذف الملفّ">🗑️</button></div>`).join(""):'<p class="muted" style="font-size:12px">لا ملفّات بعد — أضِفها من شاشة الدخول.</p>'}</div>
+      <div style="font-size:12px;color:var(--muted);margin:10px 2px 4px">🎙️ تسجيلاتُ تمرّنِ القراءةِ لكلّ طفل (محفوظةٌ محليًّا في حسابه):</div>
+      <div id="voiceMgmt"><p class="muted" style="font-size:12px">…</p></div>
+      `; })()}
+    </div>
+
+    <div class="sec"><h3>أدوات</h3>
+      <a class="topbtn" href="print.html" target="_blank" style="text-decoration:none;display:inline-block;margin-inline-end:8px">🖨️ المطبوعات (بطاقات + ملصق)</a>
+      <button class="danger" id="wipe">🗑️ مسح كل التقدّم والتسجيلات</button>
+    </div>`;
+
+  panel.querySelectorAll(".toggle[data-dom]").forEach(t=>t.addEventListener("click",()=>{
+    const d=t.getAttribute("data-dom");
+    progress.settings.enabledDomains[d]=!(progress.settings.enabledDomains[d]!==false);
+    t.classList.toggle("on", progress.settings.enabledDomains[d]!==false);
+    saveProgress(); renderMap(); if(state==="idle") renderIdle();
+  }));
+  const pt=document.getElementById("pairToggle");
+  if(pt) pt.addEventListener("click",()=>{
+    progress.settings.showPair = !(progress.settings.showPair!==false);
+    pt.classList.toggle("on", progress.settings.showPair!==false);
+    saveProgress(); if(state==="idle") renderIdle();
+  });
+  const tt=document.getElementById("tonesToggle");
+  if(tt) tt.addEventListener("click",()=>{ const on=!isTonesOn(); setTonesOn(on); tt.classList.toggle("on",on); syncMuteIcon(); if(on) sfx.tap(); });
+  const vt=document.getElementById("voiceToggle");
+  if(vt) vt.addEventListener("click",()=>{ const on=!isVoiceOn(); setVoiceOn(on); vt.classList.toggle("on",on); syncMuteIcon(); });
+  const lh=document.getElementById("logHost");
+  if(lh) lh.addEventListener("click",async e=>{ const b=e.target.closest(".capdel"); if(!b) return; if(await confirmWithPassword("حذف هذا التسجيل؟ ستظهر مهلةُ تراجعٍ بعد التأكيد.")) askDeleteCapture(b.getAttribute("data-key"), b.closest(".capwrap")); });
+  panel.querySelectorAll("select.vset").forEach(sel=>sel.addEventListener("change",()=>{ setVoiceSet(sel.getAttribute("data-type"), sel.value); }));
+  const svset=panel.querySelector("select.storyvset"); if(svset) svset.addEventListener("change",()=>setStoryVoice(svset.value));
+  const srt=document.getElementById("storyReadToggle"); if(srt) srt.addEventListener("click",()=>{ const on=!isStoryReadOn(); setStoryReadOn(on); srt.classList.toggle("on",on); });
+  const savePw=document.getElementById("savePw");
+  if(savePw) savePw.addEventListener("click",()=>{
+    const oldv=document.getElementById("oldPw").value, nv=document.getElementById("newPw").value.trim(), nv2=document.getElementById("newPw2").value.trim();
+    const msg=document.getElementById("pwMsg"); const set=(t,ok)=>{ msg.textContent=t; msg.style.color=ok?"#5E9A47":"#B5482F"; };
+    if(!verifyParentPassword(oldv)) return set("كلمة المرور القديمة غير صحيحة.",false);
+    if(nv.length<3) return set("الكلمة الجديدة قصيرةٌ جدًّا (3 أحرف فأكثر).",false);
+    if(nv!==nv2) return set("الكلمة الجديدة وتأكيدها غير متطابقين.",false);
+    changeParentPassword(nv); document.getElementById("oldPw").value=document.getElementById("newPw").value=document.getElementById("newPw2").value=""; set("✓ حُفِظت كلمة المرور الجديدة.",true);
+  });
+  // سؤال الاستعادة مخفيٌّ: لا يظهر سؤالُه/جوابُه إلّا بعد إدخال كلمة المرور (لمراجعته أو تغييره).
+  const sqReveal=document.getElementById("sqReveal");
+  if(sqReveal) sqReveal.addEventListener("click",async ()=>{
+    if(!await confirmWithPassword("لعرض سؤال الاستعادة أو تغييره، أدخِلْ كلمة مرور اللوحة.")) return;
+    const cur=getSecurityQuestion(), box=document.getElementById("sqBox"), e=s=>String(s||"").replace(/"/g,"&quot;");
+    box.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap">
+        <input id="sqQ" placeholder="السؤال" value="${cur?e(cur.question):''}" style="flex:1;min-width:120px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-family:inherit">
+        <input id="sqA" placeholder="الإجابة" value="${cur?e(cur.answer):''}" style="flex:1;min-width:90px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-family:inherit">
+        <button class="topbtn" id="saveSq" style="font-size:13px">حفظ</button></div>
+      <div id="sqMsg" style="font-size:12px;min-height:16px;margin-top:4px"></div>`;
+    document.getElementById("saveSq").onclick=()=>{ const q=document.getElementById("sqQ").value.trim(), a=document.getElementById("sqA").value.trim();
+      const m=document.getElementById("sqMsg");
+      if(!q||!a){ m.style.color="#B5482F"; m.textContent="أدخِلِ السؤالَ والإجابةَ معًا."; return; }
+      setSecurityQuestion(q,a); m.style.color="#5E9A47"; m.textContent="✓ حُفِظ سؤالُ الاستعادة."; };
+  });
+  const gt2=document.getElementById("guestToggle");
+  if(gt2) gt2.addEventListener("click",()=>{ const on=!(getSettings().guestEnabled!==false); updateSettings({guestEnabled:on}); gt2.classList.toggle("on",on); });
+  const pl=document.getElementById("profList");
+  if(pl) pl.addEventListener("click",async e=>{ const b=e.target.closest(".capdel[data-pid]"); if(!b) return;
+    const pid=b.getAttribute("data-pid"), row=b.closest(".dom-row");
+    if(await confirmWithPassword("حذف حساب هذا الطفل وتقدّمه نهائيًّا؟")){
+      if(row) row.style.opacity=".4";
+      undoable("سيُحذف الحساب…", ()=>{ deleteProfile(pid); openDashboard(); }, 6000, ()=>{ if(row) row.style.opacity=""; });
+    }
+  });
+  panel.querySelectorAll("button[data-age]").forEach(b=>b.addEventListener("click",()=>{
+    const a=b.getAttribute("data-age"); setChildAge(a); filter=a;
+    document.querySelectorAll("#filters button").forEach(x=>x.classList.toggle("on", x.getAttribute("data-f")===a));
+    if(state==="idle"||state==="heal") renderIdle();
+    openDashboard();
+  }));
+  document.getElementById("wipe").addEventListener("click", async ()=>{
+    if(await confirmWithPassword("مسح كل تقدّم روبو والتسجيلات نهائيًّا؟ ستظهر مهلةُ تراجع.")){
+      undoable("سيُمسَح كلُّ التقدّم…", async ()=>{
+        progress={completed:[],parts:{},world:{},log:[],settings:{enabledDomains:{},showPair:true}};
+        DOMAINS.forEach(d=>progress.settings.enabledDomains[d]=true);
+        saveProgress(); await clearCaptures();
+        renderRobo(); renderWorld(); renderProgress(); renderMap(); renderIdle(); openDashboard();
+      });
+    }
+  });
+  renderVoiceMgmt();
+  overlay.classList.add("show");
+}
+
+/* إدارةُ تسجيلات تمرّنِ الأطفال من لوحة الأهل: عددُ تسجيلاتِ كلِّ حسابٍ + حذفٌ بكلمة مرورٍ ومهلةِ تراجع. */
+async function renderVoiceMgmt(){
+  const host=document.getElementById("voiceMgmt"); if(!host) return;
+  let rows=[]; try{ rows=await practiceByAccount(); }catch(e){}
+  rows=rows.filter(r=>r.count>0);
+  const nameOf=id=>{ if(id==="guest") return "👋 ضيف (مؤقّت)"; if(id==="default") return "🙂 بلا حساب"; const p=listProfiles().find(x=>x.id===id); return p?`${p.avatar||"🙂"} ${p.name}`:("📂 "+id); };
+  if(!rows.length){ host.innerHTML='<p class="muted" style="font-size:12px">لا تسجيلاتِ تمرّنٍ بعد.</p>'; return; }
+  host.innerHTML=rows.map(r=>`<div class="dom-row"><span style="flex:1;font-size:13px">${nameOf(r.account)} <span class="muted">· ${r.count} تسجيلًا</span></span><button class="capdel" data-acct="${r.account}" title="حذف تسجيلات تمرّن هذا الحساب">🗑️</button></div>`).join("");
+  host.querySelectorAll(".capdel[data-acct]").forEach(b=>b.onclick=async ()=>{
+    const id=b.getAttribute("data-acct");
+    if(await confirmWithPassword(`حذف كلّ تسجيلاتِ تمرّنِ حساب «${nameOf(id)}»؟`))
+      undoable("ستُحذف التسجيلات…", async ()=>{ await clearPracticeAccount(id); renderVoiceMgmt(); });
+  });
+}
+
+/* زرّ الكتم الفوري في الشريط العلوي — يتشارك مفتاح الصوت نفسه مع إعدادات لوحة الأهل */
+const muteBtn=document.getElementById("muteBtn");
+function syncMuteIcon(){ if(muteBtn) muteBtn.textContent = isSoundOn() ? "🔊" : "🔇"; }
+if(muteBtn) muteBtn.addEventListener("click",()=>{ const on=toggleSound(); syncMuteIcon(); if(on) sfx.tap(); });
+syncMuteIcon();
+
+Object.assign(window,{spark,surprise,toggleCoop,go,goTeach,askRoboWrong,fixRoboWrong,heal,toggleRec,closePanel,renderIdle});
+init();
+</script>
+</body>
+</html>

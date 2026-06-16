@@ -1,4 +1,9 @@
-# تبعيات وبناء
+# بنية الجذر: الموقع الرسميّ (index.html + assets) + GT-MK (التطبيق)
+# تجاهلات التطبيق نفسها في GT-MK/.gitignore
+
+# مخرجات النشر المؤقّتة + كاش/تبعيات مولَّدة
+_site/
+.vite/
 node_modules/
 dist/
 dev-dist/
@@ -6,15 +11,3 @@ dev-dist/
 # نظام/محرّر
 .DS_Store
 *.log
-
-# مجلّد عمل مؤقّت لدمج الأصوات (المُخرَج في public/tts/voices)
-voices-src/
-
-# Piper (وقتُ التطوير فقط — البيئة + النموذج 63م؛ المقاطعُ المُولَّدة تُرفَع وتُشحَن)
-.piper-venv/
-tools/piper-voices/*.onnx
-.piper-tasks.json
-.piper-manifest.json
-
-# مستودعٌ كامل: تلاوةُ القرآن (public/quran/husary/) وكلُّ الأصوات (public/tts/) تُرفَع
-# لتعملَ النسخةُ الويبيّةُ المنشورة مباشرةً دون توليد.

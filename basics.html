@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#E07A5F" />
+<title>مِشكاة — الأساسيّات</title>
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
+    --line:#ECE6DA; --primary:#E07A5F; --primary-d:#C7613F; --good:#7BB661; --bad:#E0566B;
+    --sky:#6FB3D6; --gold:#F4C95D; --violet:#C9A0DC;
+    --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,input,textarea,select,.region,.toggle,.chip,.capbtn,[onclick]{touch-action:manipulation}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:620px;margin:0 auto;padding:16px 16px 48px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 10px}
+  header h1{font-size:22px;margin:0}
+  header .sub{color:var(--muted);font-size:13px}
+  .topbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink)}
+
+  .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:8px}
+  .gcard{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
+  .gcard:hover{transform:translateY(-3px);border-color:var(--primary)}
+  .gcard .ic{font-size:42px}
+  .gcard .t{font-size:16px;font-weight:800;margin-top:4px}
+  .gcard .d{font-size:12px;color:var(--muted)}
+
+  .back{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .gbar{display:flex;gap:8px;align-items:center;margin:8px 2px}
+  .pill{background:#F3EEE3;border-radius:999px;padding:5px 12px;font-size:13px;color:#555;margin-inline-start:auto}
+  .pill b{color:var(--primary-d)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px 16px;text-align:center;margin-top:6px}
+  .bigletter{font-size:120px;font-weight:800;line-height:1;color:var(--primary-d)}
+  .bignum{font-size:120px;font-weight:800;line-height:1;color:var(--sky)}
+  .name{font-size:22px;font-weight:800;margin-top:2px}
+  .sayb{background:var(--primary);color:#fff;border:none;border-radius:12px;padding:8px 16px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px}
+  .sayb:hover{background:var(--primary-d)}
+  .forms{display:flex;gap:10px;justify-content:center;margin:14px 0 6px}
+  .forms > div{background:#F6F3EC;border-radius:12px;padding:8px 16px;min-width:74px}
+  .forms .lbl{font-size:11px;color:var(--muted);display:block}
+  .forms b{font-size:38px;color:var(--ink)}
+  .exline{display:flex;align-items:center;justify-content:center;gap:10px;font-size:24px;font-weight:700;margin-top:10px;border-top:1px dashed var(--line);padding-top:12px}
+  .exline .em{font-size:44px}
+  .saysm{background:#fff;border:1px solid var(--line);border-radius:10px;padding:5px 10px;font-size:14px;cursor:pointer;font-family:inherit}
+  .dots{font-size:30px;line-height:1.6;margin:8px 4px;min-height:40px}
+
+  .nav{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:16px}
+  .nav button{border:none;border-radius:12px;padding:11px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  .nav .prev{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .nav .prev:disabled{opacity:.4} .nav .next{background:var(--primary);color:#fff}
+  .pos{font-size:13px;color:var(--muted);min-width:48px}
+
+  .prompt{text-align:center;font-size:20px;font-weight:800;margin:10px 2px 4px}
+  .prompt button{background:#fff;border:1px solid var(--line);border-radius:10px;padding:4px 10px;font-size:15px;cursor:pointer;font-family:inherit;margin-inline-start:6px}
+  .lgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 2px}
+  .ltile{background:#fff;border:2px solid var(--line);border-radius:16px;font-size:46px;font-weight:800;padding:14px 0;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .ltile:hover{border-color:var(--primary)}
+  .ltile.ok{background:#EEF6E9;border-color:var(--good);color:#2f5a1f}
+  .ltile.bad{background:#FCEBEE;border-color:var(--bad);animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .objs{font-size:40px;line-height:1.5;text-align:center;background:#F6F3EC;border-radius:16px;padding:16px;margin:10px 2px;min-height:80px}
+  .nums{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:8px 2px}
+  .numb{background:#fff;border:2px solid var(--line);border-radius:14px;font-size:34px;font-weight:800;padding:12px 0;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .numb:hover{border-color:var(--primary)} .numb.ok{background:#EEF6E9;border-color:var(--good);color:#2f5a1f} .numb.bad{background:#FCEBEE;border-color:var(--bad);animation:shake .4s}
+
+  .hcards{display:flex;gap:10px;justify-content:center;margin:14px 2px}
+  .hcard{background:#fff;border:2px solid var(--line);border-radius:16px;padding:14px 10px;flex:1;cursor:pointer;text-align:center}
+  .hcard:hover{border-color:var(--primary)}
+  .hcard .syl{font-size:54px;font-weight:800;color:var(--violet)}
+  .hcard .hn{font-size:13px;color:var(--muted);margin-top:4px}
+  .hcard.ok{background:#EEF6E9;border-color:var(--good)} .hcard.bad{background:#FCEBEE;border-color:var(--bad);animation:shake .4s}
+
+  .hint{text-align:center;color:var(--muted);font-size:13px;margin-top:12px}
+
+  /* فهرس الحروف */
+  .lindex{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 2px}
+  @media (min-width:520px){ .lindex{grid-template-columns:repeat(7,1fr)} }
+  .lix{background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 0;cursor:pointer;font-family:inherit;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:2px}
+  .lix:hover{border-color:var(--primary);transform:translateY(-2px);transition:.12s}
+  .lix .ch{font-size:36px;font-weight:800;color:var(--primary-d);line-height:1}
+  .lix .nm{font-size:11px;color:var(--muted)}
+
+  /* اقرأ بصوتك (compose) */
+  .compose-note{background:#F6F0FB;border:1px solid #E7DAF3;border-radius:14px;padding:10px 13px;font-size:13px;color:#5b3b6e;margin:8px 2px}
+  .compose-note code{background:#fff;border-radius:6px;padding:1px 5px;font-size:12px}
+  .speedbar,.catbar{display:flex;gap:6px;flex-wrap:wrap;margin:8px 2px;align-items:center}
+  .speedbar .lbl{font-size:13px;color:var(--muted)}
+  .speedbar button,.cat{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;color:#555}
+  .speedbar button.on,.cat.on{background:var(--violet);color:#fff;border-color:var(--violet)}
+  .cat .cic{margin-inline-end:4px}
+  .wlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:10px 2px}
+  .wcard{background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px;text-align:center}
+  .wcard.sentence{grid-column:1/-1}
+  .wimg{font-size:42px;line-height:1.1}
+  .wtxt{font-size:30px;font-weight:800;margin:6px 0 2px;direction:rtl}
+  .wtxt .csyl{padding:0 1px;border-radius:6px;transition:background .15s}
+  .wtxt .csyl.now{background:#F4C95D;color:#3a2a00}
+  .wmeta{font-size:11px;color:var(--muted);margin-bottom:8px}
+  .wplay{background:var(--violet);color:#fff;border:none;border-radius:12px;padding:8px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;width:100%}
+  .wplay:disabled{opacity:.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>الأساسيّات 🔤</h1>
+      <div class="sub">الحروف والأرقام والحركات — أوّل خطوات القراءة</div>
+    </div>
+    <a class="topbtn" href="home.html">🏠 الفهرس</a>
+  </header>
+  <div id="view"></div>
+</div>
+
+<script type="module">
+import DATA from "./content/letters.js";
+import COMPOSE from "./content/compose-vocab.js";
+import { logEvent, recordMastery } from "./src/progress.js";
+import { pickAdaptive } from "./src/adaptive.js";
+import { speak } from "./src/speak.js";
+import { robo } from "./src/robo-companion.js";
+import { segment, playSpelled, cancelSpell } from "./src/spell.js";
+import { autoToggleHtml, wireAuto, onCorrect, onWrong } from "./src/quiz-flow.js";
+import { sylRows } from "./src/syl.js";
+import { attachReader } from "./src/reader-recorder.js";
+robo.mount();
+const LETTERS = DATA.letters || [], NUMS = DATA.numbers || [];
+const view = document.getElementById("view");
+const ZWJ = "‍";
+const FATHA="َ", DAMMA="ُ", KASRA="ِ";
+const HARAKAT = [{m:FATHA,name:"فتحة"},{m:DAMMA,name:"ضمّة"},{m:KASRA,name:"كسرة"}];
+const EMOJIS = ["🍎","⭐","🐟","🌸","🚗","🦋","🍌","🐝"];
+
+const shuffle = a => { for(let k=a.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [a[k],a[j]]=[a[j],a[k]]; } return a; };
+const rand = n => Math.floor(Math.random()*n);
+const forms = ch => ({ init: ch+ZWJ, mid: ZWJ+ch+ZWJ, fin: ZWJ+ch });
+const backBar = () => `<button class="back" id="back">← الأساسيّات</button>`;
+function wireBack(){ const b=document.getElementById("back"); if(b) b.onclick=renderMenu; }
+
+/* ===== MENU ===== */
+const GAMES = [
+  { id:"index",   ic:"📑", t:"فهرس الحروف", d:"كل الحروف الـ28 بنظرة" },
+  { id:"letters", ic:"🔤", t:"بطاقات الحروف", d:"تعرّف على الحروف وأشكالها" },
+  { id:"find",    ic:"🔍", t:"أين الحرف؟", d:"العب: اعثر على الحرف" },
+  { id:"numbers", ic:"🔢", t:"بطاقات الأرقام", d:"الأرقام والعدّ" },
+  { id:"count",   ic:"➕", t:"عُدّ معي", d:"كم العدد؟" },
+  { id:"harakat", ic:"ﹷ",  t:"الحركات", d:"فتحة · ضمّة · كسرة" },
+  { id:"compose", ic:"🎙️", t:"اقرأ بصوتك", d:"اقرأ كلماتٍ مقطعاً مقطعاً" },
+];
+function renderMenu(){
+  view.innerHTML = `<div class="menu">` + GAMES.map(g=>`<div class="gcard" data-g="${g.id}"><div class="ic">${g.ic}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") + `</div>
+    <div class="hint">تُنطَق الأصوات عبر متصفّحك (قد تختلف جودة الصوت بين الأجهزة) 🔊</div>`;
+  view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
+}
+function open(id){ ({index:startIndex,letters:startLetters,find:startFind,numbers:startNumbers,count:startCount,harakat:startHarakat,compose:startCompose})[id](); }
+
+/* ===== 📑 فهرس الحروف — كل الحروف بنظرة، اضغط لفتح بطاقة الحرف ===== */
+function startIndex(){
+  view.innerHTML = backBar()+
+    `<div class="card" style="padding:14px 12px">
+      <div class="prompt" style="font-size:16px;margin-bottom:6px">اضغط على حرف لفتحه</div>
+      <div class="lindex" id="lindex">${LETTERS.map((L,i)=>`<button class="lix" data-i="${i}"><span class="ch">${L.char}</span><span class="nm">${L.name}</span></button>`).join("")}</div>
+    </div>`;
+  wireBack();
+  view.querySelector("#lindex").addEventListener("click", e=>{ const b=e.target.closest(".lix"); if(!b) return; li=+b.getAttribute("data-i"); renderLetter(); });
+}
+
+/* ===== 🔤 LETTER CARDS ===== */
+let li=0;
+function startLetters(){ li=0; renderLetter(); }
+function renderLetter(){
+  const L=LETTERS[li], f=forms(L.char);
+  view.innerHTML = backBar()+
+    `<div class="card">
+      <div class="bigletter">${L.char}</div>
+      <div class="name">${L.name}</div>
+      <button class="sayb" id="sayName">🔊 استمع للاسم</button>
+      <div class="forms">
+        <div><span class="lbl">أوّل الكلمة</span><b>${f.init}</b></div>
+        <div><span class="lbl">وسطها</span><b>${f.mid}</b></div>
+        <div><span class="lbl">آخرها</span><b>${f.fin}</b></div>
+      </div>
+      <div class="exline"><span class="em">${L.emoji}</span><span>${L.ex}</span><button class="saysm" id="sayWord">🔊</button></div>
+      <div class="nav"><button class="prev" id="prev" ${li===0?"disabled":""}>السابق</button><span class="pos">${li+1} / ${LETTERS.length}</span><button class="next" id="next">${li===LETTERS.length-1?"إلى الأوّل ↺":"التالي ▶"}</button></div>
+      <div id="rrHost"></div>
+    </div>`;
+  wireBack();
+  attachReader(document.getElementById("rrHost"), L.name, { label:"نُطقك للحرف" });
+  document.getElementById("sayName").onclick=()=>robo.read(L.name);
+  document.getElementById("sayWord").onclick=()=>robo.read(L.ex);
+  document.getElementById("prev").onclick=()=>{ if(li>0){li--;renderLetter();} };
+  document.getElementById("next").onclick=()=>{ li=(li+1)%LETTERS.length; renderLetter(); };
+  speak(L.name);
+}
+
+/* ===== 🔍 FIND THE LETTER ===== */
+let fScore=0;
+function startFind(){ fScore=0; nextFind(); }
+function nextFind(){
+  const target=pickAdaptive(LETTERS, L=>"L:"+L.char);
+  const others=shuffle(LETTERS.filter(x=>x.char!==target.char)).slice(0,5);
+  const opts=shuffle([target,...others]);
+  view.innerHTML = backBar()+
+    `<div class="gbar"><span class="pill">⭐ <b>${fScore}</b></span>${autoToggleHtml()}</div>
+     <div class="prompt">اضغط حرف «${target.name}» <button id="rep">🔊</button></div>
+     <div class="lgrid" id="grid">${opts.map(o=>`<button class="ltile" data-c="${o.char}">${o.char}</button>`).join("")}</div>
+     <div class="hint">استمع للاسم ثمّ اختر الحرف الصحيح</div>`;
+  wireBack(); wireAuto(view);
+  document.getElementById("rep").onclick=()=>robo.read(target.name);
+  speak(target.name);
+  view.querySelector("#grid").addEventListener("click",e=>{ const b=e.target.closest(".ltile"); if(!b||b.disabled)return;
+    if(b.getAttribute("data-c")===target.char){ b.classList.add("ok"); fScore++; logEvent("basics_correct"); recordMastery("L:"+target.char,true); view.querySelectorAll(".ltile").forEach(x=>x.disabled=true); onCorrect(robo, view, nextFind); }
+    else { b.classList.add("bad"); recordMastery("L:"+target.char,false); setTimeout(()=>b.classList.remove("bad"),450); onWrong(robo, view, nextFind); } });
+}
+
+/* ===== 🔢 NUMBER CARDS ===== */
+let ni=1;
+function startNumbers(){ ni=1; renderNumber(); }
+function renderNumber(){
+  const N=NUMS[ni];
+  const dots = N.n===0 ? "—" : Array.from({length:N.n},()=>"🔵").join(" ");
+  view.innerHTML = backBar()+
+    `<div class="card">
+      <div class="bignum">${N.n}</div>
+      <div class="name">${N.name}</div>
+      <button class="sayb" id="sayName">🔊 استمع</button>
+      <div class="dots">${dots}</div>
+      <div class="nav"><button class="prev" id="prev" ${ni===0?"disabled":""}>السابق</button><span class="pos">${N.n}</span><button class="next" id="next" ${ni===NUMS.length-1?"disabled":""}>التالي ▶</button></div>
+      <div id="rrHost"></div>
+    </div>`;
+  wireBack();
+  attachReader(document.getElementById("rrHost"), N.name, { label:"نُطقك للعدد" });
+  document.getElementById("sayName").onclick=()=>robo.read(N.name);
+  document.getElementById("prev").onclick=()=>{ if(ni>0){ni--;renderNumber();} };
+  document.getElementById("next").onclick=()=>{ if(ni<NUMS.length-1){ni++;renderNumber();} };
+  speak(N.name);
+}
+
+/* ===== ➕ COUNT WITH ME ===== */
+let cScore=0;
+function startCount(){ cScore=0; nextCount(); }
+function nextCount(){
+  const n=pickAdaptive(Array.from({length:9},(_,i)=>i+1), x=>"N:"+x); // 1..9 متكيّف
+  const em=EMOJIS[rand(EMOJIS.length)];
+  const correct=NUMS[n];
+  const pool=shuffle(NUMS.filter(x=>x.n>=1)).filter(x=>x.n!==n).slice(0,3);
+  const opts=shuffle([correct,...pool]);
+  view.innerHTML = backBar()+
+    `<div class="gbar"><span class="pill">⭐ <b>${cScore}</b></span>${autoToggleHtml()}</div>
+     <div class="prompt">كم العدد؟</div>
+     <div class="objs">${Array.from({length:n},()=>em).join(" ")}</div>
+     <div class="nums" id="nums">${opts.map(o=>`<button class="numb" data-n="${o.n}">${o.n}</button>`).join("")}</div>`;
+  wireBack(); wireAuto(view);
+  view.querySelector("#nums").addEventListener("click",e=>{ const b=e.target.closest(".numb"); if(!b||b.disabled)return;
+    const chosen=+b.getAttribute("data-n"), name=(NUMS[chosen]||{}).name||String(chosen), correct=chosen===n;
+    // ينطق العددَ المختار أولاً، ثمّ يبدي الآلي ردّةَ فعله حسب صحّة الإجابة (لا تتداخل الأصوات).
+    speak(name, { onend: ()=>{
+      if(correct){ b.classList.add("ok"); cScore++; logEvent("basics_correct"); recordMastery("N:"+n,true); view.querySelectorAll(".numb").forEach(x=>x.disabled=true); onCorrect(robo, view, nextCount); }
+      else { b.classList.add("bad"); recordMastery("N:"+n,false); setTimeout(()=>b.classList.remove("bad"),450); onWrong(robo, view, nextCount); }
+    }});
+  });
+}
+
+/* ===== ﹷ الحركات والتشكيل — مستويات تعلّمٍ متدرّجة =====
+   مستوياتٌ من syl.js: الحركات → المدود → التنوين → الشدّة → السكون (والألف حالةٌ خاصّة).
+   الطفلُ يتدرّجُ مستوًى مستوًى، يسمعُ كلَّ شكلٍ، ثمّ يختبر «أيّ شكلٍ سمعت؟». */
+let baseIdx=1, levelIdx=0, hQuiz=false, hAnswer=null;
+const harakatLevels = base => sylRows(base).filter(r=>r.t!=="اسم الحرف");
+function startHarakat(){ baseIdx=1; levelIdx=0; hQuiz=false; renderHarakat(); }
+function renderHarakat(){
+  const base=LETTERS[baseIdx].char, levels=harakatLevels(base);
+  if(levelIdx>=levels.length) levelIdx=0;
+  const lvl=levels[levelIdx];
+  const tabs=levels.map((r,i)=>`<button class="ubtn ${i===levelIdx?'on':''}" data-lv="${i}">${r.t}</button>`).join("");
+  const cards=lvl.a.map((it,i)=>`<div class="hcard" data-i="${i}" data-s="${it.s}"><div class="syl">${it.s}</div><div class="hn">${it.n} 🔊</div></div>`).join("");
+  view.innerHTML = backBar()+
+    `<div class="card" style="padding:16px">
+      <div class="prompt" style="font-size:16px">الحرف «${LETTERS[baseIdx].name}» يتغيّر صوته بالتشكيل — اختر المستوى واضغط لتسمع</div>
+      <div class="units" id="lv" style="justify-content:center">${tabs}</div>
+      <div class="hcards" id="hcards" style="flex-wrap:wrap">${cards}</div>
+      <div class="nav"><button class="prev" id="chg">🔁 غيّر الحرف</button><button class="next" id="quiz">🎧 أيّ شكلٍ سمعت؟</button></div>
+      <div id="qline" class="hint"></div>
+    </div>`;
+  wireBack();
+  view.querySelector("#hcards").addEventListener("click",e=>{ const c=e.target.closest(".hcard"); if(!c)return;
+    if(hQuiz) checkHarakaQuiz(c.getAttribute("data-s"), c); else robo.read(c.getAttribute("data-s")); });
+  view.querySelector("#lv").addEventListener("click",e=>{ const b=e.target.closest("[data-lv]"); if(!b)return; levelIdx=+b.getAttribute("data-lv"); hQuiz=false; renderHarakat(); });
+  document.getElementById("chg").onclick=()=>{ baseIdx=(baseIdx+1)%LETTERS.length; hQuiz=false; renderHarakat(); };
+  document.getElementById("quiz").onclick=startHarakaQuiz;
+}
+function startHarakaQuiz(){
+  const lvl=harakatLevels(LETTERS[baseIdx].char)[levelIdx];
+  hQuiz=true; hAnswer=lvl.a[rand(lvl.a.length)].s;
+  const q=document.getElementById("qline");
+  q.innerHTML = `استمعتَ لشكلٍ… اضغط الصحيحَ من الأعلى! <button class="saysm" id="rep">🔊 أعد</button>`;
+  document.getElementById("rep").onclick=()=>robo.read(hAnswer);
+  speak(hAnswer);
+}
+function checkHarakaQuiz(s, el){
+  if(s===hAnswer){ el.classList.add("ok"); logEvent("basics_correct"); recordMastery("H:"+s,true);
+    document.getElementById("qline").textContent="أحسنت! 🌟"; hQuiz=false; robo.cheer(undefined,{then:renderHarakat}); }
+  else { el.classList.add("bad"); robo.encourage(); setTimeout(()=>el.classList.remove("bad"),450); }
+}
+
+/* ===== 🎙️ اقرأ بصوتك (compose) =========================================
+   كلُّ كلمةٍ تُقطَّعُ إلى مقاطعها (حرف+حركة) عبر segment()، ثم تُقرأ مقطعاً مقطعاً
+   بـplaySpelled مستعمِلةً مقاطع espeak أو تسجيلاتك البشريّة (طبقة tts-clips)،
+   ثمّ الكلمة كاملة. المقطعُ المُشَغَّلُ يُبرَزُ آنيًّا. محلّيٌّ بالكامل. ========= */
+const COMPOSE_CATS = COMPOSE.categories || [];
+const SPEEDS = [ {v:0,l:"عادي 🐢",gap:260}, {v:1,l:"أسرع 🐇",gap:140}, {v:2,l:"سريع ⚡",gap:60} ];
+let composeCat = (COMPOSE_CATS[0] && COMPOSE_CATS[0].id) || "words", composeSpeed = 0;
+
+function startCompose(){ cancelSpell(); composeCat = COMPOSE_CATS[0].id; composeSpeed = 0; renderCompose(); }
+function renderCompose(){
+  const cat = COMPOSE_CATS.find(c=>c.id===composeCat) || COMPOSE_CATS[0];
+  const tabs = COMPOSE_CATS.map(c=>`<button class="cat ${c.id===composeCat?'on':''}" data-cat="${c.id}"><span class="cic">${c.ic}</span>${c.title}</button>`).join("");
+  const speeds = SPEEDS.map(s=>`<button class="${s.v===composeSpeed?'on':''}" data-speed="${s.v}">${s.l}</button>`).join("");
+  view.innerHTML = backBar()+
+    `<div class="compose-note"><b>كيف تعمل؟</b> كلُّ كلمةٍ تُقطَّعُ إلى مقاطعها (حرف+حركة)، فيقرؤها التطبيقُ مقطعاً مقطعاً ثمّ كاملةً — مستعمِلاً تسجيلاتك من <code>record.html</code> إن وُجدت، وإلّا مقاطع النظام.</div>
+     <div class="speedbar"><span class="lbl">السرعة:</span>${speeds}</div>
+     <div class="catbar" id="catbar">${tabs}</div>
+     <div class="wlist" id="wlist">${cat.items.map((it,i)=>composeCard(it,i)).join("")}</div>
+     <div class="hint">اضغط ▶ في أيّ بطاقةٍ — يُبرَزُ المقطعُ المُشَغَّلُ آنيًّا 🟡</div>`;
+  wireBack();
+  view.querySelector("#catbar").addEventListener("click",e=>{ const b=e.target.closest(".cat"); if(!b)return; cancelSpell(); composeCat=b.getAttribute("data-cat"); renderCompose(); });
+  view.querySelector(".speedbar").addEventListener("click",e=>{ const b=e.target.closest("button[data-speed]"); if(!b)return; composeSpeed=+b.getAttribute("data-speed"); renderCompose(); });
+  view.querySelector("#wlist").addEventListener("click", onComposeClick);
+}
+// spans لكل مقطع (الفراغ يفصل الكلمات)، وdata-i يطابق فهرس المقطع في playSpelled.
+function composeSpans(text){
+  const seg = segment(text); let html="", i=0;
+  for(const u of seg){ if(u===" ") html+='<span style="display:inline-block;width:10px"></span>'; else { html+=`<span class="csyl" data-i="${i}">${u}</span>`; i++; } }
+  return { html, count:i };
+}
+function composeCard(it, idx){
+  const sp = composeSpans(it.t), isSentence=/\s/.test(it.t);
+  return `<div class="wcard${isSentence?' sentence':''}">
+    <div class="wimg">${it.img||"✂️"}</div>
+    <div class="wtxt" id="wtxt-c${idx}">${sp.html}</div>
+    <div class="wmeta">${sp.count} مقاطع</div>
+    <button class="wplay" data-text="${encodeURIComponent(it.t)}" data-id="c${idx}">▶ اقرأ</button>
+  </div>`;
+}
+async function onComposeClick(e){
+  const btn = e.target.closest(".wplay"); if(!btn) return;
+  const text = decodeURIComponent(btn.getAttribute("data-text"));
+  const txtEl = document.getElementById("wtxt-"+btn.getAttribute("data-id"));
+  const orig = btn.textContent, gap = (SPEEDS[composeSpeed]||SPEEDS[0]).gap;
+  btn.disabled=true; btn.textContent="🔊 يقرأ…";
+  const clear = ()=>{ if(txtEl) txtEl.querySelectorAll(".csyl.now").forEach(s=>s.classList.remove("now")); };
+  clear();
+  try{
+    await playSpelled(text, { gap, onUnit:(u,i)=>{ clear(); const sp=txtEl&&txtEl.querySelector(`.csyl[data-i="${i}"]`); if(sp) sp.classList.add("now"); } });
+    logEvent("read_practice"); recordMastery("C:"+text, true); robo.applaud();
+  } finally { setTimeout(clear,600); btn.disabled=false; btn.textContent=orig; }
+}
+
+renderMenu();
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#E07A5F" />
+<title>مِشكاة — الفهرس</title>
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
+    --line:#ECE6DA; --primary:#E07A5F; --primary-d:#C7613F; --good:#7BB661;
+    --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,input,textarea,select,.region,.toggle,.chip,.capbtn,[onclick]{touch-action:manipulation}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:860px;margin:0 auto;padding:18px 16px 56px}
+  header{text-align:center;padding:10px 0 6px}
+  header h1{font-size:26px;margin:0}
+  header .sub{color:var(--muted);font-size:14px}
+  h2{font-size:16px;color:var(--primary-d);margin:22px 4px 10px}
+
+  .nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .navcard{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px;transition:transform .12s,border-color .12s}
+  .navcard:hover{transform:translateY(-2px);border-color:var(--primary)}
+  .navcard .ic{font-size:34px}
+  .navcard .t{font-size:18px;font-weight:800;margin-top:6px}
+  .navcard .d{font-size:13px;color:var(--muted);margin-top:2px}
+
+  .stats{display:flex;flex-wrap:wrap;gap:8px;margin:6px 4px}
+  .stat{background:#F3EEE3;border-radius:999px;padding:5px 12px;font-size:13px;color:#555}
+  .stat b{color:var(--primary-d)}
+
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 4px 12px}
+  select,input{font-family:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  input{flex:1;min-width:160px}
+  .count{font-size:13px;color:var(--muted);margin-inline-start:auto}
+
+  .index{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+  .domhead{background:#F6F3EC;padding:8px 14px;font-weight:800;font-size:14px;color:var(--primary-d);display:flex;justify-content:space-between}
+  .row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line);text-decoration:none;color:inherit}
+  .row:hover{background:#FBF4EF}
+  .row .art{width:48px;height:34px;flex:none}
+  .row .art svg{width:100%;height:100%;display:block}
+  .row .body{flex:1;min-width:0}
+  .row .ttl{font-weight:700;font-size:15px}
+  .row .meta{font-size:12px;color:var(--muted)}
+  .row .badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
+  .b{font-size:10.5px;background:#EFEADD;border-radius:999px;padding:1px 8px;color:#666}
+  .b.pair{background:#EEF6E9;color:var(--good)}
+  .b.src{background:#FBEDE7;color:var(--primary-d)}
+  .go{color:var(--primary);font-size:18px;flex:none}
+  .empty{padding:20px;text-align:center;color:var(--muted)}
+  .daily{display:block;text-decoration:none;color:inherit;background:linear-gradient(135deg,#FFF6EE,#FBEEE3);border:1px solid #F0DCCB;border-radius:16px;padding:12px 16px;box-shadow:var(--shadow);margin-top:6px}
+  .daily.done{background:#EEF6E9;border-color:#CDE6BE}
+  .daily .dh{font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px}
+  .daily .dt{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .daily .dchip{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:#666}
+  .daily .dchip.ok{background:#EAF4E3;border-color:#CDE6BE;color:#3f6b2c}
+  footer{margin-top:24px;text-align:center;color:var(--muted);font-size:12px}
+  footer code{background:#F3EEE3;padding:1px 6px;border-radius:5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+    <div><h1>مِشكاة 🪔</h1><div class="sub">الطفلُ يُعلّم، والآليُّ يَستنير — الفهرس</div></div>
+    <button id="userChip" style="background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink);display:none"></button>
+  </header>
+
+  <a id="daily" class="daily" href="progress.html"></a>
+
+  <h2>المكوّنات</h2>
+  <div class="nav">
+    <a class="navcard" href="index.html"><div class="ic">🤖</div><div class="t">علّم روبو</div><div class="d">الحلقة: شرارة ← مهمة ← تلقين ← شفاء</div></a>
+    <a class="navcard" href="math.html"><div class="ic">📐</div><div class="t">أرقام وهندسة</div><div class="d">أشكال · عُدّ وقارن · أنماط · أحجام — بتدبّر</div></a>
+    <a class="navcard" href="print.html"><div class="ic">🖨️</div><div class="t">المطبوعات</div><div class="d">بطاقات المهام + ملصق شفاء روبو (PDF)</div></a>
+    <a class="navcard" href="index.html?parent=1"><div class="ic">👪</div><div class="t">لوحة الأهل</div><div class="d">مراجعة وضبط المجالات والتوثيق</div></a>
+    <a class="navcard" href="stories.html"><div class="ic">📚</div><div class="t">قصص مصوّرة</div><div class="d">قصصٌ أصيلة بصورٍ كرتونيّة كبيرة</div></a>
+    <a class="navcard" href="quran.html"><div class="ic">📖</div><div class="t">القرآن الكريم</div><div class="d">الفاتحة وجزء عمّ — تلاوة الحصري + تظليل + تكرار للحفظ + تسجيل</div></a>
+    <a class="navcard" href="basics.html"><div class="ic">🔤</div><div class="t">الأساسيّات</div><div class="d">الحروف والأرقام والحركات — أوّل خطوات القراءة</div></a>
+    <a class="navcard" href="read.html"><div class="ic">📖</div><div class="t">سُلّم القراءة</div><div class="d">المقاطع ← الكلمات ← الجُمل (حرف + حركة فأكثر)</div></a>
+    <a class="navcard" href="play.html"><div class="ic">🎮</div><div class="t">ألعاب وأنشطة</div><div class="d">لعبة الذاكرة + 7 ألعاب لدمج الحروف + أنشطة للطباعة</div></a>
+    <a class="navcard" href="tales.html"><div class="ic">📖</div><div class="t">قصص وعِبَر</div><div class="d">قصصٌ قصيرة + أسئلة فهم (أخلاق · أنبياء · علماء · صحابة)</div></a>
+    <a class="navcard" href="puzzles.html"><div class="ic">🧩</div><div class="t">ألغاز ذكية</div><div class="d">فوازير ومنطق بمستويات — مع تلميح وحل</div></a>
+    <a class="navcard" href="quiz.html"><div class="ic">🎯</div><div class="t">اختبارات تعليمية</div><div class="d">اختيار من متعدد بفئاتٍ وأعمار — نتيجة فوريّة</div></a>
+    <a class="navcard" href="progress.html"><div class="ic">🏆</div><div class="t">تقدّمي</div><div class="d">النجوم والأوسمة وسلسلة الأيّام + شهادة إنجاز</div></a>
+  </div>
+
+  <footer>
+    كل المحتوى محليّ · بلا اتصال · بلا ذكاء اصطناعي.<br/>
+    وثائق المشروع للمطوّر في <code>docs/</code> · نسبة الفضل في <code>docs/CREDITS.md</code>
+  </footer>
+</div>
+
+<div id="loginOverlay" style="position:fixed;inset:0;background:linear-gradient(160deg,#FBF7EF,#F3EEE3);z-index:90;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:24px">
+  <div style="width:100%;max-width:460px;background:#fff;border:1px solid #ECE6DA;border-radius:22px;box-shadow:0 6px 24px rgba(0,0,0,.1);padding:22px;margin-top:8px">
+    <div style="text-align:center;font-size:40px">🤖</div>
+    <h2 style="text-align:center;margin:4px 0 2px">مَن يتعلّم اليوم؟</h2>
+    <p style="text-align:center;color:#6B6B6B;font-size:13px;margin:0 0 14px">اختر ملفّك لنتابع تقدّمك وصوتك</p>
+    <div id="loginBody"></div>
+  </div>
+</div>
+
+<script type="module">
+import { getDailyMission } from "./src/progress.js";
+import { listProfiles, getProfile, getCurrentUser, setCurrentUser, clearCurrentUser, loginProfile, loginGuest, guestEnabled, addProfile, AVATARS } from "./src/accounts.js";
+import { confirmChoice } from "./src/confirm-action.js";
+
+const ov=document.getElementById("loginOverlay"), body=document.getElementById("loginBody"), chip=document.getElementById("userChip");
+const esc=s=>String(s).replace(/"/g,"&quot;");
+function showChip(){ const u=getCurrentUser(); if(u){ chip.style.display="block"; chip.textContent=`${u.avatar||"🙂"} ${u.name} · تبديل`;
+    chip.onclick=async ()=>{ if(await confirmChoice(`أنتَ مُسجَّلٌ باسم «${u.name}». هل تريد تسجيل الخروج وتبديل الحساب؟`, "🚪 خروج وتبديل", "البقاء")){ clearCurrentUser(); chip.style.display="none"; ov.style.display="flex"; renderLogin(); } }; }
+  else chip.style.display="none"; }
+function enter(){ ov.style.display="none"; showChip(); }
+
+function renderLogin(){
+  const profs=listProfiles();
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px">
+      ${profs.map(p=>`<button class="prof" data-id="${p.id}" style="background:#FBF7EF;border:1px solid #ECE6DA;border-radius:16px;padding:14px 8px;cursor:pointer;font-family:inherit;text-align:center">
+        <div style="font-size:38px">${p.avatar||"🙂"}</div><div style="font-weight:800;font-size:14px">${p.name}</div>
+        <div style="font-size:11px;color:#6B6B6B">${p.ageGroup}${p.password?" 🔒":""}</div></button>`).join("")}
+      <button id="addProf" style="background:#fff;border:2px dashed #ECE6DA;border-radius:16px;padding:14px 8px;cursor:pointer;font-family:inherit;color:#6B6B6B"><div style="font-size:34px">➕</div><div style="font-size:13px">حساب جديد</div></button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+      ${guestEnabled()?`<button id="guestBtn" style="flex:1;background:#fff;border:1px solid #ECE6DA;border-radius:14px;padding:11px;cursor:pointer;font-family:inherit;font-size:14px">👋 دخول كضيف</button>`:""}
+      <a href="index.html?parent=1" style="flex:1;text-align:center;background:#FBEDE7;border:1px solid #E5B5A8;border-radius:14px;padding:11px;text-decoration:none;color:#C7613F;font-size:14px;font-weight:700">👪 لوحة الأهل</a>
+    </div>`;
+  body.querySelectorAll(".prof").forEach(b=>b.onclick=()=>selectProfile(b.getAttribute("data-id")));
+  document.getElementById("addProf").onclick=renderAdd;
+  const g=document.getElementById("guestBtn"); if(g) g.onclick=()=>{ if(loginGuest()) enter(); };
+}
+function selectProfile(id){
+  const p=getProfile(id); if(!p) return;
+  if(!p.password){ setCurrentUser(p); enter(); return; }
+  body.innerHTML=`<div style="text-align:center"><div style="font-size:40px">${p.avatar||"🙂"}</div><div style="font-weight:800">${p.name}</div>
+    <input id="cpw" type="password" placeholder="كلمة المرور" style="width:200px;padding:9px;border:1px solid #ECE6DA;border-radius:10px;font-family:inherit;margin:12px 0;text-align:center">
+    <div id="cpwBad" style="color:#B5482F;font-size:13px;min-height:18px"></div>
+    <div style="display:flex;gap:8px;justify-content:center"><button id="cgo" style="background:#7BB661;color:#fff;border:none;border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;font-family:inherit">دخول</button>
+    <button id="cback" style="background:#fff;border:1px solid #ECE6DA;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div></div>`;
+  const inp=document.getElementById("cpw"); inp.focus();
+  const go=()=>{ if(loginProfile(id, inp.value)) enter(); else { document.getElementById("cpwBad").textContent="كلمة مرور غير صحيحة."; inp.value=""; inp.focus(); } };
+  document.getElementById("cgo").onclick=go; inp.addEventListener("keydown",e=>{ if(e.key==="Enter") go(); });
+  document.getElementById("cback").onclick=renderLogin;
+}
+function renderAdd(){
+  body.innerHTML=`<div>
+    <input id="np" placeholder="اسم الطفل" style="width:100%;padding:10px;border:1px solid #ECE6DA;border-radius:10px;font-family:inherit;margin-bottom:8px">
+    <div style="font-size:13px;color:#6B6B6B;margin-bottom:4px">الفئة العمرية:</div>
+    <div id="ageRow" style="display:flex;gap:6px;margin-bottom:8px">${["4-6","7-10","all"].map((a,i)=>`<button class="agc" data-a="${a}" style="flex:1;border:1px solid #ECE6DA;border-radius:10px;padding:8px;cursor:pointer;font-family:inherit;${i===0?'background:#E07A5F;color:#fff;':''}">${a==="all"?"الكل":a}</button>`).join("")}</div>
+    <div style="font-size:13px;color:#6B6B6B;margin-bottom:4px">الصورة:</div>
+    <div id="avRow" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${AVATARS.map((a,i)=>`<button class="avc" data-a="${a}" style="font-size:24px;border:1px solid ${i===0?'#E07A5F':'#ECE6DA'};border-radius:10px;padding:4px 7px;cursor:pointer;background:#fff">${a}</button>`).join("")}</div>
+    <input id="npw" type="password" placeholder="كلمة مرور (اختياريّة)" style="width:100%;padding:10px;border:1px solid #ECE6DA;border-radius:10px;font-family:inherit;margin-bottom:10px">
+    <div style="display:flex;gap:8px"><button id="createGo" style="flex:1;background:#7BB661;color:#fff;border:none;border-radius:12px;padding:11px;font-weight:700;cursor:pointer;font-family:inherit">إنشاء ودخول</button>
+    <button id="createBack" style="background:#fff;border:1px solid #ECE6DA;border-radius:12px;padding:11px 16px;cursor:pointer;font-family:inherit">رجوع</button></div></div>`;
+  let age="4-6", av=AVATARS[0];
+  body.querySelectorAll(".agc").forEach(b=>b.onclick=()=>{ age=b.getAttribute("data-a"); body.querySelectorAll(".agc").forEach(x=>x.style.cssText=x.style.cssText.replace(/background:#E07A5F;color:#fff;/,'')); b.style.background="#E07A5F"; b.style.color="#fff"; });
+  body.querySelectorAll(".avc").forEach(b=>b.onclick=()=>{ av=b.getAttribute("data-a"); body.querySelectorAll(".avc").forEach(x=>x.style.borderColor="#ECE6DA"); b.style.borderColor="#E07A5F"; });
+  document.getElementById("createGo").onclick=()=>{ const name=document.getElementById("np").value.trim()||"طفلي"; const p=addProfile({name,ageGroup:age,avatar:av,password:document.getElementById("npw").value}); setCurrentUser(p); enter(); };
+  document.getElementById("createBack").onclick=renderLogin;
+}
+
+// يبدأ التطبيق بشاشة الدخول إن لم يكن هناك ملفٌّ نشطٌ في الجلسة.
+if(getCurrentUser()) showChip(); else { ov.style.display="flex"; renderLogin(); }
+
+const _dm = getDailyMission();
+const _dailyEl = document.getElementById("daily");
+_dailyEl.classList.toggle("done", _dm.complete);
+_dailyEl.innerHTML = `<div class="dh">${_dm.complete?"🎉 أكملتَ مهمّة اليوم!":"✨ مهمّة اليوم — اضغط لمتابعة تقدّمك"}</div>
+  <div class="dt">${_dm.tasks.map(t=>`<span class="dchip ${t.done?"ok":""}">${t.ic} ${t.label}${t.done?" ✅":""}</span>`).join("")}</div>`;
+</script>
+</body>
+</html>

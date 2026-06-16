@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#E07A5F" />
+<title>مِشكاة — قصص مصوّرة</title>
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
+    --line:#ECE6DA; --primary:#E07A5F; --primary-d:#C7613F; --good:#7BB661;
+    --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,input,textarea,select,.region,.toggle,.chip,.capbtn,[onclick]{touch-action:manipulation}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:640px;margin:0 auto;padding:16px 16px 48px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 14px}
+  header h1{font-size:22px;margin:0}
+  header .sub{color:var(--muted);font-size:13px}
+  .topbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink)}
+
+  /* covers */
+  .covers{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  .cover{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;cursor:pointer;text-align:center;transition:transform .12s,border-color .12s;border:1px solid var(--line)}
+  .cover:hover{transform:translateY(-3px);border-color:var(--primary)}
+  .cover .art svg{width:100%;height:auto;display:block;background:#FBF4EF}
+  .cover .t{font-size:18px;font-weight:800;padding:10px 12px 2px}
+  .cover .v{font-size:12px;color:var(--good);font-weight:700;padding-bottom:12px}
+
+  /* reader */
+  .reader{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:16px;text-align:center}
+  .reader .stage svg{width:100%;height:auto;display:block;border-radius:16px;background:#FBF4EF;border:1px solid var(--line)}
+  .rtitle{font-size:15px;color:var(--muted);margin:10px 0 0}
+  .ptext{font-size:20px;line-height:1.9;margin:12px 6px;min-height:84px}
+  .lesson{background:#EEF6E9;border:1px solid #CDE6BE;color:#3f6b2c;border-radius:14px;padding:12px;font-size:17px;font-weight:700;margin:10px 0}
+  .dots{display:flex;gap:7px;justify-content:center;margin:8px 0}
+  .dot{width:9px;height:9px;border-radius:50%;background:#E0D8C8}
+  .dot.on{background:var(--primary)}
+  .nav{display:flex;gap:10px;margin-top:12px}
+  .nav button{flex:1;border:none;border-radius:14px;padding:14px;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit}
+  .prev{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .next{background:var(--primary);color:#fff}
+  .next:hover{background:var(--primary-d)}
+  .prev:disabled{opacity:.4;cursor:default}
+  .back{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;margin-top:10px;text-decoration:underline;font-family:inherit}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>قصص مصوّرة 📚</h1>
+      <div class="sub">قصصٌ أصيلة بصورٍ كبيرة — اقرأها مع طفلك</div>
+    </div>
+    <a class="topbtn" href="home.html">🏠 الفهرس</a>
+  </header>
+  <div id="view"></div>
+</div>
+
+<script type="module">
+import data from "./content/stories.js";
+import { STORY_ART } from "./src/story-art.js";
+import { attachReader } from "./src/reader-recorder.js";
+import { isStoryReadOn, showTashkeel, setShowTashkeel, stripTashkeel } from "./src/sound-prefs.js";
+import { attachStoryReader } from "./src/story-reader.js";
+const disp = t => showTashkeel() ? t : stripTashkeel(t); // عرضٌ مع/بلا شكل (لا يؤثّر في القراءة)
+const tashBtn = () => `<button class="back" id="tashToggle" style="font-size:13px">🔡 الشكل: ${showTashkeel()?"ظاهر":"مخفيّ"}</button>`;
+
+const STORIES = data.stories || [];
+let si = -1, pi = 0;
+const view = document.getElementById("view");
+const art = k => STORY_ART[k] || "";
+
+function renderCovers(){
+  si = -1;
+  view.innerHTML = `<div class="covers">` + STORIES.map((s,i)=>
+    `<div class="cover" data-i="${i}">
+       <div class="art">${art(s.cover)}</div>
+       <div class="t">${s.title}</div>
+       <div class="v">⭐ ${s.value} · ${s.age_band}</div>
+     </div>`).join("") + `</div>`;
+  view.querySelectorAll(".cover").forEach(c=>c.addEventListener("click",()=>openStory(+c.getAttribute("data-i"))));
+}
+
+function openStory(i){ si=i; pi=0; renderPage(); }
+
+function renderPage(){
+  const s = STORIES[si], last = pi === s.pages.length-1, p = s.pages[pi];
+  view.innerHTML = `<div class="reader">
+    <div class="stage">${art(p.art)}</div>
+    <div class="rtitle">${disp(s.title)}</div>
+    <div class="ptext">${disp(p.text)}</div>
+    <div style="text-align:center;margin:4px 0">${tashBtn()}</div>
+    ${isStoryReadOn() ? `<div id="srHost"></div>` : ""}
+    <div id="rrHost"></div>
+    ${last ? `<div class="lesson">الدرس: ${disp(s.lesson)}</div>` : ""}
+    <div class="dots">${s.pages.map((_,k)=>`<span class="dot ${k===pi?"on":""}"></span>`).join("")}</div>
+    <div class="nav">
+      <button class="prev" id="prev" ${pi===0?"disabled":""}>السابقة</button>
+      <button class="next" id="next">${last ? "🌟 تمّت — قصّة أخرى" : "التالية ▶"}</button>
+    </div>
+    <button class="back" id="back">▸ كل القصص</button>
+  </div>`;
+  document.getElementById("prev").onclick = ()=>{ if(pi>0){ pi--; renderPage(); } };
+  document.getElementById("next").onclick = ()=>{ if(pi < s.pages.length-1){ pi++; renderPage(); } else { renderCovers(); } };
+  document.getElementById("back").onclick = renderCovers;
+  document.getElementById("tashToggle").onclick = ()=>{ setShowTashkeel(!showTashkeel()); renderPage(); };
+  attachReader(document.getElementById("rrHost"), p.text, { label:"قراءتك للصفحة" });
+  // قراءةُ القصّة بصوتٍ (القارئ المختار) — صفحةً أو كاملةً مع الانتقال التلقائيّ. النصُّ المُقرَّر بالشكل الكامل.
+  if(isStoryReadOn()) attachStoryReader(document.getElementById("srHost"), {
+    text: p.text, pages: s.pages.map(x=>x.text), startIdx: pi,
+    onPage: i=>{ pi=i; renderPage(); }, rerender: renderPage,
+  });
+}
+
+renderCovers();
+</script>
+</body>
+</html>

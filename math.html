@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#E07A5F" />
+<title>مِشكاة — أرقام وهندسة</title>
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
+    --line:#ECE6DA; --primary:#E07A5F; --primary-d:#C7613F; --good:#7BB661; --bad:#E0566B;
+    --sky:#6FB3D6; --gold:#F4C95D; --violet:#C9A0DC;
+    --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,.tile,.gcard,.scard,.craftrow,[onclick]{touch-action:manipulation}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:680px;margin:0 auto;padding:16px 16px 56px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 10px}
+  header h1{font-size:22px;margin:0}
+  header .sub{color:var(--muted);font-size:13px}
+  .topbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink);font-family:inherit}
+  .back{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink)}
+
+  .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:8px}
+  .gcard{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
+  .gcard:hover{transform:translateY(-3px);border-color:var(--primary)}
+  .gcard .ic{font-size:42px}
+  .gcard .t{font-size:16px;font-weight:800;margin-top:4px}
+  .gcard .d{font-size:12px;color:var(--muted)}
+
+  .gbar{display:flex;gap:8px;align-items:center;margin:8px 2px}
+  .pill{background:#F3EEE3;border-radius:999px;padding:5px 12px;font-size:13px;color:#555;margin-inline-start:auto}
+  .pill b{color:var(--primary-d)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px;text-align:center;margin-top:8px}
+  .bignum{font-size:120px;font-weight:800;line-height:1;color:var(--sky)}
+  .name{font-size:22px;font-weight:800;margin-top:2px}
+  .sayb{background:var(--primary);color:#fff;border:none;border-radius:12px;padding:8px 16px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px}
+  .sayb:hover{background:var(--primary-d)}
+  .dots{font-size:30px;line-height:1.6;margin:8px 4px;min-height:40px;word-wrap:break-word}
+  .nav{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px}
+  .nav button{border:none;border-radius:12px;padding:10px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  .nav .prev{background:#fff;border:1px solid var(--line);color:var(--ink)} .nav .prev:disabled{opacity:.4}
+  .nav .next{background:var(--primary);color:#fff}
+  .pos{font-size:13px;color:var(--muted);min-width:60px}
+
+  .prompt{text-align:center;font-size:18px;font-weight:800;margin:10px 2px 6px}
+  .prompt button{background:#fff;border:1px solid var(--line);border-radius:10px;padding:4px 10px;font-size:15px;cursor:pointer;font-family:inherit;margin-inline-start:6px}
+  .opvis{font-size:34px;font-weight:800;text-align:center;color:var(--primary-d);margin:8px 0}
+  .picview{background:#F6F3EC;border-radius:14px;padding:14px 10px;margin:6px 0 12px;min-height:80px;text-align:center;font-size:32px;line-height:1.4}
+  .opts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 2px}
+  .opt{background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 18px;font-size:30px;font-weight:800;color:var(--ink);cursor:pointer;font-family:inherit;min-width:64px}
+  .opt:hover{border-color:var(--primary)}
+  .opt.ok{background:#EEF6E9;border-color:var(--good);color:#2f5a1f}
+  .opt.bad{background:#FCEBEE;border-color:var(--bad);animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+  .ageb{display:flex;gap:6px;margin:6px 2px;flex-wrap:wrap}
+  .ageb button{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;color:#666}
+  .ageb button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+  /* أزرار فهرس العشرات في شاشة الأرقام */
+  .dec{background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--ink);min-width:42px}
+  .dec:hover{border-color:var(--sky);color:var(--sky)}
+  .dec.on{background:var(--sky);color:#fff;border-color:var(--sky)}
+
+  /* ألعاب: عثور · مقارنة · نمط · حجم */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:14px 2px}
+  .tile{background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;min-height:96px}
+  .tile:hover{border-color:var(--primary)}
+  .tile.ok{background:#EEF6E9;border-color:var(--good)}
+  .tile.bad{background:#FCEBEE;border-color:var(--bad);animation:shake .4s}
+  .tile svg{width:64px;height:64px;display:block}
+  .objbox{background:#F6F3EC;border-radius:16px;padding:14px;font-size:34px;line-height:1.5;text-align:center;min-height:78px;cursor:pointer;border:2px solid var(--line)}
+  .objbox:hover{border-color:var(--primary)}
+  .objbox.ok{background:#EEF6E9;border-color:var(--good)} .objbox.bad{background:#FCEBEE;border-color:var(--bad);animation:shake .4s}
+  .seq{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;font-size:40px;margin:14px 2px;min-height:56px}
+  .seq .q{width:54px;height:54px;border:2px dashed var(--primary);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;color:var(--primary)}
+
+  /* بطاقات الأشكال */
+  .sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:8px}
+  @media (min-width:520px){ .sgrid{grid-template-columns:repeat(3,1fr)} }
+  .scard{background:#fff;border:2px solid var(--line);border-radius:16px;padding:10px;text-align:center;cursor:pointer;transition:.12s}
+  .scard:hover{border-color:var(--primary);transform:translateY(-2px)}
+  .scard svg{width:90px;height:90px;display:block;margin:0 auto}
+  .scard .sname{font-weight:800;font-size:15px;margin-top:4px}
+  .scard .sdim{font-size:11px;color:var(--muted)}
+
+  /* بطاقة شكلٍ مفتوحة */
+  .shape-detail{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px;margin-top:8px}
+  .shape-detail .big{display:flex;justify-content:center;margin-bottom:8px}
+  .shape-detail .big svg{width:160px;height:160px}
+  .shape-detail .ttl{text-align:center;font-size:22px;font-weight:800;color:var(--primary-d)}
+  .shape-detail ul{margin:8px 0;padding-inline-start:22px}
+  .shape-detail .tad{background:#FFF6EE;border-right:3px solid var(--primary);border-radius:8px;padding:10px 12px;font-size:13.5px;color:#5b3b29;margin-top:10px}
+  .shape-detail .ex{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .shape-detail .ex span{background:#F3EEE3;border-radius:999px;padding:4px 10px;font-size:13px}
+
+  /* قائمة أنشطة الورق */
+  .craftlist{display:grid;gap:10px;margin-top:8px}
+  .craftrow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 14px;cursor:pointer;text-align:start}
+  .craftrow:hover{border-color:var(--primary)}
+  .craftrow .thumb{width:54px;height:54px;display:flex;align-items:center;justify-content:center;background:#FBF7EF;border-radius:12px;flex:none}
+  .craftrow .thumb svg{width:46px;height:46px;display:block}
+  .craftrow .ic{font-size:32px}
+  .craftrow .t{font-weight:800;font-size:16px}
+  .craftrow .meta{font-size:12px;color:var(--muted);margin-top:2px}
+  .craftrow .go{color:var(--primary);font-size:18px;font-weight:800}
+
+  /* تفصيل النشاط */
+  .step{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
+  .step .num{background:var(--primary);color:#fff;border-radius:999px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+  .step svg{width:100%;max-width:240px;background:#FBF7EF;border-radius:10px;display:block;margin-top:6px}
+  .step .txt{font-size:14.5px;line-height:1.7}
+  .materials{background:#F6F3EC;border-radius:14px;padding:12px 14px;font-size:13.5px;margin-top:8px}
+  .materials b{color:var(--primary-d)}
+  .materials ul{margin:6px 0;padding-inline-start:22px}
+  .tip{background:#EEF6E9;border-right:3px solid var(--good);border-radius:8px;padding:10px 12px;font-size:13.5px;color:#2f5a1f;margin-top:12px}
+
+  .tadabbur{text-align:center;color:#7a4fa0;background:#F6F0FB;border-radius:12px;padding:8px 12px;font-size:14px;margin:10px 2px}
+  .hint{text-align:center;color:var(--muted);font-size:13px;margin-top:12px}
+
+  /* قصّة الأرقام */
+  .nintro{background:#FFF6EE;border:1px solid #F0DDC8;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.8;margin:8px 2px}
+  .nfams{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:10px 2px}
+  .nfam{background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px;text-align:center}
+  .nfam .gl{font-size:24px;font-weight:800;letter-spacing:3px;color:var(--primary-d);direction:ltr}
+  .nfam .ti{font-weight:800;font-size:14px;margin:4px 0}
+  .nfam .nt{font-size:12px;color:var(--muted)}
+  .ntl{margin:10px 2px;border-inline-start:3px solid var(--gold);padding-inline-start:12px}
+  .ntl .row{margin:8px 0}
+  .ntl .y{display:inline-block;background:#F4C95D;color:#5b3b29;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:800;margin-inline-end:6px}
+  .ntl .t{font-weight:800;font-size:14px}
+  .ntl .d{font-size:13px;color:#555}
+  .nzero{background:#EAF4E3;border:1px solid #CDE6BE;border-radius:16px;padding:14px;margin:10px 2px;font-size:14px;line-height:1.9}
+  .nzero h3{margin:0 0 6px;color:#3f6b2c}
+  .ndg{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:8px 2px}
+  .ndc{background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 4px;text-align:center}
+  .ndc .dg{font-size:34px;font-weight:800;color:var(--primary-d);direction:ltr}
+  .ndc .nm{font-size:11px;color:var(--muted)}
+  .ndc .dots{min-height:14px;margin-top:2px}
+  .ndc .dots i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#E0566B;margin:0 1px}
+  .nsch{display:grid;gap:8px;margin:8px 2px}
+  .nsch .s{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:13px}
+  .nsch .s b{color:var(--primary-d)}
+  .nnote{background:#FBF7EF;border:1px dashed #ECE6DA;border-radius:12px;padding:10px 12px;font-size:12.5px;color:#6B6B6B;margin:8px 2px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>أرقام وهندسة 📐</h1>
+      <div class="sub">الأرقام · الحساب · الأشكال · ورشة الورق بالمقاسات</div>
+    </div>
+    <a class="topbtn" href="home.html">🏠 الفهرس</a>
+  </header>
+  <div id="view"></div>
+</div>
+
+<script type="module">
+import MATH from "./content/math.js";
+import NUMERALS from "./content/numerals.js";
+import { logEvent, recordMastery } from "./src/progress.js";
+import { pickAdaptive } from "./src/adaptive.js";
+import { speak } from "./src/speak.js";
+import { robo } from "./src/robo-companion.js";
+import { downloadSvgAsPdf } from "./src/pdf-utils.js";
+import { numberName as numAr } from "./src/numbers-ar.js";
+import { autoToggleHtml, wireAuto, onCorrect, onWrong } from "./src/quiz-flow.js";
+import { attachReader } from "./src/reader-recorder.js";
+robo.mount();
+
+const view = document.getElementById("view");
+const NUM_MAX = 100;
+const EMOJIS = ["🍎","⭐","🐟","🌸","🚗","🦋","🍌","🐝","🌷","🥕","🌽","🍇"];
+const rand = n => Math.floor(Math.random()*n);
+const shuffle = a => { for(let k=a.length-1;k>0;k--){ const j=rand(k+1); [a[k],a[j]]=[a[j],a[k]]; } return a; };
+const backBar = () => `<button class="back" id="back">← أرقام وهندسة</button>`;
+function wireBack(){ const b=document.getElementById("back"); if(b) b.onclick=renderMenu; }
+
+/* ===== أشكال صغيرة (SVG) لألعاب العثور ===== */
+const C = ["#E07A5F","#6FB3D6","#7BB661","#F4C95D","#C9A0DC"];
+const SHAPES = [
+  { id:"circle", name:"دائرة",  svg:c=>`<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="24" fill="${c}"/></svg>` },
+  { id:"square", name:"مربّع",  svg:c=>`<svg viewBox="0 0 60 60"><rect x="8" y="8" width="44" height="44" rx="4" fill="${c}"/></svg>` },
+  { id:"triangle", name:"مثلّث", svg:c=>`<svg viewBox="0 0 60 60"><path d="M30 7 L53 51 L7 51 Z" fill="${c}"/></svg>` },
+  { id:"rect", name:"مستطيل",   svg:c=>`<svg viewBox="0 0 60 60"><rect x="5" y="17" width="50" height="26" rx="4" fill="${c}"/></svg>` },
+  { id:"star", name:"نجمة",     svg:c=>`<svg viewBox="0 0 60 60"><path fill="${c}" d="M30 5l7 15 16 2-12 11 3 16-14-8-14 8 3-16-12-11 16-2z"/></svg>` },
+];
+
+/* ===== MENU ===== */
+const GAMES = [
+  { id:"numbers", ic:"🔢", t:"الأرقام (0–100)", d:"تعرّفْ على الأرقام واسمها" },
+  { id:"numerals", ic:"📜", t:"قصّة الأرقام", d:"كيف طوّر المسلمون 0-9 والصِّفر" },
+  { id:"add",     ic:"➕", t:"الجمع",          d:"تدرَّبْ على جمع الأعداد بصريّاً" },
+  { id:"sub",     ic:"➖", t:"الطرح",          d:"تدرَّبْ على الطرح" },
+  { id:"mul",     ic:"✖️", t:"الضرب",          d:"جدول الضرب البسيط" },
+  { id:"find",    ic:"🔍", t:"اعثر على الشكل", d:"اسمعِ اسمَ الشكلِ واضغطْه" },
+  { id:"compare", ic:"⚖️", t:"عُدّ وقارن",     d:"أيُّ مجموعةٍ أكثر؟" },
+  { id:"pattern", ic:"🔁", t:"أكمل النمط",     d:"ما العنصرُ التالي؟" },
+  { id:"size",    ic:"📏", t:"الأكبر والأصغر", d:"قارن الأحجام" },
+  { id:"basic",   ic:"🔵", t:"أشكالٌ بسيطة",   d:"دائرة · مربّع · مثلّث · مستطيل" },
+  { id:"adv",     ic:"🔷", t:"أشكالٌ متقدّمة", d:"2D و3D — أمثلةٌ في خلق الله" },
+  { id:"crafts",  ic:"✂️", t:"ورشة الورق",    d:"اصنع الأشكالَ بنفسك بالمقاسات" },
+];
+function renderMenu(){
+  view.innerHTML = `<div class="menu">` +
+    GAMES.map(g=>`<div class="gcard" data-g="${g.id}"><div class="ic">${g.ic}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
+    `</div>
+    <div class="tadabbur">📐 الأشكالُ والأعدادُ من حولنا… ما أدقَّ نظامَ اللهِ في خلقه! تأمّلْ معي.</div>
+    <div class="hint">الشاشةُ محفِّز، والعمل الحقيقيّ بيدك — هيّا لنصنعَ ونتعلّم 🌟</div>`;
+  view.querySelector(".menu").addEventListener("click", e=>{
+    const c=e.target.closest("[data-g]"); if(!c) return;
+    ({numbers:startNumbers,numerals:startNumerals,add:()=>startArith("+"),sub:()=>startArith("-"),mul:()=>startArith("×"),
+      find:startFind,compare:startCompare,pattern:startPattern,size:startSize,
+      basic:startBasicShapes,adv:startAdvShapes,crafts:startCrafts})[c.getAttribute("data-g")]();
+  });
+}
+
+/* ===== 🔢 NUMBERS 0–100 ===== */
+// تجميع النقاط في عشرات للأعداد الكبيرة: 47 = أربع مجموعات من 10 + 7 نقاط مفردة.
+function dotsFor(n){
+  if (n === 0) return "—";
+  if (n <= 20) return Array.from({length:n}, ()=>"🔵").join(" ");
+  const tens = Math.floor(n/10), ones = n%10;
+  const tenGroup = `<span style="display:inline-block;background:#EAF4E3;border-radius:8px;padding:2px 6px;margin:2px;font-size:14px;color:#3f6b2c;font-weight:800">10</span>`;
+  const singles = Array.from({length:ones}, ()=>"🔵").join(" ");
+  return Array.from({length:tens}, ()=>tenGroup).join(" ") + (ones ? " " + singles : "");
+}
+const DECADES = [0,10,20,30,40,50,60,70,80,90,100];
+let ni = 0;
+function startNumbers(){ ni = 0; renderNumber(); }
+function renderNumber(){
+  const n = ni, name = numAr(n);
+  view.innerHTML = backBar()+
+    `<div class="card">
+      <div class="bignum">${n}</div>
+      <div class="name">${name}</div>
+      <button class="sayb" id="sayName">🔊 استمع</button>
+      <div class="dots">${dotsFor(n)}</div>
+      <div id="rrHostNum"></div>
+      <div class="nav">
+        <button class="prev" id="prev" ${n===0?"disabled":""}>السابق</button>
+        <span class="pos">${n} / ${NUM_MAX}</span>
+        <button class="next" id="next" ${n===NUM_MAX?"disabled":""}>التالي ▶</button>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="back" id="jump-1">−1</button>
+        <button class="back" id="jump-10">−10</button>
+        <button class="back" id="jump+10">+10</button>
+        <button class="back" id="jump+1">+1</button>
+      </div>
+      <div style="margin-top:14px;border-top:1px dashed var(--line);padding-top:10px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">📑 فهرس بالعشرات — انقُر لتقفز</div>
+        <div id="decades" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+          ${DECADES.map(d => `<button class="dec ${d===n?'on':''}" data-d="${d}">${d}</button>`).join("")}
+        </div>
+      </div>
+    </div>`;
+  wireBack();
+  attachReader(document.getElementById("rrHostNum"), name, { label:"نُطقك للعدد" });
+  document.getElementById("sayName").onclick = ()=>robo.read(name);
+  document.getElementById("prev").onclick = ()=>{ if(ni>0){ni--; renderNumber();} };
+  document.getElementById("next").onclick = ()=>{ if(ni<NUM_MAX){ni++; renderNumber();} };
+  const jump = (d)=>{ ni = Math.max(0, Math.min(NUM_MAX, ni+d)); renderNumber(); };
+  document.getElementById("jump-1").onclick  = ()=>jump(-1);
+  document.getElementById("jump-10").onclick = ()=>jump(-10);
+  document.getElementById("jump+10").onclick = ()=>jump(+10);
+  document.getElementById("jump+1").onclick  = ()=>jump(+1);
+  view.querySelector("#decades").addEventListener("click", e => {
+    const b = e.target.closest(".dec"); if (!b) return;
+    ni = +b.getAttribute("data-d"); renderNumber();
+  });
+  speak(name);
+}
+
+/* ===== 📜 قصّة الأرقام العربية والصفر ===== */
+function startNumerals(){
+  const N = NUMERALS, bold = s => String(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  view.innerHTML = backBar()+
+    `<div class="nintro">${N.intro} <button class="back" id="readIntro" style="padding:3px 9px">🔊</button></div>
+     <div class="nfams">${N.families.map(f=>`<div class="nfam"><div class="gl">${f.glyphs}</div><div class="ti">${f.title}</div><div class="nt">${f.note}</div></div>`).join("")}</div>
+     <h3 style="margin:14px 2px 4px;color:var(--primary-d)">📜 رحلةُ الأرقام عبر الزمن</h3>
+     <div class="ntl">${N.timeline.map(e=>`<div class="row"><span class="y">${e.y}</span><span class="t">${e.t}</span><div class="d">${e.d}</div></div>`).join("")}</div>
+     <div class="nzero"><h3>🦸 ${N.zero.title}</h3><div>${bold(N.zero.body)}</div><div class="tadabbur" style="margin-top:8px">🌿 ${N.zero.tadabbur}</div><button class="back" id="readZero" style="margin-top:8px">🔊 اقرأ قصّة الصِّفر</button></div>
+     <h3 style="margin:14px 2px 4px;color:var(--primary-d)">🔢 أشكال الأرقام (اضغطْ لتسمع)</h3>
+     <div class="ndg">${N.digits.map(x=>`<div class="ndc" data-name="${x.name}"><div class="dg">${x.d}</div><div class="nm">${x.name}</div><div class="dots">${"<i></i>".repeat(x.angles)}</div></div>`).join("")}</div>
+     <div class="nnote">${N.angleNote}</div>
+     <h3 style="margin:14px 2px 4px;color:var(--primary-d)">⭐ علماءُ خدموا الأرقام</h3>
+     <div class="nsch">${N.scholars.map(s=>`<div class="s">${s.ic} <b>${s.name}</b> — ${s.d}</div>`).join("")}</div>
+     <div class="tadabbur">🌿 ${N.tadabbur}</div>`;
+  wireBack();
+  document.getElementById("readIntro").onclick=()=>robo.say(N.intro,"talk");
+  document.getElementById("readZero").onclick=()=>robo.say(N.zero.body.replace(/\*\*/g,""),"talk");
+  view.querySelector(".ndg").addEventListener("click",e=>{ const c=e.target.closest(".ndc"); if(!c)return; robo.read(c.getAttribute("data-name")); });
+  robo.say("تعالَ نعرفْ قصّةَ أرقامِنا العربيّة وكيف فتح الصِّفرُ بابَ العلم!","happy");
+}
+
+/* ===== ➕➖✖ ARITHMETIC ===== */
+// مستوياتٌ بحسب العمر: 1=أعداد صغيرة (4-6)، 2=متوسطة (7-8)، 3=أكبر (9-10)
+let arOp = "+", arLevel = 1, arScore = 0;
+function startArith(op){ arOp = op; arLevel = 1; arScore = 0; nextArith(); }
+function genArith(){
+  const max = arLevel===1 ? 5 : arLevel===2 ? 10 : 20;
+  let a, b, ans, q;
+  if (arOp === "+") { a = 1+rand(max); b = 1+rand(max); ans = a+b; q = `${a} + ${b} = ?`; }
+  else if (arOp === "-") { a = 1+rand(max); b = rand(a); ans = a-b; q = `${a} − ${b} = ?`; } // لا نتائج سالبة
+  else { // ×
+    const m1 = arLevel===1 ? 5 : arLevel===2 ? 7 : 10;
+    a = 1+rand(m1); b = 1+rand(m1); ans = a*b; q = `${a} × ${b} = ?`;
+  }
+  // مشتّتات: مقاربةٌ للجواب ولكنّها مختلفة
+  const pool = new Set([ans]);
+  while (pool.size < 4) { const d = ans + (rand(7)-3); if (d>=0 && d!==ans) pool.add(d); }
+  const opts = shuffle([...pool]);
+  return { q, ans, opts, a, b };
+}
+function visualOp(p){
+  if (arOp === "+") {
+    const em = EMOJIS[rand(EMOJIS.length)];
+    return Array.from({length:p.a},()=>em).join("") + " <span style='color:#C7613F;font-weight:800'>+</span> " + Array.from({length:p.b},()=>em).join("");
+  }
+  if (arOp === "-") {
+    const em = EMOJIS[rand(EMOJIS.length)];
+    const left = Array.from({length:p.a-p.b},()=>em).join("");
+    const taken = Array.from({length:p.b},()=>"❌").join("");
+    return left + " " + taken;
+  }
+  // ×: مجموعات متكرّرة
+  const em = EMOJIS[rand(EMOJIS.length)];
+  return Array.from({length:p.a},()=>`<span style='display:inline-block;border:1px dashed #ECE6DA;border-radius:8px;padding:2px 4px;margin:2px'>${Array.from({length:p.b},()=>em).join("")}</span>`).join("");
+}
+let curArith = null, arMissed = false;
+function nextArith(){
+  curArith = genArith(); arMissed = false;
+  const p = curArith;
+  view.innerHTML = backBar()+
+    `<div class="gbar"><span class="pill">⭐ <b>${arScore}</b></span>${autoToggleHtml()}</div>
+     <div class="ageb">${[1,2,3].map(L=>`<button data-l="${L}" class="${L===arLevel?'on':''}">${L===1?'صغير (4–6)':L===2?'متوسّط (7–8)':'كبير (9–10)'}</button>`).join("")}</div>
+     <div class="card">
+       <div class="prompt">${{["+"]:"كم المجموع؟",["-"]:"كم الباقي؟",["×"]:"كم الناتج؟"}[arOp]}</div>
+       <div class="opvis">${p.q}</div>
+       <div class="picview">${visualOp(p)}</div>
+       <div class="opts" id="opts">${p.opts.map(o=>`<button class="opt" data-v="${o}">${o}</button>`).join("")}</div>
+     </div>`;
+  wireBack(); wireAuto(view);
+  view.querySelector(".ageb").addEventListener("click", e=>{
+    const b=e.target.closest("button[data-l]"); if(!b) return;
+    arLevel = +b.getAttribute("data-l"); nextArith();
+  });
+  view.querySelector("#opts").addEventListener("click", e=>{
+    const b=e.target.closest(".opt"); if(!b||b.disabled) return;
+    const v = +b.getAttribute("data-v");
+    if (v === p.ans) {
+      b.classList.add("ok"); arScore++; logEvent("math_correct");
+      view.querySelectorAll(".opt").forEach(x=>x.disabled=true);
+      onCorrect(robo, view, nextArith);
+    } else {
+      b.classList.add("bad"); arMissed = true;
+      setTimeout(()=>b.classList.remove("bad"), 450);
+      onWrong(robo, view, nextArith);
+    }
+  });
+}
+
+/* ===== 🔍 اعثر على الشكل ===== */
+let sScore=0, sMissed=false;
+function startFind(){ sScore=0; nextFind(); }
+function nextFind(){
+  sMissed=false;
+  const target=pickAdaptive(SHAPES, s=>"S:"+s.id);
+  const col=C[rand(C.length)];
+  const others=shuffle(SHAPES.filter(s=>s.id!==target.id)).slice(0,3);
+  const opts=shuffle([target,...others]);
+  view.innerHTML = backBar()+
+    `<div class="gbar"><span class="pill">⭐ <b>${sScore}</b></span>${autoToggleHtml()}</div>
+     <div class="prompt">أين «${target.name}»؟ <button id="rep">🔊</button></div>
+     <div class="grid" id="grid">${opts.map(o=>`<button class="tile" data-id="${o.id}">${o.svg(col)}</button>`).join("")}</div>
+     <div class="hint">اضغط الشكل الصحيح — روبو يستمع</div>`;
+  wireBack(); wireAuto(view);
+  document.getElementById("rep").onclick=()=>robo.read(target.name);
+  robo.say("أين "+target.name+"؟","ask");
+  view.querySelector("#grid").addEventListener("click",e=>{ const b=e.target.closest(".tile"); if(!b||b.disabled)return;
+    if(b.getAttribute("data-id")===target.id){ b.classList.add("ok"); sScore++; logEvent("math_correct"); recordMastery("S:"+target.id, !sMissed); view.querySelectorAll(".tile").forEach(x=>x.disabled=true); onCorrect(robo, view, nextFind); }
+    else { b.classList.add("bad"); sMissed=true; setTimeout(()=>b.classList.remove("bad"),450); onWrong(robo, view, nextFind); } });
+}
+
+/* ===== ⚖️ عُدّ وقارن ===== */
+const EMO = ["🍎","⭐","🐟","🌸","🚗","🦋","🍌","🐝","🌳","🐤"];
+let cScore=0;
+function startCompare(){ cScore=0; nextCompare(); }
+function nextCompare(){
+  let a=1+rand(8), b=1+rand(8); while(b===a) b=1+rand(8);
+  const em=EMO[rand(EMO.length)];
+  const more = a>b ? "A":"B";
+  view.innerHTML = backBar()+
+    `<div class="gbar"><span class="pill">⭐ <b>${cScore}</b></span>${autoToggleHtml()}</div>
+     <div class="prompt">أيُّ مجموعةٍ فيها أكثر؟</div>
+     <div class="grid" id="grid">
+       <div class="objbox" data-k="A">${Array.from({length:a},()=>em).join(" ")}</div>
+       <div class="objbox" data-k="B">${Array.from({length:b},()=>em).join(" ")}</div>
+     </div>
+     <div class="hint">عُدَّ كلَّ مجموعةٍ ثمّ اختَرِ الأكثر</div>`;
+  wireBack(); wireAuto(view);
+  robo.say("أيُّ مجموعةٍ فيها أكثر؟","ask");
+  view.querySelector("#grid").addEventListener("click",e=>{ const d=e.target.closest(".objbox"); if(!d||d.dataset.done)return;
+    if(d.getAttribute("data-k")===more){ d.classList.add("ok"); cScore++; logEvent("math_correct"); view.querySelectorAll(".objbox").forEach(x=>x.dataset.done="1"); onCorrect(robo, view, nextCompare); }
+    else { d.classList.add("bad"); setTimeout(()=>d.classList.remove("bad"),450); onWrong(robo, view, nextCompare); } });
+}
+
+/* ===== 🔁 أكمل النمط ===== */
+let pScore=0;
+function startPattern(){ pScore=0; nextPattern(); }
+function nextPattern(){
+  const pool=shuffle(["🔴","🔵","🟢","🟡","🟣","🔶"]).slice(0,2);
+  const period = rand(2)===0 ? 2 : 3;
+  const base = period===2 ? [pool[0],pool[1]] : [pool[0],pool[1],pool[0]];
+  const seq = []; for(let i=0;i<5;i++) seq.push(base[i%base.length]);
+  const answer = base[5%base.length];
+  const others = shuffle(["🔴","🔵","🟢","🟡","🟣","🔶"].filter(x=>x!==answer)).slice(0,2);
+  const opts = shuffle([answer,...others]);
+  view.innerHTML = backBar()+
+    `<div class="gbar"><span class="pill">⭐ <b>${pScore}</b></span>${autoToggleHtml()}</div>
+     <div class="prompt">ما العنصرُ التالي؟</div>
+     <div class="seq">${seq.map(x=>`<span>${x}</span>`).join("")}<span class="q">؟</span></div>
+     <div class="opts" id="opts">${opts.map(o=>`<button class="opt" data-v="${o}">${o}</button>`).join("")}</div>
+     <div class="hint">تأمّلِ النمطَ المتكرّر واختَرِ التالي</div>`;
+  wireBack(); wireAuto(view);
+  robo.say("ما العنصرُ التالي في النمط؟","ask");
+  view.querySelector("#opts").addEventListener("click",e=>{ const b=e.target.closest(".opt"); if(!b||b.disabled)return;
+    if(b.getAttribute("data-v")===answer){ b.classList.add("ok"); pScore++; logEvent("math_correct"); view.querySelectorAll(".opt").forEach(x=>x.disabled=true); onCorrect(robo, view, nextPattern); }
+    else { b.classList.add("bad"); setTimeout(()=>b.classList.remove("bad"),450); onWrong(robo, view, nextPattern); } });
+}
+
+/* ===== 📏 الأكبر والأصغر ===== */
+let zScore=0;
+function startSize(){ zScore=0; nextSize(); }
+function nextSize(){
+  const wantBig = rand(2)===0;
+  const col=C[rand(C.length)];
+  const sizes=shuffle([18,30,44]).map((r,i)=>({r,i}));
+  const target = wantBig ? sizes.reduce((m,s)=>s.r>m.r?s:m) : sizes.reduce((m,s)=>s.r<m.r?s:m);
+  view.innerHTML = backBar()+
+    `<div class="gbar"><span class="pill">⭐ <b>${zScore}</b></span>${autoToggleHtml()}</div>
+     <div class="prompt">اضغطِ الدائرةَ ${wantBig?"الأكبر":"الأصغر"}</div>
+     <div class="grid" id="grid" style="grid-template-columns:repeat(3,1fr)">${sizes.map(s=>`<button class="tile" data-i="${s.i}"><svg viewBox="0 0 90 90"><circle cx="45" cy="45" r="${s.r}" fill="${col}"/></svg></button>`).join("")}</div>
+     <div class="hint">قارنِ الأحجامَ بعينك</div>`;
+  wireBack(); wireAuto(view);
+  robo.say("اضغطِ الدائرةَ "+(wantBig?"الأكبر":"الأصغر"),"ask");
+  view.querySelector("#grid").addEventListener("click",e=>{ const b=e.target.closest(".tile"); if(!b||b.disabled)return;
+    if(+b.getAttribute("data-i")===target.i){ b.classList.add("ok"); zScore++; logEvent("math_correct"); view.querySelectorAll(".tile").forEach(x=>x.disabled=true); onCorrect(robo, view, nextSize); }
+    else { b.classList.add("bad"); setTimeout(()=>b.classList.remove("bad"),450); onWrong(robo, view, nextSize); } });
+}
+
+/* ===== 🔵 BASIC SHAPES ===== */
+function startBasicShapes(){
+  view.innerHTML = backBar()+
+    `<div class="sgrid" id="grid">${MATH.shapes_basic.map(s=>`<div class="scard" data-id="${s.id}">${s.svg}<div class="sname">${s.name}</div><div class="sdim">2D</div></div>`).join("")}</div>`;
+  wireBack();
+  view.querySelector("#grid").addEventListener("click", e=>{
+    const c=e.target.closest(".scard"); if(!c) return;
+    openShape(c.getAttribute("data-id"), MATH.shapes_basic, startBasicShapes);
+  });
+}
+function startAdvShapes(){
+  view.innerHTML = backBar()+
+    `<div class="sgrid" id="grid">${MATH.shapes_advanced.map(s=>`<div class="scard" data-id="${s.id}">${s.svg}<div class="sname">${s.name}</div><div class="sdim">${s.dim || "2D"}</div></div>`).join("")}</div>`;
+  wireBack();
+  view.querySelector("#grid").addEventListener("click", e=>{
+    const c=e.target.closest(".scard"); if(!c) return;
+    openShape(c.getAttribute("data-id"), MATH.shapes_advanced, startAdvShapes);
+  });
+}
+function openShape(id, list, backFn){
+  const s = list.find(x=>x.id===id); if(!s) return;
+  view.innerHTML =
+    `<button class="back" id="back2">← القائمة</button>
+     <div class="shape-detail">
+       <div class="big">${s.svg}</div>
+       <div class="ttl">${s.name}</div>
+       <ul>${(s.facts||[]).map(f=>`<li>${f}</li>`).join("")}</ul>
+       ${s.examples ? `<div style="font-weight:700;margin-top:6px">في حياتنا:</div><div class="ex">${s.examples.map(e=>`<span>${e}</span>`).join("")}</div>`:""}
+       ${s.tadabbur ? `<div class="tad">🌿 <b>تدبّر:</b> ${s.tadabbur}</div>` : ""}
+       <div class="nav"><button class="next" id="speakBtn">🔊 انطق الاسم</button></div>
+     </div>`;
+  document.getElementById("back2").onclick = backFn;
+  document.getElementById("speakBtn").onclick = ()=>robo.read(s.name);
+  speak(s.name);
+}
+
+/* ===== ✂️ PAPER CRAFTS ===== */
+// لكلّ نشاطٍ ملفّ SVG مُلحَقٌ في public/crafts/. حين يضغط الأبُ «تنزيل PDF»،
+// نُنقِّط الـSVG في Canvas ثمّ نُغلّفه بـjsPDF فيحصل على ملفّ PDF حقيقيٍّ بمقاس A4.
+function pdfNameFor(c){ const base = (c.file || "").split("/").pop().replace(/\.svg$/i,""); return (base || c.id) + ".pdf"; }
+
+async function downloadCraftPdf(c, btn){
+  if (!c.file) return;
+  const original = btn ? btn.innerHTML : null;
+  if (btn) { btn.disabled = true; btn.innerHTML = "⏳ يُعدّ PDF…"; }
+  try {
+    await downloadSvgAsPdf(c.file, pdfNameFor(c));
+  } catch (e) {
+    alert("تعذّر إعداد ملفّ PDF: " + (e?.message || e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = original; }
+  }
+}
+
+function startCrafts(){
+  view.innerHTML = backBar()+
+    `<div class="craftlist" id="cl">${MATH.crafts.map(c=>`
+      <div class="craftrow" data-id="${c.id}">
+        <div class="thumb">${c.thumb || '<div class="ic">✂️</div>'}</div>
+        <div>
+          <div class="t">${c.title}</div>
+          <div class="meta">${c.shape} · حوالي ${c.mins} دقائق · ${c.steps.length} خطوات${c.file?' · <span style="color:#5E9A47;font-weight:700">📄 PDF جاهز</span>':''}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${c.file?`<button type="button" class="back dl-pdf" style="border-color:#7BB661;color:#5E9A47" data-id="${c.id}" title="تنزيل PDF">⤓ PDF</button>`:''}
+          <span class="go">›</span>
+        </div>
+      </div>`).join("")}</div>
+     <div class="hint">حضِّر الأدوات قبل أن نبدأ — والديك يساعدانك مع المقصّ. الملفّات المُنزَّلة PDF جاهزة للطباعة على A4 بمقياس 100%.</div>`;
+  wireBack();
+  view.querySelector("#cl").addEventListener("click", e=>{
+    const dl = e.target.closest(".dl-pdf");
+    if (dl) {
+      e.stopPropagation();
+      const c = MATH.crafts.find(x=>x.id===dl.getAttribute("data-id"));
+      if (c) downloadCraftPdf(c, dl);
+      return;
+    }
+    const b=e.target.closest(".craftrow"); if(!b) return;
+    openCraft(b.getAttribute("data-id"));
+  });
+}
+function openCraft(id){
+  const c = MATH.crafts.find(x=>x.id===id); if(!c) return;
+  view.innerHTML =
+    `<button class="back" id="back2">← الورشة</button>
+     <div class="card" style="text-align:start;padding:16px">
+       <div style="text-align:center">${c.thumb?`<div style="width:72px;height:72px;margin:0 auto;display:flex;align-items:center;justify-content:center;background:#FBF7EF;border-radius:14px">${c.thumb.replace('<svg ','<svg width="60" height="60" ')}</div>`:`<div style="font-size:30px">✂️</div>`}<div style="font-weight:800;font-size:18px;margin-top:6px">${c.title}</div><div style="font-size:13px;color:var(--muted)">شكل: ${c.shape} · حوالي ${c.mins} دقائق</div></div>
+       ${c.file?`
+       <div style="background:#EAF4E3;border:1px solid #CDE6BE;border-radius:14px;padding:12px 14px;margin-top:10px;text-align:center">
+         <div style="font-weight:800;color:#3f6b2c;font-size:14.5px;margin-bottom:6px">📄 ملفّ PDF جاهزٌ للقصّ بالمقاسات الحقيقيّة</div>
+         <div style="font-size:13px;color:#3f6b2c;margin-bottom:8px">حمِّل الملفّ، اطبعه على A4 بمقياس 100%، ثم قُصَّ على الخطّ السميك.</div>
+         <button type="button" id="dlPdf" class="sayb" style="background:#7BB661;border:none">⤓ تنزيل PDF</button>
+       </div>`:""}
+       <div class="materials"><b>الأدوات:</b><ul>${c.materials.map(m=>`<li>${m}</li>`).join("")}</ul></div>
+       <div style="font-weight:800;margin:14px 2px 6px;color:var(--primary-d)">أو ارسم بنفسك بالخطوات التالية:</div>
+       ${c.steps.map((s,i)=>`<div class="step"><div class="num">${i+1}</div><div><div class="txt">${s.txt}</div>${s.svg||""}</div></div>`).join("")}
+       <div class="tip">💡 <b>نصيحة:</b> ${c.tip||""}</div>
+       <div class="nav">
+         <button class="prev" id="done">🌟 أنجزتُ!</button>
+         <button class="next" id="readCraft">🔊 اقرأ الخطوات</button>
+       </div>
+     </div>`;
+  document.getElementById("back2").onclick = startCrafts;
+  document.getElementById("done").onclick = ()=>{ logEvent("craft_done"); robo.cheer("بَارَكَ اللَّهُ فِيكَ! صَنَعْتَ شَكْلًا حَقِيقِيًّا بِيَدَيْكَ."); };
+  document.getElementById("readCraft").onclick = ()=>{ robo.say("اتْبَعِ الْخُطُواتِ خُطْوَةً خُطْوَة، وَاسْتَعِنْ بِوَالِدَيْكَ مَعَ الْمِقَصّ.","talk"); };
+  const dl = document.getElementById("dlPdf"); if (dl) dl.onclick = () => downloadCraftPdf(c, dl);
+}
+
+renderMenu();
+</script>
+</body>
+</html>

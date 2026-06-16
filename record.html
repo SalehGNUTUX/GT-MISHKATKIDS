@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#E07A5F" />
+<title>مِشكاة — استوديو تسجيل الأصوات</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:#FBF7EF;color:#2B2B2B;line-height:1.6;font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:16px 16px 60px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 12px}
+  header h1{font-size:21px;margin:0}
+  .topbtn{background:#fff;border:1px solid #ECE6DA;border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:#2B2B2B}
+  .note{background:#F6F0FB;border-radius:12px;padding:10px 14px;font-size:13.5px;color:#5a3e7a;margin-bottom:10px}
+  .setbar{background:#FBEDE7;border-radius:12px;padding:10px 14px;font-size:13px;color:#C7613F;margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .bar{background:#EFEADD;border-radius:8px;height:12px;overflow:hidden;margin:8px 0}
+  .bar>i{display:block;height:100%;background:#7BB661;transition:width .3s}
+  .tabs{display:flex;gap:8px;margin:12px 0 6px}
+  .tab{flex:1;background:#fff;border:1px solid #ECE6DA;border-radius:14px;padding:10px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;color:#6B6B6B}
+  .tab.on{background:#E07A5F;color:#fff;border-color:#E07A5F}
+  .units{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+  .lbtn{background:#fff;border:1px solid #ECE6DA;border-radius:10px;width:42px;height:42px;font-size:22px;font-weight:800;cursor:pointer;font-family:inherit;color:#2B2B2B;position:relative}
+  .lbtn.on{background:#E07A5F;color:#fff;border-color:#E07A5F}
+  .lbtn .dot{position:absolute;top:2px;left:2px;width:8px;height:8px;border-radius:50%;background:#7BB661}
+  .ubtn{background:#fff;border:1px solid #ECE6DA;border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer;font-family:inherit;color:#6B6B6B}
+  .ubtn.on{background:#E07A5F;color:#fff;border-color:#E07A5F}
+  .ubtn small{opacity:.8}
+  .grp{margin-top:14px}
+  .grp h3{font-size:14px;color:#C7613F;margin:8px 2px}
+  .forms{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .forms.wide{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+  .form{background:#fff;border:1px solid #ECE6DA;border-radius:14px;padding:12px;text-align:center}
+  .form.done{border-color:#7BB661;background:#F4FAF0}
+  .form .s{font-size:34px;font-weight:800;color:#C7613F;min-height:44px;word-break:break-word}
+  .form .s.sm{font-size:19px;line-height:1.5}
+  .form .n{font-size:11px;color:#6B6B6B;margin-bottom:6px}
+  .form .row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+  .form button{border:1px solid #ECE6DA;background:#fff;border-radius:10px;padding:7px 10px;font-size:13px;cursor:pointer;font-family:inherit}
+  .recb.on{background:#E0566B;color:#fff;border-color:#E0566B}
+  .ok{color:#5E9A47;font-size:12px;font-weight:700}
+  .danger{background:#fff;border:1px solid #E5B5A8;color:#B5482F;border-radius:10px;padding:8px 12px;cursor:pointer;font-family:inherit;font-size:13px}
+  input,.pg,.pa,.act{font-family:inherit}
+  .act{border:1px solid #7BB661;background:#fff;color:#5E9A47;border-radius:10px;padding:8px 12px;cursor:pointer;font-size:13px}
+  .act.on{background:#7BB661;color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>🎙️ استوديو تسجيل الأصوات</h1><div style="font-size:12px;color:#6B6B6B">سجّل الحروف والكلمات والجمل — تُحفَظ على جهازك وتُستعمَل في نموذج «الصوت البشريّ»</div></div>
+    <a class="topbtn" href="home.html">🏠 الفهرس</a>
+  </header>
+  <div class="note">1) اكتب اسمك وحدّد جنسك وفئتك — لكل مُسجِّلٍ <b>مجموعةٌ مستقلّة</b>. 2) اختر التبويب (حروف/كلمات/جمل) ثمّ الوحدة، وسجّل. 3) فعّل مجموعتك أو صدّرها.</div>
+  <div id="profile" class="note" style="background:#EEF6E9;color:#2f5a1f"></div>
+  <div id="setbar" class="setbar"></div>
+  <div id="others"></div>
+  <div>التقدّم الكليّ: <b id="prog">0/0</b><div class="bar"><i id="progbar" style="width:0%"></i></div></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="units" id="units"></div>
+  <div id="panel"></div>
+  <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="topbtn" id="export" style="border-color:#7BB661;color:#5E9A47">📦 تصدير كل التسجيلات (ZIP مصنَّف)</button>
+    <button class="danger" id="wipeSet">🗑️ حذف مجموعتي الحالية</button>
+    <button class="danger" id="wipe">🗑️ حذف كل المجموعات</button>
+  </div>
+</div>
+
+<script type="module">
+import { LETTERS, sylRows, formsOf } from "./src/syl.js";
+import { saveVoice, deleteVoice, voicesOfSet, allVoices, listSets, clearSet, clearVoices, primeVoices, renameSet } from "./src/voices.js";
+import { confirmWithPassword, undoable } from "./src/confirm-action.js";
+import { getVoiceSet, setVoiceSet, VOICE_TYPES, CLIPS } from "./src/sound-prefs.js";
+import { zipStore } from "./src/zip.js";
+import { WORD_UNITS, SENTENCE_UNITS } from "./src/vocab.js";
+import bundled from "./src/voices-bundled.json";
+
+// المجموعات المُدمجة مع البرنامج (كـ«صالح») — تُستعرَض وتُشغَّل، وأيّ إعادة تسجيلٍ تُنشئ نسخةً على
+// الجهاز تتقدّم عليها (طبقة تحديث). مفاتيح الملفّات: "<setId> <النصّ>".
+const VSEP = " ";
+const BUNDLED_SETS = bundled.sets || [];
+const BUNDLED_FILES = bundled.files || {};
+const bundledUrl = (sid, text) => BUNDLED_FILES[sid + VSEP + String(text).trim()] || null;
+
+const uniq = a => [...new Set(a.filter(Boolean).map(s=>String(s).trim()))];
+// أقسامٌ ووحدات لتفادي الازدحام — الكلمات/الجمل من المصدر الموحّد vocab.js (تتزامن مع المحتوى تلقائياً).
+const SECTIONS = [
+  { key:"letters", label:"الحروف", kind:"letters",
+    units: LETTERS.map(c=>({ key:c, label:c, rows:sylRows(c), items:formsOf(c) })) },
+  { key:"words", label:"الكلمات", kind:"flat", units: WORD_UNITS },
+  { key:"sentences", label:"الجمل والعبارات", kind:"flat", units: SENTENCE_UNITS },
+];
+const ALL_ITEMS = uniq([].concat(...SECTIONS.flatMap(s=>s.units.map(u=>u.items))));
+
+const AGES = [["child","طفل","طفلة"],["teen","يافع","يافعة"],["youth","شابّ","شابّة"],["adult","رجل","امرأة"],["elder","شيخ","عجوز"]];
+const PKEY = "tilmithi_recorder_profile";
+let profile = (()=>{ try{ return JSON.parse(localStorage.getItem(PKEY))||{}; }catch(e){ return {}; } })();
+profile.name=profile.name||""; profile.gender=profile.gender||"male"; profile.age=profile.age||"adult";
+function saveProfile(){ try{ localStorage.setItem(PKEY, JSON.stringify(profile)); }catch(e){} }
+function profileSetId(){ return `${profile.gender}-${profile.age}-${(profile.name||"بلا-اسم").trim()||"بلا-اسم"}`; }
+
+// المجموعة المعروضة/المُحرَّرة حالياً (قد تكون مجموعة الملفّ، أو مُدمجة، أو محفوظةً على الجهاز).
+let studioSet = profileSetId();
+let studioMeta = {name:profile.name,gender:profile.gender,age:profile.age};
+let deviceSets = [];                       // مجموعات الجهاز (تُحدَّث في refreshSet)
+function setId(){ return studioSet; }      // كلّ ما يلي يعمل على المجموعة المعروضة
+const isProfileSet = () => studioSet === profileSetId();
+
+let secIdx=0, unitKey=SECTIONS[0].units[0].key;
+let curMap=new Map();
+async function loadCur(){ for(const v of curMap.values()){ try{URL.revokeObjectURL(v.url);}catch(e){} } curMap=new Map();
+  (await voicesOfSet(setId())).forEach(v=>curMap.set(v.text,{blob:v.blob,url:URL.createObjectURL(v.blob)})); }
+// متوفّرٌ إن سُجِّل على الجهاز أو كان مُدمجاً ضمن هذه المجموعة. تسجيل الجهاز يُقدَّم (تحديث).
+const hasV=t=>curMap.has(t)||!!bundledUrl(studioSet,t);
+const urlV=t=>(curMap.get(t)||{}).url||bundledUrl(studioSet,t);
+
+const tabsEl=document.getElementById("tabs"), unitsEl=document.getElementById("units"), panel=document.getElementById("panel");
+let stream=null, rec=null, chunks=[];
+async function ensureMic(){ if(!stream) stream=await navigator.mediaDevices.getUserMedia({audio:true}); return stream; }
+
+function renderProfile(){
+  const el=document.getElementById("profile");
+  el.innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <input id="rname" placeholder="اسم المُسجِّل" value="${(profile.name||"").replace(/"/g,'&quot;')}" style="flex:1;min-width:140px;padding:8px 10px;border:1px solid #ECE6DA;border-radius:10px">
+      <span style="display:flex;gap:4px">
+        <button class="pg" data-g="male" style="${profile.gender==="male"?"background:#E07A5F;color:#fff;":""}border:1px solid #ECE6DA;border-radius:999px;padding:6px 12px;cursor:pointer">ذكر</button>
+        <button class="pg" data-g="female" style="${profile.gender==="female"?"background:#E07A5F;color:#fff;":""}border:1px solid #ECE6DA;border-radius:999px;padding:6px 12px;cursor:pointer">أنثى</button>
+      </span></div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px">${AGES.map(a=>`<button class="pa" data-a="${a[0]}" style="${profile.age===a[0]?"background:#7BB661;color:#fff;":""}border:1px solid #ECE6DA;border-radius:999px;padding:6px 12px;cursor:pointer;font-size:13px">${profile.gender==="female"?a[2]:a[1]}</button>`).join("")}</div>`;
+  // تعديل الملفّ يتبعه studioSet إن كانت المجموعة المعروضة هي مجموعة الملفّ (لا إن كانت مُدمجةً مختارة).
+  const syncProfile = ()=>{ const was=isProfileSet(); saveProfile(); if(was){ studioSet=profileSetId(); studioMeta={name:profile.name,gender:profile.gender,age:profile.age}; } };
+  el.querySelector("#rname").addEventListener("input",e=>{ profile.name=e.target.value; syncProfile(); refreshSet(); });
+  el.querySelectorAll(".pg").forEach(b=>b.onclick=()=>{ profile.gender=b.getAttribute("data-g"); syncProfile(); renderProfile(); refreshSet(); });
+  el.querySelectorAll(".pa").forEach(b=>b.onclick=()=>{ profile.age=b.getAttribute("data-a"); syncProfile(); renderProfile(); refreshSet(); });
+}
+// خياراتُ القائمة المنسدلة: مجموعة الملفّ + المُدمجة + مجموعات الجهاز (دون تكرار).
+function setOptions(){
+  const opts=[], seen=new Set();
+  const add=(id,label,meta,kind)=>{ if(seen.has(id))return; seen.add(id); opts.push({id,label,meta,kind}); };
+  add(profileSetId(), "🎙️ مجموعتي: "+(profile.name||"بلا-اسم"), {name:profile.name,gender:profile.gender,age:profile.age}, "mine");
+  BUNDLED_SETS.forEach(s=>add(s.id, "📦 "+(s.name||s.id)+" (مُدمجة)", {name:s.name,gender:s.gender,age:s.age}, "bundled"));
+  deviceSets.forEach(s=>add(s.setId, "💾 "+((s.meta&&s.meta.name)||s.setId)+" (على جهازك)", s.meta||null, "device"));
+  return opts;
+}
+function renderSetbar(){
+  const el=document.getElementById("setbar");
+  const used=VOICE_TYPES.some(t=>getVoiceSet(t)===studioSet), done=ALL_ITEMS.filter(hasV).length;
+  const opts=setOptions();
+  const sel=`<select id="setpick" style="font-family:inherit;border:1px solid #ECE6DA;border-radius:10px;padding:6px 8px;font-size:13px;max-width:220px">${opts.map(o=>`<option value="${o.id}" ${o.id===studioSet?"selected":""}>${o.label}</option>`).join("")}</select>`;
+  const isBundled = BUNDLED_SETS.some(s=>s.id===studioSet);
+  el.innerHTML=`<span>📂 المعروضة:</span> ${sel} <span>(${done} تسجيلًا)</span>
+    ${isBundled?'<span style="font-size:12px;color:#7a4fa0">↻ سجّلْ فوقها لتحديثها على جهازك</span>':''}
+    <button class="act ${used?"on":""}" id="useMine">${used?"✓ مُستعمَلةٌ في التطبيق":"استعمل هذه في التطبيق"}</button>`;
+  el.querySelector("#setpick").onchange=async e=>{ const o=opts.find(x=>x.id===e.target.value); if(!o)return; studioSet=o.id; studioMeta=o.meta||{name:profile.name,gender:profile.gender,age:profile.age}; await refreshSet(); };
+  el.querySelector("#useMine").onclick=async ()=>{ VOICE_TYPES.forEach(t=>setVoiceSet(t,studioSet)); await primeVoices(); renderSetbar(); };
+}
+async function renderOthers(){
+  const el=document.getElementById("others"), me=setId();
+  const sets=(await listSets()).filter(s=>s.setId!==me);
+  if(!sets.length){ el.innerHTML=""; return; }
+  el.innerHTML=`<div class="note" style="background:#FBF7EF;border:1px dashed #ECE6DA;color:#6B6B6B">مجموعاتٌ أخرى محفوظة — «ضمّ» لنقلها إلى مجموعتك «${me}»:</div>`
+    +sets.map(s=>`<div style="display:flex;gap:8px;align-items:center;margin:4px 2px"><span style="flex:1;font-size:13px">📂 ${(s.meta&&s.meta.name)||s.setId} (${s.count})</span><button class="act mergeb" data-id="${s.setId}">⤵️ ضمّ إليّ</button></div>`).join("");
+  el.querySelectorAll(".mergeb").forEach(b=>b.onclick=async ()=>{ const id=b.getAttribute("data-id");
+    if(!await confirmWithPassword("ضمّ تسجيلات «"+id+"» إلى مجموعتك «"+me+"»؟ هذا نقلٌ للسجلّات."))return;
+    undoable("سيُنقَل السجلّ…", async ()=>{ await renameSet(id,me,{name:profile.name,gender:profile.gender,age:profile.age}); await primeVoices(); await refreshSet(); }); });
+}
+function card(s,n){ const done=hasV(s), sm=s.length>4?" sm":"";
+  return `<div class="form ${done?"done":""}"><div class="s${sm}">${s}</div><div class="n">${n||""}</div>
+    <div class="row"><button class="recb" data-act="rec" data-s="${s}">● سجّل</button>${done?`<button data-act="play" data-s="${s}">▶</button><button data-act="del" data-s="${s}">🗑️</button><span class="ok">✓</span>`:""}</div></div>`; }
+function renderTabs(){ tabsEl.innerHTML=SECTIONS.map((s,i)=>`<button class="tab ${i===secIdx?"on":""}" data-sec="${i}">${s.label}</button>`).join(""); }
+function renderUnits(){
+  const sec=SECTIONS[secIdx];
+  if(sec.kind==="letters") unitsEl.innerHTML=sec.units.map(u=>`<button class="lbtn ${u.key===unitKey?"on":""}" data-u="${u.key}">${u.label}${u.items.every(hasV)?'<span class="dot"></span>':''}</button>`).join("");
+  else unitsEl.innerHTML=sec.units.map(u=>`<button class="ubtn ${u.key===unitKey?"on":""}" data-u="${u.key}">${u.label} <small>(${u.items.filter(hasV).length}/${u.items.length})</small></button>`).join("");
+}
+function renderPanel(){
+  const sec=SECTIONS[secIdx], u=sec.units.find(x=>x.key===unitKey)||sec.units[0];
+  if(sec.kind==="letters") panel.innerHTML=u.rows.map(r=>`<div class="grp"><h3>${r.t}</h3><div class="forms">${r.a.map(it=>card(it.s,it.n)).join("")}</div></div>`).join("");
+  else panel.innerHTML=`<div class="grp"><h3>${u.label} (${u.items.filter(hasV).length}/${u.items.length})</h3><div class="forms wide">${u.items.map(s=>card(s,"")).join("")}</div></div>`;
+}
+function updateProgress(){ const done=ALL_ITEMS.filter(hasV).length; document.getElementById("prog").textContent=`${done}/${ALL_ITEMS.length}`; document.getElementById("progbar").style.width=(ALL_ITEMS.length?Math.round(done/ALL_ITEMS.length*100):0)+"%"; }
+function render(){ renderTabs(); renderUnits(); renderPanel(); renderSetbar(); updateProgress(); }
+async function refreshSet(){ await loadCur(); deviceSets = await listSets(); render(); await renderOthers(); }
+
+tabsEl.addEventListener("click",e=>{ const b=e.target.closest("[data-sec]"); if(!b)return; secIdx=+b.getAttribute("data-sec"); unitKey=SECTIONS[secIdx].units[0].key; renderTabs(); renderUnits(); renderPanel(); });
+unitsEl.addEventListener("click",e=>{ const b=e.target.closest("[data-u]"); if(!b)return; unitKey=b.getAttribute("data-u"); renderUnits(); renderPanel(); });
+panel.addEventListener("click", async e=>{
+  const b=e.target.closest("[data-act]"); if(!b)return;
+  const act=b.getAttribute("data-act"), s=b.getAttribute("data-s");
+  if(act==="play"){ const u=urlV(s); if(u){ new Audio(u).play().catch(()=>{}); } }
+  else if(act==="del"){ if(await confirmWithPassword("حذف تسجيل «"+s+"»؟")) undoable("سيُحذف التسجيل…", async ()=>{ await deleteVoice(setId(),s); await primeVoices(); await refreshSet(); }); }
+  else if(act==="rec"){
+    if(rec && rec.state==="recording"){ rec.stop(); return; }
+    try{ await ensureMic(); chunks=[]; const text=s; rec=new MediaRecorder(stream);
+      rec.ondataavailable=ev=>{ if(ev.data.size) chunks.push(ev.data); };
+      rec.onstop=async ()=>{ const blob=new Blob(chunks,{type:"audio/webm"}); await saveVoice(setId(),text,blob,studioMeta||{name:profile.name,gender:profile.gender,age:profile.age});
+        if(VOICE_TYPES.every(t=>getVoiceSet(t)===CLIPS)) VOICE_TYPES.forEach(t=>setVoiceSet(t,setId())); await primeVoices(); await refreshSet(); };
+      rec.start(); b.classList.add("on"); b.textContent="■ أوقِف";
+    }catch(err){ alert("تعذّر الوصول إلى الميكروفون: "+err.message); }
+  }
+});
+
+async function sha1hex(text){ const buf=await crypto.subtle.digest("SHA-1",new TextEncoder().encode(text)); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("").slice(0,16); }
+document.getElementById("export").addEventListener("click", async ()=>{
+  const vs=await allVoices(); if(!vs.length){ alert("لا تسجيلات بعد."); return; }
+  const files=[], idx=[];
+  for(const v of vs){ const m=v.meta||{}, folder=`${m.gender||"male"}-${m.age||"adult"}/${(m.name||"بلا-اسم")}`, hash=await sha1hex(v.text), fname=`${folder}/${hash}.webm`;
+    files.push({name:fname,data:new Uint8Array(await v.blob.arrayBuffer())}); idx.push({text:v.text,file:fname,set:v.setId,name:m.name||"",gender:m.gender||"",age:m.age||""}); }
+  files.push({name:"voices.json",data:new TextEncoder().encode(JSON.stringify(idx,null,2))});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(zipStore(files)); a.download="tilmithi-voices.zip"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+});
+document.getElementById("wipeSet").addEventListener("click", async ()=>{ const sid=setId(); if(await confirmWithPassword("حذف مجموعتك «"+sid+"» بكاملها؟")) undoable("ستُحذف المجموعة…", async ()=>{ await clearSet(sid); await primeVoices(); await refreshSet(); }); });
+document.getElementById("wipe").addEventListener("click", async ()=>{ if(await confirmWithPassword("حذف كل المجموعات نهائيًّا؟")) undoable("ستُحذف كلُّ المجموعات…", async ()=>{ await clearVoices(); await primeVoices(); await refreshSet(); }); });
+
+// تنبيهٌ: هذا الاستوديو يبني **صوتَ التطبيق المشترَك** (يسمعه كلُّ الحسابات). أمّا تمرّنُ الطفلِ الشخصيُّ
+// على القراءة فمُضمَّنٌ داخل الأقسام (القصص/سُلّم القراءة) ويُحفَظ في حسابه على حدة.
+(function studioNote(){ const note=document.querySelector(".note"); if(note) note.insertAdjacentHTML("afterend",
+  `<div class="note" style="background:#FBF7EF;border:1px dashed #ECE6DA;color:#6B6B6B">🔊 هذا الاستوديو يضبط <b>صوتَ التطبيق المشترك</b> للجميع. لِتمرّنِ الطفلِ على قراءته بصوته (محفوظٌ في حسابه)، استعمِلْ مُسجِّلَ القراءةِ داخلَ <a href="stories.html">القصص</a> و<a href="read.html">سُلّم القراءة</a>.</div>`); })();
+(async ()=>{ renderProfile(); await refreshSet(); })();
+</script>
+</body>
+</html>

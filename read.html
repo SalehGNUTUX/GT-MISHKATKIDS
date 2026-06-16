@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#E07A5F" />
+<title>مِشكاة — سُلّم القراءة</title>
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
+    --line:#ECE6DA; --primary:#E07A5F; --primary-d:#C7613F; --good:#7BB661; --bad:#E0566B;
+    --sky:#6FB3D6; --gold:#F4C95D; --violet:#C9A0DC;
+    --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,input,textarea,select,.region,.toggle,.chip,.capbtn,[onclick]{touch-action:manipulation}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:620px;margin:0 auto;padding:16px 16px 48px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 10px}
+  header h1{font-size:22px;margin:0}
+  header .sub{color:var(--muted);font-size:13px}
+  .topbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink)}
+
+  .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:8px}
+  .gcard{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
+  .gcard:hover{transform:translateY(-3px);border-color:var(--primary)}
+  .gcard .ic{font-size:42px}
+  .gcard .t{font-size:17px;font-weight:800;margin-top:4px}
+  .gcard .d{font-size:12px;color:var(--muted)}
+  .gcard .step{font-size:11px;font-weight:800;color:var(--primary-d);background:#FBEDE7;border-radius:999px;padding:1px 9px;display:inline-block;margin-bottom:4px}
+
+  .back{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .gbar{display:flex;gap:8px;align-items:center;margin:8px 2px}
+  .pill{background:#F3EEE3;border-radius:999px;padding:5px 12px;font-size:13px;color:#555;margin-inline-start:auto}
+  .pill b{color:var(--primary-d)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px 16px;text-align:center;margin-top:6px}
+  .say{font-size:14px;color:var(--muted)}
+  .emoji{font-size:62px;line-height:1.1}
+  .bigsyl{font-size:96px;font-weight:800;color:var(--primary-d);line-height:1.2;min-height:120px}
+
+  .hbtns{display:flex;gap:10px;justify-content:center;margin:8px 2px}
+  .hbtn{flex:1;background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 6px;font-size:46px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--violet);position:relative}
+  .hbtn:hover{border-color:var(--primary)}
+  .hbtn small{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-top:2px}
+
+  .syls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 2px}
+  .syl{background:#F4EDF9;border:2px solid var(--violet);border-radius:16px;padding:10px 18px;font-size:44px;font-weight:800;cursor:pointer;font-family:inherit;color:#6b4a86}
+  .syl.lit{background:var(--violet);color:#fff}
+  .word{font-size:50px;font-weight:800;letter-spacing:2px;min-height:64px;margin-top:8px;color:var(--good)}
+
+  .sentence{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px 2px;direction:rtl}
+  .sword{background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 16px;font-size:30px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .sword:hover{border-color:var(--primary)}
+  .sword.lit{background:#EEF6E9;border-color:var(--good);color:#2f5a1f}
+
+  .nav{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:16px}
+  .nav button{border:none;border-radius:12px;padding:11px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  .nav .prev{background:#fff;border:1px solid var(--line);color:var(--ink)} .nav .prev:disabled{opacity:.4}
+  .nav .next{background:var(--primary);color:#fff}
+  .pos{font-size:13px;color:var(--muted);min-width:48px}
+  .controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+  .controls button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .controls .go{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .controls .go:hover{background:var(--primary-d)}
+  .hint{text-align:center;color:var(--muted);font-size:13px;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>سُلّم القراءة 📖</h1>
+      <div class="sub">من الحرف إلى المقطع إلى الكلمة إلى الجملة</div>
+    </div>
+    <a class="topbtn" href="home.html">🏠 الفهرس</a>
+  </header>
+  <div id="view"></div>
+</div>
+
+<script type="module">
+import DATA from "./content/reading.js";
+import { logEvent, recordMastery } from "./src/progress.js";
+import { speak } from "./src/speak.js";
+import { playSpelled, cancelSpell } from "./src/spell.js";
+import { sylRows } from "./src/syl.js";
+import { robo } from "./src/robo-companion.js";
+import { attachReader } from "./src/reader-recorder.js";
+robo.mount();
+const CONS = DATA.consonants || [], WORDS = DATA.words || [], SENT = DATA.sentences || [];
+const view = document.getElementById("view");
+const rand = n => Math.floor(Math.random()*n);
+const backBar = () => `<button class="back" id="back">← سُلّم القراءة</button>`;
+function wireBack(){ const b=document.getElementById("back"); if(b) b.onclick=renderMenu; }
+let stars = 0;
+const starPill = () => `<span class="pill">⭐ <b>${stars}</b></span>`;
+
+/* ===== MENU ===== */
+const STEPS = [
+  { id:"syl",  ic:"ﹷ",  step:"الدرجة 1", t:"المقاطع", d:"حرف + حركة ← مقطع (بَ بُ بِ)" },
+  { id:"word", ic:"🔗", step:"الدرجة 2", t:"اجمع الكلمة", d:"اقرأ المقاطع واجمعها كلمةً" },
+  { id:"sent", ic:"📜", step:"الدرجة 3", t:"اقرأ الجملة", d:"اقرأ جملةً قصيرة بالحركات" },
+];
+function renderMenu(){
+  view.innerHTML = `<div class="menu">` + STEPS.map(g=>`<div class="gcard" data-g="${g.id}"><div class="step">${g.step}</div><div class="ic">${g.ic}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") + `</div>
+    <div class="hint">اصعد الدرجات بالترتيب — تُنطق الأصوات عبر متصفّحك 🔊</div>`;
+  view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
+}
+function open(id){ ({syl:startSyl,word:startWord,sent:startSent})[id](); }
+
+/* ===== الدرجة 1: المقاطع ===== */
+let ci=0;
+function startSyl(){ ci=0; renderSyl(); }
+function renderSyl(){
+  const c=CONS[ci];
+  const rows = sylRows(c).map(r=>`
+      <div class="say" style="margin-top:12px;color:var(--primary-d);font-weight:700">${r.t}</div>
+      <div class="hbtns">${r.a.map(it=>`<button class="hbtn" data-syl="${it.s}">${it.s}<small>${it.n}</small></button>`).join("")}</div>`).join("");
+  view.innerHTML = backBar()+
+    `<div class="card">
+      <div class="say">اضغط الشكل لتسمع المقطع — الحرف نفسه يتغيّر صوته</div>
+      <div class="bigsyl" id="disp">${c}</div>
+      ${rows}
+      <div class="nav"><button class="prev" id="prev" ${ci===0?"disabled":""}>الحرف السابق</button><span class="pos">${ci+1} / ${CONS.length}</span><button class="next" id="next">${ci===CONS.length-1?"إلى الأوّل ↺":"الحرف التالي ▶"}</button></div>
+    </div>`;
+  wireBack();
+  view.querySelectorAll(".hbtn").forEach(b=>b.onclick=()=>{ const s=b.getAttribute("data-syl"); document.getElementById("disp").textContent=s; speak(s); });
+  document.getElementById("prev").onclick=()=>{ if(ci>0){ci--;renderSyl();} };
+  document.getElementById("next").onclick=()=>{ ci=(ci+1)%CONS.length; renderSyl(); };
+}
+
+/* ===== الدرجة 2: اجمع الكلمة ===== */
+let wi=0, wLast=-1;
+function startWord(){ nextWord(); }
+function nextWord(){ let n; do{ n=rand(WORDS.length); }while(n===wLast && WORDS.length>1); wi=wLast=n; renderWord(); }
+function renderWord(){
+  const w=WORDS[wi];
+  view.innerHTML = backBar()+`<div class="gbar">${starPill()}</div>`+
+    `<div class="card">
+      <div class="emoji">${w.emoji}</div>
+      <div class="say">اقرأ كلّ مقطع (اضغطه لتسمعه)، ثمّ اجمعها</div>
+      <div class="syls" id="syls">${w.syl.map((s,i)=>`<button class="syl" data-i="${i}">${s}</button>`).join("")}</div>
+      <div class="word" id="word"></div>
+      <div class="controls"><button class="go" data-act="spell">🐢 هجِّ ببطء</button><button class="go" data-act="read">🔊 اقرأ الكلمة كاملةً</button><button data-act="next">كلمة أخرى ⏭️</button></div>
+      <div id="rrHost"></div>
+    </div>`;
+  wireBack();
+  attachReader(document.getElementById("rrHost"), w.word, { label:"قراءتك للكلمة" });
+  view.querySelector("#syls").addEventListener("click",e=>{ const b=e.target.closest(".syl"); if(!b)return; b.classList.add("lit"); speak(w.syl[+b.getAttribute("data-i")]); });
+  view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-act]"); if(!b)return;
+    const act=b.getAttribute("data-act");
+    if(act==="spell"){
+      const tiles=view.querySelectorAll("#syls .syl"); tiles.forEach(t=>t.classList.remove("lit"));
+      document.getElementById("word").textContent="";
+      playSpelled(w.word, { units:w.syl, onUnit:(u,i)=>{ if(tiles[i]) tiles[i].classList.add("lit"); document.getElementById("word").textContent=w.syl.slice(0,i+1).join(""); } });
+    } else if(act==="read"){ document.getElementById("word").textContent=w.word; speak(w.word); stars++; logEvent("read_practice"); recordMastery("R:"+w.word,true); robo.applaud(); const p=document.querySelector(".pill b"); if(p)p.textContent=stars; }
+    else { cancelSpell(); nextWord(); } });
+}
+
+/* ===== الدرجة 3: اقرأ الجملة ===== */
+let si=0, sLast=-1;
+function startSent(){ nextSent(); }
+function nextSent(){ let n; do{ n=rand(SENT.length); }while(n===sLast && SENT.length>1); si=sLast=n; renderSent(); }
+function renderSent(){
+  const s=SENT[si];
+  view.innerHTML = backBar()+`<div class="gbar">${starPill()}</div>`+
+    `<div class="card">
+      <div class="emoji">${s.emoji}</div>
+      <div class="say">اضغط كلّ كلمة لتسمعها، ثمّ اقرأ الجملة</div>
+      <div class="sentence" id="sent">${s.words.map((w,i)=>`<button class="sword" data-i="${i}">${w}</button>`).join("")}</div>
+      <div class="controls"><button class="go" data-act="slow">🐢 بتمهّل</button><button class="go" data-act="read">🔊 اقرأ الجملة</button><button data-act="next">جملة أخرى ⏭️</button></div>
+      <div id="rrHost"></div>
+    </div>`;
+  wireBack();
+  attachReader(document.getElementById("rrHost"), s.text, { label:"قراءتك للجملة" });
+  view.querySelector("#sent").addEventListener("click",e=>{ const b=e.target.closest(".sword"); if(!b)return; b.classList.add("lit"); speak(s.words[+b.getAttribute("data-i")]); });
+  view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-act]"); if(!b)return;
+    const act=b.getAttribute("data-act");
+    if(act==="slow"){
+      const tiles=view.querySelectorAll("#sent .sword"); tiles.forEach(t=>t.classList.remove("lit"));
+      playSpelled(s.text, { units:s.words, gap:320, onUnit:(u,i)=>{ if(tiles[i]) tiles[i].classList.add("lit"); } });
+    } else if(act==="read"){ view.querySelectorAll(".sword").forEach(x=>x.classList.add("lit")); speak(s.text); stars++; logEvent("read_practice"); recordMastery("R:"+s.text,true); robo.applaud(); const p=document.querySelector(".pill b"); if(p)p.textContent=stars; }
+    else { cancelSpell(); nextSent(); } });
+}
+
+renderMenu();
+</script>
+</body>
+</html>

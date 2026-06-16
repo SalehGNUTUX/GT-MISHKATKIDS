@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" font-family="Arial,sans-serif">
+  <rect width="210" height="297" fill="#ffffff"/>
+  <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#E0566B"/></marker></defs>
+  <text x="105" y="22" text-anchor="middle" font-size="6" font-weight="bold" fill="#000">نجمة خماسيّة — شعاع 4 سم</text>
+  <text x="105" y="32" text-anchor="middle" font-size="3.5" fill="#555">قُصَّ على الخطّ المتقطّع الأحمر · اطبع على A4 بمقياس 100%</text>
+
+  <polygon points="105,80 115.58,105.44 143.04,107.64 122.12,125.56 128.51,152.36 105,138 81.49,152.36 87.88,125.56 66.96,107.64 94.42,105.44"
+           fill="#FFF6DD" stroke="#E0566B" stroke-width="1" stroke-dasharray="4,2"/>
+
+  <!-- مقصّ + سهم -->
+  <text x="96" y="76" font-size="9" fill="#E0566B">✂</text>
+  <line x1="107" y1="83" x2="120" y2="100" stroke="#E0566B" stroke-width="0.6" marker-end="url(#arr)"/>
+  <text x="118" y="76" text-anchor="middle" font-size="3" fill="#E0566B">ابدأ من القمّة</text>
+
+  <text x="105" y="170" text-anchor="middle" font-size="4" fill="#C7613F">شعاعها الخارجي 4 سم — والداخلي ≈ 1.8 سم</text>
+
+  <circle cx="105" cy="86" r="1.5" fill="none" stroke="#5E9A47" stroke-width="0.4" stroke-dasharray="0.6,0.6"/>
+  <text x="111" y="88" font-size="3" fill="#5E9A47">اثقب هنا</text>
+
+  <g transform="translate(28,200)">
+    <text x="77" y="0" text-anchor="middle" font-size="4.5" fill="#000" font-weight="bold">🧵 اثقب أحد الأشعّة العُلوية ومرّر خيطًا — تَلتمعُ كنجمة</text>
+    <line x1="77" y1="6" x2="77" y2="22" stroke="#3a4250" stroke-width="0.5" stroke-dasharray="2,1.5"/>
+    <polygon points="77,22 81,32 92,33 84,40 86,52 77,46 68,52 70,40 62,33 73,32" fill="#FFF6DD" stroke="#E0566B" stroke-width="0.5" stroke-dasharray="2,1.5"/>
+    <circle cx="77" cy="22" r="1" fill="none" stroke="#5E9A47"/>
+  </g>
+
+  <text x="105" y="280" text-anchor="middle" font-size="3" fill="#555">مسطرة فحص (5 cm)</text>
+  <line x1="80" y1="285" x2="130" y2="285" stroke="#000" stroke-width="0.5"/>
+  <g stroke="#000" stroke-width="0.3"><line x1="80" y1="282" x2="80" y2="288"/><line x1="130" y1="282" x2="130" y2="288"/></g>
+</svg>

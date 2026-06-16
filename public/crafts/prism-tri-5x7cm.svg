@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" font-family="Arial,sans-serif">
+  <rect width="210" height="297" fill="#ffffff"/>
+  <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#E0566B"/></marker></defs>
+  <text x="105" y="22" text-anchor="middle" font-size="6" font-weight="bold" fill="#000">شبكة موشور ثلاثيّ — قاعدة 5 سم، طول 7 سم</text>
+  <text x="105" y="32" text-anchor="middle" font-size="3.3" fill="#555">3 مستطيلاتٍ جانبيّة + قاعدتان مثلّثتان · قُصّ المحيط واطوِ الداخل</text>
+
+  <!-- 3 مستطيلات بألوانٍ مختلفة 50×70 -->
+  <rect x="30" y="105" width="50" height="70" fill="#FFF6DD"/>
+  <rect x="80" y="105" width="50" height="70" fill="#F4C95D" fill-opacity="0.5"/>
+  <rect x="130" y="105" width="50" height="70" fill="#D9A22E" fill-opacity="0.5"/>
+
+  <!-- المثلّث العلوي والسفلي (متساويا الأضلاع، ضلع 50مم، ارتفاع 43.3) -->
+  <polygon points="80,105 130,105 105,61.7" fill="#FCEBC9"/>
+  <polygon points="80,175 130,175 105,218.3" fill="#FCEBC9"/>
+
+  <!-- خطوط الطيّ -->
+  <g stroke="#7BB661" stroke-width="0.5" stroke-dasharray="2,1.5">
+    <line x1="80"  y1="105" x2="80"  y2="175"/>
+    <line x1="130" y1="105" x2="130" y2="175"/>
+    <line x1="80"  y1="105" x2="130" y2="105"/>
+    <line x1="80"  y1="175" x2="130" y2="175"/>
+  </g>
+
+  <!-- محيط القصّ -->
+  <polygon points="30,105 80,105 105,61.7 130,105 180,105 180,175 130,175 105,218.3 80,175 30,175"
+           fill="none" stroke="#E0566B" stroke-width="1" stroke-dasharray="4,2"/>
+
+  <!-- مقصّ -->
+  <text x="20" y="102" font-size="9" fill="#E0566B">✂</text>
+  <line x1="31" y1="105" x2="55" y2="105" stroke="#E0566B" stroke-width="0.6" marker-end="url(#arr)"/>
+  <text x="45" y="97" text-anchor="middle" font-size="3" fill="#E0566B">ابدأ من هنا</text>
+
+  <!-- مقاسات -->
+  <text x="105" y="142" text-anchor="middle" font-size="4" fill="#3a4250">5 × 7 cm</text>
+  <text x="55" y="142" text-anchor="middle" font-size="3" fill="#3a4250">5×7</text>
+  <text x="155" y="142" text-anchor="middle" font-size="3" fill="#3a4250">5×7</text>
+  <text x="105" y="88" text-anchor="middle" font-size="3.5" fill="#C7613F">قاعدة (ضلع 5)</text>
+  <text x="105" y="198" text-anchor="middle" font-size="3.5" fill="#C7613F">قاعدة (ضلع 5)</text>
+
+  <!-- مفتاح -->
+  <g transform="translate(15,80)" font-size="3" fill="#555">
+    <rect x="0" y="-3" width="3" height="3" fill="none" stroke="#E0566B" stroke-width="0.5" stroke-dasharray="1.5,1"/><text x="4" y="-0.5">قُصّ</text>
+    <rect x="0" y="3" width="3" height="3" fill="none" stroke="#7BB661" stroke-width="0.5" stroke-dasharray="1.5,1"/><text x="4" y="5.5">اطوِ</text>
+  </g>
+
+  <!-- ═══════════════ التجميع بالخيط ═══════════════ -->
+  <text x="105" y="235" text-anchor="middle" font-size="5.5" font-weight="bold" fill="#000">كيف تُجمّعه وتُعلّقه بخيط؟</text>
+
+  <g transform="translate(8,240)">
+    <text x="22" y="6" text-anchor="middle" font-size="3.3" font-weight="bold" fill="#C7613F">1 اطوِ المستطيلات</text>
+    <g transform="translate(0,10)">
+      <rect x="6" y="14" width="11" height="22" fill="#FFF6DD" stroke="#3a4250" stroke-width="0.5"/>
+      <rect x="17" y="14" width="11" height="22" fill="#F4C95D" fill-opacity="0.5" stroke="#3a4250" stroke-width="0.5"/>
+      <rect x="28" y="14" width="11" height="22" fill="#D9A22E" fill-opacity="0.5" stroke="#3a4250" stroke-width="0.5"/>
+      <path d="M30,6 q5,-2 6,4" fill="none" stroke="#E0566B" stroke-width="0.5" marker-end="url(#arr)"/>
+    </g>
+  </g>
+
+  <g transform="translate(60,240)">
+    <text x="22" y="6" text-anchor="middle" font-size="3.3" font-weight="bold" fill="#C7613F">2 شكِّل الموشور</text>
+    <g transform="translate(0,8)">
+      <polygon points="2,18 22,8 42,18 22,28" fill="#FCEBC9" stroke="#3a4250" stroke-width="0.5"/>
+      <polygon points="2,18 2,40 22,50 22,28" fill="#FFF6DD" stroke="#3a4250" stroke-width="0.5"/>
+      <polygon points="22,28 42,18 42,40 22,50" fill="#F4C95D" fill-opacity="0.5" stroke="#3a4250" stroke-width="0.5"/>
+    </g>
+  </g>
+
+  <g transform="translate(112,240)">
+    <text x="22" y="6" text-anchor="middle" font-size="3.3" font-weight="bold" fill="#C7613F">3 ألصِق القاعدتين</text>
+    <g transform="translate(0,8)">
+      <polygon points="2,18 22,8 42,18 22,28" fill="#FCEBC9" stroke="#3a4250" stroke-width="0.5"/>
+      <polygon points="2,18 2,40 22,50 22,28" fill="#FFF6DD" stroke="#3a4250" stroke-width="0.5"/>
+      <polygon points="22,28 42,18 42,40 22,50" fill="#F4C95D" fill-opacity="0.5" stroke="#3a4250" stroke-width="0.5"/>
+      <text x="34" y="22" font-size="5">💧</text>
+    </g>
+  </g>
+
+  <g transform="translate(164,240)">
+    <text x="22" y="6" text-anchor="middle" font-size="3.3" font-weight="bold" fill="#C7613F">4 اثقب وعلّق 🧵</text>
+    <g transform="translate(0,8)">
+      <line x1="22" y1="-6" x2="22" y2="8" stroke="#3a4250" stroke-width="0.4" stroke-dasharray="1.5,1"/>
+      <polygon points="2,18 22,8 42,18 22,28" fill="#FCEBC9" stroke="#3a4250" stroke-width="0.5"/>
+      <polygon points="2,18 2,40 22,50 22,28" fill="#FFF6DD" stroke="#3a4250" stroke-width="0.5"/>
+      <polygon points="22,28 42,18 42,40 22,50" fill="#F4C95D" fill-opacity="0.5" stroke="#3a4250" stroke-width="0.5"/>
+      <circle cx="22" cy="8" r="0.8" fill="none" stroke="#5E9A47" stroke-width="0.4"/>
+    </g>
+  </g>
+
+  <text x="105" y="288" text-anchor="middle" font-size="3" fill="#5E9A47">💡 المسطحان المثلَّثان متطابقان، ولكنّ الأوجه الجانبيّة الثلاثة قد تختلف بالطلاء</text>
+</svg>

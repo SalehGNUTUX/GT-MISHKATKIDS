@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#E07A5F" />
+<title>مِشكاة — اختبارات تعليمية</title>
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
+    --line:#ECE6DA; --primary:#E07A5F; --primary-d:#C7613F; --good:#7BB661; --bad:#E0566B;
+    --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,input,textarea,select,.region,.toggle,.chip,.capbtn,[onclick]{touch-action:manipulation}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:600px;margin:0 auto;padding:16px 16px 48px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 12px}
+  header h1{font-size:22px;margin:0}
+  header .sub{color:var(--muted);font-size:13px}
+  .topbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink)}
+
+  .setup{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px}
+  .field{margin:10px 0}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  select{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
+  .chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .start{width:100%;background:var(--primary);color:#fff;border:none;border-radius:14px;padding:14px;font-size:17px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:14px}
+  .start:hover{background:var(--primary-d)}
+  .start:disabled{opacity:.45;cursor:default}
+
+  .bar{display:flex;gap:8px;align-items:center;margin:2px 2px 12px}
+  .bar .pill{background:#F3EEE3;border-radius:999px;padding:6px 14px;font-size:14px;color:#555}
+  .bar .pill b{color:var(--primary-d)}
+  .progress{height:7px;background:#EFEADD;border-radius:999px;overflow:hidden;margin:0 2px 14px}
+  .progress > span{display:block;height:100%;background:var(--primary);transition:width .25s}
+
+  .qcard{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px 18px}
+  .qcat{font-size:11px;background:#FBEDE7;color:var(--primary-d);border-radius:999px;padding:2px 10px;display:inline-block;margin-bottom:8px}
+  .qtext{font-size:20px;font-weight:700;line-height:1.9;margin:4px 2px 16px;min-height:60px}
+  .opts{display:grid;gap:10px}
+  .opt{text-align:start;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:13px 15px;font-size:17px;cursor:pointer;font-family:inherit;color:var(--ink);transition:border-color .1s,background .1s}
+  .opt:hover{border-color:var(--primary)}
+  .opt.correct{background:#EEF6E9;border-color:var(--good);color:#2f5a1f;font-weight:700}
+  .opt.wrong{background:#FCEBEE;border-color:var(--bad);color:#8c2b3a}
+  .opt:disabled{cursor:default}
+  .opt .mk{float:inline-end;font-weight:800}
+  .next{width:100%;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:14px;background:var(--primary);color:#fff}
+  .next:hover{background:var(--primary-d)}
+
+  .result{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:26px 18px;text-align:center}
+  .result .big{font-size:46px;font-weight:800;color:var(--primary-d)}
+  .result .msg{font-size:19px;font-weight:700;margin:6px 0 4px}
+  .result .sub{color:var(--muted);font-size:14px;margin-bottom:14px}
+  .result button{border:none;border-radius:14px;padding:13px 20px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin:5px}
+  .again{background:var(--primary);color:#fff}
+  .change{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .src{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>اختبارات تعليمية 🎯</h1>
+      <div class="sub">اختر القسم والعمر، ثمّ أجِب — تظهر النتيجة فورًا</div>
+    </div>
+    <a class="topbtn" href="home.html">🏠 الفهرس</a>
+  </header>
+  <div id="view"></div>
+  <div class="src">الأسئلة مستوحاة من مشروع GT-SARARIM (رخصة GPL-3.0)</div>
+</div>
+
+<script type="module">
+import data from "./content/quiz.js";
+import { logEvent, recordMastery, getChildAge } from "./src/progress.js";
+import { robo } from "./src/robo-companion.js";
+import { autoToggleHtml, wireAuto } from "./src/quiz-flow.js";
+import { isAutoNext } from "./src/sound-prefs.js";
+robo.mount();
+
+const ALL = data.questions || [];
+const SESSION_SIZE = 10;
+const view = document.getElementById("view");
+
+// فئات الاختبار العمرية تختلف عن فئات التطبيق، فنطبّق الافتراض الذكيّ فقط إن طابق.
+let fCat = "all", fAge = ["4-6","6-8","9-12"].includes(getChildAge()) ? getChildAge() : "all";
+let session = [], qi = 0, score = 0, answered = false;
+
+const shuffle = a => { for(let k=a.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [a[k],a[j]]=[a[j],a[k]]; } return a; };
+const strip = s => s.replace(/[ً-ْـ]/g, ""); // remove harakat for category labels in <option>
+
+const pool = () => ALL.filter(q => (fCat==="all"||q.category===fCat) && (fAge==="all"||q.age_band===fAge));
+const CATS = [...new Set(ALL.map(q => q.category))];
+
+function renderSetup(){
+  session = [];
+  const opts = `<option value="all">كل الأقسام</option>` +
+    CATS.map(c => `<option value="${c}">${strip(c)} (${ALL.filter(q=>q.category===c).length})</option>`).join("");
+  view.innerHTML = `<div class="setup">
+    <div class="field">
+      <label>القسم</label>
+      <select id="cat">${opts}</select>
+    </div>
+    <div class="field">
+      <label>الفئة العمرية</label>
+      <div class="chips" id="age">
+        <button class="chip ${fAge==="all"?"on":""}" data-v="all">الكل</button>
+        <button class="chip ${fAge==="4-6"?"on":""}" data-v="4-6">4–6</button>
+        <button class="chip ${fAge==="6-8"?"on":""}" data-v="6-8">6–8</button>
+        <button class="chip ${fAge==="9-12"?"on":""}" data-v="9-12">9–12</button>
+      </div>
+    </div>
+    <button class="start" id="start">ابدأ الاختبار ▶</button>
+    <div class="sub" id="avail" style="text-align:center;color:var(--muted);font-size:13px;margin-top:10px"></div>
+  </div>`;
+
+  const cat = document.getElementById("cat");
+  cat.value = fCat;
+  cat.onchange = ()=>{ fCat = cat.value; updateAvail(); };
+  document.getElementById("age").addEventListener("click", e=>{
+    const b=e.target.closest("button[data-v]"); if(!b) return;
+    document.querySelectorAll("#age .chip").forEach(x=>x.classList.toggle("on", x===b));
+    fAge = b.getAttribute("data-v"); updateAvail();
+  });
+  document.getElementById("start").onclick = startQuiz;
+  updateAvail();
+}
+
+function updateAvail(){
+  const n = pool().length;
+  const el = document.getElementById("avail");
+  const btn = document.getElementById("start");
+  el.textContent = n ? `${n} سؤالًا متاحًا — سيُختار حتى ${Math.min(SESSION_SIZE,n)} عشوائيًّا.` : "لا أسئلة بهذا التصفية.";
+  btn.disabled = !n;
+}
+
+function startQuiz(){
+  const p = shuffle([...pool()]).slice(0, SESSION_SIZE);
+  session = p.map(q => {
+    const opts = q.options.map((t,idx)=>({ t, correct: idx===q.correct }));
+    return { cat: q.category, q: q.q, opts: shuffle(opts) };
+  });
+  qi = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const item = session[qi];
+  answered = false;
+  view.innerHTML = `
+    <div class="bar">
+      <span class="pill">سؤال <b>${qi+1}</b> / ${session.length}</span>
+      <span class="pill">الصحيح: <b id="scoreVal">${score}</b></span>
+      ${autoToggleHtml()}
+    </div>
+    <div class="progress"><span style="width:${(qi/session.length)*100}%"></span></div>
+    <div class="qcard">
+      <span class="qcat">${strip(item.cat)}</span>
+      <div class="qtext">${item.q}</div>
+      <div class="opts" id="opts">
+        ${item.opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.t}</button>`).join("")}
+      </div>
+      <button class="next" id="next" style="display:none">${qi===session.length-1?"إظهار النتيجة 🌟":"التالي ▶"}</button>
+    </div>`;
+
+  wireAuto(view);
+  const advance = ()=>{ if(qi < session.length-1){ qi++; renderQuestion(); } else { renderResult(); } };
+  const autoAdvance = ()=>{ if(isAutoNext()) advance(); };  // ينتقل تلقائياً بعد انتهاء ردّة فعل الآلي (إن فُعِّل)
+  document.getElementById("opts").addEventListener("click", e=>{
+    const b = e.target.closest("button.opt"); if(!b || answered) return;
+    answered = true;
+    const k = +b.getAttribute("data-k");
+    const opts = document.querySelectorAll("#opts .opt");
+    opts.forEach((el,idx)=>{
+      el.disabled = true;
+      if(session[qi].opts[idx].correct){ el.classList.add("correct"); el.querySelector(".mk")||el.insertAdjacentHTML("beforeend",' <span class="mk">✓</span>'); }
+    });
+    if(session[qi].opts[k].correct){ score++; document.getElementById("scoreVal").textContent = score; recordMastery("Q:"+(session[qi].cat||"عام"),true); robo.cheer(undefined,{then:autoAdvance}); }
+    else { b.classList.add("wrong"); b.insertAdjacentHTML("beforeend",' <span class="mk">✗</span>'); recordMastery("Q:"+(session[qi].cat||"عام"),false); robo.recall({then:autoAdvance}); }
+    const nx = document.getElementById("next"); nx.style.display = "block";
+  });
+  document.getElementById("next").onclick = advance;
+}
+
+function renderResult(){
+  const total = session.length, pct = Math.round((score/total)*100);
+  logEvent("quiz_done", { add: { quiz_score: score, quiz_total: total } });
+  let msg, emoji;
+  if(pct>=80){ msg="ممتاز! عقلٌ متوقّد 🌟"; emoji="🏆"; }
+  else if(pct>=50){ msg="أحسنت! واصِل التعلّم"; emoji="👏"; }
+  else { msg="بدايةٌ طيّبة — جرّب مرّة أخرى"; emoji="🌱"; }
+  view.innerHTML = `<div class="result">
+    <div style="font-size:40px">${emoji}</div>
+    <div class="big">${score} / ${total}</div>
+    <div class="msg">${msg}</div>
+    <div class="sub">نسبة الإجابات الصحيحة: ${pct}%</div>
+    <button class="again" id="again">أعد الاختبار</button>
+    <button class="change" id="change">غيّر القسم</button>
+  </div>`;
+  document.getElementById("again").onclick = startQuiz;
+  document.getElementById("change").onclick = renderSetup;
+}
+
+renderSetup();
+</script>
+</body>
+</html>

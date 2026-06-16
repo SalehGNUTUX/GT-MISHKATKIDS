@@ -1,0 +1,31 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="مِشكاة — الطفل والآليّ">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FBF7EF"/><stop offset="100%" stop-color="#F1E7D2"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="46%" r="50%">
+      <stop offset="0%" stop-color="#FFF6D8"/><stop offset="45%" stop-color="#F4C95D"/>
+      <stop offset="100%" stop-color="#F4C95D" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
+  <!-- المِشكاة: كُوّةٌ مقوّسة (محراب) -->
+  <path d="M132 372 V214 a124 124 0 0 1 248 0 V372 Z" fill="#1F7A5E"/>
+  <path d="M160 372 V216 a96 96 0 0 1 192 0 V372 Z" fill="#FBF7EF"/>
+  <!-- توهّج نور العلم -->
+  <circle cx="256" cy="238" r="132" fill="url(#glow)"/>
+  <!-- المصباح المعلّق داخل المِشكاة -->
+  <line x1="256" y1="132" x2="256" y2="170" stroke="#C99B3B" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="256" cy="180" r="11" fill="#C99B3B"/>
+  <circle cx="256" cy="240" r="58" fill="#F4C95D" stroke="#C99B3B" stroke-width="5"/>
+  <circle cx="256" cy="240" r="26" fill="#FFF6D8"/>
+  <!-- الطفلُ والآليّ تحت النور (يدٌ بيد) -->
+  <circle cx="210" cy="392" r="24" fill="#E07A5F"/>
+  <path d="M182 462 a28 30 0 0 1 56 0 Z" fill="#E07A5F"/>
+  <line x1="302" y1="372" x2="302" y2="360" stroke="#8A93A0" stroke-width="5"/>
+  <circle cx="302" cy="354" r="7" fill="#F4C95D"/>
+  <rect x="276" y="372" width="52" height="46" rx="14" fill="#B8C0CC"/>
+  <circle cx="292" cy="392" r="6" fill="#3a4250"/><circle cx="312" cy="392" r="6" fill="#3a4250"/>
+  <rect x="280" y="426" width="44" height="34" rx="12" fill="#8A93A0"/>
+  <rect x="232" y="436" width="52" height="11" rx="5.5" fill="#C99B3B"/>
+</svg>

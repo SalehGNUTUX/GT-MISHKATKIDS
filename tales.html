@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#E07A5F" />
+<title>مِشكاة — قصص وعِبَر</title>
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
+    --line:#ECE6DA; --primary:#E07A5F; --primary-d:#C7613F; --good:#7BB661; --bad:#E0566B;
+    --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,input,textarea,select,.region,.toggle,.chip,.capbtn,[onclick]{touch-action:manipulation}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:660px;margin:0 auto;padding:16px 16px 48px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 12px}
+  header h1{font-size:22px;margin:0}
+  header .sub{color:var(--muted);font-size:13px}
+  .topbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink)}
+
+  .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 2px}
+  .chips .lbl{font-size:12px;color:var(--muted);margin-inline-end:2px}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
+  .chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .count{font-size:13px;color:var(--muted);margin:10px 2px 4px}
+
+  .covers{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .cover{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;cursor:pointer;text-align:center;transition:transform .12s,border-color .12s}
+  .cover:hover{transform:translateY(-3px);border-color:var(--primary)}
+  .cover .art{font-size:46px;padding:20px 0 8px}
+  .cover .t{font-size:17px;font-weight:800;padding:0 12px}
+  .cover .v{font-size:12px;font-weight:700;padding:4px 0 14px}
+
+  .reader{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:18px 18px 22px}
+  .rcat{font-size:12px;font-weight:700;display:inline-block;border-radius:999px;padding:3px 12px;margin-bottom:6px}
+  .rtitle{font-size:23px;font-weight:800;margin:4px 0 12px;text-align:center}
+  .rhero{font-size:54px;text-align:center;margin:4px 0 8px}
+  .rtext{font-size:20px;line-height:2.1;margin:10px 4px 18px}
+  .qhead{font-size:15px;color:var(--primary-d);font-weight:800;margin:16px 4px 8px;border-top:1px dashed var(--line);padding-top:14px}
+  .q{margin:12px 2px}
+  .q .qt{font-size:17px;font-weight:700;margin-bottom:8px}
+  .opts{display:grid;gap:8px}
+  .opt{text-align:start;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:11px 14px;font-size:16px;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .opt:hover{border-color:var(--primary)}
+  .opt.correct{background:#EEF6E9;border-color:var(--good);color:#2f5a1f;font-weight:700}
+  .opt.wrong{background:#FCEBEE;border-color:var(--bad);color:#8c2b3a}
+  .opt:disabled{cursor:default}
+  .opt .mk{float:inline-end;font-weight:800}
+  .nav{display:flex;gap:10px;margin-top:18px}
+  .nav button{flex:1;border:none;border-radius:14px;padding:13px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
+  .next{background:var(--primary);color:#fff}
+  .next:hover{background:var(--primary-d)}
+  .back{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .empty{padding:26px;text-align:center;color:var(--muted)}
+  .src{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>قصص وعِبَر 📖</h1>
+      <div class="sub">قصصٌ قصيرة بالحركات + أسئلة فهم — اقرأها مع طفلك</div>
+    </div>
+    <a class="topbtn" href="home.html">🏠 الفهرس</a>
+  </header>
+  <div id="filters"></div>
+  <div class="count" id="count"></div>
+  <div id="view"></div>
+  <div class="src">القصص مستوحاة من مشروع GT-SARARIM (رخصة GPL-3.0)</div>
+</div>
+
+<script type="module">
+import data from "./content/sararim-stories.js";
+import { logEvent } from "./src/progress.js";
+import { robo } from "./src/robo-companion.js";
+import { attachReader } from "./src/reader-recorder.js";
+import { isStoryReadOn, showTashkeel, setShowTashkeel, stripTashkeel } from "./src/sound-prefs.js";
+import { attachStoryReader } from "./src/story-reader.js";
+const disp = t => showTashkeel() ? t : stripTashkeel(t);
+const tashBtn = () => `<button class="back" id="tashToggle" style="font-size:13px">🔡 الشكل: ${showTashkeel()?"ظاهر":"مخفيّ"}</button>`;
+robo.mount();
+
+const STORIES = data.stories || [];
+const CAT = {
+  moral:      { ar:"أخلاق وقِيَم", emoji:"🌟", color:"#E0566B", bg:"#FBEDEF" },
+  quran:      { ar:"قرآن",        emoji:"📖", color:"#7BB661", bg:"#EEF6E9" },
+  prophets:   { ar:"أنبياء",      emoji:"🕌", color:"#6FB3D6", bg:"#E9F3F9" },
+  scholar:    { ar:"علماء",       emoji:"🔬", color:"#C9A0DC", bg:"#F4EDF9" },
+  companions: { ar:"صحابة",       emoji:"🤝", color:"#E08E45", bg:"#FBF0E5" },
+};
+const CAT_ORDER = ["moral","quran","prophets","scholar","companions"];
+
+let fCat = "all", fAge = "all";
+const view = document.getElementById("view");
+const shuffle = a => { for(let k=a.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [a[k],a[j]]=[a[j],a[k]]; } return a; };
+
+function renderFilters(){
+  const f = document.getElementById("filters");
+  f.innerHTML = `
+    <div class="chips" id="fCat"><span class="lbl">القسم:</span>
+      <button class="chip on" data-v="all">الكل</button>
+      ${CAT_ORDER.map(c=>`<button class="chip" data-v="${c}">${CAT[c].emoji} ${CAT[c].ar}</button>`).join("")}
+    </div>
+    <div class="chips" id="fAge"><span class="lbl">العمر:</span>
+      <button class="chip on" data-v="all">الكل</button>
+      <button class="chip" data-v="4-6">4–6</button>
+      <button class="chip" data-v="6-8">6–8</button>
+      <button class="chip" data-v="9-12">9–12</button>
+    </div>`;
+  wire("fCat", v=>fCat=v);
+  wire("fAge", v=>fAge=v);
+}
+function wire(id, set){
+  document.getElementById(id).addEventListener("click", e=>{
+    const b=e.target.closest("button[data-v]"); if(!b) return;
+    document.querySelectorAll(`#${id} .chip`).forEach(x=>x.classList.toggle("on", x===b));
+    set(b.getAttribute("data-v")); renderCovers();
+  });
+}
+
+function filtered(){
+  return STORIES.filter(s => (fCat==="all"||s.category===fCat) && (fAge==="all"||s.age_band===fAge));
+}
+
+function renderCovers(){
+  const list = filtered();
+  document.getElementById("count").textContent = `${list.length} قصة`;
+  if(!list.length){ view.innerHTML = `<div class="empty">لا قصص بهذا التصفية.</div>`; return; }
+  view.innerHTML = `<div class="covers">` + list.map(s=>{
+    const c = CAT[s.category] || {emoji:"📘",ar:s.category,color:"#888"};
+    return `<div class="cover" data-id="${s.id}" style="border-top:4px solid ${c.color}">
+      <div class="art">${c.emoji}</div>
+      <div class="t">${s.title}</div>
+      <div class="v" style="color:${c.color}">${c.ar} · ${s.age_band}</div>
+    </div>`;
+  }).join("") + `</div>`;
+  view.querySelectorAll(".cover").forEach(el=>el.addEventListener("click",()=>openStory(el.getAttribute("data-id"))));
+}
+
+function openStory(id){
+  logEvent("story_open");
+  const s = STORIES.find(x=>x.id===id);
+  const c = CAT[s.category] || {emoji:"📘",ar:s.category,color:"#888",bg:"#eee"};
+  const qs = (s.questions||[]).map((q,qi)=>{
+    const opts = shuffle(q.options.map((t,idx)=>({t,correct:idx===q.correct})));
+    return { qt:q.q, opts };
+  });
+  view.innerHTML = `<div class="reader">
+    <span class="rcat" style="background:${c.bg};color:${c.color}">${c.emoji} ${c.ar} · ${s.age_band} سنوات</span>
+    <div class="rhero">${c.emoji}</div>
+    <div class="rtitle">${disp(s.title)}</div>
+    <div class="rtext">${disp(s.text)}</div>
+    <div style="text-align:center;margin:4px 0">${tashBtn()}</div>
+    ${isStoryReadOn() ? `<div id="srHost"></div>` : ""}
+    <div id="rrHost"></div>
+    ${qs.length?`<div class="qhead">أسئلة الفهم</div>`:""}
+    <div id="qbox">${qs.map((q,qi)=>`
+      <div class="q">
+        <div class="qt">${qi+1}. ${q.qt}</div>
+        <div class="opts" data-qi="${qi}">
+          ${q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.t}</button>`).join("")}
+        </div>
+      </div>`).join("")}</div>
+    <div class="nav">
+      <button class="back" id="back">▸ كل القصص</button>
+      <button class="next" id="next">قصّة أخرى ▶</button>
+    </div>
+  </div>`;
+
+  view.querySelectorAll(".opts").forEach(box=>{
+    const qi = +box.getAttribute("data-qi");
+    box.addEventListener("click", e=>{
+      const b = e.target.closest("button.opt"); if(!b || box.dataset.done) return;
+      box.dataset.done = "1";
+      const k = +b.getAttribute("data-k");
+      box.querySelectorAll(".opt").forEach((el,idx)=>{
+        el.disabled = true;
+        if(qs[qi].opts[idx].correct){ el.classList.add("correct"); el.insertAdjacentHTML("beforeend",' <span class="mk">✓</span>'); }
+      });
+      if(qs[qi].opts[k].correct){ logEvent("comprehension_ok"); robo.cheer(); }
+      else { b.classList.add("wrong"); b.insertAdjacentHTML("beforeend",' <span class="mk">✗</span>'); robo.encourage(); }
+    });
+  });
+  attachReader(document.getElementById("rrHost"), s.text, { label:"قراءتك للقصّة" });
+  document.getElementById("tashToggle").onclick = ()=>{ setShowTashkeel(!showTashkeel()); openStory(id); };
+  if(isStoryReadOn()) attachStoryReader(document.getElementById("srHost"), { text:s.text, rerender:()=>openStory(id) });
+  document.getElementById("back").onclick = renderCovers;
+  document.getElementById("next").onclick = ()=>{
+    const list = filtered();
+    const others = list.filter(x=>x.id!==id);
+    const pick = (others.length?others:list)[Math.floor(Math.random()*(others.length?others.length:list.length))];
+    openStory(pick.id);
+    window.scrollTo({top:0,behavior:"smooth"});
+  };
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+renderFilters();
+renderCovers();
+</script>
+</body>
+</html>

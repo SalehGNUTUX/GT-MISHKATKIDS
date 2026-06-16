@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<title>مِشكاة — المطبوعات</title>
+<style>
+  :root{
+    --ink:#2B2B2B; --muted:#6B6B6B; --line:#D8D2C6; --primary:#E07A5F;
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,input,textarea,select,.region,.toggle,.chip,.capbtn,[onclick]{touch-action:manipulation}
+  body{margin:0;background:#FBF7EF;color:var(--ink);line-height:1.55}
+  .bar{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:12px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;z-index:5}
+  .bar h1{font-size:18px;margin:0 8px 0 0}
+  .bar label{font-size:14px;color:var(--muted)}
+  select,.chk{font-family:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  .chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+  .count{font-size:13px;color:var(--muted)}
+  button.print{margin-inline-start:auto;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:10px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  a.back{color:var(--muted);font-size:13px;text-decoration:none}
+  .sheet{max-width:820px;margin:16px auto;padding:0 16px}
+  .hint{color:var(--muted);font-size:13px;text-align:center;margin:8px 0 16px}
+
+  /* task cards */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .pcard{border:2px dashed #C8B9A6;border-radius:14px;padding:14px 16px;background:#fff;break-inside:avoid;page-break-inside:avoid}
+  .pc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .badge{font-size:11px;background:#F3EEE3;border-radius:999px;padding:3px 10px;color:#555}
+  .cut{color:#C8B9A6;font-size:12px}
+  .pc-art{float:left;width:62px;height:46px;margin:0 0 4px 8px}
+  .pc-art svg{width:100%;height:100%;display:block}
+  .says{font-size:13px;color:#444;background:#FBF4EF;border-radius:8px;padding:6px 9px;margin:4px 0}
+  .pc-title{font-size:18px;font-weight:800;margin:6px 0}
+  .pc-prompt{font-size:14px;margin:4px 0}
+  .pcard ol{margin:6px 0;padding-inline-start:20px;font-size:13px}
+  .pcard ol li{margin:2px 0}
+  .pc-mat{font-size:12.5px;color:#444;margin-top:4px}
+  .pc-parent{font-size:11.5px;color:#777;margin-top:6px;border-top:1px solid var(--line);padding-top:6px}
+  .pc-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:13px;font-weight:700;color:var(--primary)}
+  .pc-foot .tick{width:20px;height:20px;border:2px solid var(--primary);border-radius:50%}
+
+  /* poster */
+  .poster{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:18px;text-align:center;break-before:page;page-break-before:always}
+  .poster h2{font-size:26px;margin:0}
+  .poster .ps{color:var(--muted);font-size:14px;margin:4px 0 8px}
+  .poster svg{width:100%;max-width:560px;height:auto}
+  .poster .lbl{font-size:13px;fill:#333}
+  .world-print{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-top:10px}
+  .wp{width:84px;text-align:center}
+  .wp .ring{width:64px;height:64px;border:2px dashed #B9C0A8;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;opacity:.35;margin:0 auto}
+  .wp .n{font-size:13px;margin-top:3px}
+
+  @media print{
+    .noprint{display:none !important}
+    body{background:#fff}
+    .sheet{margin:0;max-width:none;padding:0}
+    .pcard{box-shadow:none}
+    @page{size:A4;margin:12mm}
+  }
+</style>
+</head>
+<body>
+  <div class="bar noprint">
+    <h1>🖨️ مطبوعات «تلميذي»</h1>
+    <a class="back" href="home.html">🏠 الفهرس</a>
+    <label>المجال:
+      <select id="fDomain"><option value="all">الكلّ</option></select>
+    </label>
+    <label>العمر:
+      <select id="fAge"><option value="all">الكلّ</option><option value="4-6">4–6</option><option value="7-10">7–10</option></select>
+    </label>
+    <label class="chk"><input type="checkbox" id="cCards" checked /> بطاقات المهام</label>
+    <label class="chk"><input type="checkbox" id="cPoster" checked /> ملصق الشفاء</label>
+    <span class="count" id="count"></span>
+    <button class="print" onclick="window.print()">اطبع / احفظ PDF</button>
+  </div>
+  <div class="sheet">
+    <div class="hint noprint">اختر ما تريد طباعته، ثمّ «اطبع / احفظ PDF» — ومن نافذة الطباعة اختر «حفظ كـ PDF». البطاقات بحدودٍ متقطّعة لقصّها. 🌿</div>
+    <div id="cardsWrap"><div class="cards" id="cards"></div></div>
+    <div id="posterWrap"></div>
+  </div>
+
+<script type="module">
+import library from "./content/library.js";
+import { ART } from "./src/art.js";
+const WORLD_EMOJI={"قمر":"🌕","شمس":"☀️","شجرة":"🌳","صديق":"🧑‍🤝‍🧑","نهر":"🌊","نجمة":"⭐","طائر":"🐦"};
+let MEM=[];
+const DOMAIN_ART={
+"أرقام وهندسة":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><circle cx="15" cy="19" r="9" fill="#6FB3D6"/><rect x="26" y="9" width="15" height="15" rx="3" fill="#F6BE3B"/><path d="M13 41 L23 25 L33 41 Z" fill="#E07A5F"/></svg>`,
+"حروف ولغة":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="11" width="30" height="27" rx="4" fill="#C9A0DC"/><rect x="23" y="11" width="16" height="27" rx="4" fill="#B98FD0"/><text x="17" y="31" text-anchor="middle" font-size="17" font-weight="800" fill="#fff" font-family="Tahoma,sans-serif">أ</text></svg>`,
+"أخلاق ومشاعر":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#E0566B" d="M24 40s-14-9.3-14-19a7 7 0 0 1 14-2 7 7 0 0 1 14 2c0 9.7-14 19-14 19z"/></svg>`,
+"علوم وطبيعة":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><circle cx="33" cy="14" r="7" fill="#F6BE3B"/><path d="M24 42 V24" stroke="#7BB661" stroke-width="3" stroke-linecap="round"/><path d="M24 30c-6 0-10-5-10-9 5 0 10 3 10 9z" fill="#7BB661"/><path d="M24 26c5 0 9-4 9-8-5 0-9 3-9 8z" fill="#9BCB6B"/></svg>`,
+"تفكير وحلّ مشكلات":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M24 7a13 13 0 0 0-8 23v4h16v-4a13 13 0 0 0-8-23z" fill="#FFD66B" stroke="#E8A33D" stroke-width="1.5"/><rect x="18" y="35" width="12" height="4" rx="2" fill="#9aa3ad"/><rect x="20" y="40" width="8" height="3" rx="1.5" fill="#9aa3ad"/></svg>`
+};
+
+function esc(s){ return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+function rewardLabel(m){
+  const r=m.heal.reward;
+  return r.type==="world" ? `${r.target} في عالمه ${WORLD_EMOJI[r.target]||""}` : `${r.target}`;
+}
+function cardHTML(m){
+  return `<div class="pcard">
+    <div class="pc-art">${ART[m.id]||DOMAIN_ART[m.domain]||""}</div>
+    <div class="pc-head"><span class="badge">${esc(m.domain)} · ${esc(m.age_band)}${m.mode==="pair"?" · 👯 لطفلين":""}</span><span class="cut">✂︎ قُصّ</span></div>
+    <div class="says">🤖 روبو يقول: «${esc(m.spark.robo_line)}»</div>
+    <div class="pc-title">${esc(m.title)}</div>
+    <div class="pc-prompt"><b>مهمّتك:</b> ${esc(m.task.prompt)}</div>
+    <ol>${m.task.child_steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
+    <div class="pc-mat"><b>تحتاج:</b> ${esc(m.task.materials.join("، "))} · 📍 ${esc(m.task.location)}</div>
+    <div class="pc-parent"><b>للأهل:</b> ${esc(m.task.parent_role)} · ✅ ${esc(m.teach.success_signal)}</div>
+    <div class="pc-foot"><span>أنجزتَها؟ يضيء <b>${esc(rewardLabel(m))}</b> في روبو</span><span class="tick"></span></div>
+  </div>`;
+}
+
+function posterHTML(){
+  const ring = Object.keys(WORLD_EMOJI).map(w=>`<div class="wp"><div class="ring">${WORLD_EMOJI[w]}</div><div class="n">${w}</div></div>`).join("");
+  return `<section class="poster">
+    <h2>خريطة شفاء روبو 🤖</h2>
+    <div class="ps">لوّن جزءًا من روبو كلّما علّمتَه ذكرى جديدة — وأعِدْه إلى الحياة!</div>
+    <svg viewBox="0 0 600 470" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#333" stroke-width="2">
+      <!-- antenna + brain -->
+      <line x1="300" y1="92" x2="300" y2="70"/><circle cx="300" cy="62" r="9"/>
+      <rect x="220" y="96" width="160" height="128" rx="26"/>
+      <rect x="278" y="104" width="44" height="18" rx="5"/>
+      <rect x="196" y="138" width="22" height="44" rx="9"/><rect x="382" y="138" width="22" height="44" rx="9"/>
+      <circle cx="266" cy="150" r="16"/><circle cx="334" cy="150" r="16"/>
+      <rect x="266" y="186" width="68" height="15" rx="7"/>
+      <rect x="228" y="236" width="144" height="126" rx="22"/>
+      <path d="M300 322 l-22 -22 a13 13 0 0 1 19 -17 l3 3 l3 -3 a13 13 0 0 1 19 17 z"/>
+      <line x1="228" y1="270" x2="196" y2="282"/><line x1="372" y1="270" x2="404" y2="282"/>
+      <circle cx="188" cy="286" r="16"/><circle cx="412" cy="286" r="16"/>
+      <rect x="262" y="362" width="26" height="58" rx="12"/><rect x="312" y="362" width="26" height="58" rx="12"/>
+      <!-- labels with leaders -->
+      <g stroke="#bbb" stroke-width="1">
+        <line x1="300" y1="62" x2="430" y2="55"/><line x1="322" y1="113" x2="430" y2="100"/>
+        <line x1="350" y1="150" x2="470" y2="150"/><line x1="334" y1="193" x2="470" y2="200"/>
+        <line x1="404" y1="160" x2="470" y2="250"/><line x1="412" y1="286" x2="480" y2="300"/>
+        <line x1="338" y1="390" x2="450" y2="400"/>
+      </g>
+      <g class="lbl" stroke="none" text-anchor="start">
+        <text x="436" y="58">الدماغ (التفكير)</text>
+        <text x="476" y="154">العينان (الملاحظة)</text>
+        <text x="476" y="204">الفم (الكلام)</text>
+        <text x="486" y="254">اليدان (الصنع)</text>
+        <text x="486" y="304">القلب (المشاعر)</text>
+        <text x="456" y="404">الساقان (الحركة)</text>
+      </g>
+      <g class="lbl" stroke="none" text-anchor="end">
+        <line x1="196" y1="160" x2="120" y2="160" stroke="#bbb" stroke-width="1"/>
+        <text x="116" y="164">الأذنان (الإصغاء)</text>
+      </g>
+    </svg>
+    <h3 style="margin:6px 0 0">عناصر عالم روبو — لوّنها كلّما أضاءت</h3>
+    <div class="world-print">${ring}</div>
+  </section>`;
+}
+
+function render(){
+  const dom=document.getElementById("fDomain").value;
+  const age=document.getElementById("fAge").value;
+  const showCards=document.getElementById("cCards").checked;
+  const showPoster=document.getElementById("cPoster").checked;
+  const list=MEM.filter(m=>(dom==="all"||m.domain===dom)&&(age==="all"||m.age_band===age));
+  document.getElementById("cards").innerHTML = list.map(cardHTML).join("");
+  document.getElementById("cardsWrap").style.display = showCards ? "" : "none";
+  document.getElementById("posterWrap").innerHTML = showPoster ? posterHTML() : "";
+  document.getElementById("count").textContent = `${showCards? list.length+" بطاقة" : "بلا بطاقات"}${showPoster? " + ملصق" : ""}`;
+}
+
+function init(){
+  const lib=library;
+  MEM=lib.memories||[];
+  const sel=document.getElementById("fDomain");
+  [...new Set(MEM.map(m=>m.domain))].forEach(d=>{ const o=document.createElement("option"); o.value=d; o.textContent=d; sel.appendChild(o); });
+  ["fDomain","fAge","cCards","cPoster"].forEach(id=>document.getElementById(id).addEventListener("change",render));
+  render();
+}
+init();
+</script>
+</body>
+</html>

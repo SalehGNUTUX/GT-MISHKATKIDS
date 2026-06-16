@@ -1,0 +1,12 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="تلميذي">
+  <rect width="512" height="512" rx="96" fill="#E07A5F"/>
+  <line x1="256" y1="150" x2="256" y2="116" stroke="#fff" stroke-width="10"/>
+  <circle cx="256" cy="108" r="14" fill="#FFE3A3"/>
+  <rect x="156" y="156" width="200" height="170" rx="40" fill="#FBF7EF"/>
+  <rect x="226" y="170" width="60" height="24" rx="8" fill="#7BB661"/>
+  <circle cx="212" cy="236" r="22" fill="#6FB3D6"/>
+  <circle cx="300" cy="236" r="22" fill="#6FB3D6"/>
+  <rect x="212" y="280" width="88" height="20" rx="10" fill="#E0566B"/>
+  <rect x="186" y="338" width="140" height="120" rx="34" fill="#FBF7EF"/>
+  <path d="M256 430 l-30 -30 a18 18 0 0 1 26 -24 l4 4 l4 -4 a18 18 0 0 1 26 24 z" fill="#E0566B"/>
+</svg>

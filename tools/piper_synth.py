@@ -1,0 +1,59 @@
+# tools/piper_synth.py — توليد مقاطع صوتٍ عربيّة بمحرّك Piper العصبيّ (يُحمَّل النموذج مرّةً واحدة).
+# يُستدعى من gen-audio.mjs:  python piper_synth.py <tasks.json> <manifest_out.json> <model.onnx>
+#   tasks.json : [{"key": "<النصّ الأصليّ>", "text": "<المنطوق>", "out": "<مسار mp3>", "file": "<hash>.mp3"}, ...]
+# يكتب المانيفست (نصّ → ملفّ) للمقاطع الناجحة فقط، كي لا يُحال إلى ملفٍّ مفقود (= صمت).
+# محلّيٌّ بالكامل دون إنترنت. يتطلّب: piper-tts + imageio-ffmpeg.
+import sys, json, os, wave, tempfile, subprocess
+from piper import PiperVoice
+import imageio_ffmpeg
+
+
+def main():
+    tasks_path, manifest_path, model_path = sys.argv[1], sys.argv[2], sys.argv[3]
+    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+    voice = PiperVoice.load(model_path)
+    # نصوصُنا مُشكَّلةٌ مسبقًا؛ نُعطّل طبقةَ التشكيل الآليّ (libtashkeel) تفاديًا لإعادة التشكيل وللتنزيل.
+    try:
+        voice.use_tashkeel = False
+    except Exception:  # noqa: BLE001
+        pass
+    with open(tasks_path, encoding="utf-8") as f:
+        tasks = json.load(f)
+
+    manifest, ok, fail = {}, 0, 0
+    total = len(tasks)
+    for i, t in enumerate(tasks):
+        key, text, out, file = t["key"], t["text"], t["out"], t["file"]
+        wav_path = None
+        try:
+            fd, wav_path = tempfile.mkstemp(suffix=".wav")
+            os.close(fd)
+            with wave.open(wav_path, "wb") as wf:
+                voice.synthesize_wav(text, wf)
+            subprocess.run(
+                [ffmpeg, "-y", "-loglevel", "error", "-i", wav_path,
+                 "-codec:a", "libmp3lame", "-q:a", "6", out],
+                check=True,
+            )
+            manifest[key] = file
+            ok += 1
+        except Exception as e:  # noqa: BLE001
+            fail += 1
+            sys.stderr.write(f"FAIL: {key} :: {e}\n")
+        finally:
+            if wav_path and os.path.exists(wav_path):
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+        if (i + 1) % 40 == 0:
+            print(f"... {i + 1}/{total}", flush=True)
+
+    with open(manifest_path, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"✅ {ok} مقطعًا ({fail} فشل) -> {manifest_path}")
+    sys.exit(0 if ok > 0 else 1)
+
+
+if __name__ == "__main__":
+    main()

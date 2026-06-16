@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#E07A5F" />
+<title>مِشكاة — تقدّمي</title>
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
+    --line:#ECE6DA; --primary:#E07A5F; --primary-d:#C7613F; --good:#7BB661; --gold:#F4C95D;
+    --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,input,textarea,select,.region,.toggle,.chip,.capbtn,[onclick]{touch-action:manipulation}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:640px;margin:0 auto;padding:16px 16px 48px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 12px}
+  header h1{font-size:22px;margin:0}
+  header .sub{color:var(--muted);font-size:13px}
+  .topbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink)}
+  h2{font-size:16px;color:var(--primary-d);margin:20px 4px 8px}
+
+  .mission{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px 16px}
+  .mission.done{background:#EEF6E9;border-color:#CDE6BE}
+  .mtitle{font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .mrow{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;padding:8px 6px;border-top:1px solid var(--line)}
+  .mrow .ic{font-size:24px}
+  .mrow .lbl{flex:1;font-weight:700}
+  .mrow .ck{font-size:20px}
+  .mrow.done .lbl{color:var(--muted);text-decoration:line-through}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:12px 6px;text-align:center}
+  .stat .v{font-size:26px;font-weight:800;color:var(--primary-d)}
+  .stat .l{font-size:11.5px;color:var(--muted)}
+
+  .secs{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+  .sec{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;justify-content:space-between;font-size:14px}
+  .sec b{color:var(--primary-d)}
+
+  .badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px}
+  .badge{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:12px 6px;text-align:center;opacity:.45;filter:grayscale(1)}
+  .badge.earned{opacity:1;filter:none;border-color:var(--gold)}
+  .badge .bic{font-size:34px}
+  .badge .bl{font-size:12px;font-weight:700;margin-top:2px}
+
+  .cert{background:linear-gradient(135deg,#FFFDF6,#FBF3E4);border:3px double var(--gold);border-radius:20px;padding:24px 20px;text-align:center;margin-top:10px}
+  .cert .crown{font-size:44px}
+  .cert .ct{font-size:20px;font-weight:800;color:var(--primary-d)}
+  .cert .cname{font-size:30px;font-weight:800;margin:8px 0;border-bottom:2px dashed var(--line);display:inline-block;padding:0 18px 4px;min-width:160px}
+  .cert .cline{font-size:15px;color:#5a5346}
+  .cert .cdate{font-size:13px;color:var(--muted);margin-top:8px}
+  .namefield{display:flex;gap:8px;margin:8px 2px}
+  .namefield input{flex:1;font-family:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+  .btn{background:var(--primary);color:#fff;border:none;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+  .btn:hover{background:var(--primary-d)}
+  .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .empty{color:var(--muted);font-size:14px;text-align:center;padding:10px}
+
+  @media print{ .noprint{display:none!important} body{background:#fff} .cert{box-shadow:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="noprint">
+    <div>
+      <h1>تقدّمي 🏆</h1>
+      <div class="sub">كلّ ما أنجزتَه — محفوظٌ على جهازك فقط</div>
+    </div>
+    <a class="topbtn" href="home.html">🏠 الفهرس</a>
+  </header>
+
+  <div class="noprint">
+    <h2>مهمّة اليوم</h2>
+    <div id="mission"></div>
+
+    <h2>إنجازاتي</h2>
+    <div class="stats" id="stats"></div>
+
+    <h2>حسب القسم</h2>
+    <div class="secs" id="secs"></div>
+
+    <h2>الأوسمة</h2>
+    <div class="badges" id="badges"></div>
+
+    <h2>شهادة إنجاز</h2>
+    <div class="namefield">
+      <input id="name" placeholder="اكتب اسم الطفل هنا…" maxlength="40" />
+      <button class="btn" id="saveName">حفظ</button>
+    </div>
+  </div>
+
+  <div id="cert"></div>
+
+  <div class="noprint" style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn" onclick="window.print()">🖨️ اطبع الشهادة</button>
+    <button class="btn ghost" id="reset">تصفير التقدّم</button>
+  </div>
+</div>
+
+<script type="module">
+import { getStats, getBadges, getDailyMission, getName, setName, resetProgress, SECTION_OF } from "./src/progress.js";
+import { confirmWithPassword, undoable } from "./src/confirm-action.js";
+
+const SEC_LABEL = {
+  memory_heal:"ذكريات روبو 🤖", story_open:"قصص قُرئت 📖", comprehension_ok:"أسئلة فهم ✅",
+  puzzle_seen:"ألغاز 🧩", quiz_done:"اختبارات 🎯", word_win:"ألعاب حروف 🔤",
+  memory_win:"لعبة الذاكرة 🧠", basics_correct:"تدريبات الأساسيّات 🔍", read_practice:"سُلّم القراءة 📖",
+  math_correct:"أرقام وهندسة 📐", craft_done:"ورشة الورق ✂️", quran_listen:"القرآن الكريم 📖",
+};
+const fmtDate = () => { const d=new Date(); return d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear(); };
+
+function render(){
+  const s = getStats();
+
+  // mission
+  const m = getDailyMission();
+  document.getElementById("mission").innerHTML =
+    `<div class="mission ${m.complete?"done":""}">
+      <div class="mtitle">${m.complete?"🎉 أكملتَ مهمّة اليوم!":"✨ ثلاث مهامّ لهذا اليوم"}</div>
+      ${m.tasks.map(t=>`<a class="mrow ${t.done?"done":""}" href="${t.href}">
+        <span class="ic">${t.ic}</span><span class="lbl">${t.label}</span><span class="ck">${t.done?"✅":"⬜"}</span></a>`).join("")}
+    </div>`;
+
+  // stats
+  document.getElementById("stats").innerHTML = [
+    ["🔥", s.streak, "أيّام متتالية"],
+    ["⭐", s.total, "مجموع النجوم"],
+    ["📅", s.activeDays, "أيّام نشاط"],
+    ["🧭", s.sections+"/7", "أقسام جُرّبت"],
+  ].map(([i,v,l])=>`<div class="stat"><div class="v">${i} ${v}</div><div class="l">${l}</div></div>`).join("");
+
+  // sections
+  const entries = Object.keys(SEC_LABEL).filter(k=>(s.counts[k]||0)>0);
+  document.getElementById("secs").innerHTML = entries.length
+    ? entries.map(k=>`<div class="sec"><span>${SEC_LABEL[k]}</span><b>${s.counts[k]}</b></div>`).join("")
+    : `<div class="empty">ابدأ اللعب والتعلّم لتظهر إنجازاتك هنا 🌱</div>`;
+
+  // badges
+  const badges = getBadges();
+  document.getElementById("badges").innerHTML = badges.map(b=>
+    `<div class="badge ${b.earned?"earned":""}"><div class="bic">${b.ic}</div><div class="bl">${b.label}</div></div>`).join("");
+
+  // certificate
+  const earned = badges.filter(b=>b.earned).length;
+  const name = getName();
+  document.getElementById("cert").innerHTML =
+    `<div class="cert">
+      <div class="crown">🏆</div>
+      <div class="ct">شهادة إنجاز</div>
+      <div class="cname">${name || "..........."}</div>
+      <div class="cline">أنجزَ <b>${earned}</b> وسامًا، وجمعَ <b>${s.total}</b> نجمة، بسلسلةٍ من <b>${s.streak}</b> يوم.</div>
+      <div class="cdate">تلميذي 🤖 · ${fmtDate()}</div>
+    </div>`;
+  document.getElementById("name").value = name;
+}
+
+document.getElementById("saveName").onclick = ()=>{ setName(document.getElementById("name").value); render(); };
+document.getElementById("name").addEventListener("keydown", e=>{ if(e.key==="Enter"){ setName(e.target.value); render(); }});
+document.getElementById("reset").onclick = async ()=>{ if(await confirmWithPassword("تصفير كلّ التقدّم والأوسمة؟ ستظهر مهلةُ تراجع.")) undoable("سيُصفَّر التقدّم…", ()=>{ resetProgress(); render(); }); };
+
+render();
+</script>
+</body>
+</html>

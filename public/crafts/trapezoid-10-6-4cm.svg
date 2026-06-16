@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" font-family="Arial,sans-serif">
+  <rect width="210" height="297" fill="#ffffff"/>
+  <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#E0566B"/></marker></defs>
+  <text x="105" y="22" text-anchor="middle" font-size="6" font-weight="bold" fill="#000">شبه منحرف — قاعدة 10، علوي 6، ارتفاع 4 سم</text>
+  <text x="105" y="32" text-anchor="middle" font-size="3.5" fill="#555">قُصَّ على الخطّ المتقطّع · ضلعان متوازيان غير متساويين</text>
+
+  <polygon points="75,110 135,110 155,150 55,150" fill="#E4F0F8" stroke="#E0566B" stroke-width="1" stroke-dasharray="4,2"/>
+
+  <text x="66" y="106" font-size="9" fill="#E0566B">✂</text>
+  <line x1="76" y1="110" x2="100" y2="110" stroke="#E0566B" stroke-width="0.6" marker-end="url(#arr)"/>
+  <text x="90" y="103" text-anchor="middle" font-size="3" fill="#E0566B">ابدأ من هنا</text>
+
+  <text x="105" y="105" text-anchor="middle" font-size="4" fill="#C7613F">6 سم</text>
+  <text x="105" y="161" text-anchor="middle" font-size="4" fill="#C7613F">10 سم</text>
+  <text x="40" y="133" text-anchor="end" font-size="4" fill="#C7613F">4</text>
+
+  <circle cx="105" cy="116" r="1.5" fill="none" stroke="#5E9A47" stroke-width="0.4" stroke-dasharray="0.6,0.6"/>
+  <text x="111" y="118" font-size="3" fill="#5E9A47">اثقب هنا</text>
+
+  <g transform="translate(28,200)">
+    <text x="77" y="0" text-anchor="middle" font-size="4.5" fill="#000" font-weight="bold">🧵 اثقب وسط الضلع العلويّ ومرّر الخيط للتعليق</text>
+    <line x1="77" y1="6" x2="77" y2="22" stroke="#3a4250" stroke-width="0.5" stroke-dasharray="2,1.5"/>
+    <polygon points="63,22 91,22 99,50 55,50" fill="#E4F0F8" stroke="#E0566B" stroke-width="0.5" stroke-dasharray="2,1.5"/>
+    <circle cx="77" cy="22" r="1" fill="none" stroke="#5E9A47"/>
+  </g>
+
+  <text x="105" y="280" text-anchor="middle" font-size="3" fill="#555">مسطرة فحص (5 cm)</text>
+  <line x1="80" y1="285" x2="130" y2="285" stroke="#000" stroke-width="0.5"/>
+  <g stroke="#000" stroke-width="0.3"><line x1="80" y1="282" x2="80" y2="288"/><line x1="130" y1="282" x2="130" y2="288"/></g>
+</svg>

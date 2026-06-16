@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" font-family="Arial,sans-serif">
+  <rect width="210" height="297" fill="#ffffff"/>
+  <defs>
+    <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#E0566B"/></marker>
+  </defs>
+  <text x="105" y="22" text-anchor="middle" font-size="6" font-weight="bold" fill="#000">شبكة مخروط — قاعدة 4 سم، ارتفاع جانبيّ 10 سم</text>
+  <text x="105" y="32" text-anchor="middle" font-size="3.3" fill="#555">قُصّ على المتقطّع الأحمر · ألصِق اللسان البرتقاليّ بالحافّة المقابلة</text>
+
+  <!-- قطاع المخروط -->
+  <path d="M 105,50 L 9.9,80.9 A 100,100 0 0,1 200.1,80.9 Z"
+        fill="#E4F0F8" stroke="#E0566B" stroke-width="1" stroke-dasharray="4,2"/>
+
+  <!-- لسان لصق -->
+  <path d="M 105,50 L 200.1,80.9 L 197,89 L 102,57 Z"
+        fill="#FFE9C2" stroke="#F4A03A" stroke-width="0.5" stroke-dasharray="1.5,1"/>
+  <text x="160" y="74" font-size="3" fill="#C7613F" transform="rotate(17 160 74)">ألصِق هنا</text>
+
+  <!-- مقصّ + سهم -->
+  <text x="95" y="48" font-size="9" fill="#E0566B">✂</text>
+  <line x1="106" y1="55" x2="80" y2="76" stroke="#E0566B" stroke-width="0.6" marker-end="url(#arr)"/>
+  <text x="83" y="50" text-anchor="middle" font-size="3" fill="#E0566B">ابدأ من القمّة</text>
+
+  <!-- وسوم -->
+  <circle cx="105" cy="50" r="1" fill="#C7613F"/>
+  <text x="108" y="48" font-size="3.5" fill="#C7613F">القمّة</text>
+  <text x="50" y="65" font-size="4" fill="#C7613F">ارتفاع جانبيّ 10 سم</text>
+  <line x1="105" y1="50" x2="105" y2="150" stroke="#7BB661" stroke-width="0.3" stroke-dasharray="2,1.5"/>
+
+  <text x="105" y="158" text-anchor="middle" font-size="4" fill="#555">قاعدة المخروط (دائرة قطرها 8 سم)</text>
+
+  <!-- قاعدة مرفقة -->
+  <circle cx="105" cy="195" r="40" fill="#FFF6DD" stroke="#E0566B" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="105" y="195" text-anchor="middle" font-size="4" fill="#C7613F">القاعدة</text>
+  <text x="105" y="201" text-anchor="middle" font-size="3" fill="#C7613F">نصف قطر 4 سم</text>
+  <!-- مقصّ للقاعدة -->
+  <text x="62" y="195" font-size="7" fill="#E0566B">✂</text>
+
+  <!-- ═══════════════ رسوم التجميع بالخيط ═══════════════ -->
+  <text x="105" y="246" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">كيف تُجمّعه وتُعلّقه بخيط؟</text>
+
+  <!-- لوحة 1: لُفّ -->
+  <g transform="translate(8,250)">
+    <text x="22" y="6" text-anchor="middle" font-size="3.5" font-weight="bold" fill="#C7613F">1 لُفّ القطاع</text>
+    <g transform="translate(0,9)">
+      <polygon points="22,2 5,28 39,28" fill="#E4F0F8" stroke="#3a4250" stroke-width="0.5"/>
+      <ellipse cx="22" cy="28" rx="17" ry="3" fill="#A9CDE3" stroke="#3a4250" stroke-width="0.5"/>
+      <path d="M30,5 q5,-3 8,2" fill="none" stroke="#E0566B" stroke-width="0.5" marker-end="url(#arr)"/>
+    </g>
+  </g>
+
+  <!-- لوحة 2: ألصق اللسان -->
+  <g transform="translate(60,250)">
+    <text x="22" y="6" text-anchor="middle" font-size="3.5" font-weight="bold" fill="#C7613F">2 ألصِق اللسان</text>
+    <g transform="translate(0,9)">
+      <polygon points="22,2 5,28 39,28" fill="#E4F0F8" stroke="#3a4250" stroke-width="0.5"/>
+      <ellipse cx="22" cy="28" rx="17" ry="3" fill="#A9CDE3" stroke="#3a4250" stroke-width="0.5"/>
+      <text x="34" y="18" font-size="6">💧</text>
+    </g>
+  </g>
+
+  <!-- لوحة 3: ألصِق القاعدة -->
+  <g transform="translate(112,250)">
+    <text x="22" y="6" text-anchor="middle" font-size="3.5" font-weight="bold" fill="#C7613F">3 ألصِق القاعدة</text>
+    <g transform="translate(0,9)">
+      <ellipse cx="22" cy="28" rx="17" ry="3.5" fill="#FFF6DD" stroke="#3a4250" stroke-width="0.5"/>
+      <polygon points="22,2 5,28 39,28" fill="#E4F0F8" stroke="#3a4250" stroke-width="0.5"/>
+      <ellipse cx="22" cy="28" rx="17" ry="3" fill="none" stroke="#3a4250" stroke-width="0.5" stroke-dasharray="1,1"/>
+    </g>
+  </g>
+
+  <!-- لوحة 4: علّق بالخيط -->
+  <g transform="translate(164,250)">
+    <text x="22" y="6" text-anchor="middle" font-size="3.5" font-weight="bold" fill="#C7613F">4 اثقب وعلّق 🧵</text>
+    <g transform="translate(0,9)">
+      <line x1="22" y1="-3" x2="22" y2="2" stroke="#3a4250" stroke-width="0.4" stroke-dasharray="1.5,1"/>
+      <polygon points="22,2 5,28 39,28" fill="#E4F0F8" stroke="#3a4250" stroke-width="0.5"/>
+      <ellipse cx="22" cy="28" rx="17" ry="3" fill="#A9CDE3" stroke="#3a4250" stroke-width="0.5"/>
+      <circle cx="22" cy="2" r="0.8" fill="none" stroke="#5E9A47" stroke-width="0.4"/>
+    </g>
+  </g>
+
+  <text x="105" y="288" text-anchor="middle" font-size="3" fill="#5E9A47">💡 اثقب نقطةً عند القمّة قبل اللصق، وأدخل الخيطَ ثمّ اربطْ عُقدةً داخل المخروط</text>
+</svg>

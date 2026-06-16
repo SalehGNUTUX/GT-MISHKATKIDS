@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" font-family="Arial,sans-serif">
+  <rect width="210" height="297" fill="#ffffff"/>
+  <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#E0566B"/></marker></defs>
+  <text x="105" y="22" text-anchor="middle" font-size="6" font-weight="bold" fill="#000">معيَّن — قُطْراه 10 سم × 6 سم</text>
+  <text x="105" y="32" text-anchor="middle" font-size="3.5" fill="#555">قُصَّ على الخطّ المتقطّع · أضلاعه الأربعة متساوية وزواياه ليست قائمة</text>
+
+  <polygon points="105,80 155,130 105,180 55,130" fill="#E9F5E0" stroke="#E0566B" stroke-width="1" stroke-dasharray="4,2"/>
+
+  <!-- القطران (خفيف) -->
+  <line x1="105" y1="80" x2="105" y2="180" stroke="#C7613F" stroke-width="0.3" stroke-dasharray="2,1.5"/>
+  <line x1="55"  y1="130" x2="155" y2="130" stroke="#C7613F" stroke-width="0.3" stroke-dasharray="2,1.5"/>
+
+  <text x="96" y="76" font-size="9" fill="#E0566B">✂</text>
+  <line x1="107" y1="84" x2="130" y2="105" stroke="#E0566B" stroke-width="0.6" marker-end="url(#arr)"/>
+  <text x="118" y="76" text-anchor="middle" font-size="3" fill="#E0566B">ابدأ من القمّة</text>
+
+  <text x="160" y="132" font-size="4" fill="#C7613F">10 سم</text>
+  <text x="108" y="135" font-size="4" fill="#C7613F">6 سم</text>
+
+  <circle cx="105" cy="86" r="1.5" fill="none" stroke="#5E9A47" stroke-width="0.4" stroke-dasharray="0.6,0.6"/>
+  <text x="111" y="88" font-size="3" fill="#5E9A47">اثقب هنا</text>
+
+  <g transform="translate(28,200)">
+    <text x="77" y="0" text-anchor="middle" font-size="4.5" fill="#000" font-weight="bold">🧵 اثقب القمّة ومرّر خيطًا للتعليق — كطيّارةٍ ورقيّة</text>
+    <line x1="77" y1="6" x2="77" y2="22" stroke="#3a4250" stroke-width="0.5" stroke-dasharray="2,1.5"/>
+    <polygon points="77,22 95,42 77,62 59,42" fill="#E9F5E0" stroke="#E0566B" stroke-width="0.5" stroke-dasharray="2,1.5"/>
+    <circle cx="77" cy="22" r="1" fill="none" stroke="#5E9A47"/>
+  </g>
+
+  <text x="105" y="280" text-anchor="middle" font-size="3" fill="#555">مسطرة فحص (5 cm)</text>
+  <line x1="80" y1="285" x2="130" y2="285" stroke="#000" stroke-width="0.5"/>
+  <g stroke="#000" stroke-width="0.3"><line x1="80" y1="282" x2="80" y2="288"/><line x1="130" y1="282" x2="130" y2="288"/></g>
+</svg>

@@ -1,0 +1,97 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+> اللغة: كل ما يُكتب داخل المستودع (commits، CHANGELOG، README، التعليقات، نصوص الواجهة) **بالعربية الفصحى**. الـcommits باسم `SalehGNUTUX` فقط دون `Co-Authored-By`. **لا تحذف محتوًى/ميزةً/قسماً دون إذن المستخدم** — عند اكتشاف تكرار، أثرِ بمحتوًى مخصّص لا تحذف. خطة العمل الحيّة في [`docs/PLAN.md`](docs/PLAN.md).
+
+## الأوامر
+
+```bash
+npm run dev        # خادم تطوير Vite (hot reload)
+npm run build      # بناء الإنتاج → dist/ (ملفات ثابتة + PWA service worker). التحقّق الإلزامي بعد أي تعديل.
+npm run preview    # معاينة مخرجات dist/
+npm run gen:audio  # توليد مقاطع نطق espeak (يتطلّب espeak-ng + lame على جهاز التطوير). بعد أي إضافة محتوى.
+npm run gen:voices # دمج تسجيلاتٍ بشريّة مُصدَّرة (voices-src/) في الحزمة (يتطلّب ffmpeg)
+npm run gen:custom # مسح public/tts/custom/ وبناء قائمة التسجيلات البديلة اليدوية
+npm run gen:piper  # توليد مجموعة صوتٍ عصبيّة (Piper) للكلمات/الجمل/القصص → دمجها في voices-bundled.json (يتطلّب .piper-venv + النموذج، وقت التطوير فقط)
+npm run gen:quran  # تنزيل نصّ القرآن (alquran.cloud) + تلاوة الحصري آيةً آية (everyayah.com) للفاتحة وجزء عمّ → content/quran.js + public/quran/husary/*.mp3 (إنترنت مرّةً، وقت التطوير)
+```
+
+- لا اختبارات آلية ولا linter. **التحقّق:** `npm run build` (يجب أن ينجح)، و`node --check src/<file>.js` لوحدة، و`node -e "import('./content/library.js').then(m=>console.log(m.default.memories.length))"` لسلامة JSON.
+- على قرص ext4 قد يفقد `node_modules/.bin` صلاحية التنفيذ (`vite: Permission denied`) → `chmod +x node_modules/.bin/*`.
+- `Date.now()`/`Math.random()` مسموحة في كود التطبيق والأدوات (Node)، لا في سكربتات Workflow.
+
+## الفكرة الجوهرية (لا تكسرها)
+
+**مِشكاةُ الطفلِ والآليّ** (Mishkat — The Child & the Robot؛ مجلّد `kidlearn`، الاسمُ الداخليُّ السابق «تلميذي» يبقى في الكود/أسماء الملفّات): تطبيقٌ تعليميٌّ للأطفال (4–10) بفكرة **قلب الأدوار** — الطفل يُعلّم آليّاً فقَدَ ذاكرته (Protégé Effect). شعارُه «الطفلُ يُعلّم، والآليُّ يَستنير» (انظر ذاكرة `project_tilmithi_brand`). في الواجهة الظاهرة العنوانُ «الآليّ»، وشخصيّةُ الآليّ الودودةُ تبقى «روبو». الشاشة محفّزٌ فقط؛ النشاط الحقيقي يدويٌّ في الواقع. مبادئ صارمة:
+
+1. **محلّي 100% دون إنترنت ودون ذكاء اصطناعي وقت التشغيل.** لا خادم/سحابة/نموذج لغوي/تتبّع. JSON/SVG محلي + WebAudio + مقاطع صوت مُضمّنة. (نماذج الصوت العصبية تُستعمل وقت التطوير فقط لتوليد MP3 ثابتة.)
+2. **الآلي لا يُوصَف بـ«حيّ»** — اللفظ لخلق الله. البديل: متحرّك/متجاوب/نشيط. (ينطبق على نصوص الواجهة والتعليقات.)
+3. **إطار إسلامي عقدي:** تدبّر خلق الله، علوم إسلامية، طب نبوي، علماء مسلمون، قيم بأدلّة. ردود روبو تنسب الفضل لله.
+4. **خصوصية مطلقة + أمان عاطفي:** بيانات الطفل لا تغادر الجهاز؛ روبو هو من «يخطئ»، والطفل خبيرٌ واثق.
+
+## البنية المعمارية
+
+**vanilla JS** بلا إطار، عبر **Vite + vite-plugin-pwa**. كل صفحة `*.html` نقطةُ دخول مستقلّة (في `vite.config.js → rollupOptions.input`) تستورد من `src/` وبيانات من `content/`. `index.html` = **الحلقة الأساسية** (آلة حالات)؛ البقية أنشطة. الصفحات: index · home · basics · math · read · play · quiz · tales · puzzles · stories · progress · print · record.
+
+### الحلقة الأساسية (`index.html`)
+آلة حالات: `idle → spark → task → teach(stage 0 جواب الطفل، stage 1 تعميق + «علّمني الخطأ») → heal`. كل ذكرى تُضيء جزءاً من روبو/عنصراً من عالمه؛ عند 8 مكافآت تعود ضحكته. تتضمّن: خريطة عالم (مناطق)، «فاجئني»، حقل جواب مكتوب، وضع الإخوة (coopMode)، لوحة الأهل (بوّابة حسابية: تقدّم/إتقان/مصادر الصوت/حذف تسجيلات بتراجع). الانتقالات تُنطِق كلام روبو **وقت الانتقال** لا في كل إعادة رسم.
+
+### نظام الصوت (الأكبر والأهمّ فهمه)
+- `src/sound-prefs.js` — مفاتيح مستقلّة: `isTonesOn` (نبضة+مؤثرات)، `isVoiceOn` (نطق). و**اختيار مجموعة الصوت لكل نوع**: `getVoiceSet(type)`/`setVoiceSet(type,id)` حيث `type ∈ {letter, word, sentence}` والقيمة `"clips"` (espeak) أو مُعرّف مجموعة بشريّة.
+- `src/sfx.js` (WebAudio، يحترم `isTonesOn`) + `src/robo-voice.js` (`roboBlip` نبضة + `roboSay`، يعيد تصدير العبارات من `robo-phrases.js`).
+- `src/speak.js` — النطق: يجرّب `playClip` أولاً (مقطع مضمون) ثم Web Speech للنصوص الطويلة. يحترم `isVoiceOn`. يؤجّل أوّل نطق حتى `onvoiceschanged` ويختار صوتاً عربياً صراحةً.
+- `src/tts-clips.js` — **محور التوجيه**: `classify(text)` (حرف/كلمة/جملة) ثم `srcFor` يختار المصدر بحسب المجموعة المحدّدة لنوعه: تسجيل بشريّ **مُدمج** (`voices-bundled.json`) أو **على الجهاز** (`voices.js`) أو مقطع espeak (`tts-manifest.json` / `tts/custom/`). يرجع لـespeak إن غاب.
+- `src/voices.js` — تسجيلات بشريّة في IndexedDB (`tilmithi_voices`, v2 مع ترحيل): **كل مُسجِّل = مجموعة** (`setId = gender-age-name`، مفتاح `setId+SEP+text`). `primeVoices` يبني خريطة ذاكرة لكل المجموعات. `renameSet` يضمّ مجموعةً لأخرى.
+- `src/voices-bundled.json` — المجموعات البشريّة المُدمجة (`{sets, files}`). تُبنى بـ`tools/gen-voices.mjs` من تصدير الاستوديو → `public/tts/voices/<setHash>/<textHash>.mp3`.
+- `src/spell.js` — وضع التهجئة: `segment(text)` يحلّل الكلمة المشكّلة لمقاطع، `playSpelled` يشغّلها بالتتابع ثم الكلمة كاملةً (يستعمل `playClipAsync`).
+- `record.html` — استوديو التسجيل: 3 تبويبات (حروف/كلمات/جمل) ووحدات، ملفّ مُسجِّل (اسم/جنس/فئة)، تصدير ZIP مصنّف (`src/zip.js`)، ضمّ مجموعات.
+- `src/robo-companion.js` — رفيق روبو المُحقَن في صفحات الأنشطة (`cheer/encourage/recall/read/applaud`؛ تقبل `{then}` يُستدعى عند انتهاء الكلام). `speak`/`roboSay` تمرّران `onend` (مقطع→`onended`، نظام→`utterance.onend`) فلا تُقطَع ردّة الفعل.
+
+### نظامان منفصلان للتسجيل (لا تخلطهما)
+- **نموذج صوت التطبيق (مشترَكٌ للجميع):** `src/voices.js` (IndexedDB `tilmithi_voices`، عامٌّ تحت حساب `shared`) — يبنيه الوالدان في `record.html`، فيصير الصوتَ الذي يسمعه كلُّ الحسابات (يُقدَّم تسجيلُ الجهاز على المُدمج في `tts-clips`). `record.html` فيه **قائمةٌ منسدلة** بالمجموعات (المُدمجة + الجهاز) للاستعراض والتحديث.
+- **مُسجِّلُ تمرّنِ القراءة (لكلِّ حسابٍ على حدة):** `src/practice.js` (IndexedDB `tilmithi_practice`، مفتاحُه `account+text`) + `src/reader-recorder.js` (`attachReader(host,text)`) المُضمَّن في `stories.html`/`read.html` — يسجّل الطفلُ قراءتَه فيستمعُ إليها. حسابُ الطفل يبقى محليًّا؛ **الضيفُ مؤقّتٌ** (تنظيفٌ ببداية كلِّ جلسةٍ عبر علم `sessionStorage`). **المساعدة عبر الحسابات** (`helpersFor`): زرٌّ يُشغِّل قراءةَ حسابٍ آخر للنصّ نفسه أو صوتَ التطبيق. تديرها الأهل لكلِّ حسابٍ في لوحة الأهل.
+
+### النموذج العصبيّ Piper (للكلمات/الجمل/القصص — لا الحروف)
+`tools/gen-piper.mjs` (`npm run gen:piper`) يولّد **وقتَ التطوير فقط** مقاطعَ MP3 بصوت Piper العصبيّ (`ar_JO-kareem-medium`، في `.piper-venv` + `tools/piper-voices/`) للكلمات والجمل ونصوص القصص (≈718 مقطعاً)، ويدمجها في `voices-bundled.json` كمجموعةٍ `{id:"tts-kareem", kind:"tts", types:["word","sentence","story"]}` دون مساسٍ بمجموعة «صالح». **التشغيل يبقى محلّيّاً 100% (MP3 ثابتة، لا ذكاء وقت التشغيل).** علامةُ `types` في المجموعات تُصفّي المنتقيات: المجموعةُ العصبيّةُ لا تظهرُ لنوع «الحروف» (Piper ضعيفٌ لها). أداةُ النقطِ الصوتيّ espeak تبقى افتراضَ الحروف. **قارئ القصص** (`src/story-reader.js`، في stories.html + tales.html): `attachStoryReader(host,{text,pages?,onPage?})` — زرّ تشغيل/إيقاف كبير + **قراءة تلقائيّة للقصّة كاملةً** (تنتقل صفحةً صفحةً) + **قائمة اختيار قارئ ظاهرة** (`readerOptions`/`effectiveReader`) + **مؤشّر مصدرٍ مرئيّ** (`storySourceKind` → 🧠 عصبيّ/🎙️ بشريّ/🤖 آليّ). يعتمد `playStoryAsync`/`stopClip`/`playClipForSet` (tts-clips) و`getStoryVoice`/`setStoryVoice`/`isStoryReadOn` (sound-prefs)؛ `storySet()` يحترمُ اختيارَ المستخدم (يشمل «آلي») وافتراضُه العصبيّ. توگل **إظهار الشكل** (`showTashkeel`/`stripTashkeel`): يخفي الحركاتِ من العرض فقط، والقراءةُ تبقى بالنصّ المشكَّل الكامل (لذا نصوص `stories.js` مشكَّلةٌ بالكامل). **مزلق الأرقام:** أسماء 0-100 في `src/numbers-ar.js` يجب أن تطابق تشكيلَ `content/letters.js` (0-10) حرفيّاً وإلّا لم تُطابق مقاطعَ المجموعات المُسجَّلة (المطابقة حرفيّة) فترتدّ للنطق الآليّ.
+
+### تدفّق الاختبارات الموحّد
+`src/quiz-flow.js` — `autoToggleHtml`/`wireAuto` (توگل «الانتقال التلقائيّ»، مفتاح `tilmithi_autonext_v1` في sound-prefs، افتراضُه يدويّ)، `onCorrect`/`onWrong` (هتاف/تشجيع ثمّ انتقالٌ بعد انتهاء الكلام أو زرٌّ يدويّ، وعند الخطأ زرُّ تجاوزٍ مع `recall`). مُطبَّق في `basics`/`math`/`quiz`. `src/confirm-action.js` أضاف `confirmChoice` (تأكيدٌ بزرّين دون كلمة مرور، يُستعمَل لتبديل الحساب وحذف تمرّنٍ ذاتيّ).
+
+### المصدر الموحّد للمفردات
+`src/vocab.js` يجمع كل النصوص المنطوقة القصيرة من `content/*` + `src/syl.js` (أشكال الحروف) + `src/robo-phrases.js` + `islamic.js`. يقرؤه **الاستوديو ومولّد `gen-audio` معاً** → إضافة محتوًى تتزامن تلقائياً. **عبارات روبو في `src/robo-phrases.js`** (بيانات بلا DOM لتُقرأ في Node) — لا تكرّرها.
+
+### أشكال الحروف
+`src/syl.js` — مصدر موحّد لأشكال كل حرف (الاسم/حركات/مدود/تنوين/شدّة/سكون؛ الألف خاصّة). يستعمله `read.html` و`record.html` و`gen-audio`.
+
+### القرآن الكريم (`quran.html` + `content/quran.js`)
+الفاتحة + جزء عمّ (آخر حزبين، السور 78–114؛ 38 سورة/571 آية). `content/quran.js` = النصّ العثمانيّ (`{surahs:[{n,name,type,ayahCount,ayahs:[{a,text}]}]}`). **التلاوة:** الحصري آيةً آية في `public/quran/husary/SSSAAA.mp3` (محلّيّة). **السور مرتّبةٌ من الأقصر إلى الأطول** (تدرّجٌ في الحفظ) + تصفيةٌ بالمستوى (قصيرة ≤7/متوسّطة ≤25) افتراضُها بحسب `getChildAge`. عرضٌ آيةً آية بخطوطٍ قرآنيّة (Amiri Quran / Colored / Uthmanic Hafs في `public/fonts/`، اختيارٌ محفوظ)، **تظليلُ الآية المقروءة**، «اقرأ السورة» (تتابعٌ تلقائيّ) + «كرّر الآية» + «كرّر السورة» للحفظ. **الترتيب:** «الأقصر أولًا» (تدرّجٌ، الافتراض) أو «قرآنيّ» — والفاتحةُ دائمًا أوّلًا. لكلِّ آيةٍ **تسجيلُ تلاوة** (عبر `attachReader` مع `opts.onHelp`=تلاوة الحصري المرجعيّة + `helpLabel`). **البسملة** (لغير الفاتحة، كمنطق GT-QURANREADER): تلاوةُ الحصري في everyayah **لا تتضمّن البسملة في ملفّ الآية الأولى** (تأكَّدَ بالمدّة: العصر آية1 «والعصر» = 2.7ث، والبسملة وحدها 5ث). فالبسملةُ **صفٌّ مستقلّ** نصًّا وصوتًا: صوتُها = ملفّ الفاتحة آية1 (`BASMALA_AUDIO = 001001.mp3`)، والآيةُ الأولى تُعرَض وتُتلى **بلا بسملة** (`verseNoBism` يفصلها بمطابقةٍ غيرِ حسّاسةٍ للتشكيل — لا تَعتمِدْ على `startsWith` لثابتٍ نصّيّ). «اقرأ السورة» يبدأ بالبسملة (001001) ثمّ الآيات؛ النقرُ على صفّ البسملة يشغّلها وحدها؛ توگل يُظهرها/يُخفيها (فتُكرَّر الآيةُ الأولى بلا بسملةٍ للحفظ). **أرقام الآيات بالأرقام الغربيّة** كبقيّة الواجهة (بطلب المستخدم). **التقدّم:** `quran_open`/`quran_listen` + قسم «القرآن» + وسامان (صديقُ القرآن/يَحفظ) + مهمّةٌ يوميّة. **مزلق الحجم:** تلاوة الحصري ~79م لا تُحمَّل مسبقاً (`globIgnores`) بل **CacheFirst وقت التشغيل** (`runtimeCaching` → cacheName `quran-husary`) فتعمل دون إنترنت بعد أوّل استماع؛ النصّ مُضمَّنٌ فيعملُ دائمًا.
+
+### التقدّم والتكيّف
+`src/progress.js` — `logEvent`/`getStats`/`BADGES`/`getDailyMission` + إتقان لايتنر (`recordMastery`/`isDueForReview`) + عمر الطفل. `src/adaptive.js` (`pickAdaptive`) يرجّح المهارات الضعيفة/المستحقّة في basics/play.
+
+### المحتوى (`content/*.js` تُصدّر `default`)
+`library.js` (79 ذكرية، 5 مجالات × فئتي عمر؛ حقول `spark/task/teach/heal/think`؛ تشمل طبّاً نبويّاً وعلماء — منهم الخوارزميّ `role-khwarizmi`)، `stories.js`, `sararim-stories.js` (51)، `puzzles.js` (61)، `quiz.js` (99؛ +5 عن الأرقام العربية والصفر والعلماء)، `letters.js`, `reading.js` (28 حرفاً للمقاطع)، `words.js`، `math.js` (أشكال أساسية/متقدّمة + أمثلة كونية وتدبّر + `crafts` ورشة ورق بمقاسات + ملفّات قصّ في `public/crafts/`)، `compose-vocab.js` (≈310 كلمة مشكّلة كاملاً عبر 10 فئات لشاشة «اقرأ بصوتك»)، `numerals.js` (قصّة الأرقام العربية 0-9 والصِّفر — بطاقة «قصّة الأرقام» في math.html). التنسيق في [`docs/content-format.md`](docs/content-format.md).
+
+> **الأرقام:** الواجهةُ كلُّها بالأرقام الغربيّة (0-9 = «العربيّة»)، لا الهنديّة (٠-٩). الصفر: بذرةٌ هنديّة طوّرها وسمّاها ونشرها المسلمون. «نظريّة الزوايا» تُعرَض كطريفةِ حفظٍ لا حقيقةٍ تاريخيّة. انظر ذاكرة `reference_arabic_numerals`.
+
+### الرياضيات والقراءة بالتركيب (محتوى مُتبنّى)
+- `math.html` — قائمةٌ موحَّدة: أرقام 0–100 + جمع/طرح/ضرب بمستويات + ألعاب (اعثر/قارن/نمط/حجم) + موسوعة أشكال (تدبّر) + **ورشة الورق** (`MATH.crafts`، خطواتٌ مرسومة + تنزيل PDF عبر `src/pdf-utils.js`، يُحمّل `jspdf` كسولاً عند الطلب فقط).
+- `basics.html` → بطاقة **«اقرأ بصوتك»** (`startCompose`): تُقطّع الكلمة بـ`segment` من `src/spell.js` وتُقرأ مقطعاً مقطعاً عبر `playSpelled` (مقاطع espeak أو تسجيلاتٌ بشريّة عبر `tts-clips`) مع إبراز المقطع الجاري، ثمّ الكلمة كاملة. ثلاث سرعات (فجوة زمنية).
+- **التزامن:** أسماء الأشكال (`math.js`) وكلمات `compose-vocab.js` وأسماء الأعداد 0–100 (`numbers-ar.js`) ونصوص القصص/العِبَر/قصّة الأرقام مُدرَجةٌ في `src/vocab.js` (وحدات `shapes` · `cmp_*` · `num100` · `numerals` · `stories` · `tales`) فتظهر تلقائياً في الاستوديو وتُولَّد لها مقاطع `gen:audio` (إجمالي `allSpeakable` ≈ 1199؛ Piper ≈ 729).
+
+## مزالق حرجة
+
+- **التخزين مرتبطٌ بالأصل (المنفذ):** الحسابات/التقدّم (localStorage) والتسجيلات (IndexedDB) مرتبطةٌ بـ`http://localhost:<port>`؛ فتغيّرُ منفذِ Vite (5173↔5174) يُخفي بياناتِ التطوير (لا تُفقَد، بل على أصلٍ آخر). لذا `vite.config.js` يثبّت `server/preview.port=5174 + strictPort`.
+
+- **عامل الخدمة (PWA) يُخبّئ كلَّ شيء:** بعد إعادة البناء قد يُقدّم كوداً/مقاطعَ قديمة. الحلول المُطبَّقة: في الإنتاج `workbox.skipWaiting+clientsClaim+cleanupOutdatedCaches` (تحديثٌ فوريّ)، وفي التطوير حارسٌ في `src/sound-prefs.js` يُلغي تلقائياً أيَّ SW قديمٍ ويمسحُ الكاش عند `import.meta.env.DEV` (فلا يُقدَّم كودٌ مُخبّأ أثناء `npm run dev`). إن ظهر سلوكٌ قديمٌ رغم ذلك → أعِد التحميل مرّتين أو ألغِ تسجيلَ SW يدويّاً.
+- **مفتاح تخزين مشترك:** `index.html` و`src/progress.js` يكتبان في `localStorage["tilmithi_progress_v1"]` بحقول مختلفة → استعمل دائماً نمط **حمّل-عدّل-احفظ**، لا تكتب كائناً كاملاً من ذاكرةٍ قديمة.
+- **`classList.add("")` يرمي استثناءً** — احرس ضدّ القيمة الفارغة (سبب تعطّل أزرار القراءة سابقاً).
+- **مطابقة المقاطع حرفية:** `playClip(text)`/التسجيلات تطابق النصّ تماماً. النصوص المركّبة وقت التشغيل ترجع لـWeb Speech. بعد إضافة محتوى منطوق: `npm run gen:audio`.
+- **حدود espeak (مقاطع آليّة):** السكون على ب/ج/د/ض والهمزة أْ = صمت؛ نِ تلتبس بـذِ؛ الشدّة تقريبية. تُحلّ بتسجيلٍ بشريّ (الاستوديو/`public/tts/custom/`). موثّقة في `src/tts-clips.js`/CREDITS.
+- **espeak كمحلّل صوتيّ عصبيّ (Piper):** النماذج العصبية طبيعيّةٌ للجمل، ضعيفةٌ للحروف المنفردة وتطمس الشكل → غير مناسبةٍ لجوهر التعليم؛ تصلح للكلمات/الجمل فقط (عبر اختيار النوع).
+- **Node-safety:** ما يستورده `gen-audio`/`gen-voices` (Node) يجب أن يخلو من `window` — لذلك `vocab.js`/`syl.js`/`robo-phrases.js`/`islamic.js` بلا DOM (`robo-voice.js`/`speak.js` ليست كذلك).
+
+## النشر والرخصة
+
+PWA يُبنى إلى `dist/`. precache يشمل mp3 (`vite.config.js → workbox.globPatterns`). محتوى GT-SARARIM يفرض **GPL-3.0** عند التوزيع؛ مقاطع espeak مُولَّدة بـeSpeak NG (GPL). انظر [`docs/CREDITS.md`](docs/CREDITS.md). `voices-src/` مجلّد عمل مؤقّت (في `.gitignore`)؛ المُخرَج المُدمَج في `public/tts/voices/` + `src/voices-bundled.json`.

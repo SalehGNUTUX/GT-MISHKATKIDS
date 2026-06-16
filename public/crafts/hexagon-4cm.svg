@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" font-family="Arial,sans-serif">
+  <rect width="210" height="297" fill="#ffffff"/>
+  <defs>
+    <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#E0566B"/></marker>
+  </defs>
+  <text x="105" y="22" text-anchor="middle" font-size="6" font-weight="bold" fill="#000">سداسيٌّ منتظم — كلّ ضلع 4 سم</text>
+  <text x="105" y="32" text-anchor="middle" font-size="3.5" fill="#555">اطبع على A4 بمقياس 100% — كلّ زاوية 120°</text>
+
+  <polygon points="145,140 125,174.64 85,174.64 65,140 85,105.36 125,105.36"
+           fill="#FDF1E2" stroke="#E0566B" stroke-width="1" stroke-dasharray="4,2"/>
+
+  <!-- مقصّ عند الزاوية العليا اليسرى -->
+  <text x="78" y="100" font-size="10" fill="#E0566B">✂</text>
+  <line x1="89" y1="106" x2="120" y2="106" stroke="#E0566B" stroke-width="0.6" marker-end="url(#arr)"/>
+  <text x="105" y="95" text-anchor="middle" font-size="3" fill="#E0566B">ابدأ من هنا</text>
+
+  <text x="146" y="157" font-size="4" fill="#C7613F">4</text>
+  <text x="64" y="157" text-anchor="end" font-size="4" fill="#C7613F">4</text>
+  <text x="105" y="182" text-anchor="middle" font-size="4" fill="#C7613F">4 cm</text>
+  <text x="105" y="103" text-anchor="middle" font-size="4" fill="#C7613F">4 cm</text>
+
+  <!-- خطوط مساعدة من المركز إلى كلّ زاوية (تدبّر الهندسة) -->
+  <g stroke="#7BB661" stroke-width="0.3" stroke-dasharray="1,1.5">
+    <line x1="105" y1="140" x2="145" y2="140"/>
+    <line x1="105" y1="140" x2="125" y2="174.64"/>
+    <line x1="105" y1="140" x2="85" y2="174.64"/>
+    <line x1="105" y1="140" x2="65" y2="140"/>
+    <line x1="105" y1="140" x2="85" y2="105.36"/>
+    <line x1="105" y1="140" x2="125" y2="105.36"/>
+  </g>
+  <circle cx="105" cy="140" r="0.8" fill="#5E9A47"/>
+
+  <circle cx="105" cy="111" r="1.5" fill="none" stroke="#5E9A47" stroke-width="0.4" stroke-dasharray="0.6,0.6"/>
+  <text x="111" y="113" font-size="3" fill="#5E9A47">اثقب هنا</text>
+
+  <g transform="translate(28,210)">
+    <text x="77" y="0" text-anchor="middle" font-size="4.5" fill="#000" font-weight="bold">🧵 اثقب نقطةً في الأعلى ومرّر خيطًا — كأنّه خليّة نحل معلّقة</text>
+    <line x1="77" y1="6" x2="77" y2="22" stroke="#3a4250" stroke-width="0.5" stroke-dasharray="2,1.5"/>
+    <polygon points="93,32 85,46 69,46 61,32 69,18 85,18" fill="#FDF1E2" stroke="#E0566B" stroke-width="0.6" stroke-dasharray="2,1.5"/>
+    <circle cx="77" cy="22" r="1" fill="none" stroke="#5E9A47"/>
+  </g>
+
+  <text x="105" y="280" text-anchor="middle" font-size="3" fill="#555">مسطرة فحص (5 cm) — تلميذي · ورشة الورق</text>
+  <line x1="80" y1="285" x2="130" y2="285" stroke="#000" stroke-width="0.5"/>
+  <g stroke="#000" stroke-width="0.3"><line x1="80" y1="282" x2="80" y2="288"/><line x1="130" y1="282" x2="130" y2="288"/></g>
+</svg>

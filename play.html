@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#E07A5F" />
+<title>مِشكاة — ألعاب وأنشطة</title>
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
+    --line:#ECE6DA; --primary:#E07A5F; --primary-d:#C7613F; --good:#7BB661; --bad:#E0566B;
+    --sky:#6FB3D6; --gold:#F4C95D; --violet:#C9A0DC; --brick:#E0566B;
+    --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,input,textarea,select,.region,.toggle,.chip,.capbtn,[onclick]{touch-action:manipulation}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:640px;margin:0 auto;padding:16px 16px 48px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 10px}
+  header h1{font-size:22px;margin:0}
+  header .sub{color:var(--muted);font-size:13px}
+  .topbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink)}
+  .acts{display:flex;gap:8px;flex-wrap:wrap;margin:0 2px 10px}
+
+  .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:4px 2px 10px}
+  .chips .lbl{font-size:12px;color:var(--muted)}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
+  .chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .pills{display:flex;gap:8px;margin-inline-start:auto}
+  .pill{background:#F3EEE3;border-radius:999px;padding:5px 12px;font-size:13px;color:#555}
+  .pill b{color:var(--primary-d)}
+
+  .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .gcard{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
+  .gcard:hover{transform:translateY(-3px);border-color:var(--primary)}
+  .gcard .ic{font-size:40px}
+  .gcard .t{font-size:16px;font-weight:800;margin-top:4px}
+  .gcard .d{font-size:12px;color:var(--muted)}
+
+  .back{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink);margin-bottom:6px}
+  .gbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:6px 2px}
+
+  .clue{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:16px;text-align:center;margin-top:6px}
+  .clue .emoji{font-size:66px;line-height:1.1}
+  .clue .say{font-size:13.5px;color:var(--muted)}
+  .flash{font-size:28px;font-weight:800;color:var(--good);height:0;overflow:hidden;transition:height .2s;letter-spacing:2px}
+  .flash.on{height:40px}
+
+  .row{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin:14px 2px}
+  .slot{width:60px;height:60px;border-radius:14px;border:2.5px dashed #D8CFBE;background:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;position:relative}
+  .slot.next{border-color:var(--primary);background:#FFF6F2}
+  .slot.full{border-style:solid;cursor:pointer}
+  .slot.ok{border-color:var(--good)!important;background:#EEF6E9!important;color:#2f5a1f}
+  .slot.err{animation:shake .4s;border-color:var(--bad)!important;background:#FCEBEE!important}
+  .tile{width:58px;height:58px;border-radius:14px;border:none;font-size:30px;font-weight:800;cursor:pointer;font-family:inherit;color:#fff;transition:transform .08s}
+  .tile:active{transform:translateY(2px)}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .pool{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 2px 6px;padding:10px;border-radius:16px}
+
+  .s-train .slot.full{border-color:var(--sky);background:#EAF4FA}
+  .s-train .slot::after{content:"";position:absolute;bottom:-9px;width:9px;height:9px;border-radius:50%;background:#cdbfa6}
+  .s-train .slot.full::after{background:var(--sky)} .s-train .slot.ok::after{background:var(--good)}
+  .s-train .tile{background:linear-gradient(135deg,#F6BE3B,#E8A33D);box-shadow:0 4px 0 #cf8f2e}
+  .s-pins .row{border-top:4px solid #b98a5a;padding-top:24px;margin-top:18px}
+  .s-pins .peg{width:60px;height:60px;border-radius:14px;border:2px solid var(--line);background:#fff;font-size:32px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+  .s-pins .peg::before{content:"";position:absolute;top:-26px;left:50%;transform:translateX(-50%);width:8px;height:26px;background:#dca85f;border-radius:3px}
+  .s-pins .peg.sel{box-shadow:0 0 0 3px var(--primary);border-color:var(--primary)}
+  .s-pins .peg.ok{background:#F1F8EC;border-color:var(--good);color:#2f5a1f}
+  .s-blocks .slot{border-radius:8px}
+  .s-blocks .slot.fixed{border-style:solid;border-color:#cdbfa6;background:#F6F0E6}
+  .s-blocks .slot.gap.next{border-color:var(--brick);background:#FCEBEE}
+  .s-blocks .slot::before{content:"";position:absolute;top:-6px;left:12px;right:12px;height:7px;background:rgba(0,0,0,.10);border-radius:6px}
+  .s-blocks .cand{background:linear-gradient(135deg,#E0566B,#c8465a);box-shadow:0 4px 0 #a83b4d;border-radius:8px}
+  .s-fish .pond{background:linear-gradient(#bfe3f5,#9ccbe6);min-height:120px}
+  .s-fish .fish{background:linear-gradient(135deg,#6FB3D6,#4f9ec9);border-radius:50% 14px 50% 50%;animation:bob 2.4s ease-in-out infinite;position:relative}
+  .s-fish .fish:nth-child(2n){animation-duration:3s} .s-fish .fish:nth-child(3n){animation-duration:2s}
+  .s-fish .fish::after{content:"";position:absolute;margin-inline-start:-46px;margin-top:14px;border:9px solid transparent;border-inline-end-color:#4f9ec9}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  .s-fish .caught .slot.full{border-color:var(--sky);background:#EAF4FA}
+  .dart{animation:dart .45s forwards}
+  @keyframes dart{to{transform:translateX(50px) rotate(20deg);opacity:0}}
+  .choices{display:grid;gap:10px;margin:16px 2px}
+  .choice{padding:16px;border:2px solid var(--line);border-radius:16px;background:#fff;font-size:30px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:3px;color:var(--ink)}
+  .choice:hover{border-color:var(--primary)}
+  .choice.correct{background:#EEF6E9;border-color:var(--good);color:#2f5a1f}
+  .choice.wrong{background:#FCEBEE;border-color:var(--bad);color:#8c2b3a}
+  .choice:disabled{cursor:default}
+
+  .controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+  .controls button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .controls .go{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .controls .go:hover{background:var(--primary-d)}
+  .win{background:#EEF6E9;border:1px solid #CDE6BE;color:#3f6b2c;border-radius:18px;padding:16px;text-align:center;margin-top:12px}
+  .win .big{font-size:38px;font-weight:800;letter-spacing:3px}
+  .win .em{font-size:32px}
+  .fb{text-align:center;color:var(--muted);font-size:13px;margin-top:6px}
+
+  /* memory game */
+  .lvl{display:flex;gap:6px;margin-inline-start:auto}
+  .lvl button{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
+  .lvl button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .mgrid{display:grid;gap:10px;grid-template-columns:repeat(4,1fr);margin-top:10px}
+  .mcard{aspect-ratio:1/1;border-radius:16px;cursor:pointer;position:relative;border:2px solid var(--line);background:#fff;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .mcard .fback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#E07A5F,#E8A07F);color:#fff;font-size:30px;transition:opacity .15s}
+  .mcard .ffront{width:74%;height:74%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
+  .mcard .ffront svg{width:100%;height:100%}
+  .mcard.up .fback{opacity:0} .mcard.up .ffront{opacity:1}
+  .mcard.matched{border-color:var(--good);background:#F1F8EC} .mcard.matched .ffront{opacity:1}
+
+  /* maze */
+  .mazewrap{display:flex;flex-direction:column;align-items:center}
+  .guide{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:8px 0}
+  .gchip{width:34px;height:34px;border-radius:9px;background:#F0EADF;color:#b3a98f;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800}
+  .gchip.got{background:var(--good);color:#fff}
+  .maze{display:grid;gap:6px;margin:10px auto}
+  .cell{width:56px;height:56px;border-radius:12px;border:2px solid var(--line);background:#fff;font-size:25px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .cell.start{border-color:var(--primary);box-shadow:0 0 0 3px #f3c9bb}
+  .cell.path{background:var(--good);color:#fff;border-color:var(--good)}
+  .cell.target{background:#FFF4D9;border-color:var(--gold)}
+  .cell.bad{animation:shake .4s}
+
+  /* wheel */
+  .reels{display:flex;gap:10px;justify-content:center;align-items:center;margin:18px 2px}
+  .reel{width:72px;height:88px;border-radius:16px;border:2px solid var(--line);background:#fff;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:800;cursor:pointer}
+  .reel.spin{animation:reelspin .5s linear}
+  @keyframes reelspin{0%{transform:translateY(-10px);opacity:.3}100%{transform:translateY(0);opacity:1}}
+  .eq{font-size:28px;color:var(--muted)}
+  .blend{min-width:110px;height:88px;border-radius:16px;background:#F4EDF9;border:2px solid var(--violet);display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:800;color:#6b4a86;padding:0 12px;letter-spacing:2px}
+  .wstatus{text-align:center;font-size:16px;font-weight:700;margin:8px 0;min-height:24px}
+  .wstatus.real{color:var(--good)} .wstatus.fake{color:var(--muted)}
+
+  .intro{color:var(--muted);font-size:14px;margin:4px 2px 12px}
+  .acard{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px 16px;margin-bottom:12px}
+  .acard h3{margin:0 0 6px;font-size:18px}
+  .acard .mat{font-size:13px;color:var(--primary-d);background:#FBEDE7;border-radius:8px;padding:6px 10px;margin:6px 0;display:inline-block}
+  .acard ol{margin:6px 0 0;padding-inline-start:20px}
+  .acard li{margin:3px 0;font-size:15px}
+  .printbtn{width:100%;background:var(--primary);color:#fff;border:none;border-radius:14px;padding:13px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin:4px 0 14px}
+
+  .hint{text-align:center;color:var(--muted);font-size:13px;margin-top:10px}
+  @media print{ .topbtn,.back,.printbtn,.acts,header .sub{display:none} .acard{break-inside:avoid;box-shadow:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>ألعاب وأنشطة 🎮</h1>
+      <div class="sub">العب وتعلّم — ذاكرة، ودمج حروف، وأنشطة حسّيّة</div>
+    </div>
+    <a class="topbtn" href="home.html">🏠 الفهرس</a>
+  </header>
+  <div class="acts">
+    <a class="topbtn" href="puzzles.html">🧩 ألغاز ذكية</a>
+    <a class="topbtn" href="quiz.html">🎯 اختبارات تعليمية</a>
+    <a class="topbtn" href="tales.html">📖 قصص وعِبَر</a>
+  </div>
+  <div id="view"></div>
+</div>
+
+<script type="module">
+import DATA from "./content/words.js";
+import { WORLD_ART } from "./src/art.js";
+import { logEvent, recordMastery, getChildAge } from "./src/progress.js";
+import { pickAdaptive } from "./src/adaptive.js";
+import { speak } from "./src/speak.js";
+import { robo } from "./src/robo-companion.js";
+robo.mount();
+const WORDS = DATA.words || [];
+const WL = DATA.wheel_letters || [];
+const view = document.getElementById("view");
+
+const shuffle = a => { for(let k=a.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [a[k],a[j]]=[a[j],a[k]]; } return a; };
+let age=getChildAge(), score=0, streak=0, last=null, cur=null;
+const filtered = () => WORDS.filter(w => age==="all" || w.age_band===age);
+function pickWord(){ const p=filtered().filter(w=>w.id!==last); const a=p.length?p:filtered(); const w=pickAdaptive(a, x=>"W:"+x.word); last=w.id; return w; }
+function distractors(exclude, n){ const p=shuffle(WL.filter(l=>!exclude.includes(l))); return p.slice(0,n); }
+
+const ageChips = () => `<div class="chips"><span class="lbl">العمر:</span>
+  <button class="chip ${age==="all"?"on":""}" data-age="all">الكل</button>
+  <button class="chip ${age==="4-6"?"on":""}" data-age="4-6">4–6</button>
+  <button class="chip ${age==="7-10"?"on":""}" data-age="7-10">7–10</button>
+  <span class="pills"><span class="pill">⭐ <b>${score}</b></span><span class="pill">🔥 <b>${streak}</b></span></span></div>`;
+function wireAge(reRender){ const c=view.querySelector(".chips"); if(c) c.addEventListener("click", e=>{ const b=e.target.closest("button[data-age]"); if(!b) return; age=b.getAttribute("data-age"); reRender(); }); }
+const backBar = () => `<button class="back" id="back">← الألعاب</button>`;
+function wireBack(){ const b=document.getElementById("back"); if(b) b.onclick=renderMenu; }
+const clueCard = (instruction, withFlash) => `<div class="clue"><div class="emoji">${cur.emoji}</div>${withFlash?`<div class="flash" id="flash">${cur.word}</div>`:""}<div class="say">${instruction}</div></div>`;
+function winBanner(msg){ return `<div class="win"><div class="em">${cur.emoji}</div><div class="big" dir="rtl">${cur.word}</div>${msg}<div class="controls"><button class="go" id="cont">التالية ▶</button></div></div>`; }
+function celebrate(){ score++; streak++; robo.cheer(); logEvent("word_win"); if(cur) recordMastery("W:"+cur.word,true); }
+
+/* ===================== MENU ===================== */
+const GAMES = [
+  { id:"memory", ic:"🧠", t:"لعبة الذاكرة", d:"جِد الصورتين المتطابقتين" },
+  { id:"train",  ic:"🚂", t:"قطار الكلمات", d:"رتّب الحروف من الأوّل" },
+  { id:"pins",   ic:"🧺", t:"مشابك الغسيل", d:"بدّل حرفين لتصحّح الترتيب" },
+  { id:"blocks", ic:"🧱", t:"بناء المكعّبات", d:"أكمِل الحرف الناقص" },
+  { id:"fish",   ic:"🎣", t:"صيد الحروف", d:"اصطَد الصحيح وتجنّب الدخيل" },
+  { id:"cards",  ic:"🧩", t:"بطاقات الصور", d:"اختر الكتابة الصحيحة" },
+  { id:"maze",   ic:"🌀", t:"متاهة الحروف", d:"امشِ على الحروف بالترتيب" },
+  { id:"wheel",  ic:"🎡", t:"عجلة الحروف", d:"أدِر وادمج الأصوات" },
+  { id:"print",  ic:"🖨️", t:"أنشطة للطباعة", d:"7 ألعاب حسّيّة بالورق" },
+];
+function renderMenu(){
+  view.innerHTML = ageChips() + `<div class="menu">` +
+    GAMES.map(g=>`<div class="gcard" data-g="${g.id}"><div class="ic">${g.ic}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
+    `</div><div class="hint">لعبة الذاكرة برسومنا الأصيلة · وسبع ألعابٍ <b>لدمج الحروف</b> بأفكارٍ مختلفة 🌱</div>`;
+  wireAge(renderMenu);
+  view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
+}
+function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,print:renderPrint})[id](); }
+
+/* ===================== 🧠 MEMORY MATCH ===================== */
+let m_pairs=6, m_deck=[], m_flip=[], m_match=new Set(), m_moves=0, m_lock=false;
+function startMemory(){ newMemGame(); }
+function newMemGame(){
+  const ICONS=Object.keys(WORLD_ART);
+  const chosen=shuffle([...ICONS]).slice(0,m_pairs);
+  m_deck=shuffle([...chosen,...chosen]); m_flip=[]; m_match=new Set(); m_moves=0; m_lock=false; renderMemory();
+}
+function renderMemory(){
+  view.innerHTML = backBar()+
+    `<div class="gbar"><span class="pill">المحاولات: <b id="mv">${m_moves}</b></span><span class="pill">المطابقات: <b id="pf">${m_match.size/2}</b></span>
+      <div class="lvl" id="lvl"><button data-p="4" class="${m_pairs===4?"on":""}">سهل</button><button data-p="6" class="${m_pairs===6?"on":""}">متوسّط</button><button data-p="7" class="${m_pairs===7?"on":""}">صعب</button></div></div>
+    <div class="mgrid" id="grid"></div><div id="msg"></div>`;
+  wireBack();
+  const grid=document.getElementById("grid");
+  grid.innerHTML=m_deck.map((k,i)=>{ const up=m_flip.includes(i)||m_match.has(i); return `<div class="mcard ${up?"up":""} ${m_match.has(i)?"matched":""}" data-i="${i}"><div class="fback">🤖</div><div class="ffront">${WORLD_ART[k]}</div></div>`; }).join("");
+  grid.querySelectorAll(".mcard").forEach(c=>c.addEventListener("click",()=>onMemCard(+c.getAttribute("data-i"))));
+  document.getElementById("lvl").addEventListener("click",e=>{ const b=e.target.closest("button[data-p]"); if(!b)return; m_pairs=+b.getAttribute("data-p"); newMemGame(); });
+}
+function onMemCard(i){
+  if(m_lock||m_flip.includes(i)||m_match.has(i))return;
+  m_flip.push(i); renderMemory();
+  if(m_flip.length===2){ m_moves++; const mv=document.getElementById("mv"); if(mv) mv.textContent=m_moves;
+    const [a,b]=m_flip;
+    if(m_deck[a]===m_deck[b]){ m_match.add(a); m_match.add(b); m_flip=[]; renderMemory(); if(m_match.size===m_deck.length) memWin(); }
+    else { m_lock=true; setTimeout(()=>{ m_flip=[]; m_lock=false; renderMemory(); },750); } }
+}
+function memWin(){ logEvent("memory_win"); robo.cheer(); document.getElementById("msg").innerHTML=`<div class="win">🌟 أحسنت! وجدتَ كلّ المطابقات في <b>${m_moves}</b> محاولة.<div class="controls"><button class="go" id="again">العب من جديد</button></div></div>`; document.getElementById("again").onclick=newMemGame; }
+
+/* ===================== 🚂 TRAIN — ORDER ===================== */
+let t_tiles=[], t_order=[], t_placed=[], t_solved=false;
+function startTrain(){ cur=pickWord(); t_tiles=[...cur.word].map((l,i)=>({id:i,letter:l})); t_order=shuffle(t_tiles.map(t=>t.id)); t_placed=[]; t_solved=false; renderTrain(); }
+function renderTrain(){
+  const n=t_tiles.length;
+  const slots=Array.from({length:n},(_,s)=> t_placed[s]!=null
+    ? `<div class="slot full ${t_solved?"ok":""}" data-s="${s}">${t_tiles[t_placed[s]].letter}</div>`
+    : `<div class="slot ${s===t_placed.length?"next":""}"></div>`).join("");
+  const pool=t_order.filter(id=>!t_placed.includes(id)).map(id=>`<button class="tile" data-id="${id}">${t_tiles[id].letter}</button>`).join("");
+  view.innerHTML = backBar()+`<div class="gbar">${ageChips()}</div>`+clueCard("رتّب عربات الحروف من أوّل الكلمة",true)+
+    `<div class="row s-train" id="slots">${slots}</div><div class="pool s-train" id="pool">${pool}</div><div id="fb"></div>`+
+    `<div class="controls"><button data-act="hint">💡 تلميح</button><button data-act="say">🔊 استمع</button><button data-act="clear">↺ أفرغ</button><button class="go" data-act="next">كلمة جديدة ⏭️</button></div>`;
+  wireBack(); wireAge(startTrain);
+  view.querySelector("#pool").addEventListener("click",e=>{ const b=e.target.closest("[data-id]"); if(b&&!t_solved){ t_placed.push(+b.getAttribute("data-id")); renderTrain(); if(t_placed.length===n) tValidate(); }});
+  view.querySelector("#slots").addEventListener("click",e=>{ const d=e.target.closest(".slot.full"); if(d&&!t_solved){ t_placed.splice(+d.getAttribute("data-s"),1); renderTrain(); }});
+  view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-act]"); if(!b)return; const a=b.getAttribute("data-act");
+    if(a==="hint"){const f=document.getElementById("flash");f.classList.add("on");setTimeout(()=>f.classList.remove("on"),1300);}
+    else if(a==="say")robo.read(cur.word); else if(a==="clear"){t_placed=[];t_solved=false;renderTrain();} else if(a==="next")startTrain(); });
+}
+function tValidate(){
+  if(t_placed.map(id=>t_tiles[id].letter).join("")===cur.word){ t_solved=true; celebrate(); renderTrain(); document.getElementById("fb").innerHTML=winBanner("انطلق القطار! 🚂"); document.getElementById("cont").onclick=startTrain; }
+  else { streak=0; robo.encourage(); document.querySelectorAll("#slots .slot.full").forEach(el=>el.classList.add("err")); document.getElementById("fb").innerHTML=`<div class="fb">ليست صحيحة — جرّب ترتيبًا آخر أو ↺ أفرغ.</div>`; setTimeout(()=>{ if(!t_solved) renderTrain(); },750); }
+}
+
+/* ===================== 🧺 PINS — SWAP ===================== */
+let p_arr=[], p_sel=null, p_swaps=0, p_solved=false;
+function startPins(){ cur=pickWord(); const L=[...cur.word]; do{ p_arr=shuffle(L.map((l,i)=>({l,k:i}))); }while(p_arr.map(x=>x.l).join("")===cur.word && L.length>1); p_sel=null; p_swaps=0; p_solved=false; renderPins(); }
+function renderPins(){
+  const pegs=p_arr.map((x,i)=>`<div class="peg ${p_sel===i?"sel":""} ${p_solved?"ok":""}" data-i="${i}">${x.l}</div>`).join("");
+  view.innerHTML = backBar()+`<div class="gbar">${ageChips()}</div>`+clueCard("الحروف مبعثرة — اضغط حرفين ليتبادلا أماكنهما حتى تصحّ الكلمة",true)+
+    `<div class="row s-pins" id="line">${pegs}</div><div class="fb">التبديلات: <b>${p_swaps}</b></div><div id="fb"></div>`+
+    `<div class="controls"><button data-act="hint">💡 تلميح</button><button data-act="say">🔊 استمع</button><button data-act="shuffle">🔀 اخلط</button><button class="go" data-act="next">كلمة جديدة ⏭️</button></div>`;
+  wireBack(); wireAge(startPins);
+  view.querySelector("#line").addEventListener("click",e=>{ const d=e.target.closest(".peg"); if(!d||p_solved)return; const i=+d.getAttribute("data-i");
+    if(p_sel===null){ p_sel=i; } else if(p_sel===i){ p_sel=null; } else { [p_arr[p_sel],p_arr[i]]=[p_arr[i],p_arr[p_sel]]; p_sel=null; p_swaps++; if(p_arr.map(x=>x.l).join("")===cur.word){ p_solved=true; celebrate(); renderPins(); document.getElementById("fb").innerHTML=winBanner("نشرتها بالترتيب! 🧺"); document.getElementById("cont").onclick=startPins; return; } }
+    renderPins(); });
+  view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-act]"); if(!b)return; const a=b.getAttribute("data-act");
+    if(a==="hint"){const f=document.getElementById("flash");f.classList.add("on");setTimeout(()=>f.classList.remove("on"),1300);}
+    else if(a==="say")robo.read(cur.word); else if(a==="shuffle"||a==="next")startPins(); });
+}
+
+/* ===================== 🧱 BLOCKS — FILL ===================== */
+let b_L=[], b_gaps=[], b_filled={}, b_cands=[], b_solved=false;
+function startBlocks(){ cur=pickWord(); b_L=[...cur.word]; const gc=(age==="7-10"&&b_L.length>=4)?2:1;
+  b_gaps=shuffle(b_L.map((_,i)=>i)).slice(0,gc).sort((a,b)=>a-b); b_filled={}; b_solved=false;
+  const need=b_gaps.map(i=>b_L[i]); b_cands=shuffle(need.concat(distractors(b_L, Math.max(2,4-need.length))).map((l,i)=>({l,id:i,used:false}))); renderBlocks(); }
+function nextGap(){ return b_gaps.find(g=>b_filled[g]==null); }
+function renderBlocks(){
+  const ng=nextGap();
+  const word=b_L.map((l,i)=>{ if(b_gaps.includes(i)){ const f=b_filled[i]; return `<div class="slot gap ${f!=null?"full ok":(i===ng?"next":"")}">${f!=null?f:""}</div>`; } return `<div class="slot fixed">${l}</div>`; }).join("");
+  const cands=b_cands.filter(c=>!c.used).map(c=>`<button class="tile cand" data-id="${c.id}">${c.l}</button>`).join("");
+  view.innerHTML = backBar()+`<div class="gbar">${ageChips()}</div>`+clueCard("الكلمة ينقصها حرف — اختر المكعّب الصحيح لإكمالها",false)+
+    `<div class="row s-blocks" id="word">${word}</div><div class="pool s-blocks" id="cands">${cands}</div><div id="fb"></div>`+
+    `<div class="controls"><button data-act="say">🔊 استمع</button><button class="go" data-act="next">كلمة جديدة ⏭️</button></div>`;
+  wireBack(); wireAge(startBlocks);
+  view.querySelector("#cands").addEventListener("click",e=>{ const b=e.target.closest("[data-id]"); if(!b||b_solved)return; const c=b_cands.find(x=>x.id===+b.getAttribute("data-id")); const g=nextGap();
+    if(g!=null && c.l===b_L[g]){ b_filled[g]=c.l; c.used=true; if(nextGap()==null){ b_solved=true; celebrate(); renderBlocks(); document.getElementById("fb").innerHTML=winBanner("بنيتَ الكلمة! 🧱"); document.getElementById("cont").onclick=startBlocks; return;} renderBlocks(); }
+    else { b.classList.add("dart"); streak=0; robo.encourage(); setTimeout(()=>b.classList.remove("dart"),450); }});
+  view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-act]"); if(!b)return; if(b.getAttribute("data-act")==="say")robo.read(cur.word); else startBlocks(); });
+}
+
+/* ===================== 🎣 FISH — SELECT among distractors ===================== */
+let f_word=[], f_prog=0, f_pond=[], f_solved=false;
+function startFish(){ cur=pickWord(); f_word=[...cur.word]; f_prog=0; f_solved=false;
+  const dis=distractors(f_word, Math.min(4, Math.max(2, 6-f_word.length))).map((l,i)=>({l,id:"d"+i}));
+  f_pond=shuffle(f_word.map((l,i)=>({l,id:"w"+i})).concat(dis)); renderFish(); }
+function renderFish(){
+  const caught=f_word.map((l,i)=>`<div class="slot ${i<f_prog?"full ok":(i===f_prog?"next":"")}">${i<f_prog?l:""}</div>`).join("");
+  const pond=f_pond.map(f=>`<button class="tile fish" data-id="${f.id}">${f.l}</button>`).join("");
+  view.innerHTML = backBar()+`<div class="gbar">${ageChips()}</div>`+clueCard("اصطَد حروف الكلمة بالترتيب — وتجاهَل الحروف الدخيلة!",true)+
+    `<div class="row s-fish caught">${caught}</div><div class="pool s-fish pond" id="pond">${pond}</div><div id="fb"></div>`+
+    `<div class="controls"><button data-act="hint">💡 تلميح</button><button data-act="say">🔊 استمع</button><button class="go" data-act="next">كلمة جديدة ⏭️</button></div>`;
+  wireBack(); wireAge(startFish);
+  view.querySelector("#pond").addEventListener("click",e=>{ const b=e.target.closest(".fish"); if(!b||f_solved)return; const id=b.getAttribute("data-id"); const f=f_pond.find(x=>x.id===id);
+    if(f.l===f_word[f_prog]){ b.classList.add("dart"); f_prog++; setTimeout(()=>{ f_pond=f_pond.filter(x=>x.id!==id); if(f_prog>=f_word.length){ f_solved=true; celebrate(); renderFish(); document.getElementById("fb").innerHTML=winBanner("اصطدتها كلّها! 🎣"); document.getElementById("cont").onclick=startFish; } else renderFish(); },300); }
+    else { streak=0; robo.encourage(); b.classList.add("dart"); setTimeout(()=>b.classList.remove("dart"),450); }});
+  view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-act]"); if(!b)return; const a=b.getAttribute("data-act");
+    if(a==="hint"){const f=document.getElementById("flash");f.classList.add("on");setTimeout(()=>f.classList.remove("on"),1300);} else if(a==="say")robo.read(cur.word); else startFish(); });
+}
+
+/* ===================== 🧩 CARDS — MULTIPLE CHOICE ===================== */
+let c_opts=[], c_done=false;
+function spellingVariants(word){ const set=new Set(); let g=0;
+  while(set.size<2 && g++<60){ const a=[...word]; const i=Math.floor(Math.random()*(a.length-1)); [a[i],a[i+1]]=[a[i+1],a[i]]; const s=a.join(""); if(s!==word) set.add(s); }
+  while(set.size<2 && g++<120){ const a=[...word]; const i=Math.floor(Math.random()*a.length); a[i]=WL[Math.floor(Math.random()*WL.length)]; const s=a.join(""); if(s!==word) set.add(s); }
+  return [...set].slice(0,2); }
+function startCards(){ cur=pickWord(); c_done=false; c_opts=shuffle([cur.word, ...spellingVariants(cur.word)]); renderCards(); }
+function renderCards(){
+  view.innerHTML = backBar()+`<div class="gbar">${ageChips()}</div>`+clueCard("أيُّ كتابةٍ صحيحةٌ لهذه الصورة؟",false)+
+    `<div class="choices" id="choices">${c_opts.map((o,i)=>`<button class="choice" data-i="${i}" dir="rtl">${o}</button>`).join("")}</div><div id="fb"></div>`+
+    `<div class="controls"><button data-act="say">🔊 استمع</button><button class="go" data-act="next">صورة جديدة ⏭️</button></div>`;
+  wireBack(); wireAge(startCards);
+  view.querySelector("#choices").addEventListener("click",e=>{ const b=e.target.closest(".choice"); if(!b||c_done)return; c_done=true; const pick=c_opts[+b.getAttribute("data-i")];
+    view.querySelectorAll(".choice").forEach(el=>{ el.disabled=true; if(c_opts[+el.getAttribute("data-i")]===cur.word) el.classList.add("correct"); });
+    if(pick===cur.word){ celebrate(); document.getElementById("fb").innerHTML=winBanner("اختيارٌ صحيح! 🧩"); document.getElementById("cont").onclick=startCards; }
+    else { streak=0; b.classList.add("wrong"); robo.encourage(); document.getElementById("fb").innerHTML=`<div class="controls"><button class="go" id="cont">صورة أخرى ▶</button></div>`; document.getElementById("cont").onclick=startCards; }});
+  view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-act]"); if(!b)return; if(b.getAttribute("data-act")==="say")robo.read(cur.word); else startCards(); });
+}
+
+/* ===================== 🌀 MAZE ===================== */
+let mz=null, mzP=0;
+const nbrs=(c,N)=>{ const r=Math.floor(c/N),col=c%N,o=[]; if(r>0)o.push(c-N); if(r<N-1)o.push(c+N); if(col>0)o.push(c-1); if(col<N-1)o.push(c+1); return o; };
+function walk(N,len){ const s=Math.floor(Math.random()*N*N),v=[s]; let c=s; for(let i=1;i<len;i++){ const nb=nbrs(c,N).filter(x=>!v.includes(x)); if(!nb.length)return null; c=nb[Math.floor(Math.random()*nb.length)]; v.push(c);} return v; }
+function startMaze(){ cur=pickWord(); const L=[...cur.word], N=L.length<=3?4:5; let path=null,t=0; while(!path&&t++<500)path=walk(N,L.length); if(!path){startMaze();return;}
+  const grid=Array(N*N).fill(null); path.forEach((c,i)=>grid[c]=L[i]); for(let i=0;i<N*N;i++) if(grid[i]==null) grid[i]=WL[Math.floor(Math.random()*WL.length)];
+  mz={N,grid,path,target:path[path.length-1],L}; mzP=0; renderMaze(); }
+function renderMaze(){
+  const {N,grid,path,target,L}=mz, done=mzP>=L.length;
+  const guide=L.map((l,i)=>`<span class="gchip ${i<mzP?"got":""}">${l}</span>`).join("");
+  const cells=grid.map((ch,i)=>{ let cls="cell"; const idx=path.indexOf(i); if(idx>-1&&idx<mzP)cls+=" path"; if(i===path[0]&&mzP===0)cls+=" start"; if(i===target&&done)cls+=" target"; return `<div class="${cls}" data-i="${i}">${(i===target&&done)?cur.emoji:ch}</div>`; }).join("");
+  view.innerHTML = backBar()+`<div class="gbar">${ageChips()}</div>`+`<div class="clue" style="padding:12px"><div class="emoji">${cur.emoji}</div><div class="say">امشِ على الحروف بالترتيب لتصل إلى الصورة</div></div>`+
+    `<div class="mazewrap"><div class="guide">${guide}</div><div class="maze" id="maze" style="grid-template-columns:repeat(${N},1fr);max-width:${N*62}px">${cells}</div></div><div id="fb"></div>`+
+    `<div class="controls"><button data-act="hint">💡 تلميح</button><button data-act="reset">↺ من جديد</button><button class="go" data-act="new">🔀 متاهة جديدة</button></div>`;
+  wireBack(); wireAge(startMaze);
+  view.querySelector("#maze").addEventListener("click",e=>{ const d=e.target.closest(".cell"); if(!d||done)return; const i=+d.getAttribute("data-i");
+    if(i===path[mzP]){ mzP++; if(mzP>=L.length){ celebrate(); renderMaze(); document.getElementById("fb").innerHTML=winBanner("وصلت! 🌟"); document.getElementById("cont").onclick=startMaze; } else renderMaze(); }
+    else { streak=0; robo.encourage(); d.classList.add("bad"); setTimeout(()=>d.classList.remove("bad"),400); }});
+  view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-act]"); if(!b)return; const a=b.getAttribute("data-act");
+    if(a==="hint"){ const el=view.querySelector(`.cell[data-i="${path[mzP]}"]`); if(el){el.classList.add("start");setTimeout(()=>el.classList.remove("start"),900);} }
+    else if(a==="reset"){ mzP=0; renderMaze(); } else if(a==="new")startMaze(); });
+}
+
+/* ===================== 🎡 WHEEL ===================== */
+let reels=[0,0,0], found=0, seen=new Set();
+const rnd=()=>Math.floor(Math.random()*WL.length), joined=()=>reels.map(i=>WL[i]).join("");
+function startWheel(){ reels=[rnd(),rnd(),rnd()]; renderWheel(false); }
+function renderWheel(an){
+  const j=joined(), isW=WORDS.some(w=>w.word===j);
+  view.innerHTML = backBar()+`<div class="clue" style="padding:12px"><div class="say">أدِر العجلة أو اضغط حرفًا لتغييره، ثمّ انطق الكلمة!</div></div>`+
+    `<div class="reels" id="reels"><div class="reel ${an?"spin":""}" data-r="0">${WL[reels[0]]}</div><div class="reel ${an?"spin":""}" data-r="1">${WL[reels[1]]}</div><div class="reel ${an?"spin":""}" data-r="2">${WL[reels[2]]}</div><span class="eq">=</span><div class="blend" dir="rtl">${j}</div></div>`+
+    `<div class="wstatus ${isW?"real":"fake"}">${isW?"🎉 كلمة حقيقية!":"كلمة من خيالك 🛸 — جرّب نطقها"}</div>`+
+    `<div class="controls"><button class="go" data-w="spin">🎡 أدِر</button><button data-w="say">🔊 انطق</button><span class="pill" style="align-self:center">كلمات حقيقية: <b id="found">${found}</b></span></div>`+
+    `<div class="hint">كلّ حرفٍ له صوت — ادمج الأصوات معًا. حتى الكلمات المضحكة تدرّب على الدمج!</div>`;
+  wireBack();
+  if(isW&&!seen.has(j)){ seen.add(j); found++; const f=document.getElementById("found"); if(f)f.textContent=found; robo.read(j); }
+  view.querySelector("#reels").addEventListener("click",e=>{ const d=e.target.closest(".reel"); if(!d)return; const r=+d.getAttribute("data-r"); reels[r]=(reels[r]+1)%WL.length; renderWheel(false); });
+  view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-w]"); if(!b)return; if(b.getAttribute("data-w")==="spin"){reels=[rnd(),rnd(),rnd()];renderWheel(true);} else robo.read(joined()); });
+}
+
+/* ===================== 🖨️ PRINT ===================== */
+const ACTS=[
+  {emoji:"🚂",title:"قطار الكلمات",mat:"ورق · أقلام · مقصّ",steps:["ارسم قاطرةً تجرّ 3 عرباتٍ.","اكتب حرفًا منفصلًا على كلّ عربة (شـ، مـ، س).","رتّب العربات لتكوين الكلمة (شمس).","عند الصحّة: «انطلق القطار!» 🎉"]},
+  {emoji:"🧺",title:"مشابك الغسيل",mat:"مشابك خشبيّة · حبل · بطاقات صور",steps:["اكتب حروفًا على المشابك.","قدّم بطاقةً فيها صورة (أسد).","علّق المشابك (أ، س، د) بالترتيب على الحبل."]},
+  {emoji:"🧱",title:"بناء المكعّبات",mat:"مكعّبات ليغو · ملصقات حروف",steps:["ألصق حروفًا (بأشكالها المختلفة) على المكعّبات.","ركّبها وكدّسها لتكوين كلمةٍ صحيحة."]},
+  {emoji:"🎣",title:"صيد الأسماك المغناطيسي",mat:"ورق · مشابك معدنيّة · مغناطيس · خيط · عصا",steps:["قصّ أسماكًا وضع على كلٍّ مشبكًا وحرفًا.","اصنع صنّارةً بمغناطيس.","اصطَد حروف كلمةٍ (قـ، لـ، مـ) ثمّ ادمجها."]},
+  {emoji:"🧩",title:"بطاقات دمج الصور",mat:"بطاقات · قلم",steps:["بطاقةٌ فيها صورة وحروفٌ مبعثرة.","أعِد ترتيب الحروف واكتبها متّصلةً صحيحة."]},
+  {emoji:"🌀",title:"المتاهة",mat:"ورق · قلم",steps:["ارسم متاهةً تبدأ بحرفٍ وتمرّ بحروف.","تنتهي عند صورة الهدف (ب → نـ → ت = «بنت»)."]},
+  {emoji:"🎡",title:"عجلة الحروف الدوّارة",mat:"قرص مقوّى · مؤشّر",steps:["قرصٌ مقسومٌ حروفًا ومؤشّرٌ دوّار.","لُفّه مرّتين أو ثلاثًا وادمج الحروف.","ولو كلمةً خياليّة — فهي تدرّب صوت الدمج!"]},
+];
+function renderPrint(){
+  view.innerHTML = backBar()+`<div class="intro">النسخة الحسّيّة الورقيّة للأهل — «نشاطٌ واقعيّ أوّلًا». اطبعها وعلّقها.</div><button class="printbtn" onclick="window.print()">🖨️ اطبع الأنشطة</button>`+
+    ACTS.map(a=>`<div class="acard"><h3>${a.emoji} ${a.title}</h3><span class="mat">🧰 ${a.mat}</span><ol>${a.steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>`).join("");
+  wireBack();
+}
+
+renderMenu();
+</script>
+</body>
+</html>

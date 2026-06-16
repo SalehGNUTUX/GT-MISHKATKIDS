@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#1F7A5E" />
+<title>مِشكاة — القرآن الكريم</title>
+<style>
+  @font-face{font-family:'amiri-quran';src:url('fonts/amiri-quran.ttf') format('truetype');font-display:swap}
+  @font-face{font-family:'amiri-quran-colored';src:url('fonts/amiri-quran-colored.ttf') format('truetype');font-display:swap}
+  @font-face{font-family:'uthmanic-hafs';src:url('fonts/uthmanic-hafs.otf') format('opentype');font-display:swap}
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B; --line:#ECE6DA;
+    --primary:#1F7A5E; --primary-d:#155C46; --gold:#C99B3B; --hl:#FCEFC7;
+    --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,.scard,.ayah{touch-action:manipulation}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:680px;margin:0 auto;padding:16px 16px 56px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 10px}
+  header h1{font-size:21px;margin:0;color:var(--primary-d)}
+  header .sub{color:var(--muted);font-size:13px}
+  .topbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink);font-family:inherit}
+  .back{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink)}
+
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin:8px 2px}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;color:#555}
+  .chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+  .slist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:8px}
+  .scard{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:12px;cursor:pointer;text-align:center;transition:.12s}
+  .scard:hover{transform:translateY(-2px);border-color:var(--primary)}
+  .scard .nm{font-family:'amiri-quran';font-size:22px;color:var(--primary-d);font-weight:700}
+  .scard .meta{font-size:12px;color:var(--muted);margin-top:3px}
+  .scard .lvl{display:inline-block;font-size:11px;border-radius:999px;padding:1px 8px;margin-top:4px}
+  .lvl.s{background:#EAF4E3;color:#3f6b2c} .lvl.m{background:#FBF0DC;color:#8a5a2a} .lvl.h{background:#F3EAF6;color:#6e3f7a}
+
+  .stitle{text-align:center;margin:6px 2px 10px}
+  .stitle .nm{font-family:'amiri-quran';font-size:30px;color:var(--primary-d);font-weight:700}
+  .stitle .meta{font-size:12px;color:var(--muted)}
+  .fontbar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 2px}
+  .toolbar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 2px}
+  .tbtn{border:none;border-radius:999px;padding:9px 15px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(0,0,0,.1)}
+  .tbtn.play{background:var(--primary);color:#fff} .tbtn.stop{background:#E0566B;color:#fff}
+  .tbtn.rep{background:#fff;border:1px solid var(--line);color:#555} .tbtn.rep.on{background:var(--gold);color:#fff}
+
+  .mushaf{background:#FFFDF6;border:1px solid #EFE6CF;border-radius:18px;box-shadow:var(--shadow);padding:18px 16px;margin:8px 2px;
+    font-size:30px;line-height:2.35;text-align:justify;text-justify:inter-word;direction:rtl;color:#1c2b25}
+  .mushaf.f-amiri{font-family:'amiri-quran'} .mushaf.f-amiric{font-family:'amiri-quran-colored'} .mushaf.f-uthmani{font-family:'uthmanic-hafs'}
+  .ayah{cursor:pointer;border-radius:8px;padding:0 2px;transition:background .15s}
+  .ayah.on{background:var(--hl);box-shadow:0 0 0 2px var(--gold) inset}
+  .ayah .num{font-family:'amiri-quran';color:var(--gold);font-size:.8em;margin:0 4px;font-weight:700}
+  .bism{display:block;text-align:center;color:var(--primary-d);font-size:.95em;margin-bottom:10px;cursor:pointer;border-radius:8px;padding:2px}
+  .bism.on{background:var(--hl);box-shadow:0 0 0 2px var(--gold) inset}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 2px;box-shadow:var(--shadow)}
+  .panel .ay{font-family:'amiri-quran';font-size:24px;color:var(--primary-d);text-align:center;margin-bottom:8px;line-height:2}
+  .hint{text-align:center;color:var(--muted);font-size:13px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>القرآن الكريم ﷽</h1><div class="sub">تعلَّمْ واقرأْ واحفَظْ — بتلاوة الشيخ محمود خليل الحصري</div></div>
+    <a class="topbtn" href="home.html">🏠 الفهرس</a>
+  </header>
+  <div id="view"></div>
+</div>
+
+<script type="module">
+import QURAN from "./content/quran.js";
+import { logEvent, recordMastery, getChildAge } from "./src/progress.js";
+import { robo } from "./src/robo-companion.js";
+import { attachReader } from "./src/reader-recorder.js";
+robo.mount();
+
+const view = document.getElementById("view");
+const pad3 = n => String(n).padStart(3, "0");
+const ayNum = n => String(n); // أرقام الآيات بالغربيّة (العربيّة) في كل الواجهة بطلب المستخدم
+const BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+const audioSrc = (s, a) => `quran/husary/${pad3(s)}${pad3(a)}.mp3`;
+const BASMALA_AUDIO = audioSrc(1, 1); // صوتُ البسملة المستقلّ = الفاتحة آية1 (تلاوةُ الحصري لا تضمّن البسملةَ في باقي السور)
+// فصلُ البسملة من نصّ الآية الأولى (متينٌ غيرُ حسّاسٍ للتشكيل): يُرجِع نصَّ الآية دون البسملة.
+const stripDia = s => String(s).replace(/[ً-ْٰـ]/g, "").replace(/ٱ/g, "ا");
+const BASM_NORM = "بسم الله الرحمن الرحيم";
+function verseNoBism(text) { const t = String(text).split(/\s+/); return (t.length >= 4 && stripDia(t.slice(0, 4).join(" ")) === BASM_NORM) ? t.slice(4).join(" ") : text; }
+
+const FONTS = [{ id: "f-amiri", label: "أميري" }, { id: "f-amiric", label: "أميري ملوّن" }, { id: "f-uthmani", label: "عثماني" }];
+const FKEY = "tilmithi_quran_font";
+const getFont = () => { try { return localStorage.getItem(FKEY) || "f-amiri"; } catch (e) { return "f-amiri"; } };
+const setFont = f => { try { localStorage.setItem(FKEY, f); } catch (e) {} };
+
+// المستوى بحسب طول السورة (الأقصر أسهل): s≤7 · m≤25 · h>25.
+const levelOf = c => c <= 7 ? "s" : c <= 25 ? "m" : "h";
+const LVL_LABEL = { s: "قصيرة", m: "متوسّطة", h: "طويلة" };
+// تصفيةٌ بحسب العمر: الصغار يبدؤون بالأقصر.
+function defaultFilter() { const a = getChildAge(); return a === "4-6" ? "s" : a === "7-10" ? "m" : "all"; }
+let filter = defaultFilter();
+let order = "len"; // len = الأقصر أولًا (تدرّجٌ في الحفظ) · mushaf = الترتيب القرآنيّ
+
+// البسملة: إظهارٌ/إخفاء (لتكرار الآية الأولى بغرض الحفظ). الافتراض: ظاهرة.
+const BKEY = "tilmithi_quran_basmala";
+const showBasmala = () => { try { return localStorage.getItem(BKEY) !== "off"; } catch (e) { return true; } };
+const setBasmala = on => { try { localStorage.setItem(BKEY, on ? "on" : "off"); } catch (e) {} };
+
+const FATIHA = QURAN.surahs.find(s => s.n === 1);
+// **الفاتحة دائمًا أولًا**، ثمّ البقيّة بالترتيب المختار (الأقصر أولًا أو الترتيب القرآنيّ).
+function orderedSurahs() {
+  const rest = QURAN.surahs.filter(s => s.n !== 1);
+  rest.sort(order === "mushaf" ? (a, b) => a.n - b.n : (a, b) => a.ayahCount - b.ayahCount);
+  return [FATIHA, ...rest];
+}
+
+/* ===== قائمة السور ===== */
+function renderList() {
+  stopAll();
+  const fbtn = (id, lbl) => `<button class="chip ${filter === id ? "on" : ""}" data-f="${id}">${lbl}</button>`;
+  const obtn = (id, lbl) => `<button class="chip ${order === id ? "on" : ""}" data-o="${id}">${lbl}</button>`;
+  // الفاتحة تُعرَض دائمًا؛ والبقيّة تُصفّى بالمستوى (في وضع «الأقصر أولًا»). في الترتيب القرآنيّ تُعرَض كلُّها.
+  const list = orderedSurahs().filter(s => s.n === 1 || order === "mushaf" || filter === "all"
+    || levelOf(s.ayahCount) === filter || (filter === "m" && levelOf(s.ayahCount) === "s"));
+  view.innerHTML =
+    `<div class="filters"><span style="font-size:13px;color:#6B6B6B;align-self:center">الترتيب:</span>
+       ${obtn("len", "📏 الأقصر أولًا")}${obtn("mushaf", "📖 الترتيب القرآنيّ")}</div>
+     ${order === "len" ? `<div class="filters"><span style="font-size:13px;color:#6B6B6B;align-self:center">المستوى:</span>
+       ${fbtn("s", "🟢 قصيرة")}${fbtn("m", "🟡 متوسّطة")}${fbtn("all", "الكل")}</div>` : ""}
+     <div class="slist">${list.map(s => `
+       <div class="scard" data-n="${s.n}">
+         <div class="nm">${s.name.replace(/^سُورَةُ\s*/, "")}</div>
+         <div class="meta">${ayNum(s.ayahCount)} آية · ${s.type === "Meccan" ? "مكّيّة" : "مدنيّة"}</div>
+         <div class="lvl ${levelOf(s.ayahCount)}">${LVL_LABEL[levelOf(s.ayahCount)]}</div>
+       </div>`).join("")}</div>
+     <div class="hint">ابدأْ بالأقصر، واستمعْ لكلِّ آيةٍ وكرِّرْها حتى تحفظَها بإذن الله 🌿</div>`;
+  view.querySelectorAll(".filters").forEach(bar => bar.addEventListener("click", e => {
+    const o = e.target.closest("[data-o]"); if (o) { order = o.getAttribute("data-o"); renderList(); return; }
+    const f = e.target.closest("[data-f]"); if (f) { filter = f.getAttribute("data-f"); renderList(); }
+  }));
+  view.querySelector(".slist").addEventListener("click", e => { const c = e.target.closest("[data-n]"); if (c) openSurah(+c.getAttribute("data-n")); });
+}
+
+/* ===== عرض السورة ===== */
+let surah = null, selIdx = 0;
+function openSurah(n) { surah = QURAN.surahs.find(s => s.n === n); selIdx = 0; logEvent("quran_open"); renderSurah(); }
+
+// نصُّ الآية للعرض: بلا بسملةٍ للآية الأولى (لغير الفاتحة)، وبلا محرف BOM/علاماتٍ خفيّة.
+function ayahText(ay) { const t = (surah.n !== 1 && ay.a === 1) ? verseNoBism(ay.text) : ay.text; return t.replace(/﻿/g, "").trim(); }
+function ayahHtml(ay, i) {
+  return `<span class="ayah" data-i="${i}" data-a="${ay.a}">${ayahText(ay)}<span class="num">﴿${ayNum(ay.a)}﴾</span></span> `;
+}
+function renderSurah() {
+  stopAll();
+  const f = getFont();
+  view.innerHTML =
+    `<button class="back" id="back">← كل السور</button>
+     <div class="stitle"><div class="nm">${surah.name}</div><div class="meta">${ayNum(surah.ayahCount)} آية · ${surah.type === "Meccan" ? "مكّيّة" : "مدنيّة"}</div></div>
+     <div class="fontbar">${FONTS.map(x => `<button class="chip ${f === x.id ? "on" : ""}" data-font="${x.id}">${x.label}</button>`).join("")}</div>
+     <div class="toolbar">
+       <button class="tbtn play" id="playAll">▶ اقرأ السورة</button>
+       <button class="tbtn stop" id="stop">⏹️ إيقاف</button>
+       <button class="tbtn rep" id="repAyah">🔁 كرّر الآية</button>
+       <button class="tbtn rep" id="repSurah">🔁 كرّر السورة</button>
+       ${surah.n !== 1 ? `<button class="tbtn rep ${showBasmala() ? "on" : ""}" id="basmala">🕌 البسملة</button>` : ""}
+     </div>
+     <div class="mushaf ${f}" id="mushaf">${(surah.n !== 1 && showBasmala()) ? `<span class="bism" data-bism>${BASMALA} <span class="num">🔊</span></span>` : ""}${surah.ayahs.map(ayahHtml).join("")}</div>
+     <div id="practice"></div>
+     <div class="hint">اضغطْ آيةً لتستمعَ إليها وتسجّلَ تلاوتك. «كرّر الآية» يعيدُها لتحفظَها. (تلاوةُ الحصري تتضمّن البسملةَ في أوّل السورة كما تُتلى.)</div>`;
+  document.getElementById("back").onclick = renderList;
+  view.querySelector(".fontbar").addEventListener("click", e => { const b = e.target.closest("[data-font]"); if (!b) return; setFont(b.getAttribute("data-font")); renderSurah(); });
+  view.querySelector("#mushaf").addEventListener("click", e => {
+    if (e.target.closest("[data-bism]")) { playAll(0); return; } // البسملةُ بدايةُ السورة: تُسمَع ثمّ تُكمَل السورةُ كاملةً تلقائياً
+    const sp = e.target.closest(".ayah"); if (!sp) return; selIdx = +sp.getAttribute("data-i"); playSingle(selIdx); renderPractice();
+  });
+  document.getElementById("playAll").onclick = () => playAll(0);
+  document.getElementById("stop").onclick = stopAll;
+  document.getElementById("repAyah").onclick = e => { repeatAyah = !repeatAyah; e.currentTarget.classList.toggle("on", repeatAyah); };
+  document.getElementById("repSurah").onclick = e => { repeatSurah = !repeatSurah; e.currentTarget.classList.toggle("on", repeatSurah); };
+  const bb = document.getElementById("basmala"); if (bb) bb.onclick = () => { setBasmala(!showBasmala()); renderSurah(); };
+  renderPractice();
+}
+
+/* ===== تمرّن وتسجيل لكل آية (مع تلاوة الحصري مرجعًا) ===== */
+function renderPractice() {
+  const host = document.getElementById("practice"); if (!host) return;
+  const ay = surah.ayahs[selIdx];
+  const dt = ayahText(ay); // نصُّ الآية بلا بسملة (يطابق الصوتَ المرجعيّ ومفتاحَ التسجيل)
+  host.innerHTML = `<div class="panel"><div class="ay">${dt} <span style="color:var(--gold);font-family:'amiri-quran'">﴿${ayNum(ay.a)}﴾</span></div><div id="rrHost"></div></div>`;
+  attachReader(document.getElementById("rrHost"), dt, {
+    label: "تلاوتك للآية", helpLabel: "🔊 استمعْ للحصري", helpStatus: "تلاوةُ الشيخ الحصري 🔊",
+    onHelp: () => playSingle(selIdx),
+  });
+}
+
+/* ===== محرّك التشغيل والتظليل (عنصرُ صوتٍ واحدٌ + قائمةُ تشغيل؛ لا يتقدّم إلا عند انتهاءِ المقطعِ فعليّاً) ===== */
+const player = new Audio(); player.preload = "auto";
+let repeatAyah = false, repeatSurah = false;
+let seq = [], seqPos = 0, mode = "idle"; // mode: idle | seq ؛ كلُّ عنصرٍ: {bism:true} أو {ayah:i}
+function clearHL() { view.querySelectorAll(".ayah.on, .bism.on").forEach(x => x.classList.remove("on")); }
+function hlAyah(i) { clearHL(); const sp = view.querySelector(`.ayah[data-i="${i}"]`); if (sp) { sp.classList.add("on"); sp.scrollIntoView({ block: "center", behavior: "smooth" }); } }
+function hlBism() { clearHL(); const b = view.querySelector(".bism"); if (b) b.classList.add("on"); }
+function stopAll() { mode = "idle"; seq = []; player.onended = null; try { player.pause(); } catch (e) {} clearHL(); }
+
+const srcOf = st => st.bism ? BASMALA_AUDIO : audioSrc(surah.n, surah.ayahs[st.ayah].a);
+function runSeq() {
+  if (mode !== "seq") return;
+  if (seqPos >= seq.length) { // انتهى التسلسل
+    if (repeatSurah && seq.some(s => !s.bism)) { seqPos = 0; runSeq(); return; }
+    mode = "idle"; clearHL(); logEvent("quran_listen"); recordMastery("S:" + surah.n, true); try { robo.cheer("مَا شَاءَ اللَّهُ! أتمَمْتَ السورة."); } catch (e) {}
+    return;
+  }
+  const st = seq[seqPos];
+  if (st.bism) hlBism(); else { selIdx = st.ayah; hlAyah(st.ayah); }
+  player.onended = () => {
+    if (mode !== "seq") return;
+    if (seq.length === 1 && !seq[0].bism && repeatAyah) { runSeq(); return; } // تكرارُ الآيةِ المفردة للحفظ
+    seqPos++; runSeq();
+  };
+  player.onerror = player.onended; // تخطّي مقطعٍ تعذّر تحميلُه (نادر؛ الملفّات محلّيّة)
+  player.src = srcOf(st); try { player.currentTime = 0; } catch (e) {}
+  const p = player.play(); if (p && p.catch) p.catch(() => {}); // تجاهلُ رفضِ التشغيل المؤقّت — التقدّمُ عند ended فقط
+}
+// آيةٌ مفردة (تُكرَّر إن فُعِّل «كرّر الآية»).
+function playSingle(i) { mode = "seq"; seq = [{ ayah: i }]; seqPos = 0; selIdx = i; runSeq(); }
+// السورةُ كاملةً: البسملةُ أوّلًا (إن فُعِّلت، لغير الفاتحة) ثمّ كلُّ الآيات.
+function playAll(from) {
+  mode = "seq"; seq = [];
+  if (from === 0 && surah.n !== 1 && showBasmala()) seq.push({ bism: true });
+  for (let i = from; i < surah.ayahs.length; i++) seq.push({ ayah: i });
+  seqPos = 0; runSeq();
+}
+
+renderList();
+</script>
+</body>
+</html>

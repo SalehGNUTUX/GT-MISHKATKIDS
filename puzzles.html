@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#E07A5F" />
+<title>مِشكاة — ألغاز ذكية</title>
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
+    --line:#ECE6DA; --primary:#E07A5F; --primary-d:#C7613F; --good:#7BB661;
+    --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,input,textarea,select,.region,.toggle,.chip,.capbtn,[onclick]{touch-action:manipulation}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:600px;margin:0 auto;padding:16px 16px 48px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 12px}
+  header h1{font-size:22px;margin:0}
+  header .sub{color:var(--muted);font-size:13px}
+  .topbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink)}
+
+  .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 2px}
+  .chips .lbl{font-size:12px;color:var(--muted);margin-inline-end:2px}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
+  .chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .count{font-size:13px;color:var(--muted);margin:10px 2px 0}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px 18px;margin-top:8px}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .b{font-size:11px;background:#EFEADD;border-radius:999px;padding:2px 10px;color:#666}
+  .b.type{background:#FBEDE7;color:var(--primary-d)}
+  .ptitle{font-size:18px;font-weight:800;margin:2px 0 10px}
+  .riddle{font-size:21px;line-height:1.95;margin:6px 2px 16px;min-height:80px}
+  .reveal{display:flex;gap:10px;flex-wrap:wrap}
+  .reveal button{flex:1;min-width:130px;border:none;border-radius:14px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  .bhint{background:#FFF4D9;color:#8a6d1d;border:1px solid #F1E3B8}
+  .bsol{background:var(--good);color:#fff}
+  .box{margin-top:12px;border-radius:14px;padding:12px 14px;font-size:17px;display:none}
+  .box.show{display:block}
+  .hintbox{background:#FFF7E3;border:1px solid #F1E3B8;color:#7a611a}
+  .solbox{background:#EEF6E9;border:1px solid #CDE6BE;color:#3f6b2c;font-weight:700;font-size:19px;text-align:center}
+
+  .nav{display:flex;gap:10px;margin-top:16px}
+  .nav button{flex:1;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
+  .prev{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .next{background:var(--primary);color:#fff}
+  .next:hover{background:var(--primary-d)}
+  .prev:disabled{opacity:.4;cursor:default}
+  .shuf{background:#fff;border:1px solid var(--line);color:var(--primary-d);border-radius:14px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px;width:100%}
+  .empty{padding:26px;text-align:center;color:var(--muted)}
+  .src{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>ألغاز ذكية 🧩</h1>
+      <div class="sub">فكّر، خمّن، ثمّ اكشف الحل — مع طفلك</div>
+    </div>
+    <a class="topbtn" href="home.html">🏠 الفهرس</a>
+  </header>
+
+  <div class="chips" id="fType">
+    <span class="lbl">النوع:</span>
+    <button class="chip on" data-v="all">الكل</button>
+    <button class="chip" data-v="riddle">فوازير 🔮</button>
+    <button class="chip" data-v="logic">منطق 🧠</button>
+  </div>
+  <div class="chips" id="fAge">
+    <span class="lbl">العمر:</span>
+    <button class="chip on" data-v="all">الكل</button>
+    <button class="chip" data-v="4-6">4–6</button>
+    <button class="chip" data-v="6-8">6–8</button>
+    <button class="chip" data-v="9-12">9–12</button>
+  </div>
+  <div class="count" id="count"></div>
+
+  <div id="view"></div>
+
+  <div class="src">الألغاز مستوحاة من مشروع GT-SARARIM (رخصة GPL-3.0)</div>
+</div>
+
+<script type="module">
+import data from "./content/puzzles.js";
+import { logEvent } from "./src/progress.js";
+import { robo } from "./src/robo-companion.js";
+robo.mount();
+
+const ALL = data.puzzles || [];
+const LEVEL_AR = { beginner:"تمهيدي", intermediate:"مبتدئ", advanced:"متوسّط", expert:"متقدّم" };
+const TYPE_AR  = { riddle:"فزّورة 🔮", logic:"منطق 🧠" };
+
+let fType = "all", fAge = "all", list = [], i = 0;
+
+function shuffle(a){ for(let k=a.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [a[k],a[j]]=[a[j],a[k]]; } return a; }
+
+function apply(){
+  list = ALL.filter(p => (fType==="all"||p.type===fType) && (fAge==="all"||p.age_band===fAge));
+  shuffle(list);
+  i = 0; render();
+}
+
+function render(){
+  const c = document.getElementById("count");
+  const view = document.getElementById("view");
+  if(!list.length){ c.textContent=""; view.innerHTML = `<div class="card"><div class="empty">لا ألغاز بهذا التصفية.</div></div>`; return; }
+  c.textContent = `لغز ${i+1} من ${list.length}`;
+  const p = list[i];
+  view.innerHTML = `<div class="card">
+    <div class="badges">
+      <span class="b type">${TYPE_AR[p.type]||p.type}</span>
+      <span class="b">${LEVEL_AR[p.level]||p.level}</span>
+      <span class="b">${p.age_band} سنوات</span>
+    </div>
+    <div class="ptitle">${p.title}</div>
+    <div class="riddle">${p.riddle}</div>
+    <div class="reveal">
+      <button class="bhint" id="bhint">💡 تلميح</button>
+      <button class="bsol" id="bsol">✅ أظهر الحل</button>
+    </div>
+    <div class="box hintbox" id="hintbox">💡 ${p.hint}</div>
+    <div class="box solbox" id="solbox">${p.solution}</div>
+    <div class="nav">
+      <button class="prev" id="prev" ${i===0?"disabled":""}>السابق</button>
+      <button class="next" id="next">${i===list.length-1 ? "🔀 خلط جديد" : "التالي ▶"}</button>
+    </div>
+    <button class="shuf" id="shuf">🔀 لغز عشوائي آخر</button>
+  </div>`;
+
+  const hb=document.getElementById("hintbox"), sb=document.getElementById("solbox");
+  document.getElementById("bhint").onclick = (e)=>{ hb.classList.toggle("show"); e.target.style.opacity = hb.classList.contains("show")?".6":"1"; };
+  document.getElementById("bsol").onclick  = ()=>{ sb.classList.add("show"); logEvent("puzzle_seen"); robo.say("أحسنتَ التفكير! هيّا نرى الحلّ معًا.", "happy"); };
+  document.getElementById("prev").onclick = ()=>{ if(i>0){ i--; render(); } };
+  document.getElementById("next").onclick = ()=>{ if(i<list.length-1){ i++; render(); } else { apply(); } };
+  document.getElementById("shuf").onclick = ()=>{ if(list.length>1){ let n; do{ n=Math.floor(Math.random()*list.length); }while(n===i); i=n; render(); } };
+}
+
+function wire(id, set){
+  document.getElementById(id).addEventListener("click", e=>{
+    const b=e.target.closest("button[data-v]"); if(!b) return;
+    document.querySelectorAll(`#${id} .chip`).forEach(x=>x.classList.toggle("on", x===b));
+    set(b.getAttribute("data-v")); apply();
+  });
+}
+wire("fType", v=>fType=v);
+wire("fAge",  v=>fAge=v);
+
+apply();
+</script>
+</body>
+</html>

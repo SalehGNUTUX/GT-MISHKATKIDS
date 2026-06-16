@@ -1,0 +1,16 @@
+{
+  "name": "تلميذي — روبو يتعافى",
+  "short_name": "تلميذي",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF7EF",
+  "theme_color": "#E07A5F",
+  "description": "نظام تعليميّ للأطفال: الطفل يُعلّم روبو فيتذكّر ويتعافى — محليّ بالكامل، بلا اتصال وبلا ذكاء اصطناعي.",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

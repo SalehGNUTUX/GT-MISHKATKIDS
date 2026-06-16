@@ -245,7 +245,7 @@ import { deepenFor, roboWrongFor } from "./src/think.js";
 import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, getVoiceSet, setVoiceSet, CLIPS, getStoryVoice, setStoryVoice, isStoryReadOn, setStoryReadOn } from "./src/sound-prefs.js";
 import { listSets, primeVoices } from "./src/voices.js";
 import { practiceByAccount, clearAccount as clearPracticeAccount } from "./src/practice.js";
-import { verifyParentPassword, markParentAuthed, isParentAuthed, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser, addProfile, updateProfile } from "./src/accounts.js";
+import { verifyParentPassword, markParentAuthed, isParentAuthed, isParent, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser, addProfile, updateProfile } from "./src/accounts.js";
 import { confirmWithPassword, undoable } from "./src/confirm-action.js";
 import voicesBundled from "./src/voices-bundled.json";
 const STATE_TAG = {spark:"1) الشرارة", task:"2) المهمة", teach:"3) التلقين", heal:"4) الشفاء"};
@@ -294,8 +294,9 @@ function init(){
   // لا يُدخَل التطبيق دون حسابٍ نشط: غيابُ الحساب (ولا قصدَ للوحة الأهل) ⇒ شاشة الدخول.
   // (هذا يُغلق ثغرة «الحساب المجهول» = وضع «بلا حساب» الذي كان يظهر عند فتح اللوحة.)
   if(!cu && !wantsParent){ location.replace("home.html"); return; }
-  // «لوحة الأهل» دون جلسةٍ خلفها: لا نكشف أيّ حسابٍ، والبوّابة حاجزةٌ بكلمة المرور (الإلغاء ⇒ شاشة الدخول).
-  parentOnly = wantsParent && !cu;
+  // أيُّ قدومٍ بـ?parent=1 = لوحةُ التحكّم وحدها (حاجزة): لا نرسم حلقة «علّم روبو» خلفها،
+  // والخروجُ يعيد لشاشة الدخول/الحساب الذي فُتحت منه. (لا يُترَك المستخدم في الحلقة.)
+  parentOnly = wantsParent;
   if(parentOnly) overlay.style.background="#FBF7EF"; // خلفيّةٌ معتمةٌ فلا يظهر أيُّ شيءٍ خلف البوّابة
   const dom=params.get("domain");
   if(dom && DOMAINS.includes(dom)){ domFilter=dom; renderMap(); }
@@ -534,7 +535,7 @@ document.getElementById("parentBtn").addEventListener("click", openGate);
 overlay.addEventListener("click",e=>{ if(e.target===overlay) closePanel(); });
 function closePanel(){
   if(pendingDel) finalizeDel();
-  overlay.classList.remove("show"); panel.innerHTML="";
+  overlay.classList.remove("show"); panel.innerHTML=""; panel.style.maxWidth="";
   // لا جلسةَ حسابٍ خلف اللوحة ⇒ العودةُ لشاشة الدخول لا إلى تصفّحٍ مجهول.
   if(parentOnly){ location.href="home.html"; }
 }
@@ -579,19 +580,28 @@ function undoDel(){ if(pendingDel){ clearTimeout(pendingDel.timer); if(pendingDe
 if(document.getElementById("undoBtn")) document.getElementById("undoBtn").addEventListener("click", undoDel);
 
 function openGate(){
-  if(isParentAuthed()){ openDashboard(); return; }   // جلسةٌ صالحة (5 دقائق)
-  panel.innerHTML=`<div class="gate"><button class="close" onclick="closePanel()">✕</button>
-    <h2>🛡️ لوحة الأهل</h2><p class="muted">أدخل كلمة المرور:</p>
-    <input id="ppw" type="password" autocomplete="off" placeholder="كلمة المرور" />
+  // الوالدُ المسجَّلُ: لوحتُه متاحةٌ مباشرةً (أدخل كلمةَ المرور عند الدخول لحسابه).
+  if(isParent()){ openDashboard(); return; }
+  // أيُّ حسابٍ آخر (طفل/ضيف/مجهول): كلمةُ المرور إلزاميّةٌ في كلِّ مرّة — لا جلسةَ 5 دقائق.
+  const u=getCurrentUser();
+  const who = (u && u.role!=="parent") ? `<div class="muted" style="font-size:12px;margin-top:2px">مفتوحةٌ من حساب <b>${u.avatar||"🙂"} ${u.name}</b></div>` : "";
+  panel.style.maxWidth="380px"; // نافذةٌ مدمجةٌ لكلمة المرور (تُعاد 680 للوحة)
+  panel.innerHTML=`<div class="gate" style="max-width:320px;margin:4px auto">
+    <div style="font-size:48px;line-height:1">🛡️</div>
+    <h2 style="margin:8px 0 2px">لوحة التحكّم</h2>
+    <p class="muted" style="font-size:13px;margin:0">محميّةٌ بكلمة مرور الأهل</p>${who}
+    <input id="ppw" type="password" autocomplete="off" placeholder="كلمة المرور" style="width:100%;max-width:240px;font-size:18px;text-align:center;padding:11px;border:1px solid var(--line);border-radius:12px;margin:14px 0 2px" />
     <div class="bad" id="ppwBad"></div>
-    <div class="btns" style="justify-content:center"><button class="act" id="ppwGo">دخول</button></div>
-    <button class="topbtn" id="forgot" style="margin-top:12px;font-size:13px">نسيتُ كلمة المرور</button>
-    ${isDefaultParentPassword()?'<p class="muted" style="font-size:12px;margin-top:10px">الافتراضيّة: <b>admin</b> — غيّرها من إعدادات اللوحة.</p>':''}</div>`;
+    <div class="btns" style="justify-content:center;margin-top:10px"><button class="act" id="ppwGo" style="min-width:120px">دخول</button>
+    <button class="topbtn" id="ppwBack">رجوع</button></div>
+    <button id="forgot" style="margin-top:14px;font-size:13px;border:none;background:none;color:var(--muted);text-decoration:underline;cursor:pointer;font-family:inherit">نسيتُ كلمة المرور</button>
+    ${isDefaultParentPassword()?'<p class="muted" style="font-size:12px;margin-top:8px">الافتراضيّة: <b>admin</b> — غيّرها من إعدادات اللوحة.</p>':''}</div>`;
   overlay.classList.add("show");
   const inp=document.getElementById("ppw"); inp.focus();
-  const go=()=>{ if(verifyParentPassword(inp.value)){ markParentAuthed(); openDashboard(); } else { document.getElementById("ppwBad").textContent="كلمة مرور غير صحيحة."; inp.value=""; inp.focus(); } };
+  const go=()=>{ if(verifyParentPassword(inp.value)){ markParentAuthed(); openDashboard(); } else { const b=document.getElementById("ppwBad"); b.textContent="كلمة مرور غير صحيحة."; inp.value=""; inp.focus(); const g=document.querySelector(".gate"); if(g){ g.style.transition="transform .07s"; g.style.transform="translateX(-6px)"; setTimeout(()=>{g.style.transform="translateX(6px)";},70); setTimeout(()=>{g.style.transform="";},140); } } };
   document.getElementById("ppwGo").onclick=go;
   inp.addEventListener("keydown",e=>{ if(e.key==="Enter") go(); });
+  document.getElementById("ppwBack").onclick=closePanel;
   document.getElementById("forgot").onclick=openRecover;
 }
 function openRecover(){
@@ -612,6 +622,7 @@ function openRecover(){
 }
 
 async function openDashboard(){
+  panel.style.maxWidth=""; // إعادةُ عرض الحاوية للوحة الكاملة (كانت 380 لنافذة كلمة المرور)
   const caps=await allCaptures();
   const capByTs={}; caps.forEach(c=>{ (capByTs[c.ts]=capByTs[c.ts]||[]).push(c); });
   const done=progress.completed.length, litP=Object.keys(progress.parts).length, litW=Object.keys(progress.world).length;

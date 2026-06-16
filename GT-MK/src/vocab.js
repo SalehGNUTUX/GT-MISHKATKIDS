@@ -11,7 +11,7 @@ import numerals from "../content/numerals.js";
 import stories from "../content/stories.js";
 import sararim from "../content/sararim-stories.js";
 import { numberNames } from "./numbers-ar.js";
-import { REACTIONS } from "./robo-phrases.js";
+import { REACTIONS, NOTICES } from "./robo-phrases.js";
 import { PRAISE } from "./islamic.js";
 
 const uniq = a => [...new Set(a.filter(Boolean).map(s => String(s).trim()).filter(Boolean))];
@@ -30,6 +30,8 @@ export const WORD_UNITS = [
 export const SENTENCE_UNITS = [
   { key: "sread", label: "جمل القراءة", items: uniq((reading.sentences || []).map(s => s.text)) },
   { key: "robo",  label: "عبارات روبو", items: uniq([].concat(...Object.values(REACTIONS || {}), PRAISE || [])) },
+  // إشعاراتُ الآليّ السياقيّة (نهاية سورة، حلّ لغز، ورشة، ألعاب…) — تُنطَق بمقاطع espeak وتُسجَّل بشريًّا.
+  { key: "notices", label: "إشعارات الآليّ", items: uniq(Object.values(NOTICES || {})) },
   // نصوص قصّة الأرقام (لتسجيلها بصوتٍ بشريّ ولها مقاطع احتياطية).
   { key: "numerals", label: "قصّة الأرقام", items: uniq([numerals.intro, (numerals.zero && numerals.zero.body || "").replace(/\*\*/g, ""), numerals.zero && numerals.zero.tadabbur, numerals.tadabbur, ...(numerals.timeline || []).map(t => t.d)]) },
   // نصوص القصص المصوّرة (صفحاتها) والقصص والعِبَر — لتسجيلها بصوت قارئٍ بشريّ.

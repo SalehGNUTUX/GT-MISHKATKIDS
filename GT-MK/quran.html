@@ -79,6 +79,7 @@
 import QURAN from "./content/quran.js";
 import { logEvent, recordMastery, getChildAge } from "./src/progress.js";
 import { robo } from "./src/robo-companion.js";
+import { NOTICES } from "./src/robo-phrases.js";
 import { attachReader } from "./src/reader-recorder.js";
 robo.mount();
 
@@ -212,7 +213,7 @@ function runSeq() {
   if (mode !== "seq") return;
   if (seqPos >= seq.length) { // انتهى التسلسل
     if (repeatSurah && seq.some(s => !s.bism)) { seqPos = 0; runSeq(); return; }
-    mode = "idle"; clearHL(); logEvent("quran_listen"); recordMastery("S:" + surah.n, true); try { robo.cheer("مَا شَاءَ اللَّهُ! أتمَمْتَ السورة."); } catch (e) {}
+    mode = "idle"; clearHL(); logEvent("quran_listen"); recordMastery("S:" + surah.n, true); try { robo.cheer(NOTICES.quranSurahDone); } catch (e) {}
     return;
   }
   const st = seq[seqPos];

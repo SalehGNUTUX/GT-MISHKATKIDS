@@ -173,6 +173,7 @@ import { logEvent, recordMastery } from "./src/progress.js";
 import { pickAdaptive } from "./src/adaptive.js";
 import { speak } from "./src/speak.js";
 import { robo } from "./src/robo-companion.js";
+import { NOTICES } from "./src/robo-phrases.js";
 import { downloadSvgAsPdf } from "./src/pdf-utils.js";
 import { numberName as numAr } from "./src/numbers-ar.js";
 import { autoToggleHtml, wireAuto, onCorrect, onWrong } from "./src/quiz-flow.js";
@@ -302,7 +303,7 @@ function startNumerals(){
   document.getElementById("readIntro").onclick=()=>robo.say(N.intro,"talk");
   document.getElementById("readZero").onclick=()=>robo.say(N.zero.body.replace(/\*\*/g,""),"talk");
   view.querySelector(".ndg").addEventListener("click",e=>{ const c=e.target.closest(".ndc"); if(!c)return; robo.read(c.getAttribute("data-name")); });
-  robo.say("تعالَ نعرفْ قصّةَ أرقامِنا العربيّة وكيف فتح الصِّفرُ بابَ العلم!","happy");
+  robo.say(NOTICES.numeralsStory,"happy");
 }
 
 /* ===== ➕➖✖ ARITHMETIC ===== */
@@ -411,7 +412,7 @@ function nextCompare(){
      </div>
      <div class="hint">عُدَّ كلَّ مجموعةٍ ثمّ اختَرِ الأكثر</div>`;
   wireBack(); wireAuto(view);
-  robo.say("أيُّ مجموعةٍ فيها أكثر؟","ask");
+  robo.say(NOTICES.askMore,"ask");
   view.querySelector("#grid").addEventListener("click",e=>{ const d=e.target.closest(".objbox"); if(!d||d.dataset.done)return;
     if(d.getAttribute("data-k")===more){ d.classList.add("ok"); cScore++; logEvent("math_correct"); view.querySelectorAll(".objbox").forEach(x=>x.dataset.done="1"); onCorrect(robo, view, nextCompare); }
     else { d.classList.add("bad"); setTimeout(()=>d.classList.remove("bad"),450); onWrong(robo, view, nextCompare); } });
@@ -435,7 +436,7 @@ function nextPattern(){
      <div class="opts" id="opts">${opts.map(o=>`<button class="opt" data-v="${o}">${o}</button>`).join("")}</div>
      <div class="hint">تأمّلِ النمطَ المتكرّر واختَرِ التالي</div>`;
   wireBack(); wireAuto(view);
-  robo.say("ما العنصرُ التالي في النمط؟","ask");
+  robo.say(NOTICES.askPattern,"ask");
   view.querySelector("#opts").addEventListener("click",e=>{ const b=e.target.closest(".opt"); if(!b||b.disabled)return;
     if(b.getAttribute("data-v")===answer){ b.classList.add("ok"); pScore++; logEvent("math_correct"); view.querySelectorAll(".opt").forEach(x=>x.disabled=true); onCorrect(robo, view, nextPattern); }
     else { b.classList.add("bad"); setTimeout(()=>b.classList.remove("bad"),450); onWrong(robo, view, nextPattern); } });
@@ -455,7 +456,7 @@ function nextSize(){
      <div class="grid" id="grid" style="grid-template-columns:repeat(3,1fr)">${sizes.map(s=>`<button class="tile" data-i="${s.i}"><svg viewBox="0 0 90 90"><circle cx="45" cy="45" r="${s.r}" fill="${col}"/></svg></button>`).join("")}</div>
      <div class="hint">قارنِ الأحجامَ بعينك</div>`;
   wireBack(); wireAuto(view);
-  robo.say("اضغطِ الدائرةَ "+(wantBig?"الأكبر":"الأصغر"),"ask");
+  robo.say(wantBig?NOTICES.askBigger:NOTICES.askSmaller,"ask");
   view.querySelector("#grid").addEventListener("click",e=>{ const b=e.target.closest(".tile"); if(!b||b.disabled)return;
     if(+b.getAttribute("data-i")===target.i){ b.classList.add("ok"); zScore++; logEvent("math_correct"); view.querySelectorAll(".tile").forEach(x=>x.disabled=true); onCorrect(robo, view, nextSize); }
     else { b.classList.add("bad"); setTimeout(()=>b.classList.remove("bad"),450); onWrong(robo, view, nextSize); } });
@@ -565,8 +566,8 @@ function openCraft(id){
        </div>
      </div>`;
   document.getElementById("back2").onclick = startCrafts;
-  document.getElementById("done").onclick = ()=>{ logEvent("craft_done"); robo.cheer("بَارَكَ اللَّهُ فِيكَ! صَنَعْتَ شَكْلًا حَقِيقِيًّا بِيَدَيْكَ."); };
-  document.getElementById("readCraft").onclick = ()=>{ robo.say("اتْبَعِ الْخُطُواتِ خُطْوَةً خُطْوَة، وَاسْتَعِنْ بِوَالِدَيْكَ مَعَ الْمِقَصّ.","talk"); };
+  document.getElementById("done").onclick = ()=>{ logEvent("craft_done"); robo.cheer(NOTICES.craftDone); };
+  document.getElementById("readCraft").onclick = ()=>{ robo.say(NOTICES.craftSteps,"talk"); };
   const dl = document.getElementById("dlPdf"); if (dl) dl.onclick = () => downloadCraftPdf(c, dl);
 }
 

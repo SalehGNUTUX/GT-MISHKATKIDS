@@ -93,6 +93,7 @@
 import data from "./content/puzzles.js";
 import { logEvent } from "./src/progress.js";
 import { robo } from "./src/robo-companion.js";
+import { NOTICES } from "./src/robo-phrases.js";
 robo.mount();
 
 const ALL = data.puzzles || [];
@@ -138,7 +139,7 @@ function render(){
 
   const hb=document.getElementById("hintbox"), sb=document.getElementById("solbox");
   document.getElementById("bhint").onclick = (e)=>{ hb.classList.toggle("show"); e.target.style.opacity = hb.classList.contains("show")?".6":"1"; };
-  document.getElementById("bsol").onclick  = ()=>{ sb.classList.add("show"); logEvent("puzzle_seen"); robo.say("أحسنتَ التفكير! هيّا نرى الحلّ معًا.", "happy"); };
+  document.getElementById("bsol").onclick  = ()=>{ sb.classList.add("show"); logEvent("puzzle_seen"); robo.say(NOTICES.puzzleReveal, "happy"); };
   document.getElementById("prev").onclick = ()=>{ if(i>0){ i--; render(); } };
   document.getElementById("next").onclick = ()=>{ if(i<list.length-1){ i++; render(); } else { apply(); } };
   document.getElementById("shuf").onclick = ()=>{ if(list.length>1){ let n; do{ n=Math.floor(Math.random()*list.length); }while(n===i); i=n; render(); } };

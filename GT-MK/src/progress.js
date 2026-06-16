@@ -32,8 +32,12 @@ export function logEvent(type, payload = {}) {
   save(s);
 }
 
-export function getStats() {
-  const s = load();
+// مفتاحُ تقدّمِ ملفٍّ بعينه (يطابق نمطَ index.html وهذا الملفّ) + قارئٌ مباشر.
+function keyFor(id) { return id ? "tilmithi_progress_v1__" + id : "tilmithi_progress_v1"; }
+function loadKey(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; } }
+
+// حسابُ الإحصاءات من كائن تقدّمٍ معطًى (نقيّ، يُعاد استعماله للجلسة الحاليّة وللتقارير).
+function computeStats(s) {
   const counts = s.counts || {}, totals = s.totals || {}, days = s.days || {};
   let streak = 0; const d = new Date();
   for (;;) { if (days[fmt(d)]) { streak++; d.setDate(d.getDate() - 1); } else break; }
@@ -42,6 +46,11 @@ export function getStats() {
   for (const k in counts) if (counts[k] > 0 && SECTION_OF[k]) sections.add(SECTION_OF[k]);
   return { counts, totals, days, streak, total, activeDays: Object.keys(days).length, sections: sections.size, name: s.name || "" };
 }
+export function getStats() { return computeStats(load()); }
+
+// قراءةٌ فقط لتقدّمِ ملفٍّ آخرَ (لتقارير لوحة الأهل) — لا تمسّ الجلسةَ الحاليّة.
+export function loadProgressFor(id) { return loadKey(keyFor(id)); }
+export function getStatsFor(id) { return computeStats(loadKey(keyFor(id))); }
 
 export const BADGES = [
   { id: "first",   ic: "🌱", label: "أوّل خطوة",        cond: s => s.total >= 1 },
@@ -67,6 +76,8 @@ export const BADGES = [
   { id: "hafiz",   ic: "🕌", label: "يَحفظُ كتابَ الله",     cond: s => (s.counts.quran_listen || 0) >= 10 },
 ];
 export function getBadges() { const s = getStats(); return BADGES.map(b => ({ id: b.id, ic: b.ic, label: b.label, earned: !!b.cond(s) })); }
+// أوسمةُ ملفٍّ آخرَ (للتقارير) — قراءةٌ فقط.
+export function getBadgesFor(id) { const s = getStatsFor(id); return BADGES.map(b => ({ id: b.id, ic: b.ic, label: b.label, earned: !!b.cond(s) })); }
 
 // Daily mission: 3 fixed tasks, "done" if an event of its type fired today.
 export const MISSION = [

@@ -162,7 +162,7 @@
     <div style="display:flex;gap:8px">
       <button class="topbtn" id="muteBtn" title="صوت روبو: تشغيل/كتم">🔊</button>
       <a class="topbtn" href="home.html" style="text-decoration:none">🏠 الفهرس</a>
-      <button class="topbtn" id="parentBtn">👪 لوحة الأهل</button>
+      <button class="topbtn" id="parentBtn">🛡️ لوحة التحكّم</button>
     </div>
   </header>
 
@@ -237,7 +237,7 @@ const WORLD_ART={
 "طائر":`<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><ellipse cx="22" cy="27" rx="12" ry="9" fill="#6FB3D6"/><circle cx="32" cy="20" r="6" fill="#6FB3D6"/><circle cx="33" cy="19" r="1.6" fill="#fff"/><path d="M37 20l6-2-3 4z" fill="#F6BE3B"/><path d="M14 27q6-8 12-2-6 6-12 2z" fill="#5390B4"/></svg>`
 };
 import { ART } from "./src/art.js";
-import { logEvent, recordMastery, getAllMastery, isDueForReview, getChildAge, setChildAge } from "./src/progress.js";
+import { logEvent, recordMastery, getAllMastery, isDueForReview, getChildAge, setChildAge, getStatsFor, getBadgesFor, loadProgressFor } from "./src/progress.js";
 import * as sfx from "./src/sfx.js";
 import { roboSay, roboPhrase } from "./src/robo-voice.js";
 import { praise, tadabburFor } from "./src/islamic.js";
@@ -245,7 +245,7 @@ import { deepenFor, roboWrongFor } from "./src/think.js";
 import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, getVoiceSet, setVoiceSet, CLIPS, getStoryVoice, setStoryVoice, isStoryReadOn, setStoryReadOn } from "./src/sound-prefs.js";
 import { listSets, primeVoices } from "./src/voices.js";
 import { practiceByAccount, clearAccount as clearPracticeAccount } from "./src/practice.js";
-import { verifyParentPassword, markParentAuthed, isParentAuthed, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser } from "./src/accounts.js";
+import { verifyParentPassword, markParentAuthed, isParentAuthed, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser, addProfile, updateProfile } from "./src/accounts.js";
 import { confirmWithPassword, undoable } from "./src/confirm-action.js";
 import voicesBundled from "./src/voices-bundled.json";
 const STATE_TAG = {spark:"1) الشرارة", task:"2) المهمة", teach:"3) التلقين", heal:"4) الشفاء"};
@@ -539,6 +539,32 @@ function closePanel(){
   if(parentOnly){ location.href="home.html"; }
 }
 
+// محرّرُ حساب طفلٍ من لوحة التحكّم (إضافة/تعديل: الاسم، الفئة، كلمة المرور). الوالد مُصادَقٌ مسبقًا.
+function openAcctForm(pid){
+  const p = pid ? listProfiles().find(x=>x.id===pid) : null;
+  const host = document.getElementById("acctForm"); if(!host) return;
+  const ages=["4-6","7-10","all"], curAge = p?p.ageGroup:"4-6";
+  host.innerHTML=`<div style="border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:8px;background:#FBF7EF">
+    <div style="font-weight:700;margin-bottom:6px">${p?"تعديل: "+p.name:"حساب طفلٍ جديد"}</div>
+    <input id="afName" placeholder="الاسم" value="${p?String(p.name).replace(/"/g,"&quot;"):""}" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-family:inherit;margin-bottom:6px">
+    <div style="display:flex;gap:6px;margin-bottom:6px">${ages.map(a=>`<button class="afage" data-a="${a}" style="flex:1;border:1px solid var(--line);border-radius:8px;padding:6px;cursor:pointer;font-family:inherit;${curAge===a?"background:var(--primary);color:#fff":"background:#fff"}">${a==="all"?"الكل":a}</button>`).join("")}</div>
+    <input id="afPw" type="password" placeholder="${p&&p.password?"كلمة مرور جديدة (فارغ = إبقاء)":"كلمة مرور (اختياريّة)"}" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-family:inherit;margin-bottom:6px">
+    ${p&&p.password?'<label style="font-size:12px;display:block;margin-bottom:6px"><input type="checkbox" id="afClear"> إزالة كلمة المرور</label>':""}
+    <div class="btns"><button class="act" id="afSave">حفظ</button> <button class="ghost" id="afCancel">إلغاء</button></div>
+  </div>`;
+  let age=curAge;
+  host.querySelectorAll(".afage").forEach(b=>b.onclick=()=>{ age=b.getAttribute("data-a"); host.querySelectorAll(".afage").forEach(x=>{x.style.background="#fff";x.style.color="";}); b.style.background="var(--primary)"; b.style.color="#fff"; });
+  document.getElementById("afCancel").onclick=()=>{ host.innerHTML=""; };
+  document.getElementById("afSave").onclick=()=>{
+    const name=document.getElementById("afName").value.trim()||"طفلي";
+    const pw=document.getElementById("afPw").value;
+    const clr=document.getElementById("afClear")&&document.getElementById("afClear").checked;
+    if(p){ const patch={name,ageGroup:age}; if(clr) patch.password=""; else if(pw) patch.password=pw; updateProfile(p.id,patch); }
+    else addProfile({name,ageGroup:age,password:pw});
+    openDashboard();
+  };
+}
+
 /* حذف تسجيلٍ مفردٍ مع مهلة تراجع (6 ثوانٍ) — لا يُمَسّ IndexedDB إلّا بعد انقضاء المهلة */
 let pendingDel=null; // {key, el, timer}
 const undoBar=document.getElementById("undoBar");
@@ -618,9 +644,42 @@ async function openDashboard(){
   const storyOpts=()=>{ const cur=getStoryVoice(); return setsFor("story").map(o=>`<option value="${o.id}" ${o.id===cur?"selected":""}>${o.name}</option>`).join(""); };
   const vSelStyle="flex:1;max-width:60%;padding:6px 8px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:13px;background:#fff";
 
+  // تقارير الأبناء: بطاقةٌ لكلّ ملفّ طفلٍ بتقدّمه وأوسمته وإنجازاته (قراءةٌ فقط من مفتاح تقدّمه — لا تمسّ الجلسة).
+  const kids = listProfiles();
+  const repCard = (p)=>{
+    const st = getStatsFor(p.id), raw = loadProgressFor(p.id), bdg = getBadgesFor(p.id);
+    const earned = bdg.filter(b=>b.earned);
+    const compl = (raw.completed||[]).length;
+    const partsLit = Object.keys(raw.parts||{}).length, worldLit = Object.keys(raw.world||{}).length;
+    const last = raw.lastDay || "—";
+    const perDom = DOMAINS.map(d=>{ const tot=MEM.filter(m=>m.domain===d).length, dn=MEM.filter(m=>m.domain===d&&(raw.completed||[]).includes(m.id)).length; return {d,tot,dn,pct: tot?Math.round(dn/tot*100):0}; });
+    return `<div class="repcard" style="border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:24px">${p.avatar||"🙂"}</span>
+        <div style="flex:1"><b>${p.name}</b> <span class="muted" style="font-size:12px">· ${p.ageGroup}${p.password?" · 🔒":""}</span>
+          <div class="muted" style="font-size:11px">آخر نشاط: ${last}${st.streak>0?" · 🔥 "+AR(st.streak)+" يوم متتالٍ":""}</div></div>
+        <button class="rep-toggle" data-pid="${p.id}" style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit">تفاصيل ▾</button>
+      </div>
+      <div class="statgrid" style="margin-top:8px">
+        <div class="stat"><div class="n">${AR(st.total)}</div><div class="t">نجمة</div></div>
+        <div class="stat"><div class="n">${AR(compl)}</div><div class="t">ذكرى مُستعادة</div></div>
+        <div class="stat"><div class="n">${AR(earned.length)}/${AR(bdg.length)}</div><div class="t">أوسمة</div></div>
+        <div class="stat"><div class="n">${AR(st.activeDays)}</div><div class="t">يوم نشِط</div></div>
+      </div>
+      <div class="rep-detail" data-pid="${p.id}" style="display:none;margin-top:8px">
+        <div class="muted" style="font-size:12px;margin-bottom:4px">الأوسمة المكتسَبة:</div>
+        <div style="font-size:20px;line-height:1.7">${earned.length?earned.map(b=>`<span title="${b.label}">${b.ic}</span>`).join(" "):'<span class="muted" style="font-size:12px">لا أوسمة بعد</span>'}</div>
+        <div class="muted" style="font-size:12px;margin:8px 0 4px">التقدّم بالمجالات:</div>
+        ${perDom.map(pd=>`<div class="dom-row"><span style="flex:none;width:120px;font-size:12px">${pd.d}</span><span class="bar"><i style="width:${pd.pct}%"></i></span><span class="muted" style="font-size:11px;width:46px;text-align:center">${AR(pd.dn)}/${AR(pd.tot)}</span></div>`).join("")}
+        <div class="muted" style="font-size:11px;margin-top:6px">أجزاء روبو ${AR(partsLit)}/7 · عناصر العالم ${AR(worldLit)}/7</div>
+      </div>
+    </div>`;
+  };
+  const reportsHtml = `<div class="sec"><h3>📊 تقارير الأبناء</h3>${kids.length?kids.map(repCard).join(""):'<p class="muted" style="font-size:13px">لا حسابات أطفالٍ بعد — أضِفها من «إدارة الحسابات» أدناه أو من شاشة الدخول.</p>'}</div>`;
+
   panel.innerHTML=`
     <button class="close" onclick="closePanel()">✕</button>
-    <h2>لوحة الأهل</h2><div class="muted" style="font-size:13px">كلّ البيانات محليّة على هذا الجهاز.</div>
+    <h2>🛡️ لوحة التحكّم</h2><div class="muted" style="font-size:13px">تقارير الأبناء · إدارة الحسابات · الإعدادات — كلُّ البيانات محليّةٌ على هذا الجهاز.</div>
 
     <div class="sec"><h3>نظرة عامة</h3>
       <div class="statgrid">
@@ -630,6 +689,8 @@ async function openDashboard(){
         <div class="stat"><div class="n">${done>=THRESH?"🎉":AR(Math.max(0,THRESH-done))}</div><div class="t">${done>=THRESH?"عادت الضحكة":"تبقّى للضحكة"}</div></div>
       </div>
     </div>
+
+    ${reportsHtml}
 
     <div class="sec"><h3>التقدّم حسب المجال (وتفعيله)</h3>
       ${perDom.map(p=>`<div class="dom-row">
@@ -722,8 +783,10 @@ async function openDashboard(){
       <div class="dom-row"><span style="flex:none;width:210px;font-size:13px">👋 السماح بحساب الضيف</span>
         <span class="muted" style="font-size:12px;flex:1">دخولٌ سريع دون ملفّ</span>
         <button class="toggle ${st.guestEnabled!==false?"on":""}" id="guestToggle"></button></div>
-      <div style="font-size:12px;color:var(--muted);margin:8px 2px 4px">👦 الملفّات (تُدار من شاشة الدخول):</div>
-      <div id="profList">${listProfiles().length?listProfiles().map(p=>`<div class="dom-row"><span style="flex:1;font-size:13px">${p.avatar||"🙂"} ${p.name} <span class="muted">· ${p.ageGroup}${p.password?" · 🔒":""}</span></span><button class="capdel" data-pid="${p.id}" title="حذف الملفّ">🗑️</button></div>`).join(""):'<p class="muted" style="font-size:12px">لا ملفّات بعد — أضِفها من شاشة الدخول.</p>'}</div>
+      <div style="font-size:12px;color:var(--muted);margin:8px 2px 4px">👦 حسابات الأبناء (إضافة · تعديل · كلمة مرور · حذف):</div>
+      <div id="profList">${listProfiles().length?listProfiles().map(p=>`<div class="dom-row"><span style="flex:1;font-size:13px">${p.avatar||"🙂"} ${p.name} <span class="muted">· ${p.ageGroup}${p.password?" · 🔒":""}</span></span><button class="acctEdit" data-pid="${p.id}" title="تعديل الحساب" style="background:none;border:none;cursor:pointer;font-size:16px">✏️</button><button class="capdel" data-pid="${p.id}" title="حذف الحساب">🗑️</button></div>`).join(""):'<p class="muted" style="font-size:12px">لا حسابات بعد.</p>'}</div>
+      <button class="topbtn" id="addChild" style="margin-top:6px">➕ إضافة حساب طفل</button>
+      <div id="acctForm"></div>
       <div style="font-size:12px;color:var(--muted);margin:10px 2px 4px">🎙️ تسجيلاتُ تمرّنِ القراءةِ لكلّ طفل (محفوظةٌ محليًّا في حسابه):</div>
       <div id="voiceMgmt"><p class="muted" style="font-size:12px">…</p></div>
       `; })()}
@@ -754,6 +817,11 @@ async function openDashboard(){
   if(lh) lh.addEventListener("click",async e=>{ const b=e.target.closest(".capdel"); if(!b) return; if(await confirmWithPassword("حذف هذا التسجيل؟ ستظهر مهلةُ تراجعٍ بعد التأكيد.")) askDeleteCapture(b.getAttribute("data-key"), b.closest(".capwrap")); });
   panel.querySelectorAll("select.vset").forEach(sel=>sel.addEventListener("change",()=>{ setVoiceSet(sel.getAttribute("data-type"), sel.value); }));
   const svset=panel.querySelector("select.storyvset"); if(svset) svset.addEventListener("change",()=>setStoryVoice(svset.value));
+  // تقارير الأبناء: زرّ «تفاصيل» يطوي/يبسط بطاقة الطفل.
+  panel.querySelectorAll(".rep-toggle").forEach(b=>b.addEventListener("click",()=>{
+    const d=panel.querySelector('.rep-detail[data-pid="'+b.getAttribute("data-pid")+'"]'); if(!d) return;
+    const show=d.style.display==="none"; d.style.display=show?"block":"none"; b.textContent=show?"تفاصيل ▴":"تفاصيل ▾";
+  }));
   const srt=document.getElementById("storyReadToggle"); if(srt) srt.addEventListener("click",()=>{ const on=!isStoryReadOn(); setStoryReadOn(on); srt.classList.toggle("on",on); });
   const savePw=document.getElementById("savePw");
   if(savePw) savePw.addEventListener("click",()=>{
@@ -781,7 +849,9 @@ async function openDashboard(){
   });
   const gt2=document.getElementById("guestToggle");
   if(gt2) gt2.addEventListener("click",()=>{ const on=!(getSettings().guestEnabled!==false); updateSettings({guestEnabled:on}); gt2.classList.toggle("on",on); });
+  const addCh=document.getElementById("addChild"); if(addCh) addCh.addEventListener("click",()=>openAcctForm(null));
   const pl=document.getElementById("profList");
+  if(pl) pl.addEventListener("click",e=>{ const eb=e.target.closest(".acctEdit[data-pid]"); if(eb) openAcctForm(eb.getAttribute("data-pid")); });
   if(pl) pl.addEventListener("click",async e=>{ const b=e.target.closest(".capdel[data-pid]"); if(!b) return;
     const pid=b.getAttribute("data-pid"), row=b.closest(".dom-row");
     if(await confirmWithPassword("حذف حساب هذا الطفل وتقدّمه نهائيًّا؟")){

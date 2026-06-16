@@ -63,6 +63,20 @@ export function loginGuest() {
 }
 export function isGuest() { const u = getCurrentUser(); return !!u && u.role === "guest"; }
 
+/* ---------- حساب الوالد (جلسةٌ حقيقيّة بدور parent) ---------- */
+// الوالد ليس ملفّاً مخزَّناً بل جلسةٌ تُبنى من إعدادات الوالد عند الدخول بكلمة المرور.
+// يستكشف المزايا بحسابه (تقدّمه تحت __parent) وله لوحةُ التحكّم والتقارير.
+export function loginParent(password) {
+  if (!verifyParentPassword(password)) return false;
+  const s = state();
+  setCurrentUser({ id: "parent", name: s.settings.parentName || "الوالدان", role: "parent", ageGroup: "all", avatar: s.settings.parentAvatar || "👪" });
+  markParentAuthed();
+  return true;
+}
+export function isParent() { const u = getCurrentUser(); return !!u && u.role === "parent"; }
+export function getParentName() { return state().settings.parentName || "الوالدان"; }
+export function getParentAvatar() { return state().settings.parentAvatar || "👪"; }
+
 /* ---------- إعدادات الوالدين وكلمة المرور ---------- */
 export function getSettings() { return state().settings; }
 export function updateSettings(patch) { const s = state(); Object.assign(s.settings, patch); save(s); }

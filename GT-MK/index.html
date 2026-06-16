@@ -675,7 +675,7 @@ async function openDashboard(){
       </div>
     </div>`;
   };
-  const reportsHtml = `<div class="sec"><h3>📊 تقارير الأبناء</h3>${kids.length?kids.map(repCard).join(""):'<p class="muted" style="font-size:13px">لا حسابات أطفالٍ بعد — أضِفها من «إدارة الحسابات» أدناه أو من شاشة الدخول.</p>'}</div>`;
+  const reportsHtml = `<div class="sec" id="sec-reports"><h3>📊 تقارير الأبناء</h3>${kids.length?kids.map(repCard).join(""):'<p class="muted" style="font-size:13px">لا حسابات أطفالٍ بعد — أضِفها من «إدارة الحسابات» أدناه أو من شاشة الدخول.</p>'}</div>`;
 
   panel.innerHTML=`
     <button class="close" onclick="closePanel()">✕</button>
@@ -761,7 +761,7 @@ async function openDashboard(){
       }).join(""):`<p class="muted">لا جلسات بعد.</p>` }</div>
     </div>
 
-    <div class="sec"><h3>الحسابات والأمان</h3>
+    <div class="sec" id="sec-accounts"><h3>الحسابات والأمان</h3>
       ${(() => { const st=getSettings(), sq=getSecurityQuestion(); return `
       <div style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:4px 0">
         <div style="font-size:13px;margin-bottom:6px">🔑 تغيير كلمة مرور اللوحة</div>
@@ -877,6 +877,8 @@ async function openDashboard(){
   });
   renderVoiceMgmt();
   overlay.classList.add("show");
+  // تمريرٌ تلقائيٌّ للقسم المقصود عند القدوم برابطٍ مرسىً (#sec-reports / #sec-accounts) من لوحة الوالد.
+  if(location.hash){ const t=panel.querySelector(location.hash); if(t) setTimeout(()=>t.scrollIntoView({behavior:"smooth",block:"start"}),80); }
 }
 
 /* إدارةُ تسجيلات تمرّنِ الأطفال من لوحة الأهل: عددُ تسجيلاتِ كلِّ حسابٍ + حذفٌ بكلمة مرورٍ ومهلةِ تراجع. */

@@ -80,6 +80,9 @@
 
   <a id="daily" class="daily" href="progress.html"></a>
 
+  <div id="parentHub" class="nav" style="display:none"></div>
+
+  <div id="componentsBlock">
   <h2>المكوّنات</h2>
   <div class="nav">
     <a class="navcard" href="index.html"><div class="ic">🤖</div><div class="t">علّم روبو</div><div class="d">الحلقة: شرارة ← مهمة ← تلقين ← شفاء</div></a>
@@ -96,6 +99,7 @@
     <a class="navcard" href="quiz.html"><div class="ic">🎯</div><div class="t">اختبارات تعليمية</div><div class="d">اختيار من متعدد بفئاتٍ وأعمار — نتيجة فوريّة</div></a>
     <a class="navcard" href="progress.html"><div class="ic">🏆</div><div class="t">تقدّمي</div><div class="d">النجوم والأوسمة وسلسلة الأيّام + شهادة إنجاز</div></a>
   </div>
+  </div><!-- componentsBlock -->
 
   <footer>
     كل المحتوى محليّ · بلا اتصال · بلا ذكاء اصطناعي.<br/>
@@ -114,7 +118,7 @@
 
 <script type="module">
 import { getDailyMission } from "./src/progress.js";
-import { listProfiles, getProfile, getCurrentUser, setCurrentUser, clearCurrentUser, loginProfile, loginGuest, guestEnabled, addProfile, AVATARS, loginParent, getParentName, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault } from "./src/accounts.js";
+import { listProfiles, getProfile, getCurrentUser, setCurrentUser, clearCurrentUser, loginProfile, loginGuest, guestEnabled, addProfile, AVATARS, loginParent, isParent, getParentName, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault } from "./src/accounts.js";
 import { confirmChoice } from "./src/confirm-action.js";
 
 const ov=document.getElementById("loginOverlay"), body=document.getElementById("loginBody"), chip=document.getElementById("userChip");
@@ -122,7 +126,29 @@ const esc=s=>String(s).replace(/"/g,"&quot;");
 function showChip(){ const u=getCurrentUser(); if(u){ chip.style.display="block"; chip.textContent=`${u.avatar||"🙂"} ${u.name} · تبديل`;
     chip.onclick=async ()=>{ if(await confirmChoice(`أنتَ مُسجَّلٌ باسم «${u.name}». هل تريد تسجيل الخروج وتبديل الحساب؟`, "🚪 خروج وتبديل", "البقاء")){ clearCurrentUser(); chip.style.display="none"; ov.style.display="flex"; renderLogin(); } }; }
   else chip.style.display="none"; }
-function enter(){ ov.style.display="none"; showChip(); }
+function enter(){ ov.style.display="none"; showChip(); setupView(); }
+
+// لوحةُ الوالد العُليا: في حساب الأهل تُجمَع كلُّ بطاقات المكوّنات داخل بطاقة «المكوّنات»،
+// وتُضاف بطاقاتٌ للاستعراض (التقارير/الحسابات/لوحة التحكّم). الطفل/الضيف يرى المكوّنات مباشرةً كالمعتاد.
+function setupView(){
+  const hub=document.getElementById("parentHub"), comp=document.getElementById("componentsBlock");
+  if(!hub||!comp) return;
+  if(isParent()){
+    comp.style.display="none";
+    hub.style.display="";
+    hub.innerHTML=`
+      <div class="navcard" id="hubComp" role="button" tabindex="0" style="cursor:pointer"><div class="ic">📦</div><div class="t">المكوّنات</div><div class="d">استعرض مزايا البرنامج كلَّها (الأنشطة والقصص والقرآن…)</div></div>
+      <a class="navcard" href="index.html?parent=1#sec-reports"><div class="ic">📊</div><div class="t">البيانات والإحصائيات</div><div class="d">تقاريرُ تقدّمِ الأبناء وأوسمتهم وإنجازاتهم</div></a>
+      <a class="navcard" href="index.html?parent=1#sec-accounts"><div class="ic">👥</div><div class="t">الحسابات</div><div class="d">إضافة وتعديل وحذف حسابات الأبناء وكلماتها</div></a>
+      <a class="navcard" href="index.html?parent=1"><div class="ic">🛡️</div><div class="t">لوحة التحكّم</div><div class="d">الإعدادات والأصوات وكلمة المرور والتوثيق</div></a>`;
+    const hc=document.getElementById("hubComp");
+    const toggle=()=>{ const show=comp.style.display==="none"; comp.style.display=show?"":"none"; if(show) comp.scrollIntoView({behavior:"smooth",block:"start"}); };
+    if(hc){ hc.onclick=toggle; hc.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); } }; }
+  } else {
+    hub.style.display="none"; hub.innerHTML="";
+    comp.style.display="";
+  }
+}
 
 function renderLogin(){
   const profs=listProfiles();
@@ -211,7 +237,7 @@ function renderAdd(){
 }
 
 // يبدأ التطبيق بشاشة الدخول إن لم يكن هناك ملفٌّ نشطٌ في الجلسة.
-if(getCurrentUser()) showChip(); else { ov.style.display="flex"; renderLogin(); }
+if(getCurrentUser()){ showChip(); setupView(); } else { ov.style.display="flex"; renderLogin(); }
 
 const _dm = getDailyMission();
 const _dailyEl = document.getElementById("daily");

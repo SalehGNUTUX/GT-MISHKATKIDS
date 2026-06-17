@@ -29,12 +29,38 @@
   header .sub{color:var(--muted);font-size:14px}
   h2{font-size:16px;color:var(--primary-d);margin:22px 4px 10px}
 
-  .nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
-  .navcard{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px;transition:transform .12s,border-color .12s}
-  .navcard:hover{transform:translateY(-2px);border-color:var(--primary)}
-  .navcard .ic{font-size:34px}
-  .navcard .t{font-size:18px;font-weight:800;margin-top:6px}
-  .navcard .d{font-size:13px;color:var(--muted);margin-top:2px}
+  /* بطاقاتٌ مدمجةٌ ملوّنةٌ للأطفال: أيقونةٌ + عنوانٌ فقط، متحرّكةٌ عند التمرير/النقر */
+  .nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(102px,1fr));gap:12px}
+  @media(min-width:560px){ .nav{grid-template-columns:repeat(auto-fit,minmax(118px,1fr))} }
+  .navcard{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;
+    text-decoration:none;color:var(--ink);background:var(--cc,var(--card));border:1.5px solid var(--cb,var(--line));
+    border-radius:22px;box-shadow:var(--shadow);padding:16px 8px;aspect-ratio:1/1;
+    transition:transform .16s cubic-bezier(.34,1.56,.64,1),box-shadow .16s}
+  .navcard .ic{font-size:42px;line-height:1;transition:transform .25s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 2px 4px rgba(0,0,0,.12))}
+  .navcard .t{font-size:14px;font-weight:800;line-height:1.25}
+  .navcard .d{display:none}
+  .navcard:hover,.navcard:focus-visible{transform:translateY(-5px);box-shadow:0 12px 26px rgba(0,0,0,.16);outline:none}
+  .navcard:hover .ic{transform:scale(1.22) rotate(-8deg)}
+  .navcard:active{transform:translateY(-2px) scale(.97)}
+  .navcard:active .ic{animation:icpop .45s ease}
+  @keyframes icpop{0%{transform:scale(1)}35%{transform:scale(1.4) rotate(10deg)}70%{transform:scale(.9) rotate(-5deg)}100%{transform:scale(1)}}
+  @media(prefers-reduced-motion:reduce){ .navcard,.navcard .ic{transition:none} .navcard:active .ic{animation:none} }
+  /* لوحةُ ألوانٍ لطيفةٍ متنوّعة (تدور لكلّ بطاقة) — تُطبَّق في الوضع الفاتح؛ الداكنُ يوحّدها (dark.css) */
+  .navcard:nth-child(8n+1){--cc:#FDEBE7;--cb:#F1C7BA}
+  .navcard:nth-child(8n+2){--cc:#E8F3EC;--cb:#BCDFC8}
+  .navcard:nth-child(8n+3){--cc:#E7F0FB;--cb:#BBD6EE}
+  .navcard:nth-child(8n+4){--cc:#FBF1DD;--cb:#EED8AB}
+  .navcard:nth-child(8n+5){--cc:#F1EAF7;--cb:#D6C2E7}
+  .navcard:nth-child(8n+6){--cc:#FCEAEF;--cb:#F1C4D1}
+  .navcard:nth-child(8n+7){--cc:#E6F4F3;--cb:#B9DFDD}
+  .navcard:nth-child(8n){--cc:#F0F0E4;--cb:#D6D6BE}
+  /* الوضع «المفصّل» (قسم الأهل): البطاقةُ الكلاسيكيّةُ بالوصف */
+  .nav.detailed{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .nav.detailed .navcard{aspect-ratio:auto;align-items:stretch;justify-content:flex-start;text-align:start;background:var(--card);border:1px solid var(--line);padding:18px}
+  .nav.detailed .navcard .ic{font-size:34px}
+  .nav.detailed .navcard:hover .ic{transform:none}
+  .nav.detailed .navcard .t{font-size:18px;margin-top:6px}
+  .nav.detailed .navcard .d{display:block;font-size:13px;color:var(--muted);margin-top:2px}
 
   .stats{display:flex;flex-wrap:wrap;gap:8px;margin:6px 4px}
   .stat{background:#F3EEE3;border-radius:999px;padding:5px 12px;font-size:13px;color:#555}
@@ -89,20 +115,20 @@
 
   <a id="daily" class="daily" href="progress.html"></a>
 
-  <div id="parentHub" class="nav" style="display:none"></div>
+  <div id="parentHub" class="nav detailed" style="display:none"></div>
 
   <div id="componentsBlock">
   <h2>المكوّنات</h2>
   <div class="nav">
-    <!-- الترتيب: رحلةُ تعلّمٍ متدرّجة للطفل — التأسيس فالقراءة فالأرقام فالقرآن فالحلقة،
-         ثمّ القصص والألعاب والتقويم، وأخيرًا أدوات الأهل (المطبوعات ولوحة التحكّم) في الأسفل. -->
+    <!-- الترتيب: جوهرُ الفكرة أوّلاً (علّم الآليّ)، ثمّ القرآن فالأساسيّات فسُلّم القراءة،
+         ثمّ البقيّة بحسب الأولويّة الذهنيّة والتعليميّة والترفيهيّة، وأدواتُ الأهل (المطبوعات ولوحة التحكّم) في الأسفل. -->
+    <a class="navcard" href="index.html"><div class="ic">🤖</div><div class="t">علّم الآليّ</div><div class="d">الحلقة: شرارة ← مهمة ← تلقين ← شفاء</div></a>
+    <a class="navcard" href="quran.html"><div class="ic">🕌</div><div class="t">القرآن الكريم</div><div class="d">الفاتحة وجزء عمّ — تلاوة الحصري + تظليل + تكرار للحفظ + تسجيل</div></a>
     <a class="navcard" href="basics.html"><div class="ic">🔤</div><div class="t">الأساسيّات</div><div class="d">الحروف والأرقام والحركات — أوّل خطوات القراءة</div></a>
     <a class="navcard" href="read.html"><div class="ic">📖</div><div class="t">سُلّم القراءة</div><div class="d">المقاطع ← الكلمات ← الجُمل (حرف + حركة فأكثر)</div></a>
     <a class="navcard" href="math.html"><div class="ic">📐</div><div class="t">أرقام وهندسة</div><div class="d">أشكال · عُدّ وقارن · أنماط · أحجام — بتدبّر</div></a>
-    <a class="navcard" href="quran.html"><div class="ic">📖</div><div class="t">القرآن الكريم</div><div class="d">الفاتحة وجزء عمّ — تلاوة الحصري + تظليل + تكرار للحفظ + تسجيل</div></a>
-    <a class="navcard" href="index.html"><div class="ic">🤖</div><div class="t">علّم الآليّ</div><div class="d">الحلقة: شرارة ← مهمة ← تلقين ← شفاء</div></a>
     <a class="navcard" href="stories.html"><div class="ic">📚</div><div class="t">قصص مصوّرة</div><div class="d">قصصٌ أصيلة بصورٍ كرتونيّة كبيرة</div></a>
-    <a class="navcard" href="tales.html"><div class="ic">📖</div><div class="t">قصص وعِبَر</div><div class="d">قصصٌ قصيرة + أسئلة فهم (أخلاق · أنبياء · علماء · صحابة)</div></a>
+    <a class="navcard" href="tales.html"><div class="ic">📜</div><div class="t">قصص وعِبَر</div><div class="d">قصصٌ قصيرة + أسئلة فهم (أخلاق · أنبياء · علماء · صحابة)</div></a>
     <a class="navcard" href="play.html"><div class="ic">🎮</div><div class="t">ألعاب وأنشطة</div><div class="d">لعبة الذاكرة + 7 ألعاب لدمج الحروف + أنشطة للطباعة</div></a>
     <a class="navcard" href="puzzles.html"><div class="ic">🧩</div><div class="t">ألغاز ذكية</div><div class="d">فوازير ومنطق بمستويات — مع تلميح وحل</div></a>
     <a class="navcard" href="quiz.html"><div class="ic">🎯</div><div class="t">اختبارات تعليمية</div><div class="d">اختيار من متعدد بفئاتٍ وأعمار — نتيجة فوريّة</div></a>
@@ -148,6 +174,9 @@ function enter(){ ov.style.display="none"; showChip(); setupView(); }
 function setupView(){
   const hub=document.getElementById("parentHub"), comp=document.getElementById("componentsBlock");
   if(!hub||!comp) return;
+  const compNav=comp.querySelector(".nav");
+  // الأهل يرَون البطاقاتِ الكلاسيكيّةَ بالوصف (مفصّلة)؛ الطفل/الضيف يرَون المدمجةَ الملوّنة.
+  if(compNav) compNav.classList.toggle("detailed", isParent());
   if(isParent()){
     comp.style.display="none";
     hub.style.display="";

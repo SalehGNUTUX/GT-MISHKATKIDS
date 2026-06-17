@@ -1,5 +1,6 @@
 // src/theme.js — تبديلُ السمة (فاتح/داكن). محلّيٌّ بالكامل، يُحفَظ في localStorage ويُطبَّق على <html data-theme>.
 // منعُ الوميض: يضع كلُّ صفحةٍ سكربتًا كلاسيكيًّا صغيرًا في <head> يضبط data-theme قبل الرسم؛ وهذه الوحدة للتبديل.
+import "./dark.css"; // أنماطُ السمة الداكنة المشتركة (يستخرجها Vite كـ<link>)
 const KEY = "tilmithi_theme"; // "light" | "dark" | غير مضبوط (يتبع تفضيل النظام)
 
 export function storedTheme() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }

@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<script>(function(){try{var t=localStorage.getItem('tilmithi_theme');if(t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<style id="theme-crit">html[data-theme="dark"]{--bg:#15151b;--card:#23232c;--ink:#ECE7DD;--muted:#A39E94;--line:#34343f;--primary-d:#E8987E;--shadow:0 6px 20px rgba(0,0,0,.45)}html[data-theme="dark"] body{background:var(--bg);color:var(--ink)}</style>
 <link rel="icon" type="image/png" href="icon-192.png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -90,6 +92,7 @@
 </div>
 
 <script type="module">
+import "./src/dark.css";
 import data from "./content/puzzles.js";
 import { logEvent } from "./src/progress.js";
 import { robo } from "./src/robo-companion.js";

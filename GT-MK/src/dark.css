@@ -1,0 +1,53 @@
+/* src/dark.css — السمةُ الداكنةُ المشتركةُ لكلِّ الصفحات. تُستورَد في وحدة كلِّ صفحة،
+   فيستخرجها Vite كـ<link> في الإنتاج (بلا وميض). تُفعَّل عبر <html data-theme="dark">.
+   تعتمد المتغيّراتِ الموحّدة (--bg/--card/--ink/--muted/--line/--primary-d)؛ وتُغطّي
+   الأصنافَ الشائعةَ ذاتَ الألوان المثبّتة. تُبقي ألوانَ العلامة والتغذية الراجعة (نجاح/خطأ). */
+html[data-theme="dark"]{
+  --bg:#15151b; --card:#23232c; --ink:#ECE7DD; --muted:#A39E94;
+  --line:#34343f; --primary-d:#E8987E; --good-d:#8BC36B;
+  --shadow:0 6px 20px rgba(0,0,0,.45);
+}
+html[data-theme="dark"] body{background:var(--bg);color:var(--ink)}
+
+/* أسطحٌ بطاقيّة */
+html[data-theme="dark"] .card,html[data-theme="dark"] .bcard,html[data-theme="dark"] .index,
+html[data-theme="dark"] .navcard,html[data-theme="dark"] .panel,html[data-theme="dark"] .win,
+html[data-theme="dark"] .cluecard,html[data-theme="dark"] .qcard,html[data-theme="dark"] .region{
+  background:var(--card);border-color:var(--line)}
+
+/* مدخلاتٌ وقوائم */
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{
+  background:#23232c;color:var(--ink);border-color:var(--line)}
+
+/* رقائقُ/أزرارٌ فاتحةٌ شائعة */
+html[data-theme="dark"] .chip,html[data-theme="dark"] .opt,html[data-theme="dark"] .tile,
+html[data-theme="dark"] .numb,html[data-theme="dark"] .ltile,html[data-theme="dark"] .pill,
+html[data-theme="dark"] .hbtn,html[data-theme="dark"] .dchip,html[data-theme="dark"] .back,
+html[data-theme="dark"] .backbtn,html[data-theme="dark"] .topbtn,html[data-theme="dark"] .choice,
+html[data-theme="dark"] .syl,html[data-theme="dark"] .sword,html[data-theme="dark"] .saysm{
+  background:#2a2a34;color:var(--ink);border-color:var(--line)}
+
+/* أشرطةٌ ورؤوسٌ خفيفة */
+html[data-theme="dark"] .gbar,html[data-theme="dark"] .clue,html[data-theme="dark"] .domhead,
+html[data-theme="dark"] .ageb,html[data-theme="dark"] .seq,html[data-theme="dark"] .objbox,
+html[data-theme="dark"] .bar,html[data-theme="dark"] .stat{background:#2c2c37}
+
+html[data-theme="dark"] .muted,html[data-theme="dark"] .sub,html[data-theme="dark"] .meta,
+html[data-theme="dark"] .hint,html[data-theme="dark"] .count{color:var(--muted)}
+
+/* ====== خصوصيّاتُ صفحة الفهرس (home) ====== */
+html[data-theme="dark"] .stat{color:#cfc9bf}
+html[data-theme="dark"] .b{background:#33333e;color:#b8b2a8}
+html[data-theme="dark"] .b.pair{background:#23332a;color:#9bd17e}
+html[data-theme="dark"] .b.src{background:#33271f;color:#E8987E}
+html[data-theme="dark"] .row:hover{background:#2a2a34}
+html[data-theme="dark"] .daily{background:linear-gradient(135deg,#2e2a26,#2a2520);border-color:#3d362e}
+html[data-theme="dark"] .daily.done{background:#243024;border-color:#3a5a30}
+html[data-theme="dark"] .daily .dchip{background:#23232c;border-color:#34343f;color:#b8b2a8}
+html[data-theme="dark"] .daily .dchip.ok{background:#243024;border-color:#3a5a30;color:#9bd17e}
+html[data-theme="dark"] footer code{background:#2c2c37}
+/* شاشةُ الدخول واللوحةُ العُليا (أنماطٌ مضمَّنة → !important) */
+html[data-theme="dark"] #loginOverlay{background:linear-gradient(160deg,#15151b,#1c1c24)!important}
+html[data-theme="dark"] #loginOverlay > div{background:#23232c!important;border-color:#34343f!important}
+html[data-theme="dark"] #userChip{background:#23232c!important;color:var(--ink)!important;border-color:#34343f!important}
+html[data-theme="dark"] #loginBody .prof,html[data-theme="dark"] #loginBody button{background:#2a2a34!important;border-color:#34343f!important;color:var(--ink)!important}

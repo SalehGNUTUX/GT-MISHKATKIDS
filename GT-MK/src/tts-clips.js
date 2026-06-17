@@ -118,6 +118,8 @@ function playUrlAsync(url) {
 }
 // نسخةٌ وعديّة لقراءة القصّة بالنموذج المختار (عصبيّ/بشريّ/آليّ) — تنتظرُ جهوزيّةَ المقطع.
 export function playStoryAsync(text) { return playUrlAsync(srcForSet(text, storySet())); }
+// نسخةٌ وعديّة بمجموعةٍ صريحةٍ (لقسم اللغات: tts-alba/tts-tom) — تُحَلّ عند انتهاء المقطع.
+export function playClipForSetAsync(text, setId) { return playUrlAsync(srcForSet(text, setId)); }
 // إيقافُ أيِّ مقطعٍ جارٍ (لزرّ إيقاف القراءة).
 export function stopClip() { if (current) { try { current.pause(); current.currentTime = 0; } catch (e) {} } }
 

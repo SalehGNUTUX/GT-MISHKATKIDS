@@ -33,7 +33,7 @@ const texts = uniq([
   ...(L.letters || []).flatMap(x => [x.ch, x.word]),
   ...(L.numbers || []).map(x => x.word),
   ...(L.words || []).flatMap(c => (c.items || []).map(it => it.w)),
-  ...(L.stories || []).flatMap(s => [s.title, ...(s.pages || []).map(p => p.text)]),
+  ...(L.stories || []).flatMap(s => [s.title, ...(s.pages || []).map(p => p.text), s.lesson]),
 ]);
 
 const setHash = sha(SET.id);

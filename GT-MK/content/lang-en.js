@@ -66,5 +66,61 @@ export default {
     { id: "body", ar: "الجسم", items: [
       { w: "Hand", ar: "يد", emoji: "✋" }, { w: "Eye", ar: "عين", emoji: "👁️" }, { w: "Ear", ar: "أذن", emoji: "👂" },
       { w: "Nose", ar: "أنف", emoji: "👃" }, { w: "Mouth", ar: "فم", emoji: "👄" }, { w: "Foot", ar: "قدم", emoji: "🦶" } ] },
+    { id: "greetings", ar: "تحايا", items: [
+      { w: "Hello", ar: "مرحبًا", emoji: "👋" }, { w: "Goodbye", ar: "وداعًا", emoji: "🙋" }, { w: "Please", ar: "من فضلك", emoji: "🙏" },
+      { w: "Thank you", ar: "شكرًا", emoji: "🤲" }, { w: "Yes", ar: "نعم", emoji: "✅" }, { w: "No", ar: "لا", emoji: "❌" } ] },
+    { id: "school", ar: "المدرسة", items: [
+      { w: "Book", ar: "كتاب", emoji: "📖" }, { w: "Pen", ar: "قلم", emoji: "🖊️" }, { w: "Bag", ar: "حقيبة", emoji: "🎒" },
+      { w: "Chair", ar: "كرسيّ", emoji: "🪑" }, { w: "School", ar: "مدرسة", emoji: "🏫" }, { w: "Teacher", ar: "معلّم", emoji: "🧑‍🏫" } ] },
+    { id: "nature", ar: "الطبيعة", items: [
+      { w: "Sun", ar: "شمس", emoji: "☀️" }, { w: "Moon", ar: "قمر", emoji: "🌙" }, { w: "Star", ar: "نجمة", emoji: "⭐" },
+      { w: "Tree", ar: "شجرة", emoji: "🌳" }, { w: "Flower", ar: "زهرة", emoji: "🌸" }, { w: "Sea", ar: "بحر", emoji: "🌊" } ] },
+    { id: "transport", ar: "المواصلات", items: [
+      { w: "Car", ar: "سيّارة", emoji: "🚗" }, { w: "Bus", ar: "حافلة", emoji: "🚌" }, { w: "Train", ar: "قطار", emoji: "🚂" },
+      { w: "Plane", ar: "طائرة", emoji: "✈️" }, { w: "Boat", ar: "قارب", emoji: "⛵" }, { w: "Bike", ar: "درّاجة", emoji: "🚲" } ] },
+  ],
+
+  // القصص المصوّرة (نفسُ رسوم العربيّة ومعرّفاتها — content/stories.js — مترجمةً).
+  stories: [
+    { id: "ant-perseverance", cover: "ant-1", title: "The Ant That Never Gave Up", pages: [
+      { art: "ant-1", text: "The little ant found a big crumb, much bigger than herself! She said excitedly: «I will take it home.»" },
+      { art: "ant-2", text: "She carried it up the hill… but she slipped, and the crumb rolled down! The ant took a breath and said: «I will try again.»" },
+      { art: "ant-3", text: "She tried once, twice, three times… until she reached her home! Her family welcomed her with joy and cheers." } ],
+      lesson: "Whoever tries and perseveres, arrives. 🐜" },
+    { id: "seed-dream", cover: "seed-3", title: "A Seed That Dreamed of Becoming a Tree", pages: [
+      { art: "seed-1", text: "Under the soil, a tiny seed was dreaming: «I wish to become a big tree that touches the sky!»" },
+      { art: "seed-2", text: "The rain fell and watered it, the sun shone and warmed it… and the seed waited patiently, day after day." },
+      { art: "seed-3", text: "And in spring, it became a lush green tree, and birds nested in its branches and sang!" } ],
+      lesson: "Patience works wonders. 🌳" },
+    { id: "lamp-courage", cover: "lamp-3", title: "The Lamp That Was Afraid of the Dark", pages: [
+      { art: "lamp-1", text: "A little lamp was afraid of the dark, and thought its light was too weak to help anyone." },
+      { art: "lamp-2", text: "One night, a child's toy was lost in the dark and he cried… so the lamp glowed a little, and the toy appeared!" },
+      { art: "lamp-3", text: "The lamp was happy and shone with all its might! It learned that its small light makes those around it happy." } ],
+      lesson: "Your small light may light someone else's path. ✨" },
+    { id: "fish-honesty", cover: "fish-3", title: "The Honest Little Fish", pages: [
+      { art: "fish-1", text: "The little fish was swimming near her friend's seashells, which were neatly arranged." },
+      { art: "fish-2", text: "Suddenly, she moved her tail and all the shells scattered! She was scared and thought of running away… but she stopped." },
+      { art: "fish-3", text: "She came back and told her friend the truth, and they arranged the shells together. The friend smiled and said: «Thank you for your honesty!»" } ],
+      lesson: "The honest one has a peaceful heart and is loved by people. 🐠" },
+    { id: "bee-cooperation", cover: "bee-3", title: "The Cooperative Bees", pages: [
+      { art: "bee-1", text: "The little bee wanted to build a hive all alone, so she got tired and did only a little." },
+      { art: "bee-2", text: "Her friends came, each carried a piece, and they worked together with energy and joy." },
+      { art: "bee-3", text: "In moments, a beautiful hive was complete! The bees were happy with what they made together." } ],
+      lesson: "Together we make what we cannot do alone. 🐝" },
+    { id: "explore-curiosity", cover: "explore-2", title: "The Little Explorer", pages: [
+      { art: "explore-1", text: "The curious child carried his magnifying glass, searching the garden for little secrets." },
+      { art: "explore-2", text: "Suddenly, he saw a butterfly with amazing colors! He wondered: how did it become so beautiful?" },
+      { art: "explore-3", text: "He drew what he saw and told his family. The more he asked and searched, the more he learned." } ],
+      lesson: "Curiosity opens the doors of knowledge. 🔍" },
+    { id: "bird-mercy", cover: "mercy-3", title: "The Hungry Bird", pages: [
+      { art: "mercy-1", text: "On a cold rainy day, a little hungry bird stood shivering from the cold." },
+      { art: "mercy-2", text: "The child saw him, brought him some seeds and water, and placed them near him gently." },
+      { art: "mercy-3", text: "The bird ate and got warm, then sang in thanks! And the child smiled at his joy." } ],
+      lesson: "Mercy to animals is a beautiful trait. 🐦" },
+    { id: "clean-habit", cover: "clean-3", title: "The Clean Hero", pages: [
+      { art: "clean-1", text: "The child's room was a mess, and his hands were dirty… and he was not comfortable." },
+      { art: "clean-2", text: "So he washed his hands with water and soap, and tidied his toys one by one." },
+      { art: "clean-3", text: "The room became clean and shiny, and he felt comfort and pride!" } ],
+      lesson: "Cleanliness makes us happy and protects us. 🫧" },
   ],
 };

@@ -56,6 +56,19 @@
   .gcard .spk{position:absolute;inset-inline-start:6px;top:6px;font-size:13px;opacity:.6}
   .ltr{direction:ltr;unicode-bidi:isolate}
   .hint{text-align:center;color:var(--muted);font-size:13px;margin:10px 2px}
+  /* القصص */
+  .storycard .cover{width:100%;height:64px;overflow:hidden}
+  .storycard .cover svg{width:100%;height:100%}
+  .storyview{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px;margin-top:8px;text-align:center}
+  .storyview .cover.big{max-width:320px;margin:0 auto}
+  .storyview .cover.big svg{width:100%;height:auto;border-radius:12px}
+  .storytext{font-size:17px;line-height:1.7;margin:12px 4px;text-align:start}
+  .snav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+  .snav .secbtn[disabled]{opacity:.4;cursor:default}
+  .lesson{background:#EEF6E9;border-radius:12px;padding:8px 12px;margin-top:10px;font-weight:700;color:#3f6b2c}
+  .dots{display:flex;gap:6px;justify-content:center;margin-top:10px}
+  .dots span{width:8px;height:8px;border-radius:50%;background:var(--line)}
+  .dots span.on{background:var(--primary)}
 </style>
 </head>
 <body>
@@ -75,7 +88,8 @@ import { wireThemeToggle } from "./src/theme.js";
 wireThemeToggle(document.getElementById("themeBtn"));
 import EN from "./content/lang-en.js";
 import FR from "./content/lang-fr.js";
-import { playClipForSet } from "./src/tts-clips.js";
+import { STORY_ART } from "./src/story-art.js";
+import { playClipForSet, playClipForSetAsync, stopClip } from "./src/tts-clips.js";
 import { logEvent } from "./src/progress.js";
 
 const LANGS = { en: EN, fr: FR };
@@ -97,9 +111,19 @@ function webSpeak(text, code){
 }
 function say(text, L){
   if(!text) return;
-  try{ if(playClipForSet(text, L.voice)) return; }catch(e){} // مقطع Piper (المرحلة 2)
+  try{ if(playClipForSet(text, L.voice)) return; }catch(e){} // مقطع Piper المُدمج
   webSpeak(text, L.code);
 }
+// نسخةٌ وعديّة (لقراءة القصّة كاملةً): تُحَلّ عند انتهاء النطق.
+function sayAsync(text, L){
+  if(!text) return Promise.resolve();
+  return playClipForSetAsync(text, L.voice).then(ok=>{
+    if(ok) return; // عُزِف المقطعُ حتى نهايته
+    return new Promise(res=>{ webSpeak(text, L.code); setTimeout(res, Math.min(7000, 1400 + text.length*55)); });
+  });
+}
+let storyTok=0, reading=false;        // تتابعُ قراءة القصّة كاملةً
+function cancelRead(){ storyTok++; reading=false; try{ stopClip(); }catch(e){} }
 
 /* ---------- التوجيه ---------- */
 function curLng(){ return new URLSearchParams(location.search).get("lng"); }
@@ -121,7 +145,7 @@ const SECTIONS = [
   { key:"letters", label:"🔤 الأحرف", ready:true },
   { key:"numbers", label:"🔢 الأرقام", ready:true },
   { key:"words",   label:"📝 الكلمات", ready:true },
-  { key:"stories", label:"📚 قصص مصوّرة", ready:false },
+  { key:"stories", label:"📚 قصص مصوّرة", ready:true },
 ];
 function renderLang(k){
   const L = LANGS[k]; if(!L){ goHome(); return; }
@@ -129,7 +153,7 @@ function renderLang(k){
   document.getElementById("hSub").textContent = L.nameAr + " — تعلّمْ بالنطق";
   const qp = new URLSearchParams(location.search);
   const sec = qp.get("sec") || "letters";
-  const setParam = (key,val) => { const u=new URL(location.href); u.searchParams.set(key,val); history.replaceState(null,"",u); render(); };
+  const setParam = (key,val) => { cancelRead(); const u=new URL(location.href); u.searchParams.set(key,val); history.replaceState(null,"",u); render(); };
   let body = "";
   if(sec==="letters"){
     body = `<div class="grid">${L.letters.map(x=>
@@ -151,6 +175,31 @@ function renderLang(k){
         <span class="big ltr" style="font-size:18px">${esc(it.w)}</span><span class="wd">${esc(it.ar)}</span></button>`).join("");
     body = `<div class="secs" style="margin-top:0">${chips}</div><div class="grid">${cards}</div>
       <div class="hint">اضغطِ الكلمةَ لسماعها بالنطق 🔊 (تحتها معناها بالعربيّة)</div>`;
+  } else if(sec==="stories"){
+    const list = L.stories || [];
+    const sid = qp.get("story");
+    if(!sid){
+      body = `<div class="grid">${list.map(s=>
+        `<button class="gcard storycard" data-story="${s.id}"><div class="cover">${STORY_ART[s.cover]||"📖"}</div>
+          <span class="wd ltr" style="font-size:12.5px;font-weight:800">${esc(s.title)}</span></button>`).join("")}</div>
+        <div class="hint">اختر قصّةً لقراءتها بالنطق 🔊 (نفسُ قصص قسم «قصص مصوّرة» بالعربيّة)</div>`;
+    } else {
+      const st = list.find(x=>x.id===sid) || list[0];
+      const pg = Math.max(0, Math.min(+qp.get("pg")||0, st.pages.length-1));
+      const p = st.pages[pg], last = pg===st.pages.length-1;
+      body = `<div class="secs" style="margin-top:0"><button class="secbtn" data-go="stlist" style="font-weight:700">↩ القصص</button>
+          <span class="secbtn on ltr">${esc(st.title)}</span></div>
+        <div class="storyview"><div class="cover big">${STORY_ART[p.art]||""}</div>
+          <p class="storytext ltr">${esc(p.text)}</p>
+          ${last?`<div class="lesson ltr">⭐ ${esc(st.lesson)}</div>`:""}
+          <div class="snav">
+            <button class="secbtn" data-pg="${pg-1}" ${pg===0?"disabled":""}>السابق</button>
+            <button class="secbtn" id="stRead">🔊 اقرأ الصفحة</button>
+            <button class="secbtn on" id="stReadAll">📖 القصّة كاملةً</button>
+            <button class="secbtn" data-pg="${pg+1}" ${last?"disabled":""}>التالي ▶</button>
+          </div>
+          <div class="dots">${st.pages.map((_,i)=>`<span class="${i===pg?'on':''}"></span>`).join("")}</div></div>`;
+    }
   } else {
     body = `<div class="hint">هذا القسمُ قيدُ الإعداد — قريبًا إن شاء الله 🌟</div>`;
   }
@@ -166,6 +215,25 @@ function renderLang(k){
     b.onclick=(e)=>{ const sayWord = e.target.closest(".wd") || e.target.closest(".em");
       say(sayWord ? (b.getAttribute("data-word") || b.getAttribute("data-say")) : b.getAttribute("data-say"), L); };
   });
+  // قسم القصص: فتحٌ/تصفّحٌ/قراءة (صفحةً أو القصّةَ كاملةً)
+  view.querySelectorAll(".storycard").forEach(b=>b.onclick=()=>{ cancelRead(); const u=new URL(location.href); u.searchParams.set("story", b.getAttribute("data-story")); u.searchParams.set("pg","0"); history.replaceState(null,"",u); render(); });
+  const stBack=view.querySelector('[data-go="stlist"]'); if(stBack) stBack.onclick=()=>{ cancelRead(); const u=new URL(location.href); u.searchParams.delete("story"); u.searchParams.delete("pg"); history.replaceState(null,"",u); render(); };
+  view.querySelectorAll(".snav [data-pg]").forEach(b=>{ if(b.disabled)return; b.onclick=()=>setParam("pg", b.getAttribute("data-pg")); });
+  if(sec==="stories" && qp.get("story")){
+    const st=(L.stories||[]).find(x=>x.id===qp.get("story"))||(L.stories||[])[0];
+    const pg=Math.max(0,Math.min(+qp.get("pg")||0, st.pages.length-1));
+    const rd=document.getElementById("stRead"); if(rd) rd.onclick=()=>{ cancelRead(); say(st.pages[pg].text, L); };
+    const showPage=i=>{ const sv=view.querySelector(".storyview"); if(!sv)return;
+      const c=sv.querySelector(".cover.big"); if(c) c.innerHTML=STORY_ART[st.pages[i].art]||"";
+      const t=sv.querySelector(".storytext"); if(t) t.textContent=st.pages[i].text;
+      sv.querySelectorAll(".dots span").forEach((d,j)=>d.classList.toggle("on", j===i));
+      const u=new URL(location.href); u.searchParams.set("pg", i); history.replaceState(null,"",u); };
+    const rdAll=document.getElementById("stReadAll");
+    async function readWhole(){ const my=++storyTok; reading=true; if(rdAll) rdAll.textContent="⏹ إيقاف";
+      for(let i=pg;i<st.pages.length;i++){ if(my!==storyTok) return; showPage(i); await sayAsync(st.pages[i].text, L); if(my!==storyTok) return; await new Promise(r=>setTimeout(r,550)); }
+      reading=false; render(); }
+    if(rdAll) rdAll.onclick=()=>{ if(reading){ cancelRead(); render(); } else readWhole(); };
+  }
   try{ logEvent("lang_open", {add:{}}); }catch(e){}
 }
 

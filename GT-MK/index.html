@@ -174,7 +174,7 @@
     </div>
     <div style="display:flex;gap:8px">
       <button class="topbtn" id="muteBtn" title="صوت روبو: تشغيل/كتم">🔊</button>
-      <a class="topbtn" href="home.html" style="text-decoration:none">🏠 الفهرس</a>
+      <span style="display:inline-flex;gap:8px;align-items:center"><button id="themeBtn" title="الوضع الداكن" aria-label="الوضع الداكن" style="background:var(--card);border:1px solid var(--line);border-radius:999px;width:36px;height:36px;font-size:17px;cursor:pointer;font-family:inherit;line-height:1;flex:none">🌙</button><a class="topbtn" href="home.html" style="text-decoration:none">🏠 الفهرس</a></span>
       <button class="topbtn" id="parentBtn">🛡️ لوحة التحكّم</button>
     </div>
   </header>
@@ -227,7 +227,8 @@
 <div class="undobar" id="undoBar"><span>حُذِف التسجيل.</span><button id="undoBtn">↩️ تراجع</button></div>
 
 <script type="module">
-import "./src/dark.css";
+import { wireThemeToggle } from "./src/theme.js";
+wireThemeToggle(document.getElementById("themeBtn"));
 import library from "./content/library.js";
 // تقدّمٌ منفصلٌ لكل ملفّ نشط (يطابق منطق src/progress.js)؛ الضيف/بلا-ملفّ على المفتاح الأصليّ.
 const STORAGE_KEY = (() => { try { const u = getCurrentUser(); return (u && u.role !== "guest" && u.id) ? "tilmithi_progress_v1__" + u.id : "tilmithi_progress_v1"; } catch (e) { return "tilmithi_progress_v1"; } })();

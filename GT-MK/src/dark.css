@@ -15,9 +15,12 @@ html[data-theme="dark"] .navcard,html[data-theme="dark"] .panel,html[data-theme=
 html[data-theme="dark"] .cluecard,html[data-theme="dark"] .qcard,html[data-theme="dark"] .region{
   background:var(--card);border-color:var(--line)}
 
-/* مدخلاتٌ وقوائم */
-html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{
-  background:#23232c;color:var(--ink);border-color:var(--line)}
+/* مدخلاتٌ وقوائم — !important ليتغلّب على background:#fff المضمَّن inline (vSelStyle وغيره) */
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea,
+html[data-theme="dark"] .vset,html[data-theme="dark"] .storyvset,html[data-theme="dark"] .sr-pick{
+  background:#23232c !important;color:var(--ink) !important;border-color:var(--line) !important}
+html[data-theme="dark"] option{background:#23232c;color:var(--ink)}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:#8b8478}
 
 /* رقائقُ/أزرارٌ فاتحةٌ شائعة */
 html[data-theme="dark"] .chip,html[data-theme="dark"] .opt,html[data-theme="dark"] .tile,

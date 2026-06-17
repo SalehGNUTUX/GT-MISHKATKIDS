@@ -24,6 +24,7 @@ export default defineConfig({
         record: "record.html",
         progress: "progress.html",
         quran: "quran.html",
+        lang: "lang.html",
       },
     },
   },

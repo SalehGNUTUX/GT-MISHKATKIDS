@@ -10,6 +10,15 @@ import imageio_ffmpeg
 
 def main():
     tasks_path, manifest_path, model_path = sys.argv[1], sys.argv[2], sys.argv[3]
+    # معامِلٌ اختياريّ رابع: رقمُ المتحدّث (للنماذج متعدّدة الأصوات كـfr_FR-upmc). فارغٌ/غائب = الافتراضيّ.
+    speaker = int(sys.argv[4]) if len(sys.argv) > 4 and str(sys.argv[4]).strip() != "" else None
+    syn = None
+    if speaker is not None:
+        try:
+            from piper import SynthesisConfig
+            syn = SynthesisConfig(speaker_id=speaker)
+        except Exception:  # noqa: BLE001
+            syn = None
     ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
     voice = PiperVoice.load(model_path)
     # نصوصُنا مُشكَّلةٌ مسبقًا؛ نُعطّل طبقةَ التشكيل الآليّ (libtashkeel) تفاديًا لإعادة التشكيل وللتنزيل.
@@ -29,7 +38,7 @@ def main():
             fd, wav_path = tempfile.mkstemp(suffix=".wav")
             os.close(fd)
             with wave.open(wav_path, "wb") as wf:
-                voice.synthesize_wav(text, wf)
+                voice.synthesize_wav(text, wf, syn_config=syn)
             subprocess.run(
                 [ffmpeg, "-y", "-loglevel", "error", "-i", wav_path,
                  "-codec:a", "libmp3lame", "-q:a", "6", out],

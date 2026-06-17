@@ -12,7 +12,7 @@ voices-src/
 
 # Piper (وقتُ التطوير فقط — البيئة + النموذج 63م؛ المقاطعُ المُولَّدة تُرفَع وتُشحَن)
 .piper-venv/
-tools/piper-voices/*.onnx
+tools/piper-voices/*.onnx*
 .piper-tasks.json
 .piper-manifest.json
 

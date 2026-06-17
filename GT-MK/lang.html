@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<script>/* منعُ وميض السمة */(function(){try{var t=localStorage.getItem('tilmithi_theme');if(t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<style id="theme-crit">html[data-theme="dark"]{--bg:#15151b;--card:#23232c;--ink:#ECE7DD;--muted:#A39E94;--line:#34343f;--primary-d:#E8987E;--shadow:0 6px 20px rgba(0,0,0,.45)}html[data-theme="dark"] body{background:var(--bg);color:var(--ink)}</style>
+<link rel="icon" type="image/png" href="icon-192.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#6FB3D6" />
+<title>مِشكاة — لغات أجنبيّة</title>
+<style>
+  :root{ --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B; --line:#ECE6DA;
+    --primary:#6FB3D6; --primary-d:#3a7da0; --good:#7BB661; --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif; }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:760px;margin:0 auto;padding:16px 16px 56px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 12px}
+  header h1{font-size:21px;margin:0}
+  header .sub{color:var(--muted);font-size:13px}
+  .topbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink);font-family:inherit}
+  .themebtn{background:var(--card);border:1px solid var(--line);border-radius:999px;width:36px;height:36px;font-size:17px;cursor:pointer;font-family:inherit;line-height:1;flex:none}
+
+  /* اختيار اللغة */
+  .pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:10px}
+  .langcard{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;cursor:pointer;
+    background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:24px 14px;box-shadow:var(--shadow);
+    font-family:inherit;color:var(--ink);transition:transform .16s cubic-bezier(.34,1.56,.64,1),box-shadow .16s}
+  .langcard:hover{transform:translateY(-5px);box-shadow:0 12px 26px rgba(0,0,0,.16)}
+  .langcard .fl{font-size:54px;line-height:1;transition:transform .25s}
+  .langcard:hover .fl{transform:scale(1.15) rotate(-6deg)}
+  .langcard .nm{font-size:20px;font-weight:800}
+  .langcard .na{font-size:13px;color:var(--muted)}
+
+  /* قائمة أقسام اللغة */
+  .secs{display:flex;gap:10px;flex-wrap:wrap;margin:12px 2px}
+  .secbtn{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 16px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .secbtn.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .secbtn.soon{opacity:.55;cursor:default}
+
+  /* شبكة الأحرف/الأرقام */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(98px,1fr));gap:12px;margin-top:8px}
+  .gcard{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:14px 8px;cursor:pointer;
+    box-shadow:var(--shadow);font-family:inherit;color:var(--ink);aspect-ratio:1/1;
+    transition:transform .15s cubic-bezier(.34,1.56,.64,1),box-shadow .15s}
+  .gcard:hover{transform:translateY(-4px);box-shadow:0 10px 22px rgba(0,0,0,.14);border-color:var(--primary)}
+  .gcard:active{transform:scale(.96)}
+  .gcard .big{font-size:34px;font-weight:800;line-height:1;color:var(--primary-d)}
+  .gcard .em{font-size:26px;line-height:1}
+  .gcard .wd{font-size:12px;color:var(--muted)}
+  .gcard .spk{position:absolute;inset-inline-start:6px;top:6px;font-size:13px;opacity:.6}
+  .ltr{direction:ltr;unicode-bidi:isolate}
+  .hint{text-align:center;color:var(--muted);font-size:13px;margin:10px 2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1 id="hTitle">🌍 لغات أجنبيّة</h1><div class="sub" id="hSub">تعلّمِ الإنجليزيّةَ والفرنسيّةَ بالنطق</div></div>
+    <span style="display:inline-flex;gap:8px;align-items:center">
+      <button class="themebtn" id="themeBtn" title="الوضع الداكن" aria-label="الوضع الداكن">🌙</button>
+      <a class="topbtn" href="home.html">🏠 الفهرس</a>
+    </span>
+  </header>
+  <div id="view"></div>
+</div>
+
+<script type="module">
+import { wireThemeToggle } from "./src/theme.js";
+wireThemeToggle(document.getElementById("themeBtn"));
+import EN from "./content/lang-en.js";
+import FR from "./content/lang-fr.js";
+import { playClipForSet } from "./src/tts-clips.js";
+import { logEvent } from "./src/progress.js";
+
+const LANGS = { en: EN, fr: FR };
+const view = document.getElementById("view");
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+
+/* ---------- النطق: مقطع Piper المُدمج إن وُجد، وإلّا Web Speech بلغة القسم ---------- */
+let voicesPrimed = false;
+function primeWS(){ try{ if("speechSynthesis" in window){ speechSynthesis.getVoices(); voicesPrimed=true; } }catch(e){} }
+function webSpeak(text, code){
+  if(!("speechSynthesis" in window)) return;
+  const u = new SpeechSynthesisUtterance(String(text));
+  u.lang = code; u.rate = 0.85;
+  const vs = speechSynthesis.getVoices() || [];
+  const pre = code.slice(0,2).toLowerCase();
+  const v = vs.find(x => (x.lang||"").toLowerCase().replace("_","-").startsWith(pre));
+  if(v) u.voice = v;
+  try{ speechSynthesis.cancel(); speechSynthesis.resume(); speechSynthesis.speak(u); }catch(e){}
+}
+function say(text, L){
+  if(!text) return;
+  try{ if(playClipForSet(text, L.voice)) return; }catch(e){} // مقطع Piper (المرحلة 2)
+  webSpeak(text, L.code);
+}
+
+/* ---------- التوجيه ---------- */
+function curLng(){ return new URLSearchParams(location.search).get("lng"); }
+function goLng(k){ const u=new URL(location.href); u.searchParams.set("lng",k); u.searchParams.delete("sec"); history.replaceState(null,"",u); render(); }
+function goHome(){ const u=new URL(location.href); u.searchParams.delete("lng"); u.searchParams.delete("sec"); history.replaceState(null,"",u); render(); }
+
+/* ---------- شاشة الاختيار ---------- */
+function renderPick(){
+  document.getElementById("hTitle").textContent = "🌍 لغات أجنبيّة";
+  document.getElementById("hSub").textContent = "اختر اللغةَ التي تتعلّمها";
+  view.innerHTML = `<div class="pick">${Object.entries(LANGS).map(([k,L])=>
+    `<button class="langcard" data-k="${k}"><div class="fl">${L.flag}</div><div class="nm ltr">${esc(L.name)}</div><div class="na">${esc(L.nameAr)}</div></button>`).join("")}</div>
+    <div class="hint">كلُّ لغةٍ فيها: الأحرف · الأرقام · (الكلمات والقصص قريباً)</div>`;
+  view.querySelectorAll(".langcard").forEach(b=>b.onclick=()=>goLng(b.getAttribute("data-k")));
+}
+
+/* ---------- قسم اللغة ---------- */
+const SECTIONS = [
+  { key:"letters", label:"🔤 الأحرف", ready:true },
+  { key:"numbers", label:"🔢 الأرقام", ready:true },
+  { key:"words",   label:"📝 الكلمات", ready:false },
+  { key:"stories", label:"📚 قصص مصوّرة", ready:false },
+];
+function renderLang(k){
+  const L = LANGS[k]; if(!L){ goHome(); return; }
+  document.getElementById("hTitle").innerHTML = `${L.flag} <span class="ltr">${esc(L.name)}</span>`;
+  document.getElementById("hSub").textContent = L.nameAr + " — تعلّمْ بالنطق";
+  const sec = new URLSearchParams(location.search).get("sec") || "letters";
+  const setSec = s => { const u=new URL(location.href); u.searchParams.set("sec",s); history.replaceState(null,"",u); render(); };
+  let body = "";
+  if(sec==="letters"){
+    body = `<div class="grid">${L.letters.map(x=>
+      `<button class="gcard" data-say="${esc(x.ch)}" data-word="${esc(x.word)}"><span class="spk">🔊</span>
+        <span class="big ltr">${esc(x.ch)}</span><span class="em">${x.emoji}</span><span class="wd ltr">${esc(x.word)}</span></button>`).join("")}</div>
+      <div class="hint">اضغطِ الحرفَ لسماعه، واضغطِ الكلمةَ لسماعها 🔊</div>`;
+  } else if(sec==="numbers"){
+    body = `<div class="grid">${L.numbers.map(x=>
+      `<button class="gcard" data-say="${esc(x.word)}"><span class="spk">🔊</span>
+        <span class="big ltr">${x.n}</span><span class="wd ltr">${esc(x.word)}</span></button>`).join("")}</div>
+      <div class="hint">اضغطِ العددَ لسماع اسمه 🔊</div>`;
+  } else {
+    body = `<div class="hint">هذا القسمُ قيدُ الإعداد — قريبًا إن شاء الله 🌟</div>`;
+  }
+  view.innerHTML = `<div class="secs">
+      <button class="secbtn" data-go="back" style="font-weight:700">↩ اللغات</button>
+      ${SECTIONS.map(s=>`<button class="secbtn ${s.key===sec?"on":""} ${s.ready?"":"soon"}" data-sec="${s.key}" ${s.ready?"":"disabled"}>${s.label}</button>`).join("")}
+    </div>${body}`;
+  const back=view.querySelector('[data-go="back"]'); if(back) back.onclick=goHome;
+  view.querySelectorAll(".secbtn[data-sec]").forEach(b=>{ if(b.classList.contains("soon"))return; b.onclick=()=>setSec(b.getAttribute("data-sec")); });
+  // النطق: الكلمةُ (العبارة) عند الضغط على الاسم أو الصورة، والحرفُ عند الضغط على الحرف أو أيّ مكانٍ آخر.
+  view.querySelectorAll(".gcard").forEach(b=>{
+    b.onclick=(e)=>{ const sayWord = e.target.closest(".wd") || e.target.closest(".em");
+      say(sayWord ? (b.getAttribute("data-word") || b.getAttribute("data-say")) : b.getAttribute("data-say"), L); };
+  });
+  try{ logEvent("lang_open", {add:{}}); }catch(e){}
+}
+
+function render(){
+  const k = curLng();
+  if(k && LANGS[k]) renderLang(k); else renderPick();
+}
+primeWS();
+if("speechSynthesis" in window) speechSynthesis.onvoiceschanged = primeWS;
+render();
+</script>
+</body>
+</html>

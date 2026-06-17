@@ -37,3 +37,23 @@ export function zipStore(files) {
   parts.push(new Uint8Array(eo.buffer));
   return new Blob(parts, { type: "application/zip" });
 }
+
+// قراءةُ ZIP تخزينيّ (المُنتَج بـzipStore): يُرجِع { "اسم الملفّ": Uint8Array } — بلا فكّ ضغطٍ (تخزينٌ فقط).
+// يقرأ السجلّاتِ المحلّيّةَ تتابعاً حتى الفهرس المركزيّ. الأسماء UTF-8.
+export function unzipStore(buf) {
+  const dv = new DataView(buf), u8 = new Uint8Array(buf), dec = new TextDecoder("utf-8");
+  const out = {};
+  let i = 0;
+  while (i + 30 <= dv.byteLength && dv.getUint32(i, true) === 0x04034b50) {
+    const method = dv.getUint16(i + 8, true);
+    const compSize = dv.getUint32(i + 18, true);
+    const nameLen = dv.getUint16(i + 26, true);
+    const extraLen = dv.getUint16(i + 28, true);
+    const nameStart = i + 30;
+    const name = dec.decode(u8.subarray(nameStart, nameStart + nameLen));
+    const dataStart = nameStart + nameLen + extraLen;
+    if (method === 0) out[name] = u8.slice(dataStart, dataStart + compSize); // تخزينٌ ⇒ خام
+    i = dataStart + compSize;
+  }
+  return out;
+}

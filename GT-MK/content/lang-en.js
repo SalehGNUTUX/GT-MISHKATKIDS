@@ -48,4 +48,23 @@ export default {
     { n: 16, word: "Sixteen" }, { n: 17, word: "Seventeen" }, { n: 18, word: "Eighteen" }, { n: 19, word: "Nineteen" },
     { n: 20, word: "Twenty" },
   ],
+
+  // كلماتٌ مواضيعيّة (الكلمة الإنجليزيّة + معناها العربيّ + رمز). تُنطَق بـPiper وتُولَّد لها مقاطع.
+  words: [
+    { id: "animals", ar: "حيوانات", items: [
+      { w: "Cat", ar: "قطّة", emoji: "🐱" }, { w: "Dog", ar: "كلب", emoji: "🐶" }, { w: "Bird", ar: "طائر", emoji: "🐦" },
+      { w: "Fish", ar: "سمكة", emoji: "🐟" }, { w: "Lion", ar: "أسد", emoji: "🦁" }, { w: "Horse", ar: "حصان", emoji: "🐴" }, { w: "Sheep", ar: "خروف", emoji: "🐑" }, { w: "Rabbit", ar: "أرنب", emoji: "🐰" } ] },
+    { id: "colors", ar: "ألوان", items: [
+      { w: "Red", ar: "أحمر", emoji: "🔴" }, { w: "Blue", ar: "أزرق", emoji: "🔵" }, { w: "Green", ar: "أخضر", emoji: "🟢" },
+      { w: "Yellow", ar: "أصفر", emoji: "🟡" }, { w: "Black", ar: "أسود", emoji: "⚫" }, { w: "White", ar: "أبيض", emoji: "⚪" } ] },
+    { id: "family", ar: "العائلة", items: [
+      { w: "Mother", ar: "أمّ", emoji: "👩" }, { w: "Father", ar: "أب", emoji: "👨" }, { w: "Brother", ar: "أخ", emoji: "👦" },
+      { w: "Sister", ar: "أخت", emoji: "👧" }, { w: "Baby", ar: "رضيع", emoji: "👶" }, { w: "Family", ar: "عائلة", emoji: "👪" } ] },
+    { id: "food", ar: "طعام", items: [
+      { w: "Apple", ar: "تفّاحة", emoji: "🍎" }, { w: "Bread", ar: "خبز", emoji: "🍞" }, { w: "Milk", ar: "حليب", emoji: "🥛" },
+      { w: "Water", ar: "ماء", emoji: "💧" }, { w: "Egg", ar: "بيضة", emoji: "🥚" }, { w: "Banana", ar: "موزة", emoji: "🍌" }, { w: "Honey", ar: "عسل", emoji: "🍯" } ] },
+    { id: "body", ar: "الجسم", items: [
+      { w: "Hand", ar: "يد", emoji: "✋" }, { w: "Eye", ar: "عين", emoji: "👁️" }, { w: "Ear", ar: "أذن", emoji: "👂" },
+      { w: "Nose", ar: "أنف", emoji: "👃" }, { w: "Mouth", ar: "فم", emoji: "👄" }, { w: "Foot", ar: "قدم", emoji: "🦶" } ] },
+  ],
 };

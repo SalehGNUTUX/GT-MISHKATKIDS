@@ -32,7 +32,7 @@ const uniq = a => [...new Set(a.filter(Boolean).map(s => String(s).trim()).filte
 const texts = uniq([
   ...(L.letters || []).flatMap(x => [x.ch, x.word]),
   ...(L.numbers || []).map(x => x.word),
-  ...(L.words || []).map(w => w.word || w),
+  ...(L.words || []).flatMap(c => (c.items || []).map(it => it.w)),
   ...(L.stories || []).flatMap(s => [s.title, ...(s.pages || []).map(p => p.text)]),
 ]);
 

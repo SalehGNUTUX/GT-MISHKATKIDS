@@ -120,15 +120,16 @@ function renderPick(){
 const SECTIONS = [
   { key:"letters", label:"🔤 الأحرف", ready:true },
   { key:"numbers", label:"🔢 الأرقام", ready:true },
-  { key:"words",   label:"📝 الكلمات", ready:false },
+  { key:"words",   label:"📝 الكلمات", ready:true },
   { key:"stories", label:"📚 قصص مصوّرة", ready:false },
 ];
 function renderLang(k){
   const L = LANGS[k]; if(!L){ goHome(); return; }
   document.getElementById("hTitle").innerHTML = `${L.flag} <span class="ltr">${esc(L.name)}</span>`;
   document.getElementById("hSub").textContent = L.nameAr + " — تعلّمْ بالنطق";
-  const sec = new URLSearchParams(location.search).get("sec") || "letters";
-  const setSec = s => { const u=new URL(location.href); u.searchParams.set("sec",s); history.replaceState(null,"",u); render(); };
+  const qp = new URLSearchParams(location.search);
+  const sec = qp.get("sec") || "letters";
+  const setParam = (key,val) => { const u=new URL(location.href); u.searchParams.set(key,val); history.replaceState(null,"",u); render(); };
   let body = "";
   if(sec==="letters"){
     body = `<div class="grid">${L.letters.map(x=>
@@ -140,6 +141,16 @@ function renderLang(k){
       `<button class="gcard" data-say="${esc(x.word)}"><span class="spk">🔊</span>
         <span class="big ltr">${x.n}</span><span class="wd ltr">${esc(x.word)}</span></button>`).join("")}</div>
       <div class="hint">اضغطِ العددَ لسماع اسمه 🔊</div>`;
+  } else if(sec==="words"){
+    const cats = L.words || [];
+    const cat = qp.get("cat") || (cats[0] && cats[0].id);
+    const C = cats.find(x=>x.id===cat) || cats[0];
+    const chips = cats.map(c=>`<button class="secbtn ${C&&c.id===C.id?"on":""}" data-cat="${c.id}">${esc(c.ar)}</button>`).join("");
+    const cards = (C ? C.items : []).map(it=>
+      `<button class="gcard" data-say="${esc(it.w)}"><span class="spk">🔊</span><span class="em">${it.emoji}</span>
+        <span class="big ltr" style="font-size:18px">${esc(it.w)}</span><span class="wd">${esc(it.ar)}</span></button>`).join("");
+    body = `<div class="secs" style="margin-top:0">${chips}</div><div class="grid">${cards}</div>
+      <div class="hint">اضغطِ الكلمةَ لسماعها بالنطق 🔊 (تحتها معناها بالعربيّة)</div>`;
   } else {
     body = `<div class="hint">هذا القسمُ قيدُ الإعداد — قريبًا إن شاء الله 🌟</div>`;
   }
@@ -148,7 +159,8 @@ function renderLang(k){
       ${SECTIONS.map(s=>`<button class="secbtn ${s.key===sec?"on":""} ${s.ready?"":"soon"}" data-sec="${s.key}" ${s.ready?"":"disabled"}>${s.label}</button>`).join("")}
     </div>${body}`;
   const back=view.querySelector('[data-go="back"]'); if(back) back.onclick=goHome;
-  view.querySelectorAll(".secbtn[data-sec]").forEach(b=>{ if(b.classList.contains("soon"))return; b.onclick=()=>setSec(b.getAttribute("data-sec")); });
+  view.querySelectorAll(".secbtn[data-sec]").forEach(b=>{ if(b.classList.contains("soon"))return; b.onclick=()=>setParam("sec", b.getAttribute("data-sec")); });
+  view.querySelectorAll(".secbtn[data-cat]").forEach(b=>b.onclick=()=>setParam("cat", b.getAttribute("data-cat")));
   // النطق: الكلمةُ (العبارة) عند الضغط على الاسم أو الصورة، والحرفُ عند الضغط على الحرف أو أيّ مكانٍ آخر.
   view.querySelectorAll(".gcard").forEach(b=>{
     b.onclick=(e)=>{ const sayWord = e.target.closest(".wd") || e.target.closest(".em");

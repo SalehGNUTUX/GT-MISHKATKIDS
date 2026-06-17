@@ -46,4 +46,23 @@ export default {
     { n: 16, word: "Seize" }, { n: 17, word: "Dix-sept" }, { n: 18, word: "Dix-huit" }, { n: 19, word: "Dix-neuf" },
     { n: 20, word: "Vingt" },
   ],
+
+  // كلماتٌ مواضيعيّة (الكلمة الفرنسيّة + معناها العربيّ + رمز).
+  words: [
+    { id: "animals", ar: "حيوانات", items: [
+      { w: "Chat", ar: "قطّة", emoji: "🐱" }, { w: "Chien", ar: "كلب", emoji: "🐶" }, { w: "Oiseau", ar: "طائر", emoji: "🐦" },
+      { w: "Poisson", ar: "سمكة", emoji: "🐟" }, { w: "Lion", ar: "أسد", emoji: "🦁" }, { w: "Cheval", ar: "حصان", emoji: "🐴" }, { w: "Mouton", ar: "خروف", emoji: "🐑" }, { w: "Lapin", ar: "أرنب", emoji: "🐰" } ] },
+    { id: "colors", ar: "ألوان", items: [
+      { w: "Rouge", ar: "أحمر", emoji: "🔴" }, { w: "Bleu", ar: "أزرق", emoji: "🔵" }, { w: "Vert", ar: "أخضر", emoji: "🟢" },
+      { w: "Jaune", ar: "أصفر", emoji: "🟡" }, { w: "Noir", ar: "أسود", emoji: "⚫" }, { w: "Blanc", ar: "أبيض", emoji: "⚪" } ] },
+    { id: "family", ar: "العائلة", items: [
+      { w: "Mère", ar: "أمّ", emoji: "👩" }, { w: "Père", ar: "أب", emoji: "👨" }, { w: "Frère", ar: "أخ", emoji: "👦" },
+      { w: "Sœur", ar: "أخت", emoji: "👧" }, { w: "Bébé", ar: "رضيع", emoji: "👶" }, { w: "Famille", ar: "عائلة", emoji: "👪" } ] },
+    { id: "food", ar: "طعام", items: [
+      { w: "Pomme", ar: "تفّاحة", emoji: "🍎" }, { w: "Pain", ar: "خبز", emoji: "🍞" }, { w: "Lait", ar: "حليب", emoji: "🥛" },
+      { w: "Eau", ar: "ماء", emoji: "💧" }, { w: "Œuf", ar: "بيضة", emoji: "🥚" }, { w: "Banane", ar: "موزة", emoji: "🍌" }, { w: "Miel", ar: "عسل", emoji: "🍯" } ] },
+    { id: "body", ar: "الجسم", items: [
+      { w: "Main", ar: "يد", emoji: "✋" }, { w: "Œil", ar: "عين", emoji: "👁️" }, { w: "Oreille", ar: "أذن", emoji: "👂" },
+      { w: "Nez", ar: "أنف", emoji: "👃" }, { w: "Bouche", ar: "فم", emoji: "👄" }, { w: "Pied", ar: "قدم", emoji: "🦶" } ] },
+  ],
 };

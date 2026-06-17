@@ -89,15 +89,35 @@ function storySet() {
   const tts = sets.find(s => s.kind === "tts"); return tts ? tts.id : CLIPS; // قيمةٌ قديمة → عصبيّ
 }
 export function playStory(text) { return playClipForSet(text, storySet()); }
-// نسخةٌ وعديّة: تُحَلّ عند انتهاء مقطعِ القصّة (true) أو فورًا (false) إن لا مقطع — للقراءة المتتابعة.
-export function playStoryAsync(text) {
+
+// تشغيلُ رابطِ صوتٍ بثبات: ينتظرُ جهوزيّةَ المقطع قبل التشغيل (canplay) فلا يفشلُ أوّلُ تشغيلٍ لمقطعٍ
+// لم يُحمَّل بعد (كان يرتدّ خطأً لنموذجٍ آخر). يحترمُ النموذجَ المختار: لا يستبدله، إنّما يَنتظره.
+// يُحَلّ true عند انتهاء المقطع، false إن لا رابط/تعذّر التحميل (فيَلجأ المُتّصِلُ للبديل).
+function playUrlAsync(url) {
   return new Promise(resolve => {
-    const url = srcForSet(text, storySet());
     if (!url) { resolve(false); return; }
-    try { if (current) { try { current.pause(); } catch (e) {} } const a = audioFor(url); a.currentTime = 0; a.onended = () => resolve(true); a.onerror = () => resolve(false); a.play().catch(() => resolve(false)); current = a; }
-    catch (e) { resolve(false); }
+    if (current) { try { current.pause(); } catch (e) {} }
+    const a = audioFor(url); a.preload = "auto"; current = a;
+    let settled = false;
+    const done = v => { if (settled) return; settled = true; a.onended = null; a.onerror = null; resolve(v); };
+    a.onended = () => done(true);
+    a.onerror = () => done(false);
+    const play = () => {
+      if (current !== a) { done(false); return; }   // أُلغِيَ هذا التشغيلُ (طلبٌ أحدث) — لا تُشغّل القديم
+      try { a.currentTime = 0; } catch (e) {}
+      const p = a.play(); if (p && p.catch) p.catch(() => {}); // فشلُ play العابر يُعالَج بانتظار canplay
+    };
+    if (a.readyState >= 2) play();                 // HAVE_CURRENT_DATA: جاهزٌ الآن (مثل الإعادة المخزَّنة)
+    else {
+      const onReady = () => { a.removeEventListener("canplay", onReady); play(); };
+      a.addEventListener("canplay", onReady);
+      try { a.load(); } catch (e) {}               // ابدأ التحميل صراحةً
+      setTimeout(() => { if (!settled && a.readyState < 2) { a.removeEventListener("canplay", onReady); done(false); } }, 6000); // أمانٌ ضدّ التعليق
+    }
   });
 }
+// نسخةٌ وعديّة لقراءة القصّة بالنموذج المختار (عصبيّ/بشريّ/آليّ) — تنتظرُ جهوزيّةَ المقطع.
+export function playStoryAsync(text) { return playUrlAsync(srcForSet(text, storySet())); }
 // إيقافُ أيِّ مقطعٍ جارٍ (لزرّ إيقاف القراءة).
 export function stopClip() { if (current) { try { current.pause(); current.currentTime = 0; } catch (e) {} } }
 
@@ -111,19 +131,5 @@ export function storySourceKind(text) {
   return "🤖 آليّ";
 }
 
-// نسخةٌ وعديّة لوضع التهجئة: تُرجِع Promise يُحَلّ عند انتهاء المقطع (false إن لا صوت).
-export function playClipAsync(text) {
-  return new Promise(resolve => {
-    const url = srcFor(text);
-    if (!url) { resolve(false); return; }
-    try {
-      if (current) { try { current.pause(); } catch (e) {} }
-      const a = audioFor(url);
-      a.currentTime = 0;
-      a.onended = () => resolve(true);
-      a.onerror = () => resolve(false);
-      a.play().catch(() => resolve(false));
-      current = a;
-    } catch (e) { resolve(false); }
-  });
-}
+// نسخةٌ وعديّة (وضع التهجئة وقراءة الكلمات/الجمل): تنتظرُ جهوزيّةَ المقطع بنفس المنطق الثابت.
+export function playClipAsync(text) { return playUrlAsync(srcFor(text)); }

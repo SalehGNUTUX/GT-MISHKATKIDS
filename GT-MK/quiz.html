@@ -185,7 +185,7 @@ function renderQuestion(){
       el.disabled = true;
       if(session[qi].opts[idx].correct){ el.classList.add("correct"); el.querySelector(".mk")||el.insertAdjacentHTML("beforeend",' <span class="mk">✓</span>'); }
     });
-    if(session[qi].opts[k].correct){ score++; document.getElementById("scoreVal").textContent = score; recordMastery("Q:"+(session[qi].cat||"عام"),true); robo.cheer(undefined,{then:autoAdvance}); }
+    if(session[qi].opts[k].correct){ score++; document.getElementById("scoreVal").textContent = score; recordMastery("Q:"+(session[qi].cat||"عام"),true); robo.read(session[qi].opts[k].t, { then:()=>robo.cheer(undefined,{then:autoAdvance}) }); }
     else { b.classList.add("wrong"); b.insertAdjacentHTML("beforeend",' <span class="mk">✗</span>'); recordMastery("Q:"+(session[qi].cat||"عام"),false); robo.recall({then:autoAdvance}); }
     const nx = document.getElementById("next"); nx.style.display = "block";
   });

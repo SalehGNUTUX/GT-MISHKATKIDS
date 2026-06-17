@@ -364,7 +364,7 @@ function nextArith(){
     if (v === p.ans) {
       b.classList.add("ok"); arScore++; logEvent("math_correct");
       view.querySelectorAll(".opt").forEach(x=>x.disabled=true);
-      onCorrect(robo, view, nextArith);
+      onCorrect(robo, view, nextArith, undefined, numAr(p.ans));
     } else {
       b.classList.add("bad"); arMissed = true;
       setTimeout(()=>b.classList.remove("bad"), 450);
@@ -391,7 +391,7 @@ function nextFind(){
   document.getElementById("rep").onclick=()=>robo.read(target.name);
   robo.say("أين "+target.name+"؟","ask");
   view.querySelector("#grid").addEventListener("click",e=>{ const b=e.target.closest(".tile"); if(!b||b.disabled)return;
-    if(b.getAttribute("data-id")===target.id){ b.classList.add("ok"); sScore++; logEvent("math_correct"); recordMastery("S:"+target.id, !sMissed); view.querySelectorAll(".tile").forEach(x=>x.disabled=true); onCorrect(robo, view, nextFind); }
+    if(b.getAttribute("data-id")===target.id){ b.classList.add("ok"); sScore++; logEvent("math_correct"); recordMastery("S:"+target.id, !sMissed); view.querySelectorAll(".tile").forEach(x=>x.disabled=true); onCorrect(robo, view, nextFind, undefined, target.name); }
     else { b.classList.add("bad"); sMissed=true; setTimeout(()=>b.classList.remove("bad"),450); onWrong(robo, view, nextFind); } });
 }
 
@@ -400,7 +400,7 @@ const EMO = ["🍎","⭐","🐟","🌸","🚗","🦋","🍌","🐝","🌳","🐤
 let cScore=0;
 function startCompare(){ cScore=0; nextCompare(); }
 function nextCompare(){
-  let a=1+rand(8), b=1+rand(8); while(b===a) b=1+rand(8);
+  let a=1+rand(12), b=1+rand(12); while(b===a) b=1+rand(12);
   const em=EMO[rand(EMO.length)];
   const more = a>b ? "A":"B";
   view.innerHTML = backBar()+
@@ -414,20 +414,32 @@ function nextCompare(){
   wireBack(); wireAuto(view);
   robo.say(NOTICES.askMore,"ask");
   view.querySelector("#grid").addEventListener("click",e=>{ const d=e.target.closest(".objbox"); if(!d||d.dataset.done)return;
-    if(d.getAttribute("data-k")===more){ d.classList.add("ok"); cScore++; logEvent("math_correct"); view.querySelectorAll(".objbox").forEach(x=>x.dataset.done="1"); onCorrect(robo, view, nextCompare); }
+    if(d.getAttribute("data-k")===more){ d.classList.add("ok"); cScore++; logEvent("math_correct"); view.querySelectorAll(".objbox").forEach(x=>x.dataset.done="1"); onCorrect(robo, view, nextCompare, undefined, numAr(Math.max(a,b))); }
     else { d.classList.add("bad"); setTimeout(()=>d.classList.remove("bad"),450); onWrong(robo, view, nextCompare); } });
 }
 
 /* ===== 🔁 أكمل النمط ===== */
 let pScore=0;
+// مجموعاتٌ متنوّعةٌ (ألوان · فواكه · حيوانات · أشكال) لإغناء أنماطِ الطفل.
+const PATTERN_POOLS = [
+  ["🔴","🔵","🟢","🟡","🟣","🟠"],
+  ["🍎","🍌","🍇","🍓","🍊","🥝"],
+  ["🐶","🐱","🐭","🐰","🦊","🐼"],
+  ["⭐","❤️","🔶","🔷","🔺","⬛"],
+];
+const PATTERN_TYPES = ["AB","ABC","AAB","ABA"]; // تنوّعُ النمط لا الثنائيّ فقط
 function startPattern(){ pScore=0; nextPattern(); }
 function nextPattern(){
-  const pool=shuffle(["🔴","🔵","🟢","🟡","🟣","🔶"]).slice(0,2);
-  const period = rand(2)===0 ? 2 : 3;
-  const base = period===2 ? [pool[0],pool[1]] : [pool[0],pool[1],pool[0]];
-  const seq = []; for(let i=0;i<5;i++) seq.push(base[i%base.length]);
-  const answer = base[5%base.length];
-  const others = shuffle(["🔴","🔵","🟢","🟡","🟣","🔶"].filter(x=>x!==answer)).slice(0,2);
+  const pool=shuffle(PATTERN_POOLS[rand(PATTERN_POOLS.length)].slice());
+  const type=PATTERN_TYPES[rand(PATTERN_TYPES.length)];
+  const base = type==="AB" ? [pool[0],pool[1]]
+    : type==="ABC" ? [pool[0],pool[1],pool[2]]
+    : type==="AAB" ? [pool[0],pool[0],pool[1]]
+    : [pool[0],pool[1],pool[0]]; // ABA
+  const show = 5 + rand(2); // 5 أو 6 عناصر معروضة
+  const seq = []; for(let i=0;i<show;i++) seq.push(base[i%base.length]);
+  const answer = base[show%base.length];
+  const others = shuffle(pool.filter(x=>x!==answer)).slice(0,2);
   const opts = shuffle([answer,...others]);
   view.innerHTML = backBar()+
     `<div class="gbar"><span class="pill">⭐ <b>${pScore}</b></span>${autoToggleHtml()}</div>
@@ -444,16 +456,25 @@ function nextPattern(){
 
 /* ===== 📏 الأكبر والأصغر ===== */
 let zScore=0;
+// أشكالٌ متنوّعةٌ للمقارنة الحجميّة (نصف القطر r) — لا الدائرة فقط.
+const SIZE_SHAPES = {
+  دائرة:  (r,col)=>`<circle cx="45" cy="45" r="${r}" fill="${col}"/>`,
+  مربّع:  (r,col)=>`<rect x="${45-r}" y="${45-r}" width="${2*r}" height="${2*r}" rx="5" fill="${col}"/>`,
+  مثلّث:  (r,col)=>`<polygon points="45,${45-r} ${45+r},${45+r} ${45-r},${45+r}" fill="${col}"/>`,
+  نجمة:   (r,col)=>{ let p=""; for(let k=0;k<10;k++){ const rad=k%2?r*0.45:r, a=-Math.PI/2+k*Math.PI/5; p+=(45+rad*Math.cos(a)).toFixed(1)+","+(45+rad*Math.sin(a)).toFixed(1)+" "; } return `<polygon points="${p.trim()}" fill="${col}"/>`; },
+};
 function startSize(){ zScore=0; nextSize(); }
 function nextSize(){
   const wantBig = rand(2)===0;
   const col=C[rand(C.length)];
-  const sizes=shuffle([18,30,44]).map((r,i)=>({r,i}));
+  const names=Object.keys(SIZE_SHAPES), shape=names[rand(names.length)], draw=SIZE_SHAPES[shape];
+  const n = 3 + rand(2); // 3 أو 4 أحجام
+  const sizes=shuffle([13,21,30,40]).slice(0,n).map((r,i)=>({r,i}));
   const target = wantBig ? sizes.reduce((m,s)=>s.r>m.r?s:m) : sizes.reduce((m,s)=>s.r<m.r?s:m);
   view.innerHTML = backBar()+
     `<div class="gbar"><span class="pill">⭐ <b>${zScore}</b></span>${autoToggleHtml()}</div>
-     <div class="prompt">اضغطِ الدائرةَ ${wantBig?"الأكبر":"الأصغر"}</div>
-     <div class="grid" id="grid" style="grid-template-columns:repeat(3,1fr)">${sizes.map(s=>`<button class="tile" data-i="${s.i}"><svg viewBox="0 0 90 90"><circle cx="45" cy="45" r="${s.r}" fill="${col}"/></svg></button>`).join("")}</div>
+     <div class="prompt">اضغطِ الشكلَ ${wantBig?"الأكبر":"الأصغر"}</div>
+     <div class="grid" id="grid" style="grid-template-columns:repeat(${n},1fr)">${sizes.map(s=>`<button class="tile" data-i="${s.i}"><svg viewBox="0 0 90 90">${draw(s.r,col)}</svg></button>`).join("")}</div>
      <div class="hint">قارنِ الأحجامَ بعينك</div>`;
   wireBack(); wireAuto(view);
   robo.say(wantBig?NOTICES.askBigger:NOTICES.askSmaller,"ask");

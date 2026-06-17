@@ -72,5 +72,5 @@ export const robo = {
   // كلامٌ عامّ بمزاجٍ مُحدَّد. opts.then يُستدعى عند انتهاء الكلام.
   say(text, mood = "talk", opts = {}) { ensureMounted(); flash(mood === "happy" ? "cheer" : ""); showBubble(text); roboSay(text, { mood, onend: opts.then }); },
   // قراءةُ حرفٍ أو كلمةٍ بوضوحٍ (بلا نبضةٍ روبوتية كي لا تُزعجَ عند التكرار).
-  read(text, opts = {}) { ensureMounted(); flash(""); showBubble(text); speak(text, { rate: opts.rate != null ? opts.rate : 0.7 }); },
+  read(text, opts = {}) { ensureMounted(); flash(""); showBubble(text); speak(text, { rate: opts.rate != null ? opts.rate : 0.7, onend: opts.then }); },
 };

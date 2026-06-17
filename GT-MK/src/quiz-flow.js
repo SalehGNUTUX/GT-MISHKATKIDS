@@ -36,11 +36,16 @@ function appendNext(view, next, label, cls) {
   d.querySelector("button").onclick = () => { try { d.remove(); } catch (e) {} next && next(); };
 }
 
-// إجابةٌ صحيحة: هتافٌ ثمّ انتقال (تلقائيّ بعد انتهاء الكلام، أو زرٌّ يدويّ لا يَقطع الصوت).
-export function onCorrect(robo, view, next, praise) {
+// إجابةٌ صحيحة: يَنطق روبو الجوابَ الصحيح أوّلًا (إن مُرِّر: كلمة/رقم/حرف) ثمّ ردّةَ الفعل،
+// ثمّ ينتقل (تلقائيّ بعد انتهاء الكلام، أو زرٌّ يدويّ لا يَقطع الصوت). لا تتداخلُ الأصوات.
+export function onCorrect(robo, view, next, praise, answer) {
   ensureStyle();
-  if (isAutoNext()) robo.cheer(praise, { then: next });
-  else { robo.cheer(praise); appendNext(view, next, "التالي ▶"); }
+  const react = () => {
+    if (isAutoNext()) robo.cheer(praise, { then: next });
+    else { robo.cheer(praise); appendNext(view, next, "التالي ▶"); }
+  };
+  if (answer) robo.read(String(answer), { then: react });   // انطق الجوابَ ثمّ تفاعَلْ
+  else react();
 }
 // إجابةٌ خاطئة: تشجيعٌ لطيف + إتاحةُ تجاوزٍ مع وعدِ العودة (robo.recall) كيلا يَعلَق الطفل.
 export function onWrong(robo, view, next) {

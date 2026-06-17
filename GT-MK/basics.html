@@ -220,7 +220,7 @@ function nextFind(){
   document.getElementById("rep").onclick=()=>robo.read(target.name);
   speak(target.name);
   view.querySelector("#grid").addEventListener("click",e=>{ const b=e.target.closest(".ltile"); if(!b||b.disabled)return;
-    if(b.getAttribute("data-c")===target.char){ b.classList.add("ok"); fScore++; logEvent("basics_correct"); recordMastery("L:"+target.char,true); view.querySelectorAll(".ltile").forEach(x=>x.disabled=true); onCorrect(robo, view, nextFind); }
+    if(b.getAttribute("data-c")===target.char){ b.classList.add("ok"); fScore++; logEvent("basics_correct"); recordMastery("L:"+target.char,true); view.querySelectorAll(".ltile").forEach(x=>x.disabled=true); onCorrect(robo, view, nextFind, undefined, target.name); }
     else { b.classList.add("bad"); recordMastery("L:"+target.char,false); setTimeout(()=>b.classList.remove("bad"),450); onWrong(robo, view, nextFind); } });
 }
 

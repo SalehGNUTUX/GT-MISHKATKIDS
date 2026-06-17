@@ -193,7 +193,9 @@ const backBar = () => `<button class="back" id="back">← الألعاب</button
 function wireBack(){ const b=document.getElementById("back"); if(b) b.onclick=renderMenu; }
 const clueCard = (instruction, withFlash) => `<div class="clue"><div class="emoji">${cur.emoji}</div>${withFlash?`<div class="flash" id="flash">${cur.word}</div>`:""}<div class="say">${instruction}</div></div>`;
 function winBanner(msg){ return `<div class="win"><div class="em">${cur.emoji}</div><div class="big" dir="rtl">${cur.word}</div>${msg}<div class="controls"><button class="go" id="cont">التالية ▶</button></div></div>`; }
-function celebrate(){ score++; streak++; robo.cheer(); logEvent("word_win"); if(cur) recordMastery("W:"+cur.word,true); }
+function celebrate(){ score++; streak++; logEvent("word_win"); if(cur) recordMastery("W:"+cur.word,true);
+  // ينطق الكلمةَ المبنيّةَ أوّلًا ثمّ ردّةَ الفعل (لا تتداخل الأصوات).
+  if(cur && cur.word) robo.read(cur.word, { then:()=>robo.cheer() }); else robo.cheer(); }
 
 /* ===================== MENU ===================== */
 const GAMES = [

@@ -65,7 +65,13 @@ function ttsPath(text, opts) {
   if (!HAS) { fire(opts); return; }
   if (!voicesReady) {
     pickVoice();
-    if (!voicesReady) { queued = { text, opts }; return; } // أجّلْ حتى onvoiceschanged
+    if (!voicesReady) {
+      queued = { text, opts }; // أجّلْ حتى onvoiceschanged
+      // أمانٌ: على جهازٍ بلا أصواتٍ (لا يُطلَق onvoiceschanged) لا نُعلّق الانتقالَ التلقائيّ —
+      // إن لم تجهز الأصواتُ سريعًا أطلِقْ onend ليتابعَ التدفّق (لا صوتَ، لكن لا تعليق).
+      if (opts.onend) setTimeout(() => { if (queued && queued.opts === opts) { queued = null; fire(opts); } }, 1500);
+      return;
+    }
   }
   doSpeak(text, opts);
 }

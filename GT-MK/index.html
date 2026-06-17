@@ -110,6 +110,13 @@
   .panel .close{float:left;background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
   .sec{margin-top:18px}
   .sec h3{font-size:15px;margin:0 0 8px;color:var(--primary-d)}
+  /* مطويات لوحة التحكّم: العنوانُ زرُّ طيّ/فتح؛ المحتوى يختفي عند الطيّ */
+  .sec.collapsible{border:1px solid var(--line);border-radius:14px;padding:8px 12px;margin-top:10px}
+  .sec.collapsible>h3{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0;user-select:none}
+  .sec.collapsible>h3::after{content:"▾";color:var(--muted);font-size:12px;transition:transform .2s}
+  .sec.collapsible.collapsed>h3::after{transform:rotate(-90deg)}
+  .sec.collapsible.collapsed>*:not(h3){display:none}
+  .sec.collapsible:not(.collapsed)>h3{margin-bottom:8px}
   .statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
   .stat{background:#F6F3EC;border-radius:14px;padding:12px;text-align:center}
   .stat .n{font-size:24px;font-weight:800}
@@ -551,7 +558,13 @@ renderMap();
 const overlay=document.getElementById("parentOverlay"), panel=document.getElementById("panelBody");
 document.getElementById("parentBtn").addEventListener("click", openGate);
 overlay.addEventListener("click",e=>{ if(e.target===overlay) closePanel(); });
+// إغلاقٌ تلقائيٌّ بعد 30 ثانيةً من الخمول (لا عملَ على اللوحة). أيُّ تفاعلٍ يُعيد العدّ.
+let dashIdle=null;
+function armIdle(){ clearTimeout(dashIdle); dashIdle=setTimeout(()=>{ if(overlay.classList.contains("show")) closePanel(); }, 30000); }
+["click","keydown","input","change","scroll","touchstart","pointerdown"].forEach(ev=>
+  overlay.addEventListener(ev, ()=>{ if(overlay.classList.contains("show")) armIdle(); }, { passive:true, capture:true }));
 function closePanel(){
+  clearTimeout(dashIdle);
   if(pendingDel) finalizeDel();
   overlay.classList.remove("show"); panel.innerHTML=""; panel.style.maxWidth="";
   // لا جلسةَ حسابٍ خلف اللوحة ⇒ العودةُ لشاشة الدخول لا إلى تصفّحٍ مجهول.
@@ -614,7 +627,7 @@ function openGate(){
     <button class="topbtn" id="ppwBack">رجوع</button></div>
     <button id="forgot" style="margin-top:14px;font-size:13px;border:none;background:none;color:var(--muted);text-decoration:underline;cursor:pointer;font-family:inherit">نسيتُ كلمة المرور</button>
     ${isDefaultParentPassword()?'<p class="muted" style="font-size:12px;margin-top:8px">الافتراضيّة: <b>admin</b> — غيّرها من إعدادات اللوحة.</p>':''}</div>`;
-  overlay.classList.add("show");
+  overlay.classList.add("show"); armIdle();
   const inp=document.getElementById("ppw"); inp.focus();
   const go=()=>{ if(verifyParentPassword(inp.value)){ markParentAuthed(); openDashboard(); } else { const b=document.getElementById("ppwBad"); b.textContent="كلمة مرور غير صحيحة."; inp.value=""; inp.focus(); const g=document.querySelector(".gate"); if(g){ g.style.transition="transform .07s"; g.style.transform="translateX(-6px)"; setTimeout(()=>{g.style.transform="translateX(6px)";},70); setTimeout(()=>{g.style.transform="";},140); } } };
   document.getElementById("ppwGo").onclick=go;
@@ -633,7 +646,7 @@ function openRecover(){
       <div class="btns" style="justify-content:center"><button class="act" id="recGo">تأكيد</button> <button class="ghost" id="recBack">رجوع</button></div>`
     :`<p class="muted">لا سؤال أمنيّ مضبوط. يمكنك إعادة التعيين إلى «admin».</p>
       <div class="btns" style="justify-content:center"><button class="act" id="recReset">إعادة إلى admin</button> <button class="ghost" id="recBack">رجوع</button></div>`}</div>`;
-  overlay.classList.add("show");
+  overlay.classList.add("show"); armIdle();
   const back=document.getElementById("recBack"); if(back) back.onclick=openGate;
   if(sq){ document.getElementById("recGo").onclick=()=>{ if(verifySecurityAnswer(document.getElementById("recAns").value)){ changeParentPassword(document.getElementById("recNew").value||undefined); markParentAuthed(); openDashboard(); } else document.getElementById("recBad").textContent="الإجابة غير صحيحة."; }; }
   else document.getElementById("recReset").onclick=()=>{ resetParentPasswordToDefault(); openGate(); };
@@ -905,9 +918,18 @@ async function openDashboard(){
     }
   });
   renderVoiceMgmt();
+  // مطويات: كلُّ قسمٍ يُطوى افتراضاً (لوحةٌ مرتّبةٌ غيرُ مزدحمة)، والعنوانُ يفتحه/يطويه.
+  const hash = location.hash;
+  panel.querySelectorAll(".sec").forEach(sec=>{
+    const h=sec.querySelector("h3"); if(!h) return;
+    sec.classList.add("collapsible","collapsed");
+    if(hash && sec.id && ("#"+sec.id)===hash) sec.classList.remove("collapsed"); // افتح المقصودَ بالرابط
+    h.addEventListener("click",()=>{ sec.classList.toggle("collapsed"); armIdle(); });
+  });
   overlay.classList.add("show");
+  armIdle(); // بدءُ عدّاد الخمول (30ث)
   // تمريرٌ تلقائيٌّ للقسم المقصود عند القدوم برابطٍ مرسىً (#sec-reports / #sec-accounts) من لوحة الوالد.
-  if(location.hash){ const t=panel.querySelector(location.hash); if(t) setTimeout(()=>t.scrollIntoView({behavior:"smooth",block:"start"}),80); }
+  if(hash){ const t=panel.querySelector(hash); if(t) setTimeout(()=>t.scrollIntoView({behavior:"smooth",block:"start"}),80); }
 }
 
 /* إدارةُ تسجيلات تمرّنِ الأطفال من لوحة الأهل: عددُ تسجيلاتِ كلِّ حسابٍ + حذفٌ بكلمة مرورٍ ومهلةِ تراجع. */

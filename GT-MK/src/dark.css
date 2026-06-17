@@ -77,3 +77,14 @@ html[data-theme="dark"] #loginOverlay{background:linear-gradient(160deg,#15151b,
 html[data-theme="dark"] #loginOverlay > div{background:#23232c!important;border-color:#34343f!important}
 html[data-theme="dark"] #userChip{background:#23232c!important;color:var(--ink)!important;border-color:#34343f!important}
 html[data-theme="dark"] #loginBody .prof,html[data-theme="dark"] #loginBody button{background:#2a2a34!important;border-color:#34343f!important;color:var(--ink)!important}
+
+/* ====== القرآن الكريم: ورقُ المصحف داكنٌ ونصُّه فاتح ====== */
+html[data-theme="dark"] .mushaf{background:#1e1f26;border-color:#3a3a45;color:#ECE7DD}
+html[data-theme="dark"] .ayah.on,html[data-theme="dark"] .bism.on{background:#3a3320}
+html[data-theme="dark"] .bism{color:#d9c690}
+html[data-theme="dark"] .panel .ay{color:#d9c690}
+/* مُسجِّلُ القراءة/التلاوة (reader-recorder: أصناف .rr) */
+html[data-theme="dark"] .rr{background:#23232c;border-color:#34343f}
+html[data-theme="dark"] .rr button{background:#2a2a34;border-color:#34343f;color:var(--ink)}
+html[data-theme="dark"] .rr button.rr-help{background:#2a2a34;border-color:#6e5a8a;color:#c9a0dc}
+html[data-theme="dark"] .rr-st{color:var(--muted)}

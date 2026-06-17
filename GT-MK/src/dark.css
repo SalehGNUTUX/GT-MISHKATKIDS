@@ -38,6 +38,27 @@ html[data-theme="dark"] .bar,html[data-theme="dark"] .stat{background:#2c2c37}
 html[data-theme="dark"] .muted,html[data-theme="dark"] .sub,html[data-theme="dark"] .meta,
 html[data-theme="dark"] .hint,html[data-theme="dark"] .count{color:var(--muted)}
 
+/* ====== أسطحٌ كريميّة/محايدة مثبّتةٌ في الفاتح → داكنةٌ مرتفعة (إصلاحٌ شامل) ======
+   أصنافٌ سطحيّةٌ غيرُ متضاربة فقط (نتجنّب .act/.dot/.form لاختلاف دلالتها بين الصفحات). */
+html[data-theme="dark"] .domhead,html[data-theme="dark"] .picview,html[data-theme="dark"] .objbox,
+html[data-theme="dark"] .objs,html[data-theme="dark"] .parent,html[data-theme="dark"] .materials,
+html[data-theme="dark"] .lognote,html[data-theme="dark"] .progress,html[data-theme="dark"] .cert,
+html[data-theme="dark"] .tab,html[data-theme="dark"] .lvl,html[data-theme="dark"] .ex span,
+html[data-theme="dark"] .cell.target,html[data-theme="dark"] .gap.next,html[data-theme="dark"] .slot.fixed,
+html[data-theme="dark"] .gchip,html[data-theme="dark"] .fback,html[data-theme="dark"] .setbar{
+  background:#2c2c37 !important;color:var(--ink)}
+/* صناديقُ معلوماتٍ/تدبّرٍ دافئة → داكنةٌ دافئة */
+html[data-theme="dark"] .tad,html[data-theme="dark"] .nintro,html[data-theme="dark"] .note,
+html[data-theme="dark"] .compose-note,html[data-theme="dark"] .hintbox,html[data-theme="dark"] .bhint,
+html[data-theme="dark"] .blend,html[data-theme="dark"] .mat{
+  background:#2e2a26 !important;color:var(--ink) !important}
+/* تغذيةٌ راجعة: صحيح (أخضر داكن) / خطأ (أحمر داكن) — تبقى الدلالةُ واضحةً ومقروءة */
+html[data-theme="dark"] .ok,html[data-theme="dark"] .correct,html[data-theme="dark"] .lesson,
+html[data-theme="dark"] .matched,html[data-theme="dark"] .nzero,html[data-theme="dark"] .mission.done{
+  background:#22351f !important;border-color:#3a5a30 !important;color:#a8e08a !important}
+html[data-theme="dark"] .bad,html[data-theme="dark"] .wrong,html[data-theme="dark"] .cand{
+  background:#3a2222 !important;border-color:#6a3a3a !important;color:#f0a0a0 !important}
+
 /* ====== خصوصيّاتُ صفحة الفهرس (home) ====== */
 html[data-theme="dark"] .stat{color:#cfc9bf}
 html[data-theme="dark"] .b{background:#33333e;color:#b8b2a8}

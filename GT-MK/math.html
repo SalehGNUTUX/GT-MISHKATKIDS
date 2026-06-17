@@ -28,8 +28,8 @@
   header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 10px}
   header h1{font-size:22px;margin:0}
   header .sub{color:var(--muted);font-size:13px}
-  .topbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink);font-family:inherit}
-  .back{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .topbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink);font-family:inherit}
+  .back{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:7px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink)}
 
   .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:8px}
   .gcard{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
@@ -50,33 +50,33 @@
   .dots{font-size:30px;line-height:1.6;margin:8px 4px;min-height:40px;word-wrap:break-word}
   .nav{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px}
   .nav button{border:none;border-radius:12px;padding:10px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
-  .nav .prev{background:#fff;border:1px solid var(--line);color:var(--ink)} .nav .prev:disabled{opacity:.4}
+  .nav .prev{background:var(--card);border:1px solid var(--line);color:var(--ink)} .nav .prev:disabled{opacity:.4}
   .nav .next{background:var(--primary);color:#fff}
   .pos{font-size:13px;color:var(--muted);min-width:60px}
 
   .prompt{text-align:center;font-size:18px;font-weight:800;margin:10px 2px 6px}
-  .prompt button{background:#fff;border:1px solid var(--line);border-radius:10px;padding:4px 10px;font-size:15px;cursor:pointer;font-family:inherit;margin-inline-start:6px}
+  .prompt button{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px 10px;font-size:15px;cursor:pointer;font-family:inherit;margin-inline-start:6px}
   .opvis{font-size:34px;font-weight:800;text-align:center;color:var(--primary-d);margin:8px 0}
   .picview{background:#F6F3EC;border-radius:14px;padding:14px 10px;margin:6px 0 12px;min-height:80px;text-align:center;font-size:32px;line-height:1.4}
   .opts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 2px}
-  .opt{background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 18px;font-size:30px;font-weight:800;color:var(--ink);cursor:pointer;font-family:inherit;min-width:64px}
+  .opt{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px 18px;font-size:30px;font-weight:800;color:var(--ink);cursor:pointer;font-family:inherit;min-width:64px}
   .opt:hover{border-color:var(--primary)}
   .opt.ok{background:#EEF6E9;border-color:var(--good);color:#2f5a1f}
   .opt.bad{background:#FCEBEE;border-color:var(--bad);animation:shake .4s}
   @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 
   .ageb{display:flex;gap:6px;margin:6px 2px;flex-wrap:wrap}
-  .ageb button{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;color:#666}
+  .ageb button{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;color:#666}
   .ageb button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
 
   /* أزرار فهرس العشرات في شاشة الأرقام */
-  .dec{background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--ink);min-width:42px}
+  .dec{background:var(--card);border:1.5px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--ink);min-width:42px}
   .dec:hover{border-color:var(--sky);color:var(--sky)}
   .dec.on{background:var(--sky);color:#fff;border-color:var(--sky)}
 
   /* ألعاب: عثور · مقارنة · نمط · حجم */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:14px 2px}
-  .tile{background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;min-height:96px}
+  .tile{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;min-height:96px}
   .tile:hover{border-color:var(--primary)}
   .tile.ok{background:#EEF6E9;border-color:var(--good)}
   .tile.bad{background:#FCEBEE;border-color:var(--bad);animation:shake .4s}
@@ -90,14 +90,14 @@
   /* بطاقات الأشكال */
   .sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:8px}
   @media (min-width:520px){ .sgrid{grid-template-columns:repeat(3,1fr)} }
-  .scard{background:#fff;border:2px solid var(--line);border-radius:16px;padding:10px;text-align:center;cursor:pointer;transition:.12s}
+  .scard{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:10px;text-align:center;cursor:pointer;transition:.12s}
   .scard:hover{border-color:var(--primary);transform:translateY(-2px)}
   .scard svg{width:90px;height:90px;display:block;margin:0 auto}
   .scard .sname{font-weight:800;font-size:15px;margin-top:4px}
   .scard .sdim{font-size:11px;color:var(--muted)}
 
   /* بطاقة شكلٍ مفتوحة */
-  .shape-detail{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px;margin-top:8px}
+  .shape-detail{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px;margin-top:8px}
   .shape-detail .big{display:flex;justify-content:center;margin-bottom:8px}
   .shape-detail .big svg{width:160px;height:160px}
   .shape-detail .ttl{text-align:center;font-size:22px;font-weight:800;color:var(--primary-d)}
@@ -108,9 +108,9 @@
 
   /* قائمة أنشطة الورق */
   .craftlist{display:grid;gap:10px;margin-top:8px}
-  .craftrow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 14px;cursor:pointer;text-align:start}
+  .craftrow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px 14px;cursor:pointer;text-align:start}
   .craftrow:hover{border-color:var(--primary)}
-  .craftrow .thumb{width:54px;height:54px;display:flex;align-items:center;justify-content:center;background:#FBF7EF;border-radius:12px;flex:none}
+  .craftrow .thumb{width:54px;height:54px;display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:12px;flex:none}
   .craftrow .thumb svg{width:46px;height:46px;display:block}
   .craftrow .ic{font-size:32px}
   .craftrow .t{font-weight:800;font-size:16px}
@@ -118,9 +118,9 @@
   .craftrow .go{color:var(--primary);font-size:18px;font-weight:800}
 
   /* تفصيل النشاط */
-  .step{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
   .step .num{background:var(--primary);color:#fff;border-radius:999px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
-  .step svg{width:100%;max-width:240px;background:#FBF7EF;border-radius:10px;display:block;margin-top:6px}
+  .step svg{width:100%;max-width:240px;background:var(--bg);border-radius:10px;display:block;margin-top:6px}
   .step .txt{font-size:14.5px;line-height:1.7}
   .materials{background:#F6F3EC;border-radius:14px;padding:12px 14px;font-size:13.5px;margin-top:8px}
   .materials b{color:var(--primary-d)}
@@ -133,7 +133,7 @@
   /* قصّة الأرقام */
   .nintro{background:#FFF6EE;border:1px solid #F0DDC8;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.8;margin:8px 2px}
   .nfams{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:10px 2px}
-  .nfam{background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px;text-align:center}
+  .nfam{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px;text-align:center}
   .nfam .gl{font-size:24px;font-weight:800;letter-spacing:3px;color:var(--primary-d);direction:ltr}
   .nfam .ti{font-weight:800;font-size:14px;margin:4px 0}
   .nfam .nt{font-size:12px;color:var(--muted)}
@@ -145,15 +145,15 @@
   .nzero{background:#EAF4E3;border:1px solid #CDE6BE;border-radius:16px;padding:14px;margin:10px 2px;font-size:14px;line-height:1.9}
   .nzero h3{margin:0 0 6px;color:#3f6b2c}
   .ndg{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:8px 2px}
-  .ndc{background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 4px;text-align:center}
+  .ndc{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:8px 4px;text-align:center}
   .ndc .dg{font-size:34px;font-weight:800;color:var(--primary-d);direction:ltr}
   .ndc .nm{font-size:11px;color:var(--muted)}
   .ndc .dots{min-height:14px;margin-top:2px}
   .ndc .dots i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#E0566B;margin:0 1px}
   .nsch{display:grid;gap:8px;margin:8px 2px}
-  .nsch .s{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:13px}
+  .nsch .s{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:13px}
   .nsch .s b{color:var(--primary-d)}
-  .nnote{background:#FBF7EF;border:1px dashed #ECE6DA;border-radius:12px;padding:10px 12px;font-size:12.5px;color:#6B6B6B;margin:8px 2px;line-height:1.7}
+  .nnote{background:var(--bg);border:1px dashed #ECE6DA;border-radius:12px;padding:10px 12px;font-size:12.5px;color:#6B6B6B;margin:8px 2px;line-height:1.7}
 </style>
 </head>
 <body>
@@ -574,7 +574,7 @@ function openCraft(id){
   view.innerHTML =
     `<button class="back" id="back2">← الورشة</button>
      <div class="card" style="text-align:start;padding:16px">
-       <div style="text-align:center">${c.thumb?`<div style="width:72px;height:72px;margin:0 auto;display:flex;align-items:center;justify-content:center;background:#FBF7EF;border-radius:14px">${c.thumb.replace('<svg ','<svg width="60" height="60" ')}</div>`:`<div style="font-size:30px">✂️</div>`}<div style="font-weight:800;font-size:18px;margin-top:6px">${c.title}</div><div style="font-size:13px;color:var(--muted)">شكل: ${c.shape} · حوالي ${c.mins} دقائق</div></div>
+       <div style="text-align:center">${c.thumb?`<div style="width:72px;height:72px;margin:0 auto;display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:14px">${c.thumb.replace('<svg ','<svg width="60" height="60" ')}</div>`:`<div style="font-size:30px">✂️</div>`}<div style="font-weight:800;font-size:18px;margin-top:6px">${c.title}</div><div style="font-size:13px;color:var(--muted)">شكل: ${c.shape} · حوالي ${c.mins} دقائق</div></div>
        ${c.file?`
        <div style="background:#EAF4E3;border:1px solid #CDE6BE;border-radius:14px;padding:12px 14px;margin-top:10px;text-align:center">
          <div style="font-weight:800;color:#3f6b2c;font-size:14.5px;margin-bottom:6px">📄 ملفّ PDF جاهزٌ للقصّ بالمقاسات الحقيقيّة</div>

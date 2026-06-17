@@ -41,7 +41,7 @@
   .stat b{color:var(--primary-d)}
 
   .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 4px 12px}
-  select,input{font-family:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  select,input{font-family:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
   input{flex:1;min-width:160px}
   .count{font-size:13px;color:var(--muted);margin-inline-start:auto}
 
@@ -64,7 +64,7 @@
   .daily.done{background:#EEF6E9;border-color:#CDE6BE}
   .daily .dh{font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px}
   .daily .dt{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-  .daily .dchip{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:#666}
+  .daily .dchip{font-size:13px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:#666}
   .daily .dchip.ok{background:#EAF4E3;border-color:#CDE6BE;color:#3f6b2c}
   footer{margin-top:24px;text-align:center;color:var(--muted);font-size:12px}
   footer code{background:#F3EEE3;padding:1px 6px;border-radius:5px}
@@ -121,7 +121,7 @@
 </div>
 
 <div id="loginOverlay" style="position:fixed;inset:0;background:linear-gradient(160deg,#FBF7EF,#F3EEE3);z-index:90;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:24px">
-  <div style="width:100%;max-width:460px;background:#fff;border:1px solid #ECE6DA;border-radius:22px;box-shadow:0 6px 24px rgba(0,0,0,.1);padding:22px;margin-top:8px">
+  <div style="width:100%;max-width:460px;background:var(--card);border:1px solid #ECE6DA;border-radius:22px;box-shadow:0 6px 24px rgba(0,0,0,.1);padding:22px;margin-top:8px">
     <div style="text-align:center;font-size:40px">🤖</div>
     <h2 style="text-align:center;margin:4px 0 2px">مَن يتعلّم اليوم؟</h2>
     <p style="text-align:center;color:#6B6B6B;font-size:13px;margin:0 0 14px">اختر ملفّك لنتابع تقدّمك وصوتك</p>
@@ -169,13 +169,13 @@ function renderLogin(){
   const profs=listProfiles();
   body.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px">
-      ${profs.map(p=>`<button class="prof" data-id="${p.id}" style="background:#FBF7EF;border:1px solid #ECE6DA;border-radius:16px;padding:14px 8px;cursor:pointer;font-family:inherit;text-align:center">
+      ${profs.map(p=>`<button class="prof" data-id="${p.id}" style="background:var(--bg);border:1px solid #ECE6DA;border-radius:16px;padding:14px 8px;cursor:pointer;font-family:inherit;text-align:center">
         <div style="font-size:38px">${p.avatar||"🙂"}</div><div style="font-weight:800;font-size:14px">${p.name}</div>
         <div style="font-size:11px;color:#6B6B6B">${p.ageGroup}${p.password?" 🔒":""}</div></button>`).join("")}
-      <button id="addProf" style="background:#fff;border:2px dashed #ECE6DA;border-radius:16px;padding:14px 8px;cursor:pointer;font-family:inherit;color:#6B6B6B"><div style="font-size:34px">➕</div><div style="font-size:13px">حساب جديد</div></button>
+      <button id="addProf" style="background:var(--card);border:2px dashed #ECE6DA;border-radius:16px;padding:14px 8px;cursor:pointer;font-family:inherit;color:#6B6B6B"><div style="font-size:34px">➕</div><div style="font-size:13px">حساب جديد</div></button>
     </div>
     <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-      ${guestEnabled()?`<button id="guestBtn" style="flex:1;background:#fff;border:1px solid #ECE6DA;border-radius:14px;padding:11px;cursor:pointer;font-family:inherit;font-size:14px">👋 دخول كضيف</button>`:""}
+      ${guestEnabled()?`<button id="guestBtn" style="flex:1;background:var(--card);border:1px solid #ECE6DA;border-radius:14px;padding:11px;cursor:pointer;font-family:inherit;font-size:14px">👋 دخول كضيف</button>`:""}
       <button id="parentLoginBtn" style="flex:1;background:#FBEDE7;border:1px solid #E5B5A8;border-radius:14px;padding:11px;cursor:pointer;font-family:inherit;color:#C7613F;font-size:14px;font-weight:700">👪 حساب الأهل</button>
     </div>`;
   body.querySelectorAll(".prof").forEach(b=>b.onclick=()=>selectProfile(b.getAttribute("data-id")));
@@ -192,7 +192,7 @@ function renderParentLogin(){
     <input id="ppw" type="password" autocomplete="off" placeholder="كلمة المرور" style="${inStyle}">
     <div id="ppwBad" style="color:#B5482F;font-size:13px;min-height:18px"></div>
     <div style="display:flex;gap:8px;justify-content:center"><button id="pgo" style="background:#7BB661;color:#fff;border:none;border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;font-family:inherit">دخول</button>
-    <button id="pback" style="background:#fff;border:1px solid #ECE6DA;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div>
+    <button id="pback" style="background:var(--card);border:1px solid #ECE6DA;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div>
     <button id="pforgot" style="margin-top:12px;background:none;border:none;color:#6B6B6B;font-size:13px;cursor:pointer;font-family:inherit;text-decoration:underline">نسيتُ كلمة المرور</button>
     ${isDefaultParentPassword()?'<p style="color:#6B6B6B;font-size:12px;margin-top:8px">الافتراضيّة: <b>admin</b> — غيّرها من لوحة التحكّم.</p>':''}</div>`;
   const inp=document.getElementById("ppw"); inp.focus();
@@ -211,10 +211,10 @@ function renderParentRecover(){
       <input id="rNew" type="password" placeholder="كلمة مرور جديدة (فارغ = admin)" style="${inStyle}">
       <div id="rBad" style="color:#B5482F;font-size:13px;min-height:18px"></div>
       <div style="display:flex;gap:8px;justify-content:center"><button id="rGo" style="background:#7BB661;color:#fff;border:none;border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;font-family:inherit">تأكيد</button>
-      <button id="rBack" style="background:#fff;border:1px solid #ECE6DA;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div>`
+      <button id="rBack" style="background:var(--card);border:1px solid #ECE6DA;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div>`
     :`<p style="color:#6B6B6B;font-size:13px;margin:6px 0 10px">لا سؤال أمنيّ مضبوط. يمكنك إعادة التعيين إلى «admin».</p>
       <div style="display:flex;gap:8px;justify-content:center"><button id="rReset" style="background:#E07A5F;color:#fff;border:none;border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;font-family:inherit">إعادة إلى admin</button>
-      <button id="rBack" style="background:#fff;border:1px solid #ECE6DA;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div>`}</div>`;
+      <button id="rBack" style="background:var(--card);border:1px solid #ECE6DA;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div>`}</div>`;
   document.getElementById("rBack").onclick=renderParentLogin;
   if(sq){ document.getElementById("rGo").onclick=()=>{
       if(verifySecurityAnswer(document.getElementById("rAns").value)){ const np=document.getElementById("rNew").value; changeParentPassword(np||undefined); if(loginParent(np||"admin")) enter(); }
@@ -228,7 +228,7 @@ function selectProfile(id){
     <input id="cpw" type="password" placeholder="كلمة المرور" style="width:200px;padding:9px;border:1px solid #ECE6DA;border-radius:10px;font-family:inherit;margin:12px 0;text-align:center">
     <div id="cpwBad" style="color:#B5482F;font-size:13px;min-height:18px"></div>
     <div style="display:flex;gap:8px;justify-content:center"><button id="cgo" style="background:#7BB661;color:#fff;border:none;border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;font-family:inherit">دخول</button>
-    <button id="cback" style="background:#fff;border:1px solid #ECE6DA;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div></div>`;
+    <button id="cback" style="background:var(--card);border:1px solid #ECE6DA;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div></div>`;
   const inp=document.getElementById("cpw"); inp.focus();
   const go=()=>{ if(loginProfile(id, inp.value)) enter(); else { document.getElementById("cpwBad").textContent="كلمة مرور غير صحيحة."; inp.value=""; inp.focus(); } };
   document.getElementById("cgo").onclick=go; inp.addEventListener("keydown",e=>{ if(e.key==="Enter") go(); });
@@ -240,10 +240,10 @@ function renderAdd(){
     <div style="font-size:13px;color:#6B6B6B;margin-bottom:4px">الفئة العمرية:</div>
     <div id="ageRow" style="display:flex;gap:6px;margin-bottom:8px">${["4-6","7-10","all"].map((a,i)=>`<button class="agc" data-a="${a}" style="flex:1;border:1px solid #ECE6DA;border-radius:10px;padding:8px;cursor:pointer;font-family:inherit;${i===0?'background:#E07A5F;color:#fff;':''}">${a==="all"?"الكل":a}</button>`).join("")}</div>
     <div style="font-size:13px;color:#6B6B6B;margin-bottom:4px">الصورة:</div>
-    <div id="avRow" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${AVATARS.map((a,i)=>`<button class="avc" data-a="${a}" style="font-size:24px;border:1px solid ${i===0?'#E07A5F':'#ECE6DA'};border-radius:10px;padding:4px 7px;cursor:pointer;background:#fff">${a}</button>`).join("")}</div>
+    <div id="avRow" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${AVATARS.map((a,i)=>`<button class="avc" data-a="${a}" style="font-size:24px;border:1px solid ${i===0?'#E07A5F':'#ECE6DA'};border-radius:10px;padding:4px 7px;cursor:pointer;background:var(--card)">${a}</button>`).join("")}</div>
     <input id="npw" type="password" placeholder="كلمة مرور (اختياريّة)" style="width:100%;padding:10px;border:1px solid #ECE6DA;border-radius:10px;font-family:inherit;margin-bottom:10px">
     <div style="display:flex;gap:8px"><button id="createGo" style="flex:1;background:#7BB661;color:#fff;border:none;border-radius:12px;padding:11px;font-weight:700;cursor:pointer;font-family:inherit">إنشاء ودخول</button>
-    <button id="createBack" style="background:#fff;border:1px solid #ECE6DA;border-radius:12px;padding:11px 16px;cursor:pointer;font-family:inherit">رجوع</button></div></div>`;
+    <button id="createBack" style="background:var(--card);border:1px solid #ECE6DA;border-radius:12px;padding:11px 16px;cursor:pointer;font-family:inherit">رجوع</button></div></div>`;
   let age="4-6", av=AVATARS[0];
   body.querySelectorAll(".agc").forEach(b=>b.onclick=()=>{ age=b.getAttribute("data-a"); body.querySelectorAll(".agc").forEach(x=>x.style.cssText=x.style.cssText.replace(/background:#E07A5F;color:#fff;/,'')); b.style.background="#E07A5F"; b.style.color="#fff"; });
   body.querySelectorAll(".avc").forEach(b=>b.onclick=()=>{ av=b.getAttribute("data-a"); body.querySelectorAll(".avc").forEach(x=>x.style.borderColor="#ECE6DA"); b.style.borderColor="#E07A5F"; });

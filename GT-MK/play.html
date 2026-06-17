@@ -28,12 +28,12 @@
   header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 10px}
   header h1{font-size:22px;margin:0}
   header .sub{color:var(--muted);font-size:13px}
-  .topbtn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink)}
+  .topbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink)}
   .acts{display:flex;gap:8px;flex-wrap:wrap;margin:0 2px 10px}
 
   .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:4px 2px 10px}
   .chips .lbl{font-size:12px;color:var(--muted)}
-  .chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
+  .chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
   .chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
   .pills{display:flex;gap:8px;margin-inline-start:auto}
   .pill{background:#F3EEE3;border-radius:999px;padding:5px 12px;font-size:13px;color:#555}
@@ -46,7 +46,7 @@
   .gcard .t{font-size:16px;font-weight:800;margin-top:4px}
   .gcard .d{font-size:12px;color:var(--muted)}
 
-  .back{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink);margin-bottom:6px}
+  .back{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:7px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink);margin-bottom:6px}
   .gbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:6px 2px}
 
   .clue{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:16px;text-align:center;margin-top:6px}
@@ -56,7 +56,7 @@
   .flash.on{height:40px}
 
   .row{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin:14px 2px}
-  .slot{width:60px;height:60px;border-radius:14px;border:2.5px dashed #D8CFBE;background:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;position:relative}
+  .slot{width:60px;height:60px;border-radius:14px;border:2.5px dashed #D8CFBE;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;position:relative}
   .slot.next{border-color:var(--primary);background:#FFF6F2}
   .slot.full{border-style:solid;cursor:pointer}
   .slot.ok{border-color:var(--good)!important;background:#EEF6E9!important;color:#2f5a1f}
@@ -71,7 +71,7 @@
   .s-train .slot.full::after{background:var(--sky)} .s-train .slot.ok::after{background:var(--good)}
   .s-train .tile{background:linear-gradient(135deg,#F6BE3B,#E8A33D);box-shadow:0 4px 0 #cf8f2e}
   .s-pins .row{border-top:4px solid #b98a5a;padding-top:24px;margin-top:18px}
-  .s-pins .peg{width:60px;height:60px;border-radius:14px;border:2px solid var(--line);background:#fff;font-size:32px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+  .s-pins .peg{width:60px;height:60px;border-radius:14px;border:2px solid var(--line);background:var(--card);font-size:32px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
   .s-pins .peg::before{content:"";position:absolute;top:-26px;left:50%;transform:translateX(-50%);width:8px;height:26px;background:#dca85f;border-radius:3px}
   .s-pins .peg.sel{box-shadow:0 0 0 3px var(--primary);border-color:var(--primary)}
   .s-pins .peg.ok{background:#F1F8EC;border-color:var(--good);color:#2f5a1f}
@@ -89,14 +89,14 @@
   .dart{animation:dart .45s forwards}
   @keyframes dart{to{transform:translateX(50px) rotate(20deg);opacity:0}}
   .choices{display:grid;gap:10px;margin:16px 2px}
-  .choice{padding:16px;border:2px solid var(--line);border-radius:16px;background:#fff;font-size:30px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:3px;color:var(--ink)}
+  .choice{padding:16px;border:2px solid var(--line);border-radius:16px;background:var(--card);font-size:30px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:3px;color:var(--ink)}
   .choice:hover{border-color:var(--primary)}
   .choice.correct{background:#EEF6E9;border-color:var(--good);color:#2f5a1f}
   .choice.wrong{background:#FCEBEE;border-color:var(--bad);color:#8c2b3a}
   .choice:disabled{cursor:default}
 
   .controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
-  .controls button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .controls button{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink)}
   .controls .go{background:var(--primary);color:#fff;border-color:var(--primary)}
   .controls .go:hover{background:var(--primary-d)}
   .win{background:#EEF6E9;border:1px solid #CDE6BE;color:#3f6b2c;border-radius:18px;padding:16px;text-align:center;margin-top:12px}
@@ -106,10 +106,10 @@
 
   /* memory game */
   .lvl{display:flex;gap:6px;margin-inline-start:auto}
-  .lvl button{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
+  .lvl button{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
   .lvl button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
   .mgrid{display:grid;gap:10px;grid-template-columns:repeat(4,1fr);margin-top:10px}
-  .mcard{aspect-ratio:1/1;border-radius:16px;cursor:pointer;position:relative;border:2px solid var(--line);background:#fff;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .mcard{aspect-ratio:1/1;border-radius:16px;cursor:pointer;position:relative;border:2px solid var(--line);background:var(--card);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;overflow:hidden}
   .mcard .fback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#E07A5F,#E8A07F);color:#fff;font-size:30px;transition:opacity .15s}
   .mcard .ffront{width:74%;height:74%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
   .mcard .ffront svg{width:100%;height:100%}
@@ -122,7 +122,7 @@
   .gchip{width:34px;height:34px;border-radius:9px;background:#F0EADF;color:#b3a98f;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800}
   .gchip.got{background:var(--good);color:#fff}
   .maze{display:grid;gap:6px;margin:10px auto}
-  .cell{width:56px;height:56px;border-radius:12px;border:2px solid var(--line);background:#fff;font-size:25px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .cell{width:56px;height:56px;border-radius:12px;border:2px solid var(--line);background:var(--card);font-size:25px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer}
   .cell.start{border-color:var(--primary);box-shadow:0 0 0 3px #f3c9bb}
   .cell.path{background:var(--good);color:#fff;border-color:var(--good)}
   .cell.target{background:#FFF4D9;border-color:var(--gold)}
@@ -130,7 +130,7 @@
 
   /* wheel */
   .reels{display:flex;gap:10px;justify-content:center;align-items:center;margin:18px 2px}
-  .reel{width:72px;height:88px;border-radius:16px;border:2px solid var(--line);background:#fff;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:800;cursor:pointer}
+  .reel{width:72px;height:88px;border-radius:16px;border:2px solid var(--line);background:var(--card);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:800;cursor:pointer}
   .reel.spin{animation:reelspin .5s linear}
   @keyframes reelspin{0%{transform:translateY(-10px);opacity:.3}100%{transform:translateY(0);opacity:1}}
   .eq{font-size:28px;color:var(--muted)}

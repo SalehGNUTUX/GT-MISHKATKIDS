@@ -255,6 +255,7 @@ import { ART } from "./src/art.js";
 import { logEvent, recordMastery, getAllMastery, isDueForReview, getChildAge, setChildAge, getStatsFor, getBadgesFor, loadProgressFor } from "./src/progress.js";
 import * as sfx from "./src/sfx.js";
 import { roboSay, roboPhrase } from "./src/robo-voice.js";
+import { NOTICES } from "./src/robo-phrases.js";
 import { praise, tadabburFor } from "./src/islamic.js";
 import { deepenFor, roboWrongFor } from "./src/think.js";
 import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, getVoiceSet, setVoiceSet, CLIPS, getStoryVoice, setStoryVoice, isStoryReadOn, setStoryReadOn } from "./src/sound-prefs.js";
@@ -320,6 +321,8 @@ function init(){
   const mid=params.get("memory");
   if(mid && !parentOnly){ const m=MEM.find(x=>x.id===mid); if(m){ current=m; pending=[]; state="spark"; renderCard(); } }
   else if(wantsParent){ openGate(); }
+  // عند فتح القسم (دخولٌ عاديّ، لا لوحةَ أهلٍ ولا ذكرى بعينها): عبارةُ الترحيب — الشاشةُ محفِّز.
+  if(!parentOnly && !mid){ try{ roboSay(NOTICES.teachIntro, {mood:"happy"}); }catch(e){} }
 }
 
 function renderRobo(){

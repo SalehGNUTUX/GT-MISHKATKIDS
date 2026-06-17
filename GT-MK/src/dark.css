@@ -6,6 +6,8 @@ html[data-theme="dark"]{
   --bg:#15151b; --card:#23232c; --ink:#ECE7DD; --muted:#A39E94;
   --line:#34343f; --primary-d:#E8987E; --good-d:#8BC36B;
   --shadow:0 6px 20px rgba(0,0,0,.45);
+  /* الآليّ في الوضع الداكن: جسمٌ فولاذيٌّ واضح + أجزاءٌ مطفأةٌ خافتةٌ داكنة (المضيئةُ تتوهّجُ بلونها) */
+  --robo:#5c6573; --dim:#363b44;
 }
 html[data-theme="dark"] body{background:var(--bg);color:var(--ink)}
 

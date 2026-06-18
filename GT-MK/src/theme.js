@@ -2,6 +2,7 @@
 // منعُ الوميض: يضع كلُّ صفحةٍ سكربتًا كلاسيكيًّا صغيرًا في <head> يضبط data-theme قبل الرسم؛ وهذه الوحدة للتبديل.
 import "./dark.css"; // أنماطُ السمة الداكنة المشتركة (يستخرجها Vite كـ<link>)
 import "./topbar.css"; // تنسيقٌ موحّدٌ لشريط الأزرار العلويّ في كلّ الصفحات
+import "./nav-icons.css"; // حجمُ وتلوينُ أيقونات بطاقات الأقسام (SVG)
 const KEY = "tilmithi_theme"; // "light" | "dark" | غير مضبوط (يتبع تفضيل النظام)
 
 export function storedTheme() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }

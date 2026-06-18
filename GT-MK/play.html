@@ -169,6 +169,7 @@
 
 <script type="module">
 import { wireThemeToggle } from "./src/theme.js";
+import { iconHtml } from "./src/icons.js";
 wireThemeToggle(document.getElementById("themeBtn"));
 import DATA from "./content/words.js";
 import { WORLD_ART } from "./src/art.js";
@@ -215,7 +216,7 @@ const GAMES = [
 ];
 function renderMenu(){
   view.innerHTML = ageChips() + `<div class="menu">` +
-    GAMES.map(g=>`<div class="gcard" data-g="${g.id}"><div class="ic">${g.ic}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
+    GAMES.map(g=>`<div class="gcard" data-g="${g.id}"><div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
     `</div><div class="hint">لعبة الذاكرة برسومنا الأصيلة · وسبع ألعابٍ <b>لدمج الحروف</b> بأفكارٍ مختلفة 🌱</div>`;
   wireAge(renderMenu);
   view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });

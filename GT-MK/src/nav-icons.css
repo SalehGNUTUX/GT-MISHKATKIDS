@@ -1,0 +1,16 @@
+/* nav-icons.css — حجمُ وتلوينُ أيقونات بطاقات الأقسام (SVG من Font Awesome) عبر الصفحات.
+   يُستورَد عبر theme.js فيُطبَّق على الجميع. (home.html لها قواعدُها الخاصّة لبطاقات .navcard.) */
+
+.gcard .ic svg,.lcard .ic svg{height:38px;width:auto;max-width:50px;display:block;margin:0 auto}
+.gcard .ic,.lcard .ic{color:var(--ik,#E0673F);line-height:1}
+
+/* لوحةُ ألوانٍ حيويّةٌ للأيقونة (تدور لكلّ بطاقة) — تظهر على الفاتح والداكن */
+.gcard:nth-child(8n+1),.lcard:nth-child(8n+1){--ik:#E0673F}
+.gcard:nth-child(8n+2),.lcard:nth-child(8n+2){--ik:#4E8C3A}
+.gcard:nth-child(8n+3),.lcard:nth-child(8n+3){--ik:#3F82C4}
+.gcard:nth-child(8n+4),.lcard:nth-child(8n+4){--ik:#D2941F}
+.gcard:nth-child(8n+5),.lcard:nth-child(8n+5){--ik:#8B66B8}
+.gcard:nth-child(8n+6),.lcard:nth-child(8n+6){--ik:#D65C86}
+.gcard:nth-child(8n+7),.lcard:nth-child(8n+7){--ik:#2F9E92}
+.gcard:nth-child(8n){--ik:#A8762F}
+.lcard:nth-child(8n){--ik:#A8762F}

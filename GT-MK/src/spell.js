@@ -5,6 +5,7 @@
 import { playClipAsync } from "./tts-clips.js";
 import { speak } from "./speak.js";
 import { isVoiceOn } from "./sound-prefs.js";
+import { reorderMarks } from "./arabic-normalize.js";
 
 const MARKS = new Set(["َ","ُ","ِ","ً","ٌ","ٍ","ّ","ْ","ٰ"]); // الحركات والتشكيل
 const MADD_LETTERS = new Set(["ا","و","ي","ى"]);
@@ -35,7 +36,7 @@ export function segment(text) {
         str += nx.c; i++;
       }
     }
-    units.push(str);
+    units.push(reorderMarks(str)); // ترتيبٌ موحّدٌ للشدّة ليطابق مفاتيحَ المقاطع (الاستوديو/المولَّدة)
   }
   return units;
 }

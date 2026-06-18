@@ -101,16 +101,21 @@
   .speedbar button,.cat{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;color:#555}
   .speedbar button.on,.cat.on{background:var(--violet);color:#fff;border-color:var(--violet)}
   .cat .cic{margin-inline-end:4px}
-  .wlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:10px 2px}
-  .wcard{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px;text-align:center}
-  .wcard.sentence{grid-column:1/-1}
-  .wimg{font-size:42px;line-height:1.1}
-  .wtxt{font-size:30px;font-weight:800;margin:6px 0 2px;direction:rtl}
+  .wlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin:10px 2px;align-items:stretch}
+  .wcard{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .wcard.sentence{grid-column:span 2}
+  @media(max-width:520px){ .wcard.sentence{grid-column:1/-1} }
+  .wimg{font-size:38px;line-height:1;min-height:42px;display:flex;align-items:center;justify-content:center}
+  .wtxt{font-size:28px;font-weight:800;margin:2px 0;direction:rtl;flex:1;display:flex;align-items:center;justify-content:center;flex-wrap:wrap}
   .wtxt .csyl{padding:0 1px;border-radius:6px;transition:background .15s}
   .wtxt .csyl.now{background:#F4C95D;color:#3a2a00}
-  .wmeta{font-size:11px;color:var(--muted);margin-bottom:8px}
-  .wplay{background:var(--violet);color:#fff;border:none;border-radius:12px;padding:8px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;width:100%}
+  .wmeta{font-size:11px;color:var(--muted);margin-bottom:6px}
+  .wplay{background:var(--violet);color:#fff;border:none;border-radius:12px;padding:9px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;width:100%}
   .wplay:disabled{opacity:.6}
+  .wrec{margin-top:7px;width:100%;background:var(--card);border:1.5px solid #E0A88F;color:#C7613F;border-radius:12px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+  html[data-theme="dark"] .wrec{border-color:#7a4a38;color:#E8987E}
+  .rrHost{width:100%;margin-top:4px}
+  .rrHost .rr{margin:6px 0}
 </style>
 </head>
 <body>
@@ -127,6 +132,7 @@
 
 <script type="module">
 import { wireThemeToggle } from "./src/theme.js";
+import { iconHtml } from "./src/icons.js";
 wireThemeToggle(document.getElementById("themeBtn"));
 import DATA from "./content/letters.js";
 import COMPOSE from "./content/compose-vocab.js";
@@ -163,7 +169,7 @@ const GAMES = [
   { id:"compose", ic:"🎙️", t:"اقرأ بصوتك", d:"اقرأ كلماتٍ مقطعاً مقطعاً" },
 ];
 function renderMenu(){
-  view.innerHTML = `<div class="menu">` + GAMES.map(g=>`<div class="gcard" data-g="${g.id}"><div class="ic">${g.ic}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") + `</div>
+  view.innerHTML = `<div class="menu">` + GAMES.map(g=>`<div class="gcard" data-g="${g.id}"><div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") + `</div>
     <div class="hint">تُنطَق الأصوات عبر متصفّحك (قد تختلف جودة الصوت بين الأجهزة) 🔊</div>`;
   view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
 }
@@ -322,7 +328,7 @@ function checkHarakaQuiz(s, el){
    بـplaySpelled مستعمِلةً مقاطع espeak أو تسجيلاتك البشريّة (طبقة tts-clips)،
    ثمّ الكلمة كاملة. المقطعُ المُشَغَّلُ يُبرَزُ آنيًّا. محلّيٌّ بالكامل. ========= */
 const COMPOSE_CATS = COMPOSE.categories || [];
-const SPEEDS = [ {v:0,l:"عادي 🐢",gap:260}, {v:1,l:"أسرع 🐇",gap:140}, {v:2,l:"سريع ⚡",gap:60} ];
+const SPEEDS = [ {v:0,l:"عادي 🐢",gap:520}, {v:1,l:"أسرع 🐇",gap:240}, {v:2,l:"سريع ⚡",gap:80} ];
 let composeCat = (COMPOSE_CATS[0] && COMPOSE_CATS[0].id) || "words", composeSpeed = 0;
 
 function startCompose(){ cancelSpell(); composeCat = COMPOSE_CATS[0].id; composeSpeed = 0; renderCompose(); }
@@ -340,6 +346,16 @@ function renderCompose(){
   view.querySelector("#catbar").addEventListener("click",e=>{ const b=e.target.closest(".cat"); if(!b)return; cancelSpell(); composeCat=b.getAttribute("data-cat"); renderCompose(); });
   view.querySelector(".speedbar").addEventListener("click",e=>{ const b=e.target.closest("button[data-speed]"); if(!b)return; composeSpeed=+b.getAttribute("data-speed"); renderCompose(); });
   view.querySelector("#wlist").addEventListener("click", onComposeClick);
+  view.querySelector("#wlist").addEventListener("click", onComposeRec);
+}
+// زرُّ تسجيلِ قراءةِ صاحبِ الحساب (per-account) لكلِّ كلمة — يُحمَّل عند الطلب ويُحفَظ في سجلّ حسابه.
+async function onComposeRec(e){
+  const btn = e.target.closest(".wrec"); if(!btn) return;
+  const text = decodeURIComponent(btn.getAttribute("data-text"));
+  const host = document.getElementById("rr-"+btn.getAttribute("data-id"));
+  if(!host) return;
+  btn.hidden = true; host.hidden = false;
+  await attachReader(host, text, { label:"قراءتك" });
 }
 // spans لكل مقطع (الفراغ يفصل الكلمات)، وdata-i يطابق فهرس المقطع في playSpelled.
 function composeSpans(text){
@@ -348,12 +364,14 @@ function composeSpans(text){
   return { html, count:i };
 }
 function composeCard(it, idx){
-  const sp = composeSpans(it.t), isSentence=/\s/.test(it.t);
+  const sp = composeSpans(it.t), isSentence=/\s/.test(it.t), enc=encodeURIComponent(it.t);
   return `<div class="wcard${isSentence?' sentence':''}">
     <div class="wimg">${it.img||"✂️"}</div>
     <div class="wtxt" id="wtxt-c${idx}">${sp.html}</div>
     <div class="wmeta">${sp.count} مقاطع</div>
-    <button class="wplay" data-text="${encodeURIComponent(it.t)}" data-id="c${idx}">▶ اقرأ</button>
+    <button class="wplay" data-text="${enc}" data-id="c${idx}">▶ اقرأ</button>
+    <button class="wrec" data-text="${enc}" data-id="c${idx}">🎙️ سجّلْ قراءتك</button>
+    <div class="rrHost" id="rr-c${idx}" hidden></div>
   </div>`;
 }
 async function onComposeClick(e){

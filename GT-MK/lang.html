@@ -136,6 +136,7 @@
 
 <script type="module">
 import { wireThemeToggle } from "./src/theme.js";
+import { iconHtml } from "./src/icons.js";
 wireThemeToggle(document.getElementById("themeBtn"));
 import EN from "./content/lang-en.js";
 import FR from "./content/lang-fr.js";
@@ -270,7 +271,7 @@ function renderLang(k){
   if(!sec){
     // شبكةُ بطاقاتِ الأقسام
     topnav = nav("↩ اللغات","langs");
-    body = `<div class="lgrid">${SECTIONS.map(s=>`<button class="lcard" data-sec="${s.key}"><span class="ic">${s.icon}</span><span class="lt" data-ar="${esc(s.ar)}" data-fg="${esc(s[k]||s.ar)}">${esc(s.ar)}</span></button>`).join("")}</div>`;
+    body = `<div class="lgrid">${SECTIONS.map(s=>`<button class="lcard" data-sec="${s.key}"><span class="ic">${iconHtml(s.icon)}</span><span class="lt" data-ar="${esc(s.ar)}" data-fg="${esc(s[k]||s.ar)}">${esc(s.ar)}</span></button>`).join("")}</div>`;
   } else if(sec==="letters"){
     topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔤 الأحرف</span>`;
     body = `<div class="grid">${L.letters.map(x=>
@@ -288,7 +289,7 @@ function renderLang(k){
     if(!C){
       // شبكةُ بطاقاتِ الفئات
       topnav = nav("↩ الأقسام","secs")+`<span class="cur">📝 الكلمات</span>`;
-      body = `<div class="lgrid">${cats.map(c=>`<button class="lcard" data-cat="${c.id}"><span class="ic">${CAT_ICON[c.id]||"📝"}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc((CAT_I18N[c.id]||{})[k]||c.ar)}">${esc(c.ar)}</span></button>`).join("")}</div>`;
+      body = `<div class="lgrid">${cats.map(c=>`<button class="lcard" data-cat="${c.id}"><span class="ic">${iconHtml(CAT_ICON[c.id]||"📝")}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc((CAT_I18N[c.id]||{})[k]||c.ar)}">${esc(c.ar)}</span></button>`).join("")}</div>`;
     } else {
       topnav = nav("↩ الفئات","cats")+`<span class="cur">${CAT_ICON[C.id]||""} ${esc(C.ar)}</span>`;
       body = `<div class="grid">${C.items.map(it=>
@@ -301,7 +302,7 @@ function renderLang(k){
     if(!C){
       // شبكةُ بطاقاتِ فئات العبارات
       topnav = nav("↩ الأقسام","secs")+`<span class="cur">💬 عبارات وجمل</span>`;
-      body = `<div class="lgrid">${cats.map(c=>`<button class="lcard" data-cat="${c.id}"><span class="ic">${CAT_ICON[c.id]||"💬"}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc((CAT_I18N[c.id]||{})[k]||c.ar)}">${esc(c.ar)}</span></button>`).join("")}</div>`;
+      body = `<div class="lgrid">${cats.map(c=>`<button class="lcard" data-cat="${c.id}"><span class="ic">${iconHtml(CAT_ICON[c.id]||"💬")}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc((CAT_I18N[c.id]||{})[k]||c.ar)}">${esc(c.ar)}</span></button>`).join("")}</div>`;
     } else {
       topnav = nav("↩ الفئات","cats")+`<span class="cur">${CAT_ICON[C.id]||""} ${esc(C.ar)}</span>`;
       body = `<div class="plist">${C.items.map(it=>

@@ -12,12 +12,14 @@
     "gen:custom": "node tools/gen-custom.mjs",
     "gen:voices": "node tools/gen-voices.mjs",
     "gen:piper": "node tools/gen-piper.mjs",
-    "gen:quran": "node tools/gen-quran.mjs"
+    "gen:quran": "node tools/gen-quran.mjs",
+    "gen:icons": "node tools/gen-fa-icons.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1"
   },
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "^7.2.0",
     "vite": "^8.0.16",
     "vite-plugin-pwa": "^1.3.0"
   }

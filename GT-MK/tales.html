@@ -39,6 +39,7 @@
   .cover{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;cursor:pointer;text-align:center;transition:transform .12s,border-color .12s}
   .cover:hover{transform:translateY(-3px);border-color:var(--primary)}
   .cover .art{font-size:46px;padding:20px 0 8px}
+  .cover .art svg{height:42px;width:auto;display:inline-block;vertical-align:middle}
   .cover .t{font-size:17px;font-weight:800;padding:0 12px}
   .cover .v{font-size:12px;font-weight:700;padding:4px 0 14px}
 
@@ -83,6 +84,7 @@
 
 <script type="module">
 import { wireThemeToggle } from "./src/theme.js";
+import { iconHtml } from "./src/icons.js";
 wireThemeToggle(document.getElementById("themeBtn"));
 import data from "./content/sararim-stories.js";
 import { logEvent } from "./src/progress.js";
@@ -143,7 +145,7 @@ function renderCovers(){
   view.innerHTML = `<div class="covers">` + list.map(s=>{
     const c = CAT[s.category] || {emoji:"📘",ar:s.category,color:"#888"};
     return `<div class="cover" data-id="${s.id}" style="border-top:4px solid ${c.color}">
-      <div class="art">${c.emoji}</div>
+      <div class="art" style="color:${c.color}">${iconHtml(c.emoji)}</div>
       <div class="t">${s.title}</div>
       <div class="v" style="color:${c.color}">${c.ar} · ${s.age_band}</div>
     </div>`;

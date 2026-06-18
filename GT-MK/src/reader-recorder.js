@@ -10,13 +10,13 @@ function ensureStyle() {
   if (styled) return; styled = true;
   const st = document.createElement("style");
   st.textContent = `
-  .rr{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;background:#FBF7EF;border:1px dashed #ECE6DA;border-radius:14px;padding:10px;margin:10px 0;font-family:inherit}
-  .rr button{border:1px solid #ECE6DA;background:#fff;border-radius:12px;padding:8px 13px;font-size:14px;cursor:pointer;font-family:inherit;color:#2B2B2B}
+  .rr{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;background:var(--bg,#FBF7EF);border:1px dashed var(--line,#ECE6DA);border-radius:14px;padding:10px;margin:10px 0;font-family:inherit}
+  .rr button{border:1px solid var(--line,#ECE6DA);background:var(--card,#fff);border-radius:12px;padding:8px 13px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink,#2B2B2B)}
   .rr button.rr-rec{background:#E07A5F;color:#fff;border-color:#E07A5F}
   .rr button.rr-rec.on{background:#E0566B;border-color:#E0566B;animation:rr-pulse 1s infinite}
-  .rr button.rr-help{background:#fff;border-color:#C9A0DC;color:#7a4fa0}
+  .rr button.rr-help{background:var(--card,#fff);border-color:#C9A0DC;color:#9a72c8}
   @keyframes rr-pulse{0%,100%{opacity:1}50%{opacity:.6}}
-  .rr .rr-st{font-size:12px;color:#6B6B6B;width:100%;text-align:center}`;
+  .rr .rr-st{font-size:12px;color:var(--muted,#6B6B6B);width:100%;text-align:center}`;
   document.head.appendChild(st);
 }
 

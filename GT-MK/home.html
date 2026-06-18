@@ -36,7 +36,8 @@
     text-decoration:none;color:var(--ink);background:var(--cc,var(--card));border:1.5px solid var(--cb,var(--line));
     border-radius:22px;box-shadow:var(--shadow);padding:16px 8px;aspect-ratio:1/1;
     transition:transform .16s cubic-bezier(.34,1.56,.64,1),box-shadow .16s}
-  .navcard .ic{font-size:42px;line-height:1;transition:transform .25s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 2px 4px rgba(0,0,0,.12))}
+  .navcard .ic{font-size:42px;line-height:1;color:var(--ik,#E0673F);transition:transform .25s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 2px 4px rgba(0,0,0,.12))}
+  .navcard .ic svg{height:40px;width:auto;max-width:52px;display:block}
   .navcard .t{font-size:14px;font-weight:800;line-height:1.25}
   .navcard .d{display:none}
   .navcard:hover,.navcard:focus-visible{transform:translateY(-5px);box-shadow:0 12px 26px rgba(0,0,0,.16);outline:none}
@@ -46,18 +47,19 @@
   @keyframes icpop{0%{transform:scale(1)}35%{transform:scale(1.4) rotate(10deg)}70%{transform:scale(.9) rotate(-5deg)}100%{transform:scale(1)}}
   @media(prefers-reduced-motion:reduce){ .navcard,.navcard .ic{transition:none} .navcard:active .ic{animation:none} }
   /* لوحةُ ألوانٍ لطيفةٍ متنوّعة (تدور لكلّ بطاقة) — تُطبَّق في الوضع الفاتح؛ الداكنُ يوحّدها (dark.css) */
-  .navcard:nth-child(8n+1){--cc:#FDEBE7;--cb:#F1C7BA}
-  .navcard:nth-child(8n+2){--cc:#E8F3EC;--cb:#BCDFC8}
-  .navcard:nth-child(8n+3){--cc:#E7F0FB;--cb:#BBD6EE}
-  .navcard:nth-child(8n+4){--cc:#FBF1DD;--cb:#EED8AB}
-  .navcard:nth-child(8n+5){--cc:#F1EAF7;--cb:#D6C2E7}
-  .navcard:nth-child(8n+6){--cc:#FCEAEF;--cb:#F1C4D1}
-  .navcard:nth-child(8n+7){--cc:#E6F4F3;--cb:#B9DFDD}
-  .navcard:nth-child(8n){--cc:#F0F0E4;--cb:#D6D6BE}
+  .navcard:nth-child(8n+1){--cc:#FDEBE7;--cb:#F1C7BA;--ik:#E0673F}
+  .navcard:nth-child(8n+2){--cc:#E8F3EC;--cb:#BCDFC8;--ik:#4E8C3A}
+  .navcard:nth-child(8n+3){--cc:#E7F0FB;--cb:#BBD6EE;--ik:#3F82C4}
+  .navcard:nth-child(8n+4){--cc:#FBF1DD;--cb:#EED8AB;--ik:#D2941F}
+  .navcard:nth-child(8n+5){--cc:#F1EAF7;--cb:#D6C2E7;--ik:#8B66B8}
+  .navcard:nth-child(8n+6){--cc:#FCEAEF;--cb:#F1C4D1;--ik:#D65C86}
+  .navcard:nth-child(8n+7){--cc:#E6F4F3;--cb:#B9DFDD;--ik:#2F9E92}
+  .navcard:nth-child(8n){--cc:#F0F0E4;--cb:#D6D6BE;--ik:#A8762F}
   /* الوضع «المفصّل» (قسم الأهل): البطاقةُ الكلاسيكيّةُ بالوصف */
   .nav.detailed{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
   .nav.detailed .navcard{aspect-ratio:auto;align-items:stretch;justify-content:flex-start;text-align:start;background:var(--card);border:1px solid var(--line);padding:18px}
   .nav.detailed .navcard .ic{font-size:34px}
+  .nav.detailed .navcard .ic svg{height:32px;width:auto;max-width:42px}
   .nav.detailed .navcard:hover .ic{transform:none}
   .nav.detailed .navcard .t{font-size:18px;margin-top:6px}
   .nav.detailed .navcard .d{display:block;font-size:13px;color:var(--muted);margin-top:2px}
@@ -122,20 +124,20 @@
   <div class="nav">
     <!-- الترتيب: جوهرُ الفكرة أوّلاً (علّم الآليّ)، ثمّ القرآن فالأساسيّات فسُلّم القراءة،
          ثمّ البقيّة بحسب الأولويّة الذهنيّة والتعليميّة والترفيهيّة، وأدواتُ الأهل (المطبوعات ولوحة التحكّم) في الأسفل. -->
-    <a class="navcard" href="index.html"><div class="ic">🤖</div><div class="t">علّم الآليّ</div><div class="d">الحلقة: شرارة ← مهمة ← تلقين ← شفاء</div></a>
-    <a class="navcard" href="quran.html"><div class="ic">🕌</div><div class="t">القرآن الكريم</div><div class="d">الفاتحة وجزء عمّ — تلاوة الحصري + تظليل + تكرار للحفظ + تسجيل</div></a>
-    <a class="navcard" href="basics.html"><div class="ic">🔤</div><div class="t">الأساسيّات</div><div class="d">الحروف والأرقام والحركات — أوّل خطوات القراءة</div></a>
-    <a class="navcard" href="read.html"><div class="ic">📖</div><div class="t">سُلّم القراءة</div><div class="d">المقاطع ← الكلمات ← الجُمل (حرف + حركة فأكثر)</div></a>
-    <a class="navcard" href="math.html"><div class="ic">📐</div><div class="t">أرقام وهندسة</div><div class="d">أشكال · عُدّ وقارن · أنماط · أحجام — بتدبّر</div></a>
-    <a class="navcard" href="lang.html"><div class="ic">🌍</div><div class="t">لغات أجنبيّة</div><div class="d">الإنجليزيّة والفرنسيّة — أحرف وأرقام وكلمات وقصص بالنطق</div></a>
-    <a class="navcard" href="stories.html"><div class="ic">📚</div><div class="t">قصص مصوّرة</div><div class="d">قصصٌ أصيلة بصورٍ كرتونيّة كبيرة</div></a>
-    <a class="navcard" href="tales.html"><div class="ic">📜</div><div class="t">قصص وعِبَر</div><div class="d">قصصٌ قصيرة + أسئلة فهم (أخلاق · أنبياء · علماء · صحابة)</div></a>
-    <a class="navcard" href="play.html"><div class="ic">🎮</div><div class="t">ألعاب وأنشطة</div><div class="d">لعبة الذاكرة + 7 ألعاب لدمج الحروف + أنشطة للطباعة</div></a>
-    <a class="navcard" href="puzzles.html"><div class="ic">🧩</div><div class="t">ألغاز ذكية</div><div class="d">فوازير ومنطق بمستويات — مع تلميح وحل</div></a>
-    <a class="navcard" href="quiz.html"><div class="ic">🎯</div><div class="t">اختبارات تعليمية</div><div class="d">اختيار من متعدد بفئاتٍ وأعمار — نتيجة فوريّة</div></a>
-    <a class="navcard" href="progress.html"><div class="ic">🏆</div><div class="t">تقدّمي</div><div class="d">النجوم والأوسمة وسلسلة الأيّام + شهادة إنجاز</div></a>
-    <a class="navcard" href="print.html"><div class="ic">🖨️</div><div class="t">المطبوعات</div><div class="d">بطاقات المهام + ملصق شفاء روبو (PDF)</div></a>
-    <a class="navcard" href="index.html?parent=1"><div class="ic">🛡️</div><div class="t">لوحة التحكّم</div><div class="d">تقارير الأبناء · إدارة الحسابات · الإعدادات والأصوات</div></a>
+    <a class="navcard" href="index.html"><div class="ic" data-icon="robot">🤖</div><div class="t">علّم الآليّ</div><div class="d">الحلقة: شرارة ← مهمة ← تلقين ← شفاء</div></a>
+    <a class="navcard" href="quran.html"><div class="ic" data-icon="quran">🕌</div><div class="t">القرآن الكريم</div><div class="d">الفاتحة وجزء عمّ — تلاوة الحصري + تظليل + تكرار للحفظ + تسجيل</div></a>
+    <a class="navcard" href="basics.html"><div class="ic" data-icon="basics">🔤</div><div class="t">الأساسيّات</div><div class="d">الحروف والأرقام والحركات — أوّل خطوات القراءة</div></a>
+    <a class="navcard" href="read.html"><div class="ic" data-icon="read">📖</div><div class="t">سُلّم القراءة</div><div class="d">المقاطع ← الكلمات ← الجُمل (حرف + حركة فأكثر)</div></a>
+    <a class="navcard" href="math.html"><div class="ic" data-icon="math">📐</div><div class="t">أرقام وهندسة</div><div class="d">أشكال · عُدّ وقارن · أنماط · أحجام — بتدبّر</div></a>
+    <a class="navcard" href="lang.html"><div class="ic" data-icon="lang">🌍</div><div class="t">لغات أجنبيّة</div><div class="d">الإنجليزيّة والفرنسيّة — أحرف وأرقام وكلمات وقصص بالنطق</div></a>
+    <a class="navcard" href="stories.html"><div class="ic" data-icon="stories">📚</div><div class="t">قصص مصوّرة</div><div class="d">قصصٌ أصيلة بصورٍ كرتونيّة كبيرة</div></a>
+    <a class="navcard" href="tales.html"><div class="ic" data-icon="tales">📜</div><div class="t">قصص وعِبَر</div><div class="d">قصصٌ قصيرة + أسئلة فهم (أخلاق · أنبياء · علماء · صحابة)</div></a>
+    <a class="navcard" href="play.html"><div class="ic" data-icon="play">🎮</div><div class="t">ألعاب وأنشطة</div><div class="d">لعبة الذاكرة + 7 ألعاب لدمج الحروف + أنشطة للطباعة</div></a>
+    <a class="navcard" href="puzzles.html"><div class="ic" data-icon="puzzles">🧩</div><div class="t">ألغاز ذكية</div><div class="d">فوازير ومنطق بمستويات — مع تلميح وحل</div></a>
+    <a class="navcard" href="quiz.html"><div class="ic" data-icon="quiz">🎯</div><div class="t">اختبارات تعليمية</div><div class="d">اختيار من متعدد بفئاتٍ وأعمار — نتيجة فوريّة</div></a>
+    <a class="navcard" href="progress.html"><div class="ic" data-icon="progress">🏆</div><div class="t">تقدّمي</div><div class="d">النجوم والأوسمة وسلسلة الأيّام + شهادة إنجاز</div></a>
+    <a class="navcard" href="print.html"><div class="ic" data-icon="print">🖨️</div><div class="t">المطبوعات</div><div class="d">بطاقات المهام + ملصق شفاء روبو (PDF)</div></a>
+    <a class="navcard" href="index.html?parent=1"><div class="ic" data-icon="shield">🛡️</div><div class="t">لوحة التحكّم</div><div class="d">تقارير الأبناء · إدارة الحسابات · الإعدادات والأصوات</div></a>
   </div>
   </div><!-- componentsBlock -->
 
@@ -160,6 +162,8 @@
 import { getDailyMission } from "./src/progress.js";
 import { wireThemeToggle } from "./src/theme.js";
 wireThemeToggle(document.getElementById("themeBtn"));
+import { injectIcons } from "./src/icons.js";
+injectIcons(); // أيقوناتُ SVG لبطاقات الفهرس (تستبدل الإيموجي الاحتياطيّة)
 import { listProfiles, getProfile, getCurrentUser, setCurrentUser, clearCurrentUser, loginProfile, loginGuest, guestEnabled, addProfile, AVATARS, loginParent, isParent, getParentName, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault } from "./src/accounts.js";
 import { confirmChoice } from "./src/confirm-action.js";
 
@@ -182,10 +186,11 @@ function setupView(){
     comp.style.display="none";
     hub.style.display="";
     hub.innerHTML=`
-      <div class="navcard" id="hubComp" role="button" tabindex="0" style="cursor:pointer"><div class="ic">📦</div><div class="t">المكوّنات</div><div class="d">استعرض مزايا البرنامج كلَّها (الأنشطة والقصص والقرآن…)</div></div>
-      <a class="navcard" href="index.html?parent=1#sec-reports"><div class="ic">📊</div><div class="t">البيانات والإحصائيات</div><div class="d">تقاريرُ تقدّمِ الأبناء وأوسمتهم وإنجازاتهم</div></a>
-      <a class="navcard" href="index.html?parent=1#sec-accounts"><div class="ic">👥</div><div class="t">الحسابات</div><div class="d">إضافة وتعديل وحذف حسابات الأبناء وكلماتها</div></a>
-      <a class="navcard" href="index.html?parent=1"><div class="ic">🛡️</div><div class="t">لوحة التحكّم</div><div class="d">الإعدادات والأصوات وكلمة المرور والتوثيق</div></a>`;
+      <div class="navcard" id="hubComp" role="button" tabindex="0" style="cursor:pointer"><div class="ic" data-icon="components">📦</div><div class="t">المكوّنات</div><div class="d">استعرض مزايا البرنامج كلَّها (الأنشطة والقصص والقرآن…)</div></div>
+      <a class="navcard" href="index.html?parent=1#sec-reports"><div class="ic" data-icon="reports">📊</div><div class="t">البيانات والإحصائيات</div><div class="d">تقاريرُ تقدّمِ الأبناء وأوسمتهم وإنجازاتهم</div></a>
+      <a class="navcard" href="index.html?parent=1#sec-accounts"><div class="ic" data-icon="accounts">👥</div><div class="t">الحسابات</div><div class="d">إضافة وتعديل وحذف حسابات الأبناء وكلماتها</div></a>
+      <a class="navcard" href="index.html?parent=1"><div class="ic" data-icon="shield">🛡️</div><div class="t">لوحة التحكّم</div><div class="d">الإعدادات والأصوات وكلمة المرور والتوثيق</div></a>`;
+    injectIcons(hub);
     const hc=document.getElementById("hubComp");
     const toggle=()=>{ const show=comp.style.display==="none"; comp.style.display=show?"":"none"; if(show) comp.scrollIntoView({behavior:"smooth",block:"start"}); };
     if(hc){ hc.onclick=toggle; hc.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); } }; }

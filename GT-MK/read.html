@@ -89,6 +89,7 @@
 
 <script type="module">
 import { wireThemeToggle } from "./src/theme.js";
+import { iconHtml } from "./src/icons.js";
 wireThemeToggle(document.getElementById("themeBtn"));
 import DATA from "./content/reading.js";
 import { logEvent, recordMastery } from "./src/progress.js";
@@ -113,7 +114,7 @@ const STEPS = [
   { id:"sent", ic:"📜", step:"الدرجة 3", t:"اقرأ الجملة", d:"اقرأ جملةً قصيرة بالحركات" },
 ];
 function renderMenu(){
-  view.innerHTML = `<div class="menu">` + STEPS.map(g=>`<div class="gcard" data-g="${g.id}"><div class="step">${g.step}</div><div class="ic">${g.ic}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") + `</div>
+  view.innerHTML = `<div class="menu">` + STEPS.map(g=>`<div class="gcard" data-g="${g.id}"><div class="step">${g.step}</div><div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") + `</div>
     <div class="hint">اصعد الدرجات بالترتيب — تُنطق الأصوات عبر متصفّحك 🔊</div>`;
   view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
 }

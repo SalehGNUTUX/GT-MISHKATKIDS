@@ -41,3 +41,10 @@
 - **eSpeak NG:** https://github.com/espeak-ng/espeak-ng — رخصة GPL-3.0 (متوافقة مع ترخيص المشروع).
 - لإعادة توليد المقاطع (على جهاز تطويرٍ فيه `espeak-ng` و`lame`): `npm run gen:audio`.
 - النصوص الطويلة (أسئلة الذكريات) تُنطَق وقت التشغيل عبر **Web Speech API** (أصوات النظام) كاحتياطيّ.
+
+## أيقونات التنقّل — Font Awesome Free
+
+أيقوناتُ بطاقات الفهرس (`src/icons.js`) مُستخرَجةٌ من **Font Awesome Free 7** (نمط solid) — أيقوناتٌ مفردةٌ مضمَّنةٌ كـSVG (لا الخطُّ الكامل) لتعمل offline بحجمٍ ضئيل، تُلوَّن بـ`currentColor`.
+
+- **Font Awesome Free:** https://fontawesome.com/license/free — الأيقونات **CC BY 4.0** (متوافقة مع GPL-3.0)، الكود MIT.
+- التوليد: `npm run gen:icons` (يقرأ `node_modules/@fortawesome/fontawesome-free/svgs/solid/` ويكتب `src/icons.js`).

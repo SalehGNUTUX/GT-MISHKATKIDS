@@ -170,6 +170,7 @@
 
 <script type="module">
 import { wireThemeToggle } from "./src/theme.js";
+import { iconHtml } from "./src/icons.js";
 wireThemeToggle(document.getElementById("themeBtn"));
 import MATH from "./content/math.js";
 import NUMERALS from "./content/numerals.js";
@@ -219,7 +220,7 @@ const GAMES = [
 ];
 function renderMenu(){
   view.innerHTML = `<div class="menu">` +
-    GAMES.map(g=>`<div class="gcard" data-g="${g.id}"><div class="ic">${g.ic}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
+    GAMES.map(g=>`<div class="gcard" data-g="${g.id}"><div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
     `</div>
     <div class="tadabbur">📐 الأشكالُ والأعدادُ من حولنا… ما أدقَّ نظامَ اللهِ في خلقه! تأمّلْ معي.</div>
     <div class="hint">الشاشةُ محفِّز، والعمل الحقيقيّ بيدك — هيّا لنصنعَ ونتعلّم 🌟</div>`;

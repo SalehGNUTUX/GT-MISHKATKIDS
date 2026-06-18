@@ -44,7 +44,8 @@ export default {
     { n: 8, word: "Huit" }, { n: 9, word: "Neuf" }, { n: 10, word: "Dix" }, { n: 11, word: "Onze" },
     { n: 12, word: "Douze" }, { n: 13, word: "Treize" }, { n: 14, word: "Quatorze" }, { n: 15, word: "Quinze" },
     { n: 16, word: "Seize" }, { n: 17, word: "Dix-sept" }, { n: 18, word: "Dix-huit" }, { n: 19, word: "Dix-neuf" },
-    { n: 20, word: "Vingt" },
+    { n: 20, word: "Vingt" }, { n: 30, word: "Trente" }, { n: 40, word: "Quarante" }, { n: 50, word: "Cinquante" },
+    { n: 60, word: "Soixante" }, { n: 70, word: "Soixante-dix" }, { n: 80, word: "Quatre-vingts" }, { n: 90, word: "Quatre-vingt-dix" }, { n: 100, word: "Cent" },
   ],
 
   // كلماتٌ مواضيعيّة (الكلمة الفرنسيّة + معناها العربيّ + رمز).
@@ -76,6 +77,24 @@ export default {
     { id: "transport", ar: "المواصلات", items: [
       { w: "Voiture", ar: "سيّارة", emoji: "🚗" }, { w: "Bus", ar: "حافلة", emoji: "🚌" }, { w: "Train", ar: "قطار", emoji: "🚂" },
       { w: "Avion", ar: "طائرة", emoji: "✈️" }, { w: "Bateau", ar: "قارب", emoji: "⛵" }, { w: "Vélo", ar: "درّاجة", emoji: "🚲" } ] },
+    { id: "fruits", ar: "فواكه", items: [
+      { w: "Raisin", ar: "عنب", emoji: "🍇" }, { w: "Orange", ar: "برتقال", emoji: "🍊" }, { w: "Fraise", ar: "فراولة", emoji: "🍓" },
+      { w: "Pastèque", ar: "بطّيخ", emoji: "🍉" }, { w: "Citron", ar: "ليمون", emoji: "🍋" }, { w: "Cerise", ar: "كرز", emoji: "🍒" } ] },
+    { id: "clothes", ar: "ملابس", items: [
+      { w: "Chemise", ar: "قميص", emoji: "👕" }, { w: "Pantalon", ar: "بنطال", emoji: "👖" }, { w: "Chaussures", ar: "حذاء", emoji: "👟" },
+      { w: "Chapeau", ar: "قبّعة", emoji: "🧢" }, { w: "Robe", ar: "فستان", emoji: "👗" }, { w: "Chaussettes", ar: "جوارب", emoji: "🧦" } ] },
+    { id: "weather", ar: "الطقس", items: [
+      { w: "Pluie", ar: "مطر", emoji: "🌧️" }, { w: "Nuage", ar: "سحابة", emoji: "☁️" }, { w: "Neige", ar: "ثلج", emoji: "❄️" },
+      { w: "Vent", ar: "رياح", emoji: "🌬️" }, { w: "Arc-en-ciel", ar: "قوس قزح", emoji: "🌈" }, { w: "Orage", ar: "عاصفة", emoji: "⛈️" } ] },
+    { id: "shapes", ar: "أشكال", items: [
+      { w: "Cercle", ar: "دائرة", emoji: "⭕" }, { w: "Carré", ar: "مربّع", emoji: "🟦" }, { w: "Triangle", ar: "مثلّث", emoji: "🔺" },
+      { w: "Cœur", ar: "قلب", emoji: "❤️" }, { w: "Losange", ar: "معيّن", emoji: "🔷" }, { w: "Rectangle", ar: "مستطيل", emoji: "🟧" } ] },
+    { id: "days", ar: "أيّام الأسبوع", items: [
+      { w: "Samedi", ar: "السبت", emoji: "📅" }, { w: "Dimanche", ar: "الأحد", emoji: "📅" }, { w: "Lundi", ar: "الاثنين", emoji: "📅" },
+      { w: "Mardi", ar: "الثلاثاء", emoji: "📅" }, { w: "Mercredi", ar: "الأربعاء", emoji: "📅" }, { w: "Jeudi", ar: "الخميس", emoji: "📅" }, { w: "Vendredi", ar: "الجمعة", emoji: "📅" } ] },
+    { id: "actions", ar: "أفعال", items: [
+      { w: "Manger", ar: "يأكل", emoji: "🍽️" }, { w: "Boire", ar: "يشرب", emoji: "🥤" }, { w: "Courir", ar: "يجري", emoji: "🏃" },
+      { w: "Dormir", ar: "ينام", emoji: "😴" }, { w: "Lire", ar: "يقرأ", emoji: "📖" }, { w: "Écrire", ar: "يكتب", emoji: "✍️" }, { w: "Jouer", ar: "يلعب", emoji: "🎮" } ] },
   ],
 
   // القصص المصوّرة (نفسُ رسوم العربيّة ومعرّفاتها — مترجمةً للفرنسيّة).

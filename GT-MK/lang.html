@@ -69,6 +69,22 @@
   .dots{display:flex;gap:6px;justify-content:center;margin-top:10px}
   .dots span{width:8px;height:8px;border-radius:50%;background:var(--line)}
   .dots span.on{background:var(--primary)}
+  /* اختبار + ألعاب */
+  .qzn{text-align:center;color:var(--muted);font-size:13px;margin:4px}
+  .qzprompt{text-align:center;margin:10px 2px}
+  .qzemoji{font-size:64px;display:block;line-height:1}
+  .qzar{font-size:20px;font-weight:800}
+  .qzopt.ok{background:#EEF6E9;border-color:var(--good)}
+  .qzopt.bad,.mcard.bad{background:#FCEBEE;border-color:#E0566B;animation:shk .4s}
+  @keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .qzdone{text-align:center;font-size:22px;font-weight:800;margin:16px 2px}
+  .qzdone .secbtn{display:inline-block;margin-top:10px;font-size:15px}
+  .matchwrap{display:flex;gap:14px;justify-content:center;margin-top:8px}
+  .mcol{display:flex;flex-direction:column;gap:10px;flex:1;max-width:200px}
+  .mcard{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:12px;font-size:22px;cursor:pointer;font-family:inherit;color:var(--ink);min-height:52px}
+  .mcard .ltr{font-size:16px;font-weight:800}
+  .mcard.sel{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary) inset}
+  .mcard.done{background:#EEF6E9;border-color:var(--good);opacity:.6;cursor:default}
 </style>
 </head>
 <body>
@@ -146,7 +162,53 @@ const SECTIONS = [
   { key:"numbers", label:"🔢 الأرقام", ready:true },
   { key:"words",   label:"📝 الكلمات", ready:true },
   { key:"stories", label:"📚 قصص مصوّرة", ready:true },
+  { key:"quiz",    label:"🎯 اختبار", ready:true },
+  { key:"games",   label:"🎮 ألعاب", ready:true },
 ];
+const shuffle = a => { const r=a.slice(); for(let k=r.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [r[k],r[j]]=[r[j],r[k]]; } return r; };
+const allWords = L => (L.words||[]).flatMap(c => (c.items||[]).map(it => ({ ...it, cat:c.id })));
+
+// اختبار: صورة+معنى عربيّ ← اختر الكلمةَ الصحيحة بلغةِ القسم (تُنطَق عند الاختيار).
+function renderQuiz(L, host){
+  const pool = shuffle(allWords(L)); const N = Math.min(8, pool.length); const qs = pool.slice(0, N);
+  let i = 0, score = 0;
+  function ask(){
+    if(i >= N){ host.innerHTML = `<div class="qzdone">🎉 <b>${score}/${N}</b><div class="hint">أحسنت!</div><button class="secbtn on" id="qzAgain">🔁 أعد الاختبار</button></div>`;
+      host.querySelector("#qzAgain").onclick=()=>renderQuiz(L, host); return; }
+    const correct = qs[i];
+    const opts = shuffle([correct, ...shuffle(allWords(L).filter(w => w.w !== correct.w)).slice(0,3)]);
+    host.innerHTML = `<div class="qzn">سؤال ${i+1}/${N} · ⭐ ${score}</div>
+      <div class="qzprompt"><span class="qzemoji">${correct.emoji}</span><span class="qzar">${esc(correct.ar)}</span>
+        <div class="hint">اختَرِ الكلمةَ الصحيحة (${esc(L.nameAr)})</div></div>
+      <div class="grid">${opts.map(o=>`<button class="gcard qzopt" data-w="${esc(o.w)}"><span class="big ltr" style="font-size:17px">${esc(o.w)}</span></button>`).join("")}</div>`;
+    host.querySelectorAll(".qzopt").forEach(b=>b.onclick=()=>{
+      const w=b.getAttribute("data-w"); say(w, L);
+      if(w===correct.w){ b.classList.add("ok"); score++; host.querySelectorAll(".qzopt").forEach(x=>x.disabled=true); setTimeout(()=>{ i++; ask(); }, 950); }
+      else { b.classList.add("bad"); setTimeout(()=>b.classList.remove("bad"), 450); }
+    });
+  }
+  ask();
+}
+
+// لعبة: طابِقِ الكلمةَ بصورتها (انقرِ الكلمةَ تُنطَق ثمّ صورتَها).
+function renderGame(L, host){
+  const set = shuffle(allWords(L)).slice(0, 6);
+  const wordsCol = shuffle(set), emojiCol = shuffle(set);
+  const matched = new Set(); let selWord = null;
+  function draw(){
+    const done = matched.size === set.length;
+    host.innerHTML = `<div class="hint">انقرِ الكلمةَ (تُنطَق) ثمّ صورتَها المطابقة 🔊</div>
+      <div class="matchwrap">
+        <div class="mcol">${wordsCol.map(w=>`<button class="mcard mword ${matched.has(w.w)?'done':''}" data-w="${esc(w.w)}" ${matched.has(w.w)?'disabled':''}><span class="ltr">${esc(w.w)}</span></button>`).join("")}</div>
+        <div class="mcol">${emojiCol.map(e=>`<button class="mcard memoji ${matched.has(e.w)?'done':''}" data-w="${esc(e.w)}" ${matched.has(e.w)?'disabled':''}>${e.emoji}</button>`).join("")}</div>
+      </div>${done?`<div class="qzdone">🎉 أحسنت!<button class="secbtn on" id="gmAgain">🔁 جديد</button></div>`:""}`;
+    if(done){ host.querySelector("#gmAgain").onclick=()=>renderGame(L, host); return; }
+    host.querySelectorAll(".mword").forEach(b=>b.onclick=()=>{ selWord=b.getAttribute("data-w"); say(selWord, L); host.querySelectorAll(".mword").forEach(x=>x.classList.toggle("sel", x===b)); });
+    host.querySelectorAll(".memoji").forEach(b=>b.onclick=()=>{ const w=b.getAttribute("data-w"); if(!selWord) return;
+      if(w===selWord){ matched.add(w); selWord=null; draw(); } else { b.classList.add("bad"); setTimeout(()=>b.classList.remove("bad"), 450); } });
+  }
+  draw();
+}
 function renderLang(k){
   const L = LANGS[k]; if(!L){ goHome(); return; }
   document.getElementById("hTitle").innerHTML = `${L.flag} <span class="ltr">${esc(L.name)}</span>`;
@@ -200,6 +262,10 @@ function renderLang(k){
           </div>
           <div class="dots">${st.pages.map((_,i)=>`<span class="${i===pg?'on':''}"></span>`).join("")}</div></div>`;
     }
+  } else if(sec==="quiz"){
+    body = `<div id="qz"></div>`;
+  } else if(sec==="games"){
+    body = `<div id="gm"></div>`;
   } else {
     body = `<div class="hint">هذا القسمُ قيدُ الإعداد — قريبًا إن شاء الله 🌟</div>`;
   }
@@ -234,6 +300,8 @@ function renderLang(k){
       reading=false; render(); }
     if(rdAll) rdAll.onclick=()=>{ if(reading){ cancelRead(); render(); } else readWhole(); };
   }
+  if(sec==="quiz"){ const h=document.getElementById("qz"); if(h) renderQuiz(L, h); }
+  if(sec==="games"){ const h=document.getElementById("gm"); if(h) renderGame(L, h); }
   try{ logEvent("lang_open", {add:{}}); }catch(e){}
 }
 

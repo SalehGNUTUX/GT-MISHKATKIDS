@@ -30,7 +30,10 @@ export function toggleSound() { const next = !isSoundOn(); setTonesOn(next); set
 export const VOICE_TYPES = ["letter", "word", "sentence"];
 export const CLIPS = "clips";
 const SET_KEY = t => "tilmithi_vset_" + t;
-export function getVoiceSet(type) { try { return localStorage.getItem(SET_KEY(type)) || CLIPS; } catch (e) { return CLIPS; } }
+// الافتراضُ لكلِّ نوع: الحروفُ بصوت espeak الآليّ (أوضحُ للحرف المفرد)، والكلماتُ والجملُ بالنموذج
+// العصبيّ Piper (kareem) لأنّه أقوى لها (يرتدُّ tts-clips تلقائيّاً لـespeak إن غاب المقطعُ العصبيّ).
+const VOICE_DEFAULTS = { letter: CLIPS, word: "tts-kareem", sentence: "tts-kareem" };
+export function getVoiceSet(type) { try { return localStorage.getItem(SET_KEY(type)) || VOICE_DEFAULTS[type] || CLIPS; } catch (e) { return VOICE_DEFAULTS[type] || CLIPS; } }
 export function setVoiceSet(type, id) { try { if (VOICE_TYPES.includes(type)) localStorage.setItem(SET_KEY(type), id || CLIPS); } catch (e) {} }
 
 // الانتقال التلقائيّ في الاختبارات: حين يُفعَّل يمرّ للسؤال التالي تلقائياً بعد ردّة فعل الآلي،

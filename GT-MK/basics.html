@@ -90,6 +90,7 @@
   @media (min-width:520px){ .lindex{grid-template-columns:repeat(7,1fr)} }
   .lix{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:10px 0;cursor:pointer;font-family:inherit;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:2px}
   .lix:hover{border-color:var(--primary);transform:translateY(-2px);transition:.12s}
+  .lix.on{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary) inset}
   .lix .ch{font-size:36px;font-weight:800;color:var(--primary-d);line-height:1}
   .lix .nm{font-size:11px;color:var(--muted)}
 
@@ -179,11 +180,15 @@ function open(id){ ({index:startIndex,letters:startLetters,find:startFind,number
 function startIndex(){
   view.innerHTML = backBar()+
     `<div class="card" style="padding:14px 12px">
-      <div class="prompt" style="font-size:16px;margin-bottom:6px">اضغط على حرف لفتحه</div>
+      <div class="prompt" style="font-size:16px;margin-bottom:6px">اضغط على حرف لسماع اسمه 🔊</div>
       <div class="lindex" id="lindex">${LETTERS.map((L,i)=>`<button class="lix" data-i="${i}"><span class="ch">${L.char}</span><span class="nm">${L.name}</span></button>`).join("")}</div>
     </div>`;
   wireBack();
-  view.querySelector("#lindex").addEventListener("click", e=>{ const b=e.target.closest(".lix"); if(!b) return; li=+b.getAttribute("data-i"); renderLetter(); });
+  // النقرُ يَنطق اسمَ الحرف ويبقى في الفهرس (لا ينتقلُ إلى بطاقات الحروف).
+  view.querySelector("#lindex").addEventListener("click", e=>{ const b=e.target.closest(".lix"); if(!b) return;
+    const L=LETTERS[+b.getAttribute("data-i")]; if(!L) return;
+    view.querySelectorAll(".lix.on").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+    speak(L.name); });
 }
 
 /* ===== 🔤 LETTER CARDS ===== */

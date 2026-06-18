@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { allSpeakable } from "../src/vocab.js";
 import { forSynthesis } from "../src/arabic-normalize.js";
+import { spokenRef } from "../src/spoken-ref.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_DIR = join(ROOT, "public", "tts");
@@ -61,8 +62,8 @@ function weakFix(text) {
 function spokenFor(text) {
   if (SPEAK_FIX[text]) return SPEAK_FIX[text];
   const w = weakFix(text); if (w) return w; // ع/غ بترتيب المحتوى (سلوكٌ قائم)
-  // المفتاحُ يبقى الأصل؛ النطقُ بترتيبٍ صحيحٍ للشدّة + لفظ الجلالة مجرّداً.
-  return forSynthesis(text);
+  // المفتاحُ يبقى الأصل؛ المرجعُ المنطوقُ مشكولٌ (للكلمات المجرّدة) ثمّ ترتيبٌ صحيحٌ للشدّة + لفظ الجلالة.
+  return forSynthesis(spokenRef(text));
 }
 function clean(text) {
   // نزع الإيموجي ورموز التشكيل الزائدة من النصّ المنطوق (لا من المفتاح).

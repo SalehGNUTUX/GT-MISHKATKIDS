@@ -22,8 +22,8 @@ const STYLE = `
 @keyframes rc-blink{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.12)}}
 @keyframes rc-cheer{0%{transform:translateY(0) rotate(0)}30%{transform:translateY(-16px) rotate(-6deg)}60%{transform:translateY(0) rotate(4deg)}100%{transform:translateY(0)}}
 @keyframes rc-sad{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-.rc-bubble{position:fixed;inset-inline-end:92px;bottom:calc(30px + env(safe-area-inset-bottom));z-index:60;max-width:min(60vw,240px);background:#fff;color:#2B2B2B;
-  border:1px solid #ECE6DA;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.12);padding:9px 12px;font-size:14px;line-height:1.5;
+.rc-bubble{position:fixed;inset-inline-end:92px;bottom:calc(30px + env(safe-area-inset-bottom));z-index:60;max-width:min(60vw,240px);background:var(--card,#fff);color:var(--ink,#2B2B2B);
+  border:1px solid var(--line,#ECE6DA);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.12);padding:9px 12px;font-size:14px;line-height:1.5;
   opacity:0;transform:translateY(6px);transition:.25s;pointer-events:none}
 .rc-bubble.show{opacity:1;transform:translateY(0)}
 `;

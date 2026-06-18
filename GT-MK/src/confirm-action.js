@@ -9,14 +9,14 @@ function ensureStyle() {
   const st = document.createElement("style");
   st.textContent = `
   .ca-ov{position:fixed;inset:0;background:rgba(43,43,43,.5);z-index:120;display:flex;align-items:center;justify-content:center;padding:20px;font-family:inherit}
-  .ca-card{background:#fff;border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,.25);max-width:380px;width:100%;padding:20px;text-align:center;color:#2B2B2B}
+  .ca-card{background:var(--card,#fff);border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,.25);max-width:380px;width:100%;padding:20px;text-align:center;color:var(--ink,#2B2B2B)}
   .ca-card h3{margin:0 0 6px;font-size:18px}
-  .ca-card p{color:#6B6B6B;font-size:14px;margin:0 0 12px}
-  .ca-card input{width:200px;max-width:90%;padding:9px;border:1px solid #ECE6DA;border-radius:10px;font-family:inherit;text-align:center;font-size:15px}
+  .ca-card p{color:var(--muted,#6B6B6B);font-size:14px;margin:0 0 12px}
+  .ca-card input{width:200px;max-width:90%;padding:9px;border:1px solid var(--line,#ECE6DA);border-radius:10px;font-family:inherit;text-align:center;font-size:15px;background:var(--bg,#fff);color:var(--ink,#2B2B2B)}
   .ca-bad{color:#B5482F;font-size:13px;min-height:18px;margin-top:6px}
   .ca-btns{display:flex;gap:8px;justify-content:center;margin-top:10px}
   .ca-btns button{border:none;border-radius:12px;padding:10px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
-  .ca-go{background:#E0566B;color:#fff} .ca-cancel{background:#fff;border:1px solid #ECE6DA;color:#2B2B2B}
+  .ca-go{background:#E0566B;color:#fff} .ca-cancel{background:var(--card,#fff);border:1px solid var(--line,#ECE6DA);color:var(--ink,#2B2B2B)}
   .ca-undo{position:fixed;inset-inline:0;bottom:calc(18px + env(safe-area-inset-bottom));margin:0 auto;width:max-content;max-width:90%;
     background:#2B2B2B;color:#fff;border-radius:14px;padding:10px 16px;font-size:14px;z-index:120;display:flex;gap:12px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.25)}
   .ca-undo button{background:#fff;color:#2B2B2B;border:none;border-radius:10px;padding:6px 12px;font-weight:700;cursor:pointer;font-family:inherit}`;

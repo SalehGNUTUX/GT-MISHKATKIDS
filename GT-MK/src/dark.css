@@ -47,12 +47,13 @@ html[data-theme="dark"] .objs,html[data-theme="dark"] .parent,html[data-theme="d
 html[data-theme="dark"] .lognote,html[data-theme="dark"] .progress,html[data-theme="dark"] .cert,
 html[data-theme="dark"] .tab,html[data-theme="dark"] .lvl,html[data-theme="dark"] .ex span,
 html[data-theme="dark"] .cell.target,html[data-theme="dark"] .gap.next,html[data-theme="dark"] .slot.fixed,
-html[data-theme="dark"] .gchip,html[data-theme="dark"] .fback,html[data-theme="dark"] .setbar{
+html[data-theme="dark"] .gchip,html[data-theme="dark"] .fback,html[data-theme="dark"] .setbar,
+html[data-theme="dark"] .forms > div{
   background:#2c2c37 !important;color:var(--ink)}
 /* صناديقُ معلوماتٍ/تدبّرٍ دافئة → داكنةٌ دافئة */
 html[data-theme="dark"] .tad,html[data-theme="dark"] .nintro,html[data-theme="dark"] .note,
 html[data-theme="dark"] .compose-note,html[data-theme="dark"] .hintbox,html[data-theme="dark"] .bhint,
-html[data-theme="dark"] .blend,html[data-theme="dark"] .mat{
+html[data-theme="dark"] .blend,html[data-theme="dark"] .mat,html[data-theme="dark"] .tadabbur{
   background:#2e2a26 !important;color:var(--ink) !important}
 /* تغذيةٌ راجعة: صحيح (أخضر داكن) / خطأ (أحمر داكن) — تبقى الدلالةُ واضحةً ومقروءة */
 html[data-theme="dark"] .ok,html[data-theme="dark"] .correct,html[data-theme="dark"] .lesson,

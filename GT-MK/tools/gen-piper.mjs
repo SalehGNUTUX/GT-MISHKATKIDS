@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { WORD_UNITS, SENTENCE_UNITS } from "../src/vocab.js";
 import { forSynthesis } from "../src/arabic-normalize.js";
+import { spokenRef } from "../src/spoken-ref.js";
 import stories from "../content/stories.js";
 import sararim from "../content/sararim-stories.js";
 
@@ -35,7 +36,7 @@ const texts = uniq([
 const setHash = sha(SET.id);
 const setDir = join(OUTDIR, setHash);
 mkdirSync(setDir, { recursive: true });
-const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: forSynthesis(t), out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
+const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: forSynthesis(spokenRef(t)), out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
 
 console.log(`🔊 توليد ${tasks.length} مقطعًا بصوت Piper العصبيّ (${SET.id})…`);
 const tasksFile = join(ROOT, ".piper-tasks.json");

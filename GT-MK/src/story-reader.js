@@ -64,9 +64,9 @@ function ensureStyle() {
   .sr-play{background:#7BB661;color:#fff} .sr-whole{background:#6FB3D6;color:#fff}
   .sr-stop{background:#E0566B;color:#fff;animation:sr-pulse 1.2s ease-in-out infinite}
   @keyframes sr-pulse{0%,100%{box-shadow:0 4px 12px rgba(224,86,107,.3)}50%{box-shadow:0 4px 20px rgba(224,86,107,.7)}}
-  .sr-reader{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#6B6B6B}
-  .sr-pick{font-family:inherit;font-size:13px;border:1px solid #ECE6DA;border-radius:999px;padding:6px 10px;background:#fff;cursor:pointer}
-  .sr-now{display:inline-flex;align-items:center;font-size:13px;font-weight:700;color:#5E9A47;background:#EEF6E9;border-radius:999px;padding:4px 10px}`;
+  .sr-reader{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted,#6B6B6B)}
+  .sr-pick{font-family:inherit;font-size:13px;border:1px solid var(--line,#ECE6DA);border-radius:999px;padding:6px 10px;background:var(--card,#fff);color:var(--ink,#2B2B2B);cursor:pointer}
+  .sr-now{display:inline-flex;align-items:center;font-size:13px;font-weight:700;color:#5E9A47;background:rgba(94,154,71,.16);border-radius:999px;padding:4px 10px}`;
   document.head.appendChild(st);
 }
 

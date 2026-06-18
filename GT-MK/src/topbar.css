@@ -1,0 +1,28 @@
+/* topbar.css — تنسيقٌ موحّدٌ لشريط الأزرار العلويّ في كلّ الصفحات.
+   يُستورَد عبر theme.js فيُطبَّق على جميع الصفحات. الهدف: أزرارٌ متساويةُ الارتفاع
+   والزوايا، بلا التفافِ نصّ، تلتفّ بأناقةٍ على الهاتف بدل التزاحم. */
+
+header{flex-wrap:wrap;row-gap:8px}
+header h1{margin:0}
+
+/* حاويةُ الأزرار: تلتفّ صفًّا ثانياً مرتّباً عند ضيق الشاشة بدل التزاحم */
+.topbtns{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+
+/* زرٌّ نصّيّ (أيقونة + كلمة): ارتفاعٌ موحّد، لا يلتفّ النصُّ فيطول */
+.topbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;
+  line-height:1;box-sizing:border-box;min-height:38px;vertical-align:middle}
+
+/* زرٌّ أيقونيٌّ فقط (السمة/الصوت): مربّعٌ متساوٍ بنفس ارتفاع الأزرار النصّيّة */
+.iconbtn{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;min-height:38px;
+  padding:0;font-size:17px;line-height:1;border-radius:12px;background:var(--card);border:1px solid var(--line);
+  color:var(--ink);cursor:pointer;font-family:inherit;flex:none}
+
+.topbtn:active{transform:scale(.97)}
+.iconbtn:active{transform:scale(.94)}
+
+@media(max-width:430px){
+  .topbtn{padding:7px 10px;font-size:13px;min-height:36px}
+  .iconbtn{width:36px;height:36px;min-height:36px;font-size:16px}
+  header h1{font-size:19px}
+  header .sub{font-size:12px}
+}

@@ -23,7 +23,6 @@
   header h1{font-size:21px;margin:0}
   header .sub{color:var(--muted);font-size:13px}
   .topbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink);font-family:inherit}
-  .themebtn{background:var(--card);border:1px solid var(--line);border-radius:999px;width:36px;height:36px;font-size:17px;cursor:pointer;font-family:inherit;line-height:1;flex:none}
 
   /* اختيار اللغة */
   .pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:10px}
@@ -127,8 +126,8 @@
 <div class="wrap">
   <header>
     <div><h1 id="hTitle">🌍 لغات أجنبيّة</h1><div class="sub" id="hSub">تعلّمِ الإنجليزيّةَ والفرنسيّةَ بالنطق</div></div>
-    <span style="display:inline-flex;gap:8px;align-items:center">
-      <button class="themebtn" id="themeBtn" title="الوضع الداكن" aria-label="الوضع الداكن">🌙</button>
+    <span class="topbtns">
+      <button class="iconbtn" id="themeBtn" title="الوضع الداكن" aria-label="الوضع الداكن">🌙</button>
       <a class="topbtn" href="home.html">🏠 الفهرس</a>
     </span>
   </header>

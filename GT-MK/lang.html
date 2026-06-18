@@ -57,7 +57,8 @@
   .lcard:active{transform:scale(.97)}
   .lcard:active .ic{animation:icpop .45s ease}
   .lcard .ic{font-size:40px;line-height:1;transition:transform .25s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 2px 4px rgba(0,0,0,.12))}
-  .lcard .lt{font-size:13.5px;font-weight:800}
+  .lcard .lt{font-size:13.5px;font-weight:800;transition:opacity .26s ease;min-height:1.2em}
+  .lcard .lt.fg{direction:ltr;unicode-bidi:isolate}
   @keyframes icpop{0%{transform:scale(1)}35%{transform:scale(1.4) rotate(10deg)}70%{transform:scale(.9)}100%{transform:scale(1)}}
   @media(prefers-reduced-motion:reduce){ .lcard,.lcard .ic{transition:none} .lcard:active .ic{animation:none} }
   .lcard:nth-child(8n+1){--cc:#FDEBE7;--cb:#F1C7BA} .lcard:nth-child(8n+2){--cc:#E8F3EC;--cb:#BCDFC8}
@@ -182,15 +183,22 @@ function renderPick(){
 
 /* ---------- قسم اللغة ---------- */
 const SECTIONS = [
-  { key:"letters", icon:"🔤", ar:"الأحرف" },
-  { key:"numbers", icon:"🔢", ar:"الأرقام" },
-  { key:"words",   icon:"📝", ar:"الكلمات" },
-  { key:"stories", icon:"📚", ar:"قصص مصوّرة" },
-  { key:"quiz",    icon:"🎯", ar:"اختبار" },
-  { key:"games",   icon:"🎮", ar:"ألعاب" },
+  { key:"letters", icon:"🔤", ar:"الأحرف",     en:"Letters",  fr:"Lettres" },
+  { key:"numbers", icon:"🔢", ar:"الأرقام",     en:"Numbers",  fr:"Nombres" },
+  { key:"words",   icon:"📝", ar:"الكلمات",     en:"Words",    fr:"Mots" },
+  { key:"stories", icon:"📚", ar:"قصص مصوّرة",  en:"Stories",  fr:"Histoires" },
+  { key:"quiz",    icon:"🎯", ar:"اختبار",      en:"Quiz",     fr:"Quiz" },
+  { key:"games",   icon:"🎮", ar:"ألعاب",       en:"Games",    fr:"Jeux" },
 ];
-// رموزٌ تعبيريّةٌ لفئات الكلمات (بطاقاتٌ متحرّكة)
+// رموزٌ تعبيريّةٌ + ترجماتٌ لفئات الكلمات (يتبدّل العنوانُ بين العربيّة ولغة القسم كلَّ 5ث)
 const CAT_ICON = { animals:"🦁", colors:"🎨", family:"👪", food:"🍎", body:"🧒", greetings:"👋", school:"🏫", nature:"🌳", transport:"🚗", fruits:"🍇", clothes:"👕", weather:"🌦️", shapes:"🔷", days:"📅", actions:"🏃" };
+const CAT_I18N = {
+  animals:{en:"Animals",fr:"Animaux"}, colors:{en:"Colors",fr:"Couleurs"}, family:{en:"Family",fr:"Famille"},
+  food:{en:"Food",fr:"Nourriture"}, body:{en:"Body",fr:"Corps"}, greetings:{en:"Greetings",fr:"Salutations"},
+  school:{en:"School",fr:"École"}, nature:{en:"Nature",fr:"Nature"}, transport:{en:"Transport",fr:"Transport"},
+  fruits:{en:"Fruits",fr:"Fruits"}, clothes:{en:"Clothes",fr:"Vêtements"}, weather:{en:"Weather",fr:"Météo"},
+  shapes:{en:"Shapes",fr:"Formes"}, days:{en:"Days",fr:"Jours"}, actions:{en:"Actions",fr:"Verbes"},
+};
 const shuffle = a => { const r=a.slice(); for(let k=r.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [r[k],r[j]]=[r[j],r[k]]; } return r; };
 const allWords = L => (L.words||[]).flatMap(c => (c.items||[]).map(it => ({ ...it, cat:c.id })));
 
@@ -248,7 +256,7 @@ function renderLang(k){
   if(!sec){
     // شبكةُ بطاقاتِ الأقسام
     topnav = nav("↩ اللغات","langs");
-    body = `<div class="lgrid">${SECTIONS.map(s=>`<button class="lcard" data-sec="${s.key}"><span class="ic">${s.icon}</span><span class="lt">${s.ar}</span></button>`).join("")}</div>`;
+    body = `<div class="lgrid">${SECTIONS.map(s=>`<button class="lcard" data-sec="${s.key}"><span class="ic">${s.icon}</span><span class="lt" data-ar="${esc(s.ar)}" data-fg="${esc(s[k]||s.ar)}">${esc(s.ar)}</span></button>`).join("")}</div>`;
   } else if(sec==="letters"){
     topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔤 الأحرف</span>`;
     body = `<div class="grid">${L.letters.map(x=>
@@ -266,7 +274,7 @@ function renderLang(k){
     if(!C){
       // شبكةُ بطاقاتِ الفئات
       topnav = nav("↩ الأقسام","secs")+`<span class="cur">📝 الكلمات</span>`;
-      body = `<div class="lgrid">${cats.map(c=>`<button class="lcard" data-cat="${c.id}"><span class="ic">${CAT_ICON[c.id]||"📝"}</span><span class="lt">${esc(c.ar)}</span></button>`).join("")}</div>`;
+      body = `<div class="lgrid">${cats.map(c=>`<button class="lcard" data-cat="${c.id}"><span class="ic">${CAT_ICON[c.id]||"📝"}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc((CAT_I18N[c.id]||{})[k]||c.ar)}">${esc(c.ar)}</span></button>`).join("")}</div>`;
     } else {
       topnav = nav("↩ الفئات","cats")+`<span class="cur">${CAT_ICON[C.id]||""} ${esc(C.ar)}</span>`;
       body = `<div class="grid">${C.items.map(it=>
@@ -338,10 +346,29 @@ function renderLang(k){
   }
   if(sec==="quiz"){ const h=document.getElementById("qz"); if(h) renderQuiz(L, h); }
   if(sec==="games"){ const h=document.getElementById("gm"); if(h) renderGame(L, h); }
+  startTitleAlt();
   try{ logEvent("lang_open", {add:{}}); }catch(e){}
 }
 
+// تبديلُ عنوانِ بطاقاتِ الأقسام/الفئات بين العربيّة ولغة القسم كلَّ 5ث (تعزيزٌ للتعلّم)
+let altTimer=null, altFg=false;
+function startTitleAlt(){
+  if(altTimer){ clearInterval(altTimer); altTimer=null; }
+  altFg=false;
+  const lts=()=>view.querySelectorAll(".lcard .lt[data-fg]");
+  if(!lts().length) return;
+  altTimer=setInterval(()=>{
+    const els=lts(); if(!els.length){ clearInterval(altTimer); altTimer=null; return; }
+    altFg=!altFg;
+    els.forEach(el=>{ el.style.opacity="0";
+      setTimeout(()=>{ el.textContent = altFg ? el.getAttribute("data-fg") : el.getAttribute("data-ar");
+        el.classList.toggle("fg", altFg); el.style.opacity="1"; }, 260);
+    });
+  }, 5000);
+}
+
 function render(){
+  if(altTimer){ clearInterval(altTimer); altTimer=null; }
   const k = curLng();
   if(k && LANGS[k]) renderLang(k); else renderPick();
 }

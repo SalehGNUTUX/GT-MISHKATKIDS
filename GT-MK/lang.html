@@ -42,6 +42,30 @@
   .secbtn.on{background:var(--primary);color:#fff;border-color:var(--primary)}
   .secbtn.soon{opacity:.55;cursor:default}
 
+  /* شريطُ الرجوع + شبكةُ بطاقات التنقّل (أقسام/فئات) — بطاقاتٌ مدمجةٌ ملوّنةٌ متحرّكة */
+  .topnav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 2px 6px}
+  .backbtn{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .backbtn:hover{border-color:var(--primary)}
+  .topnav .cur{font-size:16px;font-weight:800;color:var(--primary-d)}
+  .lgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;margin-top:6px}
+  .lcard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    background:var(--cc,var(--card));border:1.5px solid var(--cb,var(--line));border-radius:20px;padding:18px 8px;
+    cursor:pointer;font-family:inherit;color:var(--ink);aspect-ratio:1/1;box-shadow:var(--shadow);
+    transition:transform .16s cubic-bezier(.34,1.56,.64,1),box-shadow .16s}
+  .lcard:hover{transform:translateY(-5px);box-shadow:0 12px 26px rgba(0,0,0,.16)}
+  .lcard:hover .ic{transform:scale(1.22) rotate(-8deg)}
+  .lcard:active{transform:scale(.97)}
+  .lcard:active .ic{animation:icpop .45s ease}
+  .lcard .ic{font-size:40px;line-height:1;transition:transform .25s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 2px 4px rgba(0,0,0,.12))}
+  .lcard .lt{font-size:13.5px;font-weight:800}
+  @keyframes icpop{0%{transform:scale(1)}35%{transform:scale(1.4) rotate(10deg)}70%{transform:scale(.9)}100%{transform:scale(1)}}
+  @media(prefers-reduced-motion:reduce){ .lcard,.lcard .ic{transition:none} .lcard:active .ic{animation:none} }
+  .lcard:nth-child(8n+1){--cc:#FDEBE7;--cb:#F1C7BA} .lcard:nth-child(8n+2){--cc:#E8F3EC;--cb:#BCDFC8}
+  .lcard:nth-child(8n+3){--cc:#E7F0FB;--cb:#BBD6EE} .lcard:nth-child(8n+4){--cc:#FBF1DD;--cb:#EED8AB}
+  .lcard:nth-child(8n+5){--cc:#F1EAF7;--cb:#D6C2E7} .lcard:nth-child(8n+6){--cc:#FCEAEF;--cb:#F1C4D1}
+  .lcard:nth-child(8n+7){--cc:#E6F4F3;--cb:#B9DFDD} .lcard:nth-child(8n){--cc:#F0F0E4;--cb:#D6D6BE}
+  html[data-theme="dark"] .lcard{background:#23232c;border-color:#3a3a45}
+
   /* شبكة الأحرف/الأرقام */
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(98px,1fr));gap:12px;margin-top:8px}
   .gcard{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
@@ -158,13 +182,15 @@ function renderPick(){
 
 /* ---------- قسم اللغة ---------- */
 const SECTIONS = [
-  { key:"letters", label:"🔤 الأحرف", ready:true },
-  { key:"numbers", label:"🔢 الأرقام", ready:true },
-  { key:"words",   label:"📝 الكلمات", ready:true },
-  { key:"stories", label:"📚 قصص مصوّرة", ready:true },
-  { key:"quiz",    label:"🎯 اختبار", ready:true },
-  { key:"games",   label:"🎮 ألعاب", ready:true },
+  { key:"letters", icon:"🔤", ar:"الأحرف" },
+  { key:"numbers", icon:"🔢", ar:"الأرقام" },
+  { key:"words",   icon:"📝", ar:"الكلمات" },
+  { key:"stories", icon:"📚", ar:"قصص مصوّرة" },
+  { key:"quiz",    icon:"🎯", ar:"اختبار" },
+  { key:"games",   icon:"🎮", ar:"ألعاب" },
 ];
+// رموزٌ تعبيريّةٌ لفئات الكلمات (بطاقاتٌ متحرّكة)
+const CAT_ICON = { animals:"🦁", colors:"🎨", family:"👪", food:"🍎", body:"🧒", greetings:"👋", school:"🏫", nature:"🌳", transport:"🚗", fruits:"🍇", clothes:"👕", weather:"🌦️", shapes:"🔷", days:"📅", actions:"🏃" };
 const shuffle = a => { const r=a.slice(); for(let k=r.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [r[k],r[j]]=[r[j],r[k]]; } return r; };
 const allWords = L => (L.words||[]).flatMap(c => (c.items||[]).map(it => ({ ...it, cat:c.id })));
 
@@ -214,44 +240,53 @@ function renderLang(k){
   document.getElementById("hTitle").innerHTML = `${L.flag} <span class="ltr">${esc(L.name)}</span>`;
   document.getElementById("hSub").textContent = L.nameAr + " — تعلّمْ بالنطق";
   const qp = new URLSearchParams(location.search);
-  const sec = qp.get("sec") || "letters";
+  const sec = qp.get("sec");
   const setParam = (key,val) => { cancelRead(); const u=new URL(location.href); u.searchParams.set(key,val); history.replaceState(null,"",u); render(); };
-  let body = "";
-  if(sec==="letters"){
+  const nav = (label,go) => `<button class="backbtn" data-go="${go}">${label}</button>`;
+  let topnav = "", body = "";
+
+  if(!sec){
+    // شبكةُ بطاقاتِ الأقسام
+    topnav = nav("↩ اللغات","langs");
+    body = `<div class="lgrid">${SECTIONS.map(s=>`<button class="lcard" data-sec="${s.key}"><span class="ic">${s.icon}</span><span class="lt">${s.ar}</span></button>`).join("")}</div>`;
+  } else if(sec==="letters"){
+    topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔤 الأحرف</span>`;
     body = `<div class="grid">${L.letters.map(x=>
       `<button class="gcard" data-say="${esc(x.ch)}" data-word="${esc(x.word)}"><span class="spk">🔊</span>
         <span class="big ltr">${esc(x.ch)}</span><span class="em">${x.emoji}</span><span class="wd ltr">${esc(x.word)}</span></button>`).join("")}</div>
       <div class="hint">اضغطِ الحرفَ لسماعه، واضغطِ الكلمةَ لسماعها 🔊</div>`;
   } else if(sec==="numbers"){
+    topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔢 الأرقام</span>`;
     body = `<div class="grid">${L.numbers.map(x=>
       `<button class="gcard" data-say="${esc(x.word)}"><span class="spk">🔊</span>
         <span class="big ltr">${x.n}</span><span class="wd ltr">${esc(x.word)}</span></button>`).join("")}</div>
       <div class="hint">اضغطِ العددَ لسماع اسمه 🔊</div>`;
   } else if(sec==="words"){
-    const cats = L.words || [];
-    const cat = qp.get("cat") || (cats[0] && cats[0].id);
-    const C = cats.find(x=>x.id===cat) || cats[0];
-    const chips = cats.map(c=>`<button class="secbtn ${C&&c.id===C.id?"on":""}" data-cat="${c.id}">${esc(c.ar)}</button>`).join("");
-    const cards = (C ? C.items : []).map(it=>
-      `<button class="gcard" data-say="${esc(it.w)}"><span class="spk">🔊</span><span class="em">${it.emoji}</span>
-        <span class="big ltr" style="font-size:18px">${esc(it.w)}</span><span class="wd">${esc(it.ar)}</span></button>`).join("");
-    body = `<div class="secs" style="margin-top:0">${chips}</div><div class="grid">${cards}</div>
-      <div class="hint">اضغطِ الكلمةَ لسماعها بالنطق 🔊 (تحتها معناها بالعربيّة)</div>`;
+    const cats = L.words || [], C = cats.find(x=>x.id===qp.get("cat"));
+    if(!C){
+      // شبكةُ بطاقاتِ الفئات
+      topnav = nav("↩ الأقسام","secs")+`<span class="cur">📝 الكلمات</span>`;
+      body = `<div class="lgrid">${cats.map(c=>`<button class="lcard" data-cat="${c.id}"><span class="ic">${CAT_ICON[c.id]||"📝"}</span><span class="lt">${esc(c.ar)}</span></button>`).join("")}</div>`;
+    } else {
+      topnav = nav("↩ الفئات","cats")+`<span class="cur">${CAT_ICON[C.id]||""} ${esc(C.ar)}</span>`;
+      body = `<div class="grid">${C.items.map(it=>
+        `<button class="gcard" data-say="${esc(it.w)}"><span class="spk">🔊</span><span class="em">${it.emoji}</span>
+          <span class="big ltr" style="font-size:18px">${esc(it.w)}</span><span class="wd">${esc(it.ar)}</span></button>`).join("")}</div>
+        <div class="hint">اضغطِ الكلمةَ لسماعها 🔊 (تحتها معناها بالعربيّة)</div>`;
+    }
   } else if(sec==="stories"){
-    const list = L.stories || [];
-    const sid = qp.get("story");
-    if(!sid){
+    const list = L.stories || [], st = list.find(x=>x.id===qp.get("story"));
+    if(!st){
+      topnav = nav("↩ الأقسام","secs")+`<span class="cur">📚 قصص مصوّرة</span>`;
       body = `<div class="grid">${list.map(s=>
         `<button class="gcard storycard" data-story="${s.id}"><div class="cover">${STORY_ART[s.cover]||"📖"}</div>
           <span class="wd ltr" style="font-size:12.5px;font-weight:800">${esc(s.title)}</span></button>`).join("")}</div>
-        <div class="hint">اختر قصّةً لقراءتها بالنطق 🔊 (نفسُ قصص قسم «قصص مصوّرة» بالعربيّة)</div>`;
+        <div class="hint">اختر قصّةً لقراءتها بالنطق 🔊</div>`;
     } else {
-      const st = list.find(x=>x.id===sid) || list[0];
       const pg = Math.max(0, Math.min(+qp.get("pg")||0, st.pages.length-1));
       const p = st.pages[pg], last = pg===st.pages.length-1;
-      body = `<div class="secs" style="margin-top:0"><button class="secbtn" data-go="stlist" style="font-weight:700">↩ القصص</button>
-          <span class="secbtn on ltr">${esc(st.title)}</span></div>
-        <div class="storyview"><div class="cover big">${STORY_ART[p.art]||""}</div>
+      topnav = nav("↩ القصص","stlist")+`<span class="cur ltr">${esc(st.title)}</span>`;
+      body = `<div class="storyview"><div class="cover big">${STORY_ART[p.art]||""}</div>
           <p class="storytext ltr">${esc(p.text)}</p>
           ${last?`<div class="lesson ltr">⭐ ${esc(st.lesson)}</div>`:""}
           <div class="snav">
@@ -263,27 +298,28 @@ function renderLang(k){
           <div class="dots">${st.pages.map((_,i)=>`<span class="${i===pg?'on':''}"></span>`).join("")}</div></div>`;
     }
   } else if(sec==="quiz"){
-    body = `<div id="qz"></div>`;
+    topnav = nav("↩ الأقسام","secs")+`<span class="cur">🎯 اختبار</span>`; body = `<div id="qz"></div>`;
   } else if(sec==="games"){
-    body = `<div id="gm"></div>`;
-  } else {
-    body = `<div class="hint">هذا القسمُ قيدُ الإعداد — قريبًا إن شاء الله 🌟</div>`;
+    topnav = nav("↩ الأقسام","secs")+`<span class="cur">🎮 ألعاب</span>`; body = `<div id="gm"></div>`;
   }
-  view.innerHTML = `<div class="secs">
-      <button class="secbtn" data-go="back" style="font-weight:700">↩ اللغات</button>
-      ${SECTIONS.map(s=>`<button class="secbtn ${s.key===sec?"on":""} ${s.ready?"":"soon"}" data-sec="${s.key}" ${s.ready?"":"disabled"}>${s.label}</button>`).join("")}
-    </div>${body}`;
-  const back=view.querySelector('[data-go="back"]'); if(back) back.onclick=goHome;
-  view.querySelectorAll(".secbtn[data-sec]").forEach(b=>{ if(b.classList.contains("soon"))return; b.onclick=()=>setParam("sec", b.getAttribute("data-sec")); });
-  view.querySelectorAll(".secbtn[data-cat]").forEach(b=>b.onclick=()=>setParam("cat", b.getAttribute("data-cat")));
-  // النطق: الكلمةُ (العبارة) عند الضغط على الاسم أو الصورة، والحرفُ عند الضغط على الحرف أو أيّ مكانٍ آخر.
+  view.innerHTML = `<div class="topnav">${topnav}</div>${body}`;
+  // التنقّل بالرجوع
+  view.querySelectorAll(".backbtn[data-go]").forEach(b=>b.onclick=()=>{ const a=b.getAttribute("data-go"); cancelRead();
+    if(a==="langs"){ goHome(); return; }
+    const u=new URL(location.href);
+    if(a==="secs") ["sec","cat","story","pg"].forEach(p=>u.searchParams.delete(p));
+    else if(a==="cats") u.searchParams.delete("cat");
+    else if(a==="stlist"){ u.searchParams.delete("story"); u.searchParams.delete("pg"); }
+    history.replaceState(null,"",u); render(); });
+  view.querySelectorAll(".lcard[data-sec]").forEach(b=>b.onclick=()=>setParam("sec", b.getAttribute("data-sec")));
+  view.querySelectorAll(".lcard[data-cat]").forEach(b=>b.onclick=()=>setParam("cat", b.getAttribute("data-cat")));
+  // النطق: الكلمةُ عند الضغط على الاسم أو الصورة، والحرفُ عند الضغط على الحرف أو أيّ مكانٍ آخر.
   view.querySelectorAll(".gcard").forEach(b=>{
     b.onclick=(e)=>{ const sayWord = e.target.closest(".wd") || e.target.closest(".em");
       say(sayWord ? (b.getAttribute("data-word") || b.getAttribute("data-say")) : b.getAttribute("data-say"), L); };
   });
-  // قسم القصص: فتحٌ/تصفّحٌ/قراءة (صفحةً أو القصّةَ كاملةً)
+  // فتحُ قصّة
   view.querySelectorAll(".storycard").forEach(b=>b.onclick=()=>{ cancelRead(); const u=new URL(location.href); u.searchParams.set("story", b.getAttribute("data-story")); u.searchParams.set("pg","0"); history.replaceState(null,"",u); render(); });
-  const stBack=view.querySelector('[data-go="stlist"]'); if(stBack) stBack.onclick=()=>{ cancelRead(); const u=new URL(location.href); u.searchParams.delete("story"); u.searchParams.delete("pg"); history.replaceState(null,"",u); render(); };
   view.querySelectorAll(".snav [data-pg]").forEach(b=>{ if(b.disabled)return; b.onclick=()=>setParam("pg", b.getAttribute("data-pg")); });
   if(sec==="stories" && qp.get("story")){
     const st=(L.stories||[]).find(x=>x.id===qp.get("story"))||(L.stories||[])[0];

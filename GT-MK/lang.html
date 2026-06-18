@@ -59,6 +59,17 @@
   .lcard .ic{font-size:40px;line-height:1;transition:transform .25s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 2px 4px rgba(0,0,0,.12))}
   .lcard .lt{font-size:13.5px;font-weight:800;transition:opacity .26s ease;min-height:1.2em}
   .lcard .lt.fg{direction:ltr;unicode-bidi:isolate}
+  /* العبارات والجمل المركّبة */
+  .plist{display:flex;flex-direction:column;gap:10px;max-width:580px;margin:0 auto}
+  .pcard{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:16px;background:var(--card);
+    border:1.5px solid var(--line);cursor:pointer;text-align:right;transition:transform .15s,box-shadow .2s,border-color .2s}
+  .pcard:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.1);border-color:var(--primary,#E07B54)}
+  .pcard:active{transform:scale(.985)}
+  .pcard .spk{font-size:19px;flex:none}
+  .pcard .ptx{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+  .pcard .pt{font-size:17px;font-weight:800;color:var(--ink);direction:ltr;text-align:left;unicode-bidi:isolate}
+  .pcard .pa{font-size:13.5px;color:var(--muted)}
+  html[data-theme="dark"] .pcard{background:#23232c;border-color:#3a3a45}
   @keyframes icpop{0%{transform:scale(1)}35%{transform:scale(1.4) rotate(10deg)}70%{transform:scale(.9)}100%{transform:scale(1)}}
   @media(prefers-reduced-motion:reduce){ .lcard,.lcard .ic{transition:none} .lcard:active .ic{animation:none} }
   .lcard:nth-child(8n+1){--cc:#FDEBE7;--cb:#F1C7BA} .lcard:nth-child(8n+2){--cc:#E8F3EC;--cb:#BCDFC8}
@@ -186,18 +197,22 @@ const SECTIONS = [
   { key:"letters", icon:"🔤", ar:"الأحرف",     en:"Letters",  fr:"Lettres" },
   { key:"numbers", icon:"🔢", ar:"الأرقام",     en:"Numbers",  fr:"Nombres" },
   { key:"words",   icon:"📝", ar:"الكلمات",     en:"Words",    fr:"Mots" },
+  { key:"phrases", icon:"💬", ar:"عبارات وجمل", en:"Phrases",  fr:"Phrases" },
   { key:"stories", icon:"📚", ar:"قصص مصوّرة",  en:"Stories",  fr:"Histoires" },
   { key:"quiz",    icon:"🎯", ar:"اختبار",      en:"Quiz",     fr:"Quiz" },
   { key:"games",   icon:"🎮", ar:"ألعاب",       en:"Games",    fr:"Jeux" },
 ];
 // رموزٌ تعبيريّةٌ + ترجماتٌ لفئات الكلمات (يتبدّل العنوانُ بين العربيّة ولغة القسم كلَّ 5ث)
-const CAT_ICON = { animals:"🦁", colors:"🎨", family:"👪", food:"🍎", body:"🧒", greetings:"👋", school:"🏫", nature:"🌳", transport:"🚗", fruits:"🍇", clothes:"👕", weather:"🌦️", shapes:"🔷", days:"📅", actions:"🏃" };
+const CAT_ICON = { animals:"🦁", colors:"🎨", family:"👪", food:"🍎", body:"🧒", greetings:"👋", school:"🏫", nature:"🌳", transport:"🚗", fruits:"🍇", clothes:"👕", weather:"🌦️", shapes:"🔷", days:"📅", actions:"🏃",
+  hello:"👋", polite:"🙏", useful:"💬", questions:"❓", class:"🏫" };
 const CAT_I18N = {
   animals:{en:"Animals",fr:"Animaux"}, colors:{en:"Colors",fr:"Couleurs"}, family:{en:"Family",fr:"Famille"},
   food:{en:"Food",fr:"Nourriture"}, body:{en:"Body",fr:"Corps"}, greetings:{en:"Greetings",fr:"Salutations"},
   school:{en:"School",fr:"École"}, nature:{en:"Nature",fr:"Nature"}, transport:{en:"Transport",fr:"Transport"},
   fruits:{en:"Fruits",fr:"Fruits"}, clothes:{en:"Clothes",fr:"Vêtements"}, weather:{en:"Weather",fr:"Météo"},
   shapes:{en:"Shapes",fr:"Formes"}, days:{en:"Days",fr:"Jours"}, actions:{en:"Actions",fr:"Verbes"},
+  hello:{en:"Greetings",fr:"Salutations"}, polite:{en:"Politeness",fr:"Politesse"}, useful:{en:"Useful",fr:"Utiles"},
+  questions:{en:"Questions",fr:"Questions"}, class:{en:"Classroom",fr:"En classe"},
 };
 const shuffle = a => { const r=a.slice(); for(let k=r.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [r[k],r[j]]=[r[j],r[k]]; } return r; };
 const allWords = L => (L.words||[]).flatMap(c => (c.items||[]).map(it => ({ ...it, cat:c.id })));
@@ -260,7 +275,7 @@ function renderLang(k){
   } else if(sec==="letters"){
     topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔤 الأحرف</span>`;
     body = `<div class="grid">${L.letters.map(x=>
-      `<button class="gcard" data-say="${esc(x.ch)}" data-word="${esc(x.word)}"><span class="spk">🔊</span>
+      `<button class="gcard" data-say="${esc(x.name||x.ch)}" data-word="${esc(x.word)}"><span class="spk">🔊</span>
         <span class="big ltr">${esc(x.ch)}</span><span class="em">${x.emoji}</span><span class="wd ltr">${esc(x.word)}</span></button>`).join("")}</div>
       <div class="hint">اضغطِ الحرفَ لسماعه، واضغطِ الكلمةَ لسماعها 🔊</div>`;
   } else if(sec==="numbers"){
@@ -281,6 +296,19 @@ function renderLang(k){
         `<button class="gcard" data-say="${esc(it.w)}"><span class="spk">🔊</span><span class="em">${it.emoji}</span>
           <span class="big ltr" style="font-size:18px">${esc(it.w)}</span><span class="wd">${esc(it.ar)}</span></button>`).join("")}</div>
         <div class="hint">اضغطِ الكلمةَ لسماعها 🔊 (تحتها معناها بالعربيّة)</div>`;
+    }
+  } else if(sec==="phrases"){
+    const cats = L.phrases || [], C = cats.find(x=>x.id===qp.get("cat"));
+    if(!C){
+      // شبكةُ بطاقاتِ فئات العبارات
+      topnav = nav("↩ الأقسام","secs")+`<span class="cur">💬 عبارات وجمل</span>`;
+      body = `<div class="lgrid">${cats.map(c=>`<button class="lcard" data-cat="${c.id}"><span class="ic">${CAT_ICON[c.id]||"💬"}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc((CAT_I18N[c.id]||{})[k]||c.ar)}">${esc(c.ar)}</span></button>`).join("")}</div>`;
+    } else {
+      topnav = nav("↩ الفئات","cats")+`<span class="cur">${CAT_ICON[C.id]||""} ${esc(C.ar)}</span>`;
+      body = `<div class="plist">${C.items.map(it=>
+        `<button class="pcard" data-say="${esc(it.t)}"><span class="spk">🔊</span>
+          <span class="ptx"><span class="pt ltr">${esc(it.t)}</span><span class="pa">${esc(it.ar)}</span></span></button>`).join("")}</div>
+        <div class="hint">اضغطِ العبارةَ لسماعها 🔊 (تحتها معناها بالعربيّة)</div>`;
     }
   } else if(sec==="stories"){
     const list = L.stories || [], st = list.find(x=>x.id===qp.get("story"));
@@ -326,6 +354,8 @@ function renderLang(k){
     b.onclick=(e)=>{ const sayWord = e.target.closest(".wd") || e.target.closest(".em");
       say(sayWord ? (b.getAttribute("data-word") || b.getAttribute("data-say")) : b.getAttribute("data-say"), L); };
   });
+  // العبارات: انطق العبارة عند الضغط
+  view.querySelectorAll(".pcard").forEach(b=>b.onclick=()=>say(b.getAttribute("data-say"), L));
   // فتحُ قصّة
   view.querySelectorAll(".storycard").forEach(b=>b.onclick=()=>{ cancelRead(); const u=new URL(location.href); u.searchParams.set("story", b.getAttribute("data-story")); u.searchParams.set("pg","0"); history.replaceState(null,"",u); render(); });
   view.querySelectorAll(".snav [data-pg]").forEach(b=>{ if(b.disabled)return; b.onclick=()=>setParam("pg", b.getAttribute("data-pg")); });

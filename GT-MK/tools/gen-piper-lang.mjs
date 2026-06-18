@@ -30,9 +30,10 @@ const L = (await import(CFG.content)).default;
 const SET = CFG.set;
 const uniq = a => [...new Set(a.filter(Boolean).map(s => String(s).trim()).filter(Boolean))];
 const texts = uniq([
-  ...(L.letters || []).flatMap(x => [x.ch, x.word]),
+  ...(L.letters || []).flatMap(x => [x.name || x.ch, x.word]), // اسمُ الحرف صوتيّاً + كلمةُ المثال
   ...(L.numbers || []).map(x => x.word),
   ...(L.words || []).flatMap(c => (c.items || []).map(it => it.w)),
+  ...(L.phrases || []).flatMap(c => (c.items || []).map(it => it.t)),
   ...(L.stories || []).flatMap(s => [s.title, ...(s.pages || []).map(p => p.text), s.lesson]),
 ]);
 

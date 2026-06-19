@@ -7,9 +7,8 @@ import { writeFileSync, mkdirSync, existsSync, readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { WORD_UNITS, SENTENCE_UNITS } from "../src/vocab.js";
+import { SENTENCE_UNITS } from "../src/vocab.js";
 import { forSynthesis } from "../src/arabic-normalize.js";
-import { spokenRef } from "../src/spoken-ref.js";
 import stories from "../content/stories.js";
 import sararim from "../content/sararim-stories.js";
 
@@ -22,13 +21,14 @@ const BUNDLE = join(ROOT, "src", "voices-bundled.json");
 const SEP = " ";
 const sha = s => createHash("sha1").update(s).digest("hex").slice(0, 12);
 
-// مجموعةُ القارئ العصبيّ — متاحةٌ للكلمات/الجمل/القصص فقط (لا الحروف).
-const SET = { id: "tts-kareem", name: "قارئ النصوص (kareem)", gender: "male", age: "adult", kind: "tts", types: ["word", "sentence", "story"] };
+// مجموعةُ القارئ العصبيّ — **للجُمَل والنصوص وردود أفعال الآلي فقط** (حيث يتفوّق Piper). أُزيلَ توليدُ المفردات
+// (حرف/كلمة/رقم) لأنّ العصبيَّ ضعيفٌ لها وغيرُ افتراضيّ لها (ترشيدُ الحجم: ~913 مقطعًا مفردًا حُذِفت).
+// للمفردات: espeak (الآليّ) و«صالح» (البشريّ) — وكلاهما متاحٌ لكلّ الأنواع (بلا types).
+const SET = { id: "tts-kareem", name: "قارئ النصوص (kareem)", gender: "male", age: "adult", kind: "tts", types: ["sentence", "story", "reaction"] };
 
 const uniq = a => [...new Set(a.filter(Boolean).map(s => String(s).trim()).filter(Boolean))];
 const texts = uniq([
-  ...WORD_UNITS.flatMap(u => u.items),
-  ...SENTENCE_UNITS.flatMap(u => u.items),
+  ...SENTENCE_UNITS.flatMap(u => u.items),   // جُمَل القراءة + ردود الآلي + الإشعارات + نصوص قصّة الأرقام + القصص
   ...(stories.stories || []).flatMap(s => [s.title, s.lesson, ...(s.pages || []).map(p => p.text)]),
   ...(sararim.stories || []).flatMap(s => [s.title, s.text]),
 ]);
@@ -36,7 +36,7 @@ const texts = uniq([
 const setHash = sha(SET.id);
 const setDir = join(OUTDIR, setHash);
 mkdirSync(setDir, { recursive: true });
-const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: forSynthesis(spokenRef(t)), out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
+const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: forSynthesis(t), out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
 
 console.log(`🔊 توليد ${tasks.length} مقطعًا بصوت Piper العصبيّ (${SET.id})…`);
 const tasksFile = join(ROOT, ".piper-tasks.json");

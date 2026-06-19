@@ -29,7 +29,15 @@ export function jalalahBare(text) {
   });
 }
 
-// النصّ المُعَدُّ للتركيب الصوتيّ (espeak/Piper): ترتيبٌ صحيحٌ للشدّة + لفظ الجلالة مجرّداً.
+// تاءُ التأنيث وقفًا تُنطَق هاءً (خَمْسَة→«خَمْسَه»=khamsah لا «خَمْسَت»). **بأمان:** تُطبَّق فقط على كلمةٍ
+// مفردةٍ ينتهي حرفُها الأخيرُ بحركةٍ صريحةٍ قبل التاء (وإلّا تضرّ ناقصةَ التشكيل مثل «خَمسة»→khamsh).
+function pausalTa(s) {
+  s = String(s);
+  if (/\s/.test(s.trim())) return s;                 // الجُملُ لا تُمَسّ (العصبيُّ يُتقنها)
+  return s.replace(/([ء-ي]ّ?[َُِ])ة([ً-ْ]*)$/, "$1ه$2"); // ة بعد حرفٍ مشكولٍ (وإن شُدِّد) فقط ⇐ ه
+}
+
+// النصّ المُعَدُّ للتركيب الصوتيّ (espeak/Piper): ترتيبُ الشدّة + لفظ الجلالة + تاءُ التأنيث الوقفيّة (بأمان).
 export function forSynthesis(text) {
-  return jalalahBare(reorderMarks(text));
+  return pausalTa(jalalahBare(reorderMarks(text)));
 }

@@ -73,6 +73,8 @@ export async function clearVoices() {
 // خريطة الذاكرة لتشغيلٍ متزامن من tts-clips (نصّ→objectURL، مفتاح setId+SEP+text).
 let urlMap = new Map();
 export function deviceURL(setId, text) { return urlMap.get(String(setId) + SEP + String(text).trim()) || null; }
+// أيُّ تسجيلٍ بشريٍّ على الجهاز لهذا النصّ (لأيِّ مجموعة) — لوضع «أفضل المتاح» التلقائيّ.
+export function deviceAnyURL(text) { const suf = SEP + String(text).trim(); for (const [k, u] of urlMap) { if (k.endsWith(suf)) return u; } return null; }
 export function voiceCount() { return urlMap.size; }
 export async function primeVoices() {
   try {

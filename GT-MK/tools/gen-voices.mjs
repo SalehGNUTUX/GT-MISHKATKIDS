@@ -45,5 +45,14 @@ for (const e of idx) {
     ok++;
   } catch (err) { fail++; console.error("✗", e.file, err.message); }
 }
-writeFileSync(MANIFEST, JSON.stringify({ sets: [...sets.values()], files }, null, 0));
-console.log(`✅ ${ok} مقطعًا في ${sets.size} مجموعة (${fail} فشل) → src/voices-bundled.json + public/tts/voices/`);
+// **تراكُمٌ لا استبدال:** التصديرُ من الاستوديو يَشمل تسجيلاتِ الجهاز فقط (لا المُدمَجَ)، فلو استبدلنا
+// لضاع المُدمَجُ القديم. لذا نُبقي **كلَّ** القديم (كلُّ المجموعات وكلُّ مقاطعها) ونُضيف/نُحدّث الواردَ فوقه.
+// (الحذفُ المقصودُ يكون يدويّاً أو بأداةٍ منفصلة، لا عبر تصديرٍ جزئيّ.)
+const prev = existsSync(MANIFEST) ? JSON.parse(readFileSync(MANIFEST, "utf8")) : { sets: [], files: {} };
+const updatedIds = new Set(sets.keys());
+const mergedSets = (prev.sets || []).filter(s => !updatedIds.has(s.id)).concat([...sets.values()]); // حدّثْ بيانات المجموعة
+const mergedFiles = { ...(prev.files || {}), ...files }; // أبقِ كلَّ القديم ثمّ أضِف/حدّثِ الجديد (اتّحاد)
+const before = Object.keys(prev.files || {}).filter(k => updatedIds.has(k.split(SEP)[0])).length;
+const after = Object.keys(mergedFiles).filter(k => updatedIds.has(k.split(SEP)[0])).length;
+writeFileSync(MANIFEST, JSON.stringify({ sets: mergedSets, files: mergedFiles }, null, 0));
+console.log(`✅ ${ok} مقطعًا (${fail} فشل). المجموعةُ المُحدَّثة: ${before} → ${after} (تراكُمٌ لا استبدال) → src/voices-bundled.json`);

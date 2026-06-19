@@ -2,27 +2,21 @@
 // يقرأ بمقطعِ القارئ المختار (عصبيّ/بشريّ/آليّ) وإلّا بنطق النظام. زرٌّ كبيرٌ واضحٌ يناسب الأطفال.
 import { playStoryAsync, stopClip, storySourceKind } from "./tts-clips.js";
 import { speak, stopSpeaking } from "./speak.js";
-import { getStoryVoice, setStoryVoice, CLIPS } from "./sound-prefs.js";
+import { getStoryVoice, setStoryVoice, CLIPS, AUTO } from "./sound-prefs.js";
 import bundled from "./voices-bundled.json";
 
-// قائمةُ القرّاء: المجموعات المُدمجة (العصبيّ/البشريّ) للنصوص أوّلًا، والآليّ أخيرًا (القصصُ تُقرأ بصوتٍ طبيعيّ افتراضًا).
+// قائمةُ القرّاء: «أفضل المتاح» أوّلًا (الافتراض)، ثمّ المجموعاتُ المُدمجة (العصبيّ/البشريّ)، والآليّ أخيرًا.
 function readerOptions() {
-  const opts = [];
+  const opts = [{ id: AUTO, name: "⭐ أفضل المتاح" }];
   (bundled.sets || []).forEach(s => { if (!s.types || s.types.includes("story") || s.types.includes("sentence")) opts.push({ id: s.id, name: (s.kind === "tts" ? "🧠 " : "🎙️ ") + (s.name || s.id) }); });
   opts.push({ id: CLIPS, name: "🤖 آليّ" });
   return opts;
 }
-// القارئُ المعروضُ في القائمة = ما يُشغَّل فعلًا: اختيارُ المستخدم إن كان خيارًا صالحًا (يشمل «آلي»)، وإلّا الأوّل (العصبيّ).
+// القارئُ المعروضُ = ما يُشغَّل فعلًا: اختيارُ المستخدم إن كان صالحًا، وإلّا «أفضل المتاح».
 function effectiveReader() {
   const opts = readerOptions(), v = getStoryVoice();
-  return opts.some(o => o.id === v) ? v : (opts[0] ? opts[0].id : CLIPS);
+  return opts.some(o => o.id === v) ? v : AUTO;
 }
-// الافتراض مرّةً واحدة: إن لم يَختر المستخدمُ قارئاً بعد، اجعلْه العصبيَّ (Piper) إن وُجِد — فتُقرأ القصصُ طبيعيّةً تلقائياً.
-(function defaultToNeural() {
-  try { if (localStorage.getItem("tilmithi_story_voice")) return; } catch (e) { return; }
-  const tts = (bundled.sets || []).find(s => s.kind === "tts");
-  if (tts) setStoryVoice(tts.id);
-})();
 
 let token = 0, playing = false;
 export function isReading() { return playing; }

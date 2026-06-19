@@ -266,7 +266,7 @@ import { roboSay, roboPhrase } from "./src/robo-voice.js";
 import { NOTICES } from "./src/robo-phrases.js";
 import { praise, tadabburFor } from "./src/islamic.js";
 import { deepenFor, roboWrongFor } from "./src/think.js";
-import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, getVoiceSet, setVoiceSet, CLIPS, getStoryVoice, setStoryVoice, isStoryReadOn, setStoryReadOn } from "./src/sound-prefs.js";
+import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, getVoiceSet, setVoiceSet, CLIPS, AUTO, getStoryVoice, setStoryVoice, isStoryReadOn, setStoryReadOn } from "./src/sound-prefs.js";
 import { listSets, primeVoices } from "./src/voices.js";
 import { practiceByAccount, clearAccount as clearPracticeAccount } from "./src/practice.js";
 import { verifyParentPassword, markParentAuthed, isParentAuthed, isParent, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser, addProfile, updateProfile } from "./src/accounts.js";
@@ -677,8 +677,9 @@ async function openDashboard(){
   // مجموعات الصوت المتاحة: المقاطع الآلية + المُدمجة + ما سجّله المستخدم (بأسمائها).
   const deviceSets = await listSets();
   // دمجٌ بلا تكرار: clips، ثمّ المُدمجة، ثمّ مجموعات الجهاز — معرّفٌ واحدٌ مرّةً واحدة.
-  const seenSet = new Set([CLIPS]);
-  const voiceSets = [{id:CLIPS,name:"مقاطع مُولَّدة (آليّ)"}]; // بلا types = صالحٌ لكل الأنواع
+  const seenSet = new Set([AUTO, CLIPS]);
+  // «أفضل المتاح» أوّلاً (الافتراض): بشريّ ← عصبيّ ← آليّ لكلّ نصّ. ثمّ الخيارات الصريحة. (بلا types = لكلّ الأنواع.)
+  const voiceSets = [{id:AUTO,name:"⭐ أفضل المتاح (بشريّ ← عصبيّ ← آليّ)"},{id:CLIPS,name:"🤖 مقاطع مُولَّدة (آليّ)"}];
   (voicesBundled.sets||[]).forEach(s=>{ if(seenSet.has(s.id))return; seenSet.add(s.id); voiceSets.push({id:s.id,name:(s.name||s.id)+(s.kind==="tts"?" — عصبيّ":" — مُدمج"),types:s.types||null}); });
   deviceSets.forEach(s=>{ if(seenSet.has(s.setId))return; seenSet.add(s.setId); voiceSets.push({id:s.setId,name:((s.meta&&s.meta.name)||s.setId)+" — تسجيلك ("+AR(s.count)+")"}); });
   // يُعرَض ضمن نوعٍ ما إن لم تُقيَّد أنواعُه أو كان يسمح به (مثلاً النموذج العصبيّ لا يظهر للحروف).
@@ -773,8 +774,8 @@ async function openDashboard(){
         <span class="muted" style="font-size:12px;flex:1">قراءة الكلمات والحروف بصوتٍ عربيّ</span>
         <button class="toggle ${isVoiceOn()?"on":""}" id="voiceToggle" title="تشغيل/إيقاف النطق"></button>
       </div>
-      <div style="font-size:12px;color:var(--muted);margin:6px 2px">🎙️ مصدر الصوت لكل نوع (اختر مجموعةً مُسجَّلةً بالاسم، أو المقاطع الآلية). النموذجُ العصبيّ متاحٌ للكلمات والجمل والنصوص، لا للحروف:</div>
-      ${[["letter","الحروف"],["word","الكلمات"],["sentence","الجمل والنصوص"]].map(([t,lbl])=>
+      <div style="font-size:12px;color:var(--muted);margin:6px 2px">🎙️ مصدر الصوت لكل نوع (اختر مجموعةً مُسجَّلةً بالاسم، أو المقاطع الآلية، أو النموذج العصبيّ). النموذجُ العصبيّ ممتازٌ للجُمَل والنصوص وردود الآلي؛ والمفرداتُ (حرف/كلمة/رقم) أوضحُ بالمقاطع الآليّة أو البشريّة:</div>
+      ${[["letter","الحروف"],["word","الكلمات"],["sentence","الجمل والنصوص"],["reaction","ردود أفعال الآلي"]].map(([t,lbl])=>
         `<div class="dom-row"><span style="flex:none;width:110px;font-size:13px">${lbl}</span>
           <select class="vset" data-type="${t}" style="${vSelStyle}">${vOpts(t)}</select></div>`).join("")}
       <div class="dom-row" style="border-top:1px dashed var(--line);padding-top:8px;margin-top:4px">

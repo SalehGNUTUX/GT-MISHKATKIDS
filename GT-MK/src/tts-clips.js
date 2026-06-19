@@ -5,10 +5,11 @@
 // شُغِّل بدل مقطع espeak — لإصلاح ما يعجز عنه المحرّك (كالسكون على الحروف الشديدة ب ج د ض، والهمزة).
 import manifest from "./tts-manifest.json";
 import custom from "./tts-custom.json";
-import { getVoiceSet, CLIPS, getStoryVoice } from "./sound-prefs.js";
-import { deviceURL } from "./voices.js";
+import { getVoiceSet, CLIPS, AUTO, getStoryVoice } from "./sound-prefs.js";
+import { deviceURL, deviceAnyURL } from "./voices.js";
 import { allForms } from "./syl.js";
 import letters from "../content/letters.js";
+import { REACTIONS, NOTICES } from "./robo-phrases.js";
 import bundled from "./voices-bundled.json";
 
 const customSet = new Set(custom || []);
@@ -17,15 +18,21 @@ const SEP = " ";
 const cache = {};
 let current = null;
 
-// تصنيف النصّ: حرف (شكلٌ مفرد) / كلمة / جملة — لاختيار مجموعة الصوت المناسبة لنوعه.
+// تصنيف النصّ: حرف / كلمة / جملة / **ردّ فعلِ الآلي** — لاختيار مجموعة الصوت المناسبة لنوعه.
 const LETTER_SET = new Set([
   ...allForms(),
   ...(letters.letters || []).map(l => l.name).filter(Boolean),
   ...(letters.numbers || []).map(n => n.name).filter(Boolean),
 ]);
+// عباراتُ ردود أفعال الآلي (REACTIONS + NOTICES) — نوعٌ مستقلٌّ له إعدادُ صوتٍ خاصّ في اللوحة.
+const REACTION_SET = new Set([
+  ...[].concat(...Object.values(REACTIONS || {})),
+  ...Object.values(NOTICES || {}),
+].filter(Boolean).map(s => String(s).trim()));
 function classify(text) {
   const t = String(text).trim();
   if (LETTER_SET.has(t)) return "letter";
+  if (REACTION_SET.has(t)) return "reaction";
   return /\s/.test(t) ? "sentence" : "word";
 }
 
@@ -34,27 +41,35 @@ export function clipFor(text) { return manifest[String(text).trim()] || null; }
 // مصدرُ صوتِ النصّ بحسب المجموعة المختارة لنوعه:
 //   clips → مقطع espeak. مجموعةٌ مُدمجة → ملفّ ثابت. مجموعةٌ على الجهاز → تسجيلٌ بشريّ.
 //   وإن غاب الصوتُ من المجموعة المختارة → يرجع إلى مقطع espeak.
-function srcFor(text) {
-  const t = String(text).trim();
-  const setId = getVoiceSet(classify(t));
-  if (setId && setId !== CLIPS) {
-    const du = deviceURL(setId, t); if (du) return du;               // على الجهاز (يُقدَّم ليُمكِنَ تحديث المُدمج)
-    const bf = bundledFiles[setId + SEP + t]; if (bf) return bf;     // مُدمجة
-  }
-  const file = clipFor(t);
-  if (!file) return null;
-  return (customSet.has(file) ? "tts/custom/" : "tts/") + file;
+// معرّفاتُ المجموعات البشريّة المُدمجة (غيرُ العصبيّة) — لأولويّة «أفضل المتاح».
+const HUMAN_BUNDLED = (bundled.sets || []).filter(s => s.kind !== "tts").map(s => s.id);
+const espeakSrc = t => { const f = clipFor(t); return f ? (customSet.has(f) ? "tts/custom/" : "tts/") + f : null; };
+
+// وضعُ «أفضل المتاح» (auto): بشريٌّ (جهاز ← مُدمج) ← عصبيّ (kareem) ← آليّ (espeak).
+// يُستعمَل صوتُ المستخدم البشريُّ حيثما سُجِّل، ويتّسع تلقائيّاً كلّما غطّى المزيد.
+function srcAuto(t) {
+  const da = deviceAnyURL(t); if (da) return da;                       // تسجيلٌ بشريٌّ على الجهاز
+  for (const id of HUMAN_BUNDLED) { const bf = bundledFiles[id + SEP + t]; if (bf) return bf; } // بشريٌّ مُدمج (صالح)
+  const nb = bundledFiles["tts-kareem" + SEP + t]; if (nb) return nb;  // عصبيّ
+  return espeakSrc(t);                                                 // آليّ
 }
-// مصدرُ صوتِ النصّ من مجموعةٍ بعينها (لقارئ القصص: نختار المجموعةَ صراحةً لا بالتصنيف).
-function srcForSet(text, setId) {
-  const t = String(text).trim();
-  if (setId && setId !== CLIPS) {
+
+// يحترمُ اختيارَ المستخدم: المجموعةُ المختارةُ أوّلاً، فإن غاب المقطعُ منها يَرتدُّ بالترتيب الذكيّ
+// «أفضل المتاح» (بشريّ←عصبيّ←آليّ) لا قفزًا مباشراً لـespeak — وإن اختار «الآليّ» صراحةً فالآليُّ فقط.
+function resolve(t, setId) {
+  if (setId === CLIPS) return espeakSrc(t);                          // اختيرَ الآليّ صراحةً
+  if (setId && setId !== AUTO) {                                     // مجموعةٌ بعينها: جرّبها أوّلاً
     const du = deviceURL(setId, t); if (du) return du;
     const bf = bundledFiles[setId + SEP + t]; if (bf) return bf;
   }
-  const file = clipFor(t);
-  return file ? (customSet.has(file) ? "tts/custom/" : "tts/") + file : null;
+  return srcAuto(t);                                                 // AUTO أو ارتدادٌ ذكيّ
 }
+function srcFor(text) {
+  const t = String(text).trim();
+  return resolve(t, getVoiceSet(classify(t)));
+}
+// مصدرُ صوتِ النصّ من مجموعةٍ بعينها (لقارئ القصص: نختار المجموعةَ صراحةً لا بالتصنيف).
+function srcForSet(text, setId) { return resolve(String(text).trim(), setId); }
 function audioFor(url) { return cache[url] || (cache[url] = new Audio(url)); }
 
 export function playClip(text) {

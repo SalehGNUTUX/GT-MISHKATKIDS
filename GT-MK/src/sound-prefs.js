@@ -27,13 +27,15 @@ export function toggleSound() { const next = !isSoundOn(); setTonesOn(next); set
 // مجموعةُ الصوت المختارة لكلّ نوعٍ على حدة (حرف/كلمات/جمل). القيمةُ مُعرّفُ مجموعة:
 //   "clips" = مقاطع espeak المُولَّدة مسبقاً (الافتراض، مضمونٌ على كل جهاز).
 //   أو مُعرّفُ مجموعةٍ بشريّة: مُدمجةٌ مع البرنامج، أو سجّلها المستخدم على جهازه (بالاسم المختار).
-export const VOICE_TYPES = ["letter", "word", "sentence"];
+export const VOICE_TYPES = ["letter", "word", "sentence", "reaction"];
 export const CLIPS = "clips";
+export const AUTO = "auto"; // «أفضل المتاح»: بشريّ (صالح/جهازك) ← عصبيّ ← آليّ، لكلّ نصٍّ على حدة
 const SET_KEY = t => "tilmithi_vset_" + t;
-// الافتراضُ لكلِّ نوع: الحروفُ بصوت espeak الآليّ (أوضحُ للحرف المفرد)، والكلماتُ والجملُ بالنموذج
-// العصبيّ Piper (kareem) لأنّه أقوى لها (يرتدُّ tts-clips تلقائيّاً لـespeak إن غاب المقطعُ العصبيّ).
-const VOICE_DEFAULTS = { letter: CLIPS, word: "tts-kareem", sentence: "tts-kareem" };
-export function getVoiceSet(type) { try { return localStorage.getItem(SET_KEY(type)) || VOICE_DEFAULTS[type] || CLIPS; } catch (e) { return VOICE_DEFAULTS[type] || CLIPS; } }
+// الافتراضُ لكلِّ الأنواع = «أفضل المتاح» (AUTO): يُقدَّم الصوتُ البشريُّ حيثما سُجِّل (أنضجُ وأسلم)،
+// ثمّ العصبيُّ (ممتازٌ للجمل/النصوص/الردود)، ثمّ الآليّ (espeak، تغطيةٌ كاملةٌ مضمونة). فيتّسع البشريُّ تلقائيّاً
+// كلّما غطّى الوالدُ المزيد، دون تغييرِ إعداد. (يُمكنُ فرضُ مصدرٍ بعينه لكلّ نوعٍ في اللوحة.)
+const VOICE_DEFAULTS = { letter: AUTO, word: AUTO, sentence: AUTO, reaction: AUTO };
+export function getVoiceSet(type) { try { return localStorage.getItem(SET_KEY(type)) || VOICE_DEFAULTS[type] || AUTO; } catch (e) { return VOICE_DEFAULTS[type] || AUTO; } }
 export function setVoiceSet(type, id) { try { if (VOICE_TYPES.includes(type)) localStorage.setItem(SET_KEY(type), id || CLIPS); } catch (e) {} }
 
 // الانتقال التلقائيّ في الاختبارات: حين يُفعَّل يمرّ للسؤال التالي تلقائياً بعد ردّة فعل الآلي،
@@ -46,7 +48,7 @@ export function setAutoNext(on) { try { localStorage.setItem(AUTO_KEY, on ? "on"
 // وتوگل تفعيل زرّ «اقرأ القصّة». مستقلٌّ عن أنواع (حرف/كلمة/جملة) ليُغيَّر القارئُ للقصص وحدها.
 const STORY_SET_KEY = "tilmithi_story_voice", STORY_ON_KEY = "tilmithi_story_read";
 // القيمةُ الافتراضيّة (العصبيّ إن وُجِد) تُضبَط مرّةً من story-reader.js كي لا يستوردَ هذا الملفُّ JSON.
-export function getStoryVoice() { try { return localStorage.getItem(STORY_SET_KEY) || CLIPS; } catch (e) { return CLIPS; } }
+export function getStoryVoice() { try { return localStorage.getItem(STORY_SET_KEY) || AUTO; } catch (e) { return AUTO; } }
 export function setStoryVoice(id) { try { localStorage.setItem(STORY_SET_KEY, id || CLIPS); } catch (e) {} }
 export function isStoryReadOn() { try { return localStorage.getItem(STORY_ON_KEY) === "on"; } catch (e) { return false; } }
 export function setStoryReadOn(on) { try { localStorage.setItem(STORY_ON_KEY, on ? "on" : "off"); } catch (e) {} }

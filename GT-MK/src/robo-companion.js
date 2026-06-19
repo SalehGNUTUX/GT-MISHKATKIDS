@@ -73,4 +73,7 @@ export const robo = {
   say(text, mood = "talk", opts = {}) { ensureMounted(); flash(mood === "happy" ? "cheer" : ""); showBubble(text); roboSay(text, { mood, onend: opts.then }); },
   // قراءةُ حرفٍ أو كلمةٍ بوضوحٍ (بلا نبضةٍ روبوتية كي لا تُزعجَ عند التكرار).
   read(text, opts = {}) { ensureMounted(); flash(""); showBubble(text); speak(text, { rate: opts.rate != null ? opts.rate : 0.7, onend: opts.then }); },
+  // عرضٌ مرئيٌّ فقط (فقاعة + مزاج + مؤثّر) بلا نطقٍ آليّ — ليُشغَّلَ نطقٌ خارجيٌّ بعده (كاللغات الأجنبيّة).
+  // opts.good: true=فرح+نغمةُ نجاح، false=طمأنة+نغمةُ خطأ.
+  show(text, mood = "talk", opts = {}) { ensureMounted(); flash(opts.good === true ? "cheer" : (opts.good === false ? "sad" : "")); showBubble(text); if (opts.good === true) sfx.success(); else if (opts.good === false) sfx.nope(); },
 };

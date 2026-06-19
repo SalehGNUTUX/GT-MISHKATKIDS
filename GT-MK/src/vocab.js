@@ -13,6 +13,8 @@ import sararim from "../content/sararim-stories.js";
 import { numberNames } from "./numbers-ar.js";
 import { REACTIONS, NOTICES } from "./robo-phrases.js";
 import { PRAISE } from "./islamic.js";
+import langEn from "../content/lang-en.js";
+import langFr from "../content/lang-fr.js";
 
 const uniq = a => [...new Set(a.filter(Boolean).map(s => String(s).trim()).filter(Boolean))];
 
@@ -37,6 +39,8 @@ export const SENTENCE_UNITS = [
   // نصوص القصص المصوّرة (صفحاتها) والقصص والعِبَر — لتسجيلها بصوت قارئٍ بشريّ.
   { key: "stories", label: "القصص المصوّرة", items: uniq([].concat(...(stories.stories || []).map(s => [s.title, s.lesson, ...(s.pages || []).map(p => p.text)]))) },
   { key: "tales", label: "قصص وعِبَر", items: uniq([].concat(...(sararim.stories || []).map(s => [s.title, s.text]))) },
+  // الترجماتُ العربيّةُ المقابلةُ لردود أفعال قسم اللغات — لينطقَها النموذجُ العصبيّ (kareem) في الاختبارات والألعاب.
+  { key: "lang_ar", label: "ردود اللغات (عربيّ)", items: uniq([langEn, langFr].flatMap(L => [...(L.reactions || []), ...(L.encourage || [])].map(r => r.ar))) },
 ];
 
 // كل النصوص المنطوقة القصيرة (حروف+أشكال+أسماء+كلمات+جمل+عبارات) — للمولّد.

@@ -34,6 +34,8 @@ const texts = uniq([
   ...(L.numbers || []).map(x => x.word),
   ...(L.words || []).flatMap(c => (c.items || []).map(it => it.w)),
   ...(L.phrases || []).flatMap(c => (c.items || []).map(it => it.t)),
+  ...(L.reactions || []).map(r => r.t),    // ردودُ أفعال الآلي (مدح) بلغة القسم
+  ...(L.encourage || []).map(r => r.t),    // ردودُ التشجيع عند الخطأ بلغة القسم
   ...(L.stories || []).flatMap(s => [s.title, ...(s.pages || []).map(p => p.text), s.lesson]),
 ]);
 

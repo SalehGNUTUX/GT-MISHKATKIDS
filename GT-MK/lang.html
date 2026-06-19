@@ -90,6 +90,12 @@
   .gcard .wd{font-size:12px;color:var(--muted)}
   .gcard .spk{position:absolute;inset-inline-start:6px;top:6px;font-size:13px;opacity:.6}
   .ltr{direction:ltr;unicode-bidi:isolate}
+  /* خليّةٌ تجمعُ بطاقةَ النطق + زرّ تسجيل نُطق الطفل */
+  .gcell,.pcell{display:flex;flex-direction:column;gap:6px}
+  .gcell .gcard{width:100%}
+  .lrec{background:var(--card);border:1.5px solid #E0A88F;color:#C7613F;border-radius:12px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+  html[data-theme="dark"] .lrec{border-color:#7a4a38;color:#E8987E}
+  .rrHost{width:100%} .rrHost .rr{margin:4px 0}
   .hint{text-align:center;color:var(--muted);font-size:13px;margin:10px 2px}
   /* القصص */
   .storycard .cover{width:100%;height:64px;overflow:hidden}
@@ -143,6 +149,9 @@ import FR from "./content/lang-fr.js";
 import { STORY_ART } from "./src/story-art.js";
 import { playClipForSet, playClipForSetAsync, stopClip } from "./src/tts-clips.js";
 import { logEvent } from "./src/progress.js";
+import { speak } from "./src/speak.js";              // للترجمة العربيّة (تُوجَّه للنموذج العصبيّ)
+import { attachReader } from "./src/reader-recorder.js"; // تسجيلُ نُطق الطفل (لكلّ حساب)
+import { robo } from "./src/robo-companion.js";       // الآليُّ الظاهرُ + فقاعةُ ردوده
 
 const LANGS = { en: EN, fr: FR };
 const view = document.getElementById("view");
@@ -174,6 +183,17 @@ function sayAsync(text, L){
     return new Promise(res=>{ webSpeak(text, L.code); setTimeout(res, Math.min(7000, 1400 + text.length*55)); });
   });
 }
+// ردُّ فعلِ الآلي (يظهرُ الآليُّ وفقاعتُه) ثنائيُّ اللغة: كلُّ ردٍّ أجنبيٍّ مقرونٌ بترجمته العربيّة المقابلة:
+// تُنطَق العبارةُ بلغة القسم (Piper alba/tom) ثمّ ترجمتُها العربيّةُ بالنموذج العصبيّ (kareem).
+const _pick = a => (a && a.length) ? a[Math.floor(Math.random() * a.length)] : null;
+function react(L, good){
+  const r = _pick(good ? (L.reactions || []) : (L.encourage || []));
+  if(!r) return;
+  robo.show(r.t + " · " + r.ar, good ? "happy" : "sad", { good });  // الآليُّ + الفقاعةُ (بلا نطقٍ آليّ)
+  sayAsync(r.t, L).then(() => speak(r.ar));                          // لغةُ القسم ثمّ ترجمتُها العربيّة (عصبيّ)
+}
+const praise = L => react(L, true);
+const encourageReact = L => react(L, false);
 let storyTok=0, reading=false;        // تتابعُ قراءة القصّة كاملةً
 function cancelRead(){ storyTok++; reading=false; try{ stopClip(); }catch(e){} }
 
@@ -232,8 +252,10 @@ function renderQuiz(L, host){
       <div class="grid">${opts.map(o=>`<button class="gcard qzopt" data-w="${esc(o.w)}"><span class="big ltr" style="font-size:17px">${esc(o.w)}</span></button>`).join("")}</div>`;
     host.querySelectorAll(".qzopt").forEach(b=>b.onclick=()=>{
       const w=b.getAttribute("data-w"); say(w, L);
-      if(w===correct.w){ b.classList.add("ok"); score++; host.querySelectorAll(".qzopt").forEach(x=>x.disabled=true); setTimeout(()=>{ i++; ask(); }, 950); }
-      else { b.classList.add("bad"); setTimeout(()=>b.classList.remove("bad"), 450); }
+      if(w===correct.w){ b.classList.add("ok"); score++; host.querySelectorAll(".qzopt").forEach(x=>x.disabled=true);
+        setTimeout(()=>praise(L), 850);                 // ردُّ فعلٍ ثنائيُّ اللغة بعد نطق الكلمة
+        setTimeout(()=>{ i++; ask(); }, 2400); }
+      else { b.classList.add("bad"); encourageReact(L); setTimeout(()=>b.classList.remove("bad"), 450); }
     });
   }
   ask();
@@ -254,7 +276,7 @@ function renderGame(L, host){
     if(done){ host.querySelector("#gmAgain").onclick=()=>renderGame(L, host); return; }
     host.querySelectorAll(".mword").forEach(b=>b.onclick=()=>{ selWord=b.getAttribute("data-w"); say(selWord, L); host.querySelectorAll(".mword").forEach(x=>x.classList.toggle("sel", x===b)); });
     host.querySelectorAll(".memoji").forEach(b=>b.onclick=()=>{ const w=b.getAttribute("data-w"); if(!selWord) return;
-      if(w===selWord){ matched.add(w); selWord=null; draw(); } else { b.classList.add("bad"); setTimeout(()=>b.classList.remove("bad"), 450); } });
+      if(w===selWord){ matched.add(w); selWord=null; praise(L); draw(); } else { b.classList.add("bad"); encourageReact(L); setTimeout(()=>b.classList.remove("bad"), 450); } });
   }
   draw();
 }
@@ -292,10 +314,12 @@ function renderLang(k){
       body = `<div class="lgrid">${cats.map(c=>`<button class="lcard" data-cat="${c.id}"><span class="ic">${iconHtml(CAT_ICON[c.id]||"📝")}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc((CAT_I18N[c.id]||{})[k]||c.ar)}">${esc(c.ar)}</span></button>`).join("")}</div>`;
     } else {
       topnav = nav("↩ الفئات","cats")+`<span class="cur">${CAT_ICON[C.id]||""} ${esc(C.ar)}</span>`;
-      body = `<div class="grid">${C.items.map(it=>
-        `<button class="gcard" data-say="${esc(it.w)}"><span class="spk">🔊</span><span class="em">${it.emoji}</span>
-          <span class="big ltr" style="font-size:18px">${esc(it.w)}</span><span class="wd">${esc(it.ar)}</span></button>`).join("")}</div>
-        <div class="hint">اضغطِ الكلمةَ لسماعها 🔊 (تحتها معناها بالعربيّة)</div>`;
+      body = `<div class="grid">${C.items.map((it,idx)=>
+        `<div class="gcell"><button class="gcard" data-say="${esc(it.w)}"><span class="spk">🔊</span><span class="em">${it.emoji}</span>
+          <span class="big ltr" style="font-size:18px">${esc(it.w)}</span><span class="wd">${esc(it.ar)}</span></button>
+          <button class="lrec" data-rec="${esc(it.w)}" data-id="w${idx}">🎙️ سجّلْ نُطقك</button>
+          <div class="rrHost" id="rr-w${idx}" hidden></div></div>`).join("")}</div>
+        <div class="hint">اضغطِ الكلمةَ لسماعها 🔊 · 🎙️ لتسجيل نُطقك (تحتها معناها بالعربيّة)</div>`;
     }
   } else if(sec==="phrases"){
     const cats = L.phrases || [], C = cats.find(x=>x.id===qp.get("cat"));
@@ -305,10 +329,12 @@ function renderLang(k){
       body = `<div class="lgrid">${cats.map(c=>`<button class="lcard" data-cat="${c.id}"><span class="ic">${iconHtml(CAT_ICON[c.id]||"💬")}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc((CAT_I18N[c.id]||{})[k]||c.ar)}">${esc(c.ar)}</span></button>`).join("")}</div>`;
     } else {
       topnav = nav("↩ الفئات","cats")+`<span class="cur">${CAT_ICON[C.id]||""} ${esc(C.ar)}</span>`;
-      body = `<div class="plist">${C.items.map(it=>
-        `<button class="pcard" data-say="${esc(it.t)}"><span class="spk">🔊</span>
-          <span class="ptx"><span class="pt ltr">${esc(it.t)}</span><span class="pa">${esc(it.ar)}</span></span></button>`).join("")}</div>
-        <div class="hint">اضغطِ العبارةَ لسماعها 🔊 (تحتها معناها بالعربيّة)</div>`;
+      body = `<div class="plist">${C.items.map((it,idx)=>
+        `<div class="pcell"><button class="pcard" data-say="${esc(it.t)}"><span class="spk">🔊</span>
+          <span class="ptx"><span class="pt ltr">${esc(it.t)}</span><span class="pa">${esc(it.ar)}</span></span></button>
+          <button class="lrec" data-rec="${esc(it.t)}" data-id="p${idx}">🎙️ سجّلْ نُطقك</button>
+          <div class="rrHost" id="rr-p${idx}" hidden></div></div>`).join("")}</div>
+        <div class="hint">اضغطِ العبارةَ لسماعها 🔊 · 🎙️ لتسجيل نُطقك (تحتها معناها بالعربيّة)</div>`;
     }
   } else if(sec==="stories"){
     const list = L.stories || [], st = list.find(x=>x.id===qp.get("story"));
@@ -356,6 +382,12 @@ function renderLang(k){
   });
   // العبارات: انطق العبارة عند الضغط
   view.querySelectorAll(".pcard").forEach(b=>b.onclick=()=>say(b.getAttribute("data-say"), L));
+  // تسجيلُ نُطق الطفل (لكلّ حساب) للكلمة/العبارة، مع زرّ استماعٍ للنطق المرجعيّ.
+  view.querySelectorAll(".lrec").forEach(b=>b.onclick=async()=>{
+    const host=document.getElementById("rr-"+b.getAttribute("data-id")); if(!host) return;
+    const t=b.getAttribute("data-rec"); b.hidden=true; host.hidden=false;
+    await attachReader(host, t, { label:"نُطقك", helpLabel:"🔊 النطق الصحيح", onHelp:()=>say(t, L) });
+  });
   // فتحُ قصّة
   view.querySelectorAll(".storycard").forEach(b=>b.onclick=()=>{ cancelRead(); const u=new URL(location.href); u.searchParams.set("story", b.getAttribute("data-story")); u.searchParams.set("pg","0"); history.replaceState(null,"",u); render(); });
   view.querySelectorAll(".snav [data-pg]").forEach(b=>{ if(b.disabled)return; b.onclick=()=>setParam("pg", b.getAttribute("data-pg")); });
@@ -404,6 +436,7 @@ function render(){
 }
 primeWS();
 if("speechSynthesis" in window) speechSynthesis.onvoiceschanged = primeWS;
+try{ robo.mount(); }catch(e){}   // الآليُّ الظاهرُ (كبقيّة الأقسام)
 render();
 </script>
 </body>

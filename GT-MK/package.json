@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "تلميذي — الطفل يُعلّم روبو فيتذكّر ويتعافى (محليّ، بلا اتصال، بلا ذكاء اصطناعي)",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -13,7 +14,37 @@
     "gen:voices": "node tools/gen-voices.mjs",
     "gen:piper": "node tools/gen-piper.mjs",
     "gen:quran": "node tools/gen-quran.mjs",
-    "gen:icons": "node tools/gen-fa-icons.mjs"
+    "gen:icons": "node tools/gen-fa-icons.mjs",
+    "pkg:linux": "bash scripts/build-packages.sh linux",
+    "pkg:apk": "bash scripts/build-packages.sh apk",
+    "pkg:all": "bash scripts/build-packages.sh all"
+  },
+  "build": {
+    "appId": "com.gnutux.gtmishkatkids",
+    "productName": "GT-MISHKATKIDS",
+    "copyright": "© 2026 SalehGNUTUX — GNU GPL v3",
+    "asar": true,
+    "files": ["dist/**/*", "electron/**/*", "package.json"],
+    "directories": { "output": "release", "buildResources": "build" },
+    "linux": {
+      "target": [
+        { "target": "AppImage", "arch": ["x64"] },
+        { "target": "deb", "arch": ["x64"] },
+        { "target": "rpm", "arch": ["x64"] }
+      ],
+      "icon": "build/icons",
+      "category": "Education",
+      "maintainer": "SalehGNUTUX <gnutux.arabic@gmail.com>",
+      "synopsis": "تطبيق تعليمي إسلامي للأطفال — الطفل يُعلّم الآليّ",
+      "description": "مِشكاةُ الطفلِ والآليّ: تطبيقٌ تعليميٌّ إسلاميٌّ للأطفال (4–10) يعمل محلّيًّا دون إنترنت.",
+      "desktop": {
+        "Name": "مِشكاةُ الطفلِ والآليّ",
+        "Comment": "تطبيق تعليمي إسلامي للأطفال (4–10) — محلّيّ دون إنترنت",
+        "Keywords": "kids;islamic;education;quran;arabic;children;",
+        "Categories": "Education;"
+      }
+    },
+    "appImage": { "artifactName": "${productName}-${version}-${arch}.AppImage" }
   },
   "dependencies": {
     "jspdf": "^4.2.1"

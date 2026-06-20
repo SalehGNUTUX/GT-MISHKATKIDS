@@ -18,3 +18,9 @@ tools/piper-voices/*.onnx*
 
 # مستودعٌ كامل: تلاوةُ القرآن (public/quran/husary/) وكلُّ الأصوات (public/tts/) تُرفَع
 # لتعملَ النسخةُ الويبيّةُ المنشورة مباشرةً دون توليد.
+
+# تحزيمٌ أصليّ (مُولَّد، يُعاد إنشاؤه)
+release/
+build/
+android/
+*.AppImage

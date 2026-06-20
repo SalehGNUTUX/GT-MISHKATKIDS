@@ -1,0 +1,6 @@
+{
+  "appId": "com.gnutux.gtmishkatkids",
+  "appName": "GT-MISHKATKIDS",
+  "webDir": "dist",
+  "server": { "androidScheme": "https" }
+}

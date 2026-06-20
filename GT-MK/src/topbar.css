@@ -20,6 +20,17 @@ header h1{margin:0}
 .topbtn:active{transform:scale(.97)}
 .iconbtn:active{transform:scale(.94)}
 
+/* زرُّ الرجوع خطوةً للوراء — واضحٌ بديهيٌّ للطفل: حبّةٌ بحدٍّ ملوّنٍ وسهمِ رجوعٍ ↩، يمتلئ عند اللمس.
+   مستقلٌّ عن .back العامّ (المستعمَل لأزرارٍ ثانويّةٍ أخرى). يعمل في كلّ الصفحات (topbar.css عامّ). */
+.backstep{display:inline-flex;align-items:center;gap:7px;padding:9px 17px;border-radius:999px;
+  border:2px solid var(--primary);background:var(--card);color:var(--primary-d);font-weight:800;
+  font-size:15px;font-family:inherit;cursor:pointer;text-decoration:none;line-height:1;white-space:nowrap;
+  box-shadow:0 3px 10px rgba(0,0,0,.10);transition:transform .12s,background .12s,color .12s}
+.backstep::before{content:"↩";font-size:17px;line-height:1}
+.backstep:hover{background:var(--primary);color:#fff}
+.backstep:active{transform:scale(.96)}
+@media(max-width:430px){ .backstep{padding:8px 14px;font-size:14px} }
+
 @media(max-width:430px){
   .topbtn{padding:7px 10px;font-size:13px;min-height:36px}
   .iconbtn{width:36px;height:36px;min-height:36px;font-size:16px}

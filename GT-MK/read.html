@@ -102,7 +102,7 @@ robo.mount();
 const CONS = DATA.consonants || [], WORDS = DATA.words || [], SENT = DATA.sentences || [];
 const view = document.getElementById("view");
 const rand = n => Math.floor(Math.random()*n);
-const backBar = () => `<button class="back" id="back">← سُلّم القراءة</button>`;
+const backBar = () => `<button class="backstep" id="back">سُلّم القراءة</button>`;
 function wireBack(){ const b=document.getElementById("back"); if(b) b.onclick=renderMenu; }
 let stars = 0;
 const starPill = () => `<span class="pill">⭐ <b>${stars}</b></span>`;

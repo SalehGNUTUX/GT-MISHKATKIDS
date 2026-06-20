@@ -197,7 +197,7 @@ const NUM_MAX = 100;
 const EMOJIS = ["🍎","⭐","🐟","🌸","🚗","🦋","🍌","🐝","🌷","🥕","🌽","🍇"];
 const rand = n => Math.floor(Math.random()*n);
 const shuffle = a => { for(let k=a.length-1;k>0;k--){ const j=rand(k+1); [a[k],a[j]]=[a[j],a[k]]; } return a; };
-const backBar = () => `<button class="back" id="back">← أرقام وهندسة</button>`;
+const backBar = () => `<button class="backstep" id="back">أرقام وهندسة</button>`;
 function wireBack(){ const b=document.getElementById("back"); if(b) b.onclick=renderMenu; }
 
 /* ===== أشكال صغيرة (SVG) لألعاب العثور ===== */
@@ -522,7 +522,7 @@ function startAdvShapes(){
 function openShape(id, list, backFn){
   const s = list.find(x=>x.id===id); if(!s) return;
   view.innerHTML =
-    `<button class="back" id="back2">← القائمة</button>
+    `<button class="backstep" id="back2">القائمة</button>
      <div class="shape-detail">
        <div class="big">${s.svg}</div>
        <div class="ttl">${s.name}</div>
@@ -585,7 +585,7 @@ function startCrafts(){
 function openCraft(id){
   const c = MATH.crafts.find(x=>x.id===id); if(!c) return;
   view.innerHTML =
-    `<button class="back" id="back2">← الورشة</button>
+    `<button class="backstep" id="back2">الورشة</button>
      <div class="card" style="text-align:start;padding:16px">
        <div style="text-align:center">${c.thumb?`<div style="width:72px;height:72px;margin:0 auto;display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:14px">${c.thumb.replace('<svg ','<svg width="60" height="60" ')}</div>`:`<div style="font-size:30px">✂️</div>`}<div style="font-weight:800;font-size:18px;margin-top:6px">${c.title}</div><div style="font-size:13px;color:var(--muted)">شكل: ${c.shape} · حوالي ${c.mins} دقائق</div></div>
        ${c.file?`

@@ -117,7 +117,7 @@ function renderPage(){
       <button class="prev" id="prev" ${pi===0?"disabled":""}>السابقة</button>
       <button class="next" id="next">${last ? "🌟 تمّت — قصّة أخرى" : "التالية ▶"}</button>
     </div>
-    <button class="back" id="back">▸ كل القصص</button>
+    <button class="backstep" id="back">كل القصص</button>
   </div>`;
   document.getElementById("prev").onclick = ()=>{ if(pi>0){ pi--; renderPage(); } };
   document.getElementById("next").onclick = ()=>{ if(pi < s.pages.length-1){ pi++; renderPage(); } else { renderCovers(); } };

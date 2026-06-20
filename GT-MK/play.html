@@ -194,7 +194,7 @@ const ageChips = () => `<div class="chips"><span class="lbl">العمر:</span>
   <button class="chip ${age==="7-10"?"on":""}" data-age="7-10">7–10</button>
   <span class="pills"><span class="pill">⭐ <b>${score}</b></span><span class="pill">🔥 <b>${streak}</b></span></span></div>`;
 function wireAge(reRender){ const c=view.querySelector(".chips"); if(c) c.addEventListener("click", e=>{ const b=e.target.closest("button[data-age]"); if(!b) return; age=b.getAttribute("data-age"); reRender(); }); }
-const backBar = () => `<button class="back" id="back">← الألعاب</button>`;
+const backBar = () => `<button class="backstep" id="back">الألعاب</button>`;
 function wireBack(){ const b=document.getElementById("back"); if(b) b.onclick=renderMenu; }
 const clueCard = (instruction, withFlash) => `<div class="clue"><div class="emoji">${cur.emoji}</div>${withFlash?`<div class="flash" id="flash">${cur.word}</div>`:""}<div class="say">${instruction}</div></div>`;
 function winBanner(msg){ return `<div class="win"><div class="em">${cur.emoji}</div><div class="big" dir="rtl">${cur.word}</div>${msg}<div class="controls"><button class="go" id="cont">التالية ▶</button></div></div>`; }

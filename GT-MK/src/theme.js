@@ -25,3 +25,26 @@ export function wireThemeToggle(btn) {
   sync();
   btn.addEventListener("click", () => { toggleTheme(); sync(); });
 }
+
+// مسنّنُ لوحة التحكّم ⚙️: يُحقَن تلقائيًّا في شريط كلّ صفحةٍ (هذه الوحدة تُستورَد في الجميع)
+// فيَصِلُ الوالدُ إلى اللوحةِ مباشرةً (index.html?parent=1، حاجزُ كلمة المرور يحميها) دون العودة للفهرس.
+// لا يُحقَن في الفهرس نفسِه (index.html) فهو مُضيفُ اللوحة.
+function mountPanelGear() {
+  try {
+    if (document.getElementById("panelGear")) return;
+    const path = location.pathname;
+    if (/(^|\/)index\.html$/.test(path)) return; // الفهرس = مضيفُ اللوحة، لا حاجةَ لمسنّن
+    const home = document.querySelector('a[href$="home.html"]');
+    const host = (home && home.parentElement) || document.querySelector(".topbtns") || document.querySelector("header");
+    if (!host) return;
+    const g = document.createElement("a");
+    g.id = "panelGear"; g.className = "iconbtn"; g.href = "index.html?parent=1";
+    g.title = "لوحة التحكّم"; g.setAttribute("aria-label", "لوحة التحكّم"); g.textContent = "⚙️";
+    if (home && home.parentElement === host) host.insertBefore(g, home); // قبل زرّ الفهرس مباشرةً
+    else host.insertBefore(g, host.firstChild);
+  } catch (e) {}
+}
+if (typeof document !== "undefined") {
+  if (document.readyState !== "loading") mountPanelGear();
+  else document.addEventListener("DOMContentLoaded", mountPanelGear);
+}

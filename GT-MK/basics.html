@@ -156,7 +156,7 @@ const EMOJIS = ["🍎","⭐","🐟","🌸","🚗","🦋","🍌","🐝"];
 const shuffle = a => { for(let k=a.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [a[k],a[j]]=[a[j],a[k]]; } return a; };
 const rand = n => Math.floor(Math.random()*n);
 const forms = ch => ({ init: ch+ZWJ, mid: ZWJ+ch+ZWJ, fin: ZWJ+ch });
-const backBar = () => `<button class="back" id="back">← الأساسيّات</button>`;
+const backBar = () => `<button class="backstep" id="back">الأساسيّات</button>`;
 function wireBack(){ const b=document.getElementById("back"); if(b) b.onclick=renderMenu; }
 
 /* ===== MENU ===== */

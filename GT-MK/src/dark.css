@@ -28,7 +28,7 @@ html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::pla
 html[data-theme="dark"] .chip,html[data-theme="dark"] .opt,html[data-theme="dark"] .tile,
 html[data-theme="dark"] .numb,html[data-theme="dark"] .ltile,html[data-theme="dark"] .pill,
 html[data-theme="dark"] .hbtn,html[data-theme="dark"] .dchip,html[data-theme="dark"] .back,
-html[data-theme="dark"] .backbtn,html[data-theme="dark"] .topbtn,html[data-theme="dark"] .choice,
+html[data-theme="dark"] .topbtn,html[data-theme="dark"] .choice,
 html[data-theme="dark"] .syl,html[data-theme="dark"] .sword,html[data-theme="dark"] .saysm{
   background:#2a2a34;color:var(--ink);border-color:var(--line)}
 
@@ -89,3 +89,15 @@ html[data-theme="dark"] .rr{background:#23232c;border-color:#34343f}
 html[data-theme="dark"] .rr button{background:#2a2a34;border-color:#34343f;color:var(--ink)}
 html[data-theme="dark"] .rr button.rr-help{background:#2a2a34;border-color:#6e5a8a;color:#c9a0dc}
 html[data-theme="dark"] .rr-st{color:var(--muted)}
+
+/* ====== ألعابُ واختباراتُ اللغات: خلايا/إجاباتٌ واضحةُ التباين في الوضع الداكن ======
+   كانت الخلايا (var(--card)) قريبةً من خلفيّة الصفحة فتبهُت؛ نرفعُها سطحًا أزرقَ-رماديًّا
+   بنصٍّ ناصعٍ وحدٍّ واضح، ونُصحّحُ ألوانَ حالات الصواب/الخطأ المثبّتة الفاتحة. */
+html[data-theme="dark"] .mcard,html[data-theme="dark"] .qzopt{
+  background:#2b3543 !important;border-color:#44546a !important;color:#F1F5FA !important}
+html[data-theme="dark"] .mcard .ltr{color:#F1F5FA}
+html[data-theme="dark"] .mcard.sel{border-color:var(--primary) !important;box-shadow:0 0 0 2px var(--primary) inset}
+html[data-theme="dark"] .mcard.done,html[data-theme="dark"] .qzopt.ok{
+  background:#244a30 !important;border-color:#8BC36B !important;color:#d7f0d9 !important;opacity:1}
+html[data-theme="dark"] .qzopt.bad,html[data-theme="dark"] .mcard.bad{
+  background:#4d2530 !important;border-color:#E0566B !important;color:#ffd9df !important}

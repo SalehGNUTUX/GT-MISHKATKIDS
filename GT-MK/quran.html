@@ -164,7 +164,7 @@ function renderSurah() {
   stopAll();
   const f = getFont();
   view.innerHTML =
-    `<button class="back" id="back">← كل السور</button>
+    `<button class="backstep" id="back">كل السور</button>
      <div class="stitle"><div class="nm">${surah.name}</div><div class="meta">${ayNum(surah.ayahCount)} آية · ${surah.type === "Meccan" ? "مكّيّة" : "مدنيّة"}</div></div>
      <div class="fontbar">${FONTS.map(x => `<button class="chip ${f === x.id ? "on" : ""}" data-font="${x.id}">${x.label}</button>`).join("")}</div>
      <div class="toolbar">

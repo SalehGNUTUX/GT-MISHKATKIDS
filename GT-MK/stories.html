@@ -103,12 +103,12 @@ function openStory(i){ si=i; pi=0; renderPage(); }
 
 function renderPage(){
   const s = STORIES[si], last = pi === s.pages.length-1, p = s.pages[pi];
-  const imgMode = !!p.img; // قصّةٌ بلوحاتٍ مصوّرة: النصُّ مخبوزٌ في الصورة (لا نُكرّره ولا توگلَ تشكيل)
+  // النصُّ المكتوبُ يظهرُ دائماً (حتى للقصص المصوّرة باللوحات) مع توگل التشكيل — كبقيّة القصص.
   view.innerHTML = `<div class="reader">
     <div class="stage">${pageMedia(p)}</div>
     <div class="rtitle">${disp(s.title)}</div>
-    ${imgMode ? "" : `<div class="ptext">${disp(p.text)}</div>
-    <div style="text-align:center;margin:4px 0">${tashBtn()}</div>`}
+    <div class="ptext">${disp(p.text)}</div>
+    <div style="text-align:center;margin:4px 0">${tashBtn()}</div>
     ${isStoryReadOn() ? `<div id="srHost"></div>` : ""}
     <div id="rrHost"></div>
     ${last ? `<div class="lesson">الدرس: ${disp(s.lesson)}</div>` : ""}
@@ -127,8 +127,18 @@ function renderPage(){
   // قراءةُ القصّة بصوتٍ (القارئ المختار) — صفحةً أو كاملةً مع الانتقال التلقائيّ. النصُّ المُقرَّر بالشكل الكامل.
   if(isStoryReadOn()) attachStoryReader(document.getElementById("srHost"), {
     text: p.text, pages: s.pages.map(x=>x.text), startIdx: pi,
-    onPage: i=>{ pi=i; renderPage(); }, rerender: renderPage,
+    onPage: turnTo, rerender: renderPage,   // أثناء القراءة المتتابعة: حدّثِ الصورةَ في مكانها فقط (لا تُعِدْ بناءَ القارئ فتنقطعَ القراءة)
   });
+}
+
+// تحديثٌ خفيفٌ في المكان أثناء «اقرأ القصّة كاملةً»: نُبدّلُ الصورةَ والنصَّ والنقاطَ دون هدمِ القارئ
+// النشِط (إعادةُ بناءِ srHost كانت تقطعُ القراءةَ عند كلّ انتقالِ صفحة).
+function turnTo(i){
+  pi = i;
+  const s = STORIES[si], p = s.pages[pi];
+  const st = view.querySelector(".stage"); if(st) st.innerHTML = pageMedia(p);
+  const pt = view.querySelector(".ptext"); if(pt) pt.innerHTML = disp(p.text);
+  view.querySelectorAll(".dots .dot").forEach((d,k)=>d.classList.toggle("on", k===pi));
 }
 
 // رابطٌ عميق: ?story=<id> يفتح القصّةَ مباشرةً (تُستعمَل من بطاقة «قصّة الأرقام» في الرياضيّات).

@@ -34,13 +34,17 @@ function mountPanelGear() {
     if (document.getElementById("panelGear")) return;
     const path = location.pathname;
     if (/(^|\/)index\.html$/.test(path)) return; // الفهرس = مضيفُ اللوحة، لا حاجةَ لمسنّن
-    const home = document.querySelector('a[href$="home.html"]');
-    const host = (home && home.parentElement) || document.querySelector(".topbtns") || document.querySelector("header");
-    if (!host) return;
     const g = document.createElement("a");
     g.id = "panelGear"; g.className = "iconbtn"; g.href = "index.html?parent=1";
     g.title = "لوحة التحكّم"; g.setAttribute("aria-label", "لوحة التحكّم"); g.textContent = "⚙️";
-    if (home && home.parentElement === host) host.insertBefore(g, home); // قبل زرّ الفهرس مباشرةً
+    // يُوضَع ملاصقًا لزرّ تبديل السمة (🌙/☀️) ليكونا مجموعةً واحدةً متناسقةً في كلّ الصفحات.
+    const themeBtn = document.getElementById("themeBtn")
+      || document.querySelector('.iconbtn[title*="الوضع"], [aria-label*="الوضع"]');
+    if (themeBtn && themeBtn.parentElement) { themeBtn.parentElement.insertBefore(g, themeBtn); return; }
+    const home = document.querySelector('a[href$="home.html"]');
+    const host = (home && home.parentElement) || document.querySelector(".topbtns") || document.querySelector("header");
+    if (!host) return;
+    if (home && home.parentElement === host) host.insertBefore(g, home);
     else host.insertBefore(g, host.firstChild);
   } catch (e) {}
 }

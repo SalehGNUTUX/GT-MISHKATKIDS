@@ -20,6 +20,12 @@ header h1{margin:0}
 .topbtn:active{transform:scale(.97)}
 .iconbtn:active{transform:scale(.94)}
 
+/* مسنّنُ لوحة التحكّم ⚙️ — ملاصقٌ لزرّ السمة، بلمسةٍ ملوّنةٍ ودورانٍ لطيفٍ عند المرور (إشارةُ «إعدادات») */
+#panelGear{font-size:18px;color:var(--primary-d);border-color:color-mix(in srgb,var(--primary) 45%,var(--line));
+  transition:transform .25s ease,border-color .15s,background .15s}
+#panelGear:hover{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 14%,var(--card));transform:rotate(45deg)}
+#panelGear:active{transform:rotate(45deg) scale(.94)}
+
 /* زرُّ الرجوع خطوةً للوراء — واضحٌ بديهيٌّ للطفل: حبّةٌ بحدٍّ ملوّنٍ وسهمِ رجوعٍ ↩، يمتلئ عند اللمس.
    مستقلٌّ عن .back العامّ (المستعمَل لأزرارٍ ثانويّةٍ أخرى). يعمل في كلّ الصفحات (topbar.css عامّ). */
 .backstep{display:inline-flex;align-items:center;gap:7px;padding:9px 17px;border-radius:999px;

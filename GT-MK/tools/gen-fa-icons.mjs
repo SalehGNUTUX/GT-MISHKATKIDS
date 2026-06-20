@@ -15,7 +15,7 @@ const MAP = {
   robot: "robot", quran: "book-quran", basics: "font", read: "book-open", math: "shapes",
   lang: "language", stories: "images", tales: "scroll", play: "gamepad", puzzles: "puzzle-piece",
   quiz: "bullseye", progress: "trophy", print: "print", shield: "user-shield",
-  components: "box-open", reports: "chart-column", accounts: "users",
+  components: "box-open", reports: "chart-column", accounts: "users", gear: "gear",
   // الرياضيّات
   numbers: "list-ol", add: "plus", sub: "minus", mul: "xmark", find: "magnifying-glass",
   compare: "scale-balanced", pattern: "repeat", size: "ruler", circle: "circle", crafts: "scissors",
@@ -46,6 +46,7 @@ const EMOJI = {
   "🦁": "animals", "🎨": "colors", "👪": "family", "🍎": "food", "🧒": "body", "👋": "hand",
   "🏫": "school", "🌳": "nature", "🚗": "transport", "🍇": "fruits", "👕": "clothes",
   "🌦️": "weather", "📅": "days", "🏃": "actions", "🙏": "polite", "❓": "questions",
+  "⚙️": "gear",
 };
 
 function clean(name) {

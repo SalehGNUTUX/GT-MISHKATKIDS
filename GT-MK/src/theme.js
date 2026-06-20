@@ -3,6 +3,7 @@
 import "./dark.css"; // أنماطُ السمة الداكنة المشتركة (يستخرجها Vite كـ<link>)
 import "./topbar.css"; // تنسيقٌ موحّدٌ لشريط الأزرار العلويّ في كلّ الصفحات
 import "./nav-icons.css"; // حجمُ وتلوينُ أيقونات بطاقات الأقسام (SVG)
+import { iconHtml } from "./icons.js"; // أيقوناتُ Font Awesome (لمسنّن اللوحة بنفس سلسلة الفهرس)
 const KEY = "tilmithi_theme"; // "light" | "dark" | غير مضبوط (يتبع تفضيل النظام)
 
 export function storedTheme() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
@@ -21,6 +22,7 @@ export function toggleTheme() { setTheme(isDark() ? "light" : "dark"); return is
 // يربط زرًّا للتبديل ويُحدّث أيقونته (🌙 لتفعيل الداكن، ☀️ للرجوع للفاتح).
 export function wireThemeToggle(btn) {
   if (!btn) return;
+  btn.classList.add("themetoggle"); // لتأثير الدوران اللطيف عند المرور (كالمسنّن)
   const sync = () => { btn.textContent = isDark() ? "☀️" : "🌙"; btn.setAttribute("title", isDark() ? "الوضع الفاتح" : "الوضع الداكن"); btn.setAttribute("aria-label", btn.title); };
   sync();
   btn.addEventListener("click", () => { toggleTheme(); sync(); });
@@ -36,7 +38,8 @@ function mountPanelGear() {
     if (/(^|\/)index\.html$/.test(path)) return; // الفهرس = مضيفُ اللوحة، لا حاجةَ لمسنّن
     const g = document.createElement("a");
     g.id = "panelGear"; g.className = "iconbtn"; g.href = "index.html?parent=1";
-    g.title = "لوحة التحكّم"; g.setAttribute("aria-label", "لوحة التحكّم"); g.textContent = "⚙️";
+    g.title = "لوحة التحكّم"; g.setAttribute("aria-label", "لوحة التحكّم");
+    g.innerHTML = iconHtml("⚙️"); // ترسُ Font Awesome (iconHtml يطابقُ الإيموجي ⚙️ ← gear ← SVG)
     // يُوضَع ملاصقًا لزرّ تبديل السمة (🌙/☀️) ليكونا مجموعةً واحدةً متناسقةً في كلّ الصفحات.
     const themeBtn = document.getElementById("themeBtn")
       || document.querySelector('.iconbtn[title*="الوضع"], [aria-label*="الوضع"]');

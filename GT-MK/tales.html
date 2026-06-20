@@ -57,6 +57,10 @@
   .reveal:active{transform:scale(.98)}
   .opts{display:grid;gap:8px}
   .opts.hidden{display:none}
+  .qprog{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:6px}
+  .nextq{margin-top:14px;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:11px 18px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:transform .08s,background .12s}
+  .nextq:hover{background:var(--primary-d)} .nextq:active{transform:scale(.97)}
+  .qend{margin-top:14px;font-weight:800;color:var(--good)}
   .opt{text-align:start;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:11px 14px;font-size:16px;cursor:pointer;font-family:inherit;color:var(--ink)}
   .opt:hover{border-color:var(--primary)}
   .opt.correct{background:#EEF6E9;border-color:var(--good);color:#2f5a1f;font-weight:700}
@@ -178,43 +182,45 @@ function openStory(id){
     ${isStoryReadOn() ? `<div id="srHost"></div>` : ""}
     <div id="rrHost"></div>
     ${qs.length?`<div class="qhead">أسئلة الفهم</div>`:""}
-    <div id="qbox">${qs.map((q,qi)=>`
-      <div class="q">
-        <div class="qt">${qi+1}. ${q.qt}</div>
-        <button class="reveal" data-qi="${qi}">🤔 فكّرْ… ثمّ أظهِرِ الخيارات</button>
-        <div class="opts hidden" data-qi="${qi}">
-          ${q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.t}</button>`).join("")}
-        </div>
-      </div>`).join("")}</div>
+    <div id="qbox"></div>
     <div class="nav">
       <button class="next" id="next">قصّة أخرى ▶</button>
     </div>
     <div class="backrow"><button class="backstep" id="back">كل القصص</button></div>
   </div>`;
 
-  // نمطُ «فكّرْ ثمّ أظهِرِ الخيارات»: يبقى الجوابُ مخفيًّا حتى يتذكّرَ الطفلُ ثمّ يكشفَ الخيارات.
-  view.querySelectorAll(".reveal").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const qi = btn.getAttribute("data-qi");
-      const box = view.querySelector(`.opts[data-qi="${qi}"]`);
-      if(box) box.classList.remove("hidden");
-      btn.style.display = "none";
-    });
-  });
-  view.querySelectorAll(".opts").forEach(box=>{
-    const qi = +box.getAttribute("data-qi");
-    box.addEventListener("click", e=>{
-      const b = e.target.closest("button.opt"); if(!b || box.dataset.done) return;
-      box.dataset.done = "1";
+  // أسئلةُ الفهم سؤالًا سؤالًا: تظهرُ الأسئلةُ التاليةُ مخفيّةً حتى يُجيبَ ثمّ يضغطَ «السؤال التالي».
+  // ولكلّ سؤالٍ نمطُ «فكّرْ ثمّ أظهِرِ الخيارات» (الجوابُ مخفيٌّ حتى يتذكّرَ الطفلُ).
+  const qbox = document.getElementById("qbox");
+  function showQ(i){
+    const q = qs[i];
+    qbox.innerHTML = `
+      <div class="qprog">السُّؤَالُ ${i+1} مِنْ ${qs.length}</div>
+      <div class="q">
+        <div class="qt">${q.qt}</div>
+        <button class="reveal" id="qReveal">🤔 فكّرْ… ثمّ أظهِرِ الخيارات</button>
+        <div class="opts hidden" id="qOpts">${q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.t}</button>`).join("")}</div>
+        <div id="qAfter"></div>
+      </div>`;
+    const rev = document.getElementById("qReveal");
+    rev.onclick = ()=>{ document.getElementById("qOpts").classList.remove("hidden"); rev.style.display="none"; };
+    const opts = document.getElementById("qOpts");
+    opts.addEventListener("click", e=>{
+      const b = e.target.closest("button.opt"); if(!b || opts.dataset.done) return;
+      opts.dataset.done = "1";
       const k = +b.getAttribute("data-k");
-      box.querySelectorAll(".opt").forEach((el,idx)=>{
+      opts.querySelectorAll(".opt").forEach((el,idx)=>{
         el.disabled = true;
-        if(qs[qi].opts[idx].correct){ el.classList.add("correct"); el.insertAdjacentHTML("beforeend",' <span class="mk">✓</span>'); }
+        if(q.opts[idx].correct){ el.classList.add("correct"); el.insertAdjacentHTML("beforeend",' <span class="mk">✓</span>'); }
       });
-      if(qs[qi].opts[k].correct){ logEvent("comprehension_ok"); robo.cheer(); }
+      if(q.opts[k].correct){ logEvent("comprehension_ok"); robo.cheer(); }
       else { b.classList.add("wrong"); b.insertAdjacentHTML("beforeend",' <span class="mk">✗</span>'); robo.encourage(); }
+      const after = document.getElementById("qAfter");
+      if(i < qs.length-1){ after.innerHTML = `<button class="nextq" id="nextQ">السؤال التالي ⏭️</button>`; document.getElementById("nextQ").onclick = ()=>showQ(i+1); }
+      else { after.innerHTML = `<div class="qend">🌟 أَحْسَنْتَ! أَكْمَلْتَ كُلَّ الْأَسْئِلَةِ.</div>`; }
     });
-  });
+  }
+  if(qs.length) showQ(0);
   attachReader(document.getElementById("rrHost"), s.text, { label:"قراءتك للقصّة" });
   document.getElementById("tashToggle").onclick = ()=>{ setShowTashkeel(!showTashkeel()); openStory(id); };
   if(isStoryReadOn()) attachStoryReader(document.getElementById("srHost"), { text:s.text, rerender:()=>openStory(id) });

@@ -50,7 +50,8 @@ const STORY_SET_KEY = "tilmithi_story_voice", STORY_ON_KEY = "tilmithi_story_rea
 // القيمةُ الافتراضيّة (العصبيّ إن وُجِد) تُضبَط مرّةً من story-reader.js كي لا يستوردَ هذا الملفُّ JSON.
 export function getStoryVoice() { try { return localStorage.getItem(STORY_SET_KEY) || AUTO; } catch (e) { return AUTO; } }
 export function setStoryVoice(id) { try { localStorage.setItem(STORY_SET_KEY, id || CLIPS); } catch (e) {} }
-export function isStoryReadOn() { try { return localStorage.getItem(STORY_ON_KEY) === "on"; } catch (e) { return false; } }
+// ظاهرةٌ افتراضيّاً (القراءةُ الصوتيّةُ أداةٌ جوهريّة): تُحجَب فقط إن أطفأها الأهلُ صراحةً (= "off").
+export function isStoryReadOn() { try { return localStorage.getItem(STORY_ON_KEY) !== "off"; } catch (e) { return true; } }
 export function setStoryReadOn(on) { try { localStorage.setItem(STORY_ON_KEY, on ? "on" : "off"); } catch (e) {} }
 
 // إظهارُ التشكيل في عرض النصوص (القصص). الافتراض: مع الشكل (true). إخفاؤه للعرض فقط لا يؤثّر في القراءة.

@@ -51,7 +51,12 @@
   .qhead{font-size:15px;color:var(--primary-d);font-weight:800;margin:16px 4px 8px;border-top:1px dashed var(--line);padding-top:14px}
   .q{margin:12px 2px}
   .q .qt{font-size:17px;font-weight:700;margin-bottom:8px}
+  .reveal{background:color-mix(in srgb,var(--primary) 12%,var(--card));border:1.5px dashed var(--primary);color:var(--primary-d);
+    border-radius:12px;padding:10px 14px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;width:100%;transition:background .12s,transform .08s}
+  .reveal:hover{background:color-mix(in srgb,var(--primary) 20%,var(--card))}
+  .reveal:active{transform:scale(.98)}
   .opts{display:grid;gap:8px}
+  .opts.hidden{display:none}
   .opt{text-align:start;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:11px 14px;font-size:16px;cursor:pointer;font-family:inherit;color:var(--ink)}
   .opt:hover{border-color:var(--primary)}
   .opt.correct{background:#EEF6E9;border-color:var(--good);color:#2f5a1f;font-weight:700}
@@ -176,7 +181,8 @@ function openStory(id){
     <div id="qbox">${qs.map((q,qi)=>`
       <div class="q">
         <div class="qt">${qi+1}. ${q.qt}</div>
-        <div class="opts" data-qi="${qi}">
+        <button class="reveal" data-qi="${qi}">🤔 فكّرْ… ثمّ أظهِرِ الخيارات</button>
+        <div class="opts hidden" data-qi="${qi}">
           ${q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.t}</button>`).join("")}
         </div>
       </div>`).join("")}</div>
@@ -186,6 +192,15 @@ function openStory(id){
     <div class="backrow"><button class="backstep" id="back">كل القصص</button></div>
   </div>`;
 
+  // نمطُ «فكّرْ ثمّ أظهِرِ الخيارات»: يبقى الجوابُ مخفيًّا حتى يتذكّرَ الطفلُ ثمّ يكشفَ الخيارات.
+  view.querySelectorAll(".reveal").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const qi = btn.getAttribute("data-qi");
+      const box = view.querySelector(`.opts[data-qi="${qi}"]`);
+      if(box) box.classList.remove("hidden");
+      btn.style.display = "none";
+    });
+  });
   view.querySelectorAll(".opts").forEach(box=>{
     const qi = +box.getAttribute("data-qi");
     box.addEventListener("click", e=>{

@@ -49,7 +49,11 @@
   .qcard{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px 18px}
   .qcat{font-size:11px;background:#FBEDE7;color:var(--primary-d);border-radius:999px;padding:2px 10px;display:inline-block;margin-bottom:8px}
   .qtext{font-size:20px;font-weight:700;line-height:1.9;margin:4px 2px 16px;min-height:60px}
+  .reveal{background:color-mix(in srgb,var(--primary) 12%,var(--card));border:1.5px dashed var(--primary);color:var(--primary-d);border-radius:14px;padding:11px 16px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;width:100%;transition:background .12s,transform .08s}
+  .reveal:hover{background:color-mix(in srgb,var(--primary) 20%,var(--card))}
+  .reveal:active{transform:scale(.98)}
   .opts{display:grid;gap:10px}
+  .opts.hidden{display:none}
   .opt{text-align:start;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:13px 15px;font-size:17px;cursor:pointer;font-family:inherit;color:var(--ink);transition:border-color .1s,background .1s}
   .opt:hover{border-color:var(--primary)}
   .opt.correct{background:#EEF6E9;border-color:var(--good);color:#2f5a1f;font-weight:700}
@@ -171,13 +175,17 @@ function renderQuestion(){
     <div class="qcard">
       <span class="qcat">${strip(item.cat)}</span>
       <div class="qtext">${item.q}</div>
-      <div class="opts" id="opts">
+      <button class="reveal" id="reveal">🤔 فكّرْ… ثمّ أظهِرِ الخيارات</button>
+      <div class="opts hidden" id="opts">
         ${item.opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.t}</button>`).join("")}
       </div>
       <button class="next" id="next" style="display:none">${qi===session.length-1?"إظهار النتيجة 🌟":"التالي ▶"}</button>
     </div>`;
 
   wireAuto(view);
+  // فكّرْ ثمّ أظهِرِ الخيارات: الجوابُ مخفيٌّ حتى يتذكّرَ الطفلُ ثمّ يكشفَه.
+  const rev = document.getElementById("reveal");
+  rev.addEventListener("click", ()=>{ document.getElementById("opts").classList.remove("hidden"); rev.style.display="none"; });
   const advance = ()=>{ if(qi < session.length-1){ qi++; renderQuestion(); } else { renderResult(); } };
   const autoAdvance = ()=>{ if(isAutoNext()) advance(); };  // ينتقل تلقائياً بعد انتهاء ردّة فعل الآلي (إن فُعِّل)
   document.getElementById("opts").addEventListener("click", e=>{

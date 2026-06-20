@@ -59,6 +59,10 @@
   .opvis{font-size:34px;font-weight:800;text-align:center;color:var(--primary-d);margin:8px 0}
   .picview{background:#F6F3EC;border-radius:14px;padding:14px 10px;margin:6px 0 12px;min-height:80px;text-align:center;font-size:32px;line-height:1.4}
   .opts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 2px}
+  .opts.hidden{display:none}
+  .reveal{background:color-mix(in srgb,var(--primary) 12%,var(--card));border:1.5px dashed var(--primary);color:var(--primary-d);border-radius:14px;padding:10px 16px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;margin:8px auto 4px;display:block;transition:background .12s,transform .08s}
+  .reveal:hover{background:color-mix(in srgb,var(--primary) 20%,var(--card))}
+  .reveal:active{transform:scale(.98)}
   .opt{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px 18px;font-size:30px;font-weight:800;color:var(--ink);cursor:pointer;font-family:inherit;min-width:64px}
   .opt:hover{border-color:var(--primary)}
   .opt.ok{background:#EEF6E9;border-color:var(--good);color:#2f5a1f}
@@ -368,9 +372,12 @@ function nextArith(){
        <div class="prompt">${{["+"]:"كم المجموع؟",["-"]:"كم الباقي؟",["×"]:"كم الناتج؟"}[arOp]}</div>
        <div class="opvis">${p.q}</div>
        <div class="picview">${visualOp(p)}</div>
-       <div class="opts" id="opts">${p.opts.map(o=>`<button class="opt" data-v="${o}">${o}</button>`).join("")}</div>
+       <button class="reveal" id="reveal">🤔 احسُبْ… ثمّ أظهِرِ الخيارات</button>
+       <div class="opts hidden" id="opts">${p.opts.map(o=>`<button class="opt" data-v="${o}">${o}</button>`).join("")}</div>
      </div>`;
   wireBack(); wireAuto(view);
+  const rev = view.querySelector("#reveal");
+  rev.addEventListener("click", ()=>{ view.querySelector("#opts").classList.remove("hidden"); rev.style.display="none"; });
   view.querySelector(".ageb").addEventListener("click", e=>{
     const b=e.target.closest("button[data-l]"); if(!b) return;
     arLevel = +b.getAttribute("data-l"); nextArith();

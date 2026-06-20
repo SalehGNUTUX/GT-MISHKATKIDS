@@ -46,6 +46,10 @@
   .backbtn{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:2px solid var(--primary);border-radius:999px;padding:9px 16px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--primary-d);box-shadow:0 3px 10px rgba(0,0,0,.10);transition:transform .12s,background .12s,color .12s}
   .backbtn:hover{background:var(--primary);color:#fff}
   .backbtn:active{transform:scale(.96)}
+  .reveal{background:color-mix(in srgb,var(--primary) 12%,var(--card));border:1.5px dashed var(--primary);color:var(--primary-d);border-radius:14px;padding:11px 16px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;width:100%;margin:6px 0 10px;transition:background .12s,transform .08s}
+  .reveal:hover{background:color-mix(in srgb,var(--primary) 20%,var(--card))}
+  .reveal:active{transform:scale(.98)}
+  .grid.hidden{display:none}
   .topnav .cur{font-size:16px;font-weight:800;color:var(--primary-d)}
   .lgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;margin-top:6px}
   .lcard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
@@ -250,7 +254,10 @@ function renderQuiz(L, host){
     host.innerHTML = `<div class="qzn">سؤال ${i+1}/${N} · ⭐ ${score}</div>
       <div class="qzprompt"><span class="qzemoji">${correct.emoji}</span><span class="qzar">${esc(correct.ar)}</span>
         <div class="hint">اختَرِ الكلمةَ الصحيحة (${esc(L.nameAr)})</div></div>
-      <div class="grid">${opts.map(o=>`<button class="gcard qzopt" data-w="${esc(o.w)}"><span class="big ltr" style="font-size:17px">${esc(o.w)}</span></button>`).join("")}</div>`;
+      <button class="reveal" id="lqReveal">🤔 فكّرْ… ثمّ أظهِرِ الخيارات</button>
+      <div class="grid qzgrid hidden">${opts.map(o=>`<button class="gcard qzopt" data-w="${esc(o.w)}"><span class="big ltr" style="font-size:17px">${esc(o.w)}</span></button>`).join("")}</div>`;
+    const lr = host.querySelector("#lqReveal");
+    lr.onclick = ()=>{ host.querySelector(".qzgrid").classList.remove("hidden"); lr.style.display="none"; };
     host.querySelectorAll(".qzopt").forEach(b=>b.onclick=()=>{
       const w=b.getAttribute("data-w"); say(w, L);
       if(w===correct.w){ b.classList.add("ok"); score++; host.querySelectorAll(".qzopt").forEach(x=>x.disabled=true);

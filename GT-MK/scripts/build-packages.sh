@@ -68,6 +68,12 @@ build_apk() {
   do_build
   [ -d "$ANDROID" ] || { step "إنشاءُ مشروع أندرويد"; npx cap add android || { err "cap add android فشل"; exit 1; }; }
   npx cap sync android 2>&1 | tail -8
+  # أيقوناتُ التطبيقِ وشاشةُ البدء من assets/ (icon-foreground/background + splash) إلى كلّ مجلّدات res.
+  if [ -f "$ROOT/assets/icon.png" ]; then
+    [ -d "$ROOT/node_modules/@capacitor/assets" ] || npm install --no-save @capacitor/assets@^3 >/dev/null 2>&1
+    step "توليدُ أيقونات أندرويد وشاشةِ البدء (@capacitor/assets)"
+    npx @capacitor/assets generate --android --iconBackgroundColor '#39562a' --iconBackgroundColorDark '#1d3214' 2>&1 | tail -3
+  fi
   [ -n "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}" ] || wrn "ANDROID_HOME غير مضبوط — قد يفشل gradlew"
   ( cd "$ANDROID" && chmod +x gradlew && ./gradlew assembleDebug 2>&1 | tail -12 )
   local apk="$ANDROID/app/build/outputs/apk/debug/app-debug.apk"

@@ -10,6 +10,7 @@
 | [`audio-pronunciation.md`](audio-pronunciation.md) | ⭐ نظامُ الصوت والنطق كاملاً: الطبقات والمصادر، **توحيدُ ترتيب التشكيل ولفظ الجلالة** (`arabic-normalize.js`)، حدودُ المحرّكات، إعادةُ التوليد والتحقّق. |
 | [`pitfalls-and-solutions.md`](pitfalls-and-solutions.md) | سجلُّ الحالات والحلول: كلُّ مشكلةٍ عالجناها (صوت · PWA/نشر · تخزين/حسابات · واجهة/سمة · أيقونات · محتوى) بصيغة العَرَض ← الجذر ← الحلّ ← الموضع. |
 | [`content-format.md`](content-format.md) | تنسيقُ ملفّات المحتوى (`content/*.js`): الحقول والبنية لتأليف المحتوى يدويّاً. |
+| [`packaging.md`](packaging.md) | ⭐ التحزيمُ والنشر: **Linux** (AppImage/DEB/RPM) · **Android** (APK عبر Capacitor) · PWA؛ السقالة، الأوامر، الأيقونات/شاشةُ البدء، مبدأُ التبعيّات، والمزالق. |
 | [`CREDITS.md`](CREDITS.md) | المصادرُ والتراخيص: GT‑SARARIM (GPL‑3.0)، eSpeak NG، Piper، Font Awesome Free (CC BY 4.0). |
 | [`PLAN.md`](PLAN.md) | خطّةُ العمل الحيّة وسجلُّ التطويرات المؤرَّخ (نقطةُ الاستئناف). |
 

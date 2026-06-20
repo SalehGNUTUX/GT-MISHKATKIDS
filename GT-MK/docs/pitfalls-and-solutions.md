@@ -63,6 +63,29 @@
 
 ---
 
+## 📦 التحزيمُ الأصليّ (Linux · Android)
+
+> النظامُ الكاملُ موثّقٌ في [`packaging.md`](packaging.md). المنسّق: `scripts/build-packages.sh` (`npm run pkg:linux|pkg:apk|pkg:all`). يَلُفُّ مخرجَ `npm run build` نفسَه: Linux بـelectron-builder، Android بـCapacitor.
+
+### ز‑1 · DEB يفشل: `Please specify project homepage`
+- **الحلّ:** أضِفْ `homepage` (و`author`) في `package.json`؛ يتطلّبهما electron-builder لوسمِ DEB/RPM.
+
+### ز‑2 · RPM يفشل عبر electron-builder (`rpmbuild failed`)
+- **الجذر:** `fpm` المرفقُ (1.9.3) قديمٌ لا يوافقُ `rpmbuild` الحديث (4.20+) — يُولّد spec مرفوضًا. (AppImage/DEB لا يستعملان rpmbuild فينجحان.)
+- **الحلّ:** ابْنِ DEB ثمّ حوّلْه إلى RPM بـ`fakeroot alien --to-rpm` (`rpm_from_deb` في السكربت). يتطلّب `alien`+`fakeroot`.
+
+### ز‑3 · APK يفشل: `Could not resolve project :capacitor-android`
+- **الجذر:** `npm install --no-save @capacitor/assets` **حذفَ** حزمَ Capacitor المثبّتةَ سابقًا بـ`--no-save` (غيرُ مذكورةٍ في `package.json` = «زائدة») فاختفى `node_modules/@capacitor/android`.
+- **الحلّ:** ضَعْ `@capacitor/core`/`cli`/`android` (@^6، صغيرةٌ بلا تَنّات) **في `package.json`**؛ و`assets --no-save` بعدها لا يَحذِفُها. حافِظْ على توافقِ إصداراتها (نفسُ الـmajor). أبقِ الثقيلَ (`electron`/`electron-builder`/`@capacitor/assets`+`sharp`) خارجَ `package.json` (عند الطلب) ليبقى نشرُ الويب خفيفًا، و**نظّفِ `package-lock.json`** بـ`npm install --package-lock-only`.
+
+### ز‑4 · بناءٌ فاشلٌ يُبلّغُ «نجاحًا» بنسخةٍ قديمة
+- **الحلّ:** `build_apk` يَحذِفُ `app-debug.apk` قبل `gradlew` فلا يُنسَخَ APK قديمٌ عند الفشل.
+
+### ز‑5 · أيقونةُ أندرويد وشاشةُ البدء
+- المصدرُ `assets/` (icon-foreground/background + splash/-dark). `npx @capacitor/assets generate --android` (داخل `build_apk` بعد `cap sync`) يكتبُ كلَّ المقاسات في `res/mipmap-*` (أيقونةٌ بلا نصّ) و`res/drawable-*` (شاشةٌ بالعنوان). `android/` مُولَّدٌ (gitignored) فالأيقونةُ تُعاد كتابتُها من `assets/` في كلّ بناء.
+
+---
+
 ## 🗄️ التخزين · الحسابات
 
 ### خ‑1 · بياناتُ التطوير «تختفي»

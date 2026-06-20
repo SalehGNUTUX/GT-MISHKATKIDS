@@ -59,25 +59,35 @@ build_linux() { # $1 = أهداف electron-builder (مثل: "AppImage deb rpm")
   ls -1 "$RELEASE" 2>/dev/null | grep -iE "appimage|\.deb|\.rpm" && ok "حزمُ لينكس في release/" || wrn "راجِعْ مخرجَ electron-builder"
 }
 
+# rpm: fpm المرفقُ في electron-builder (1.9.3) لا يوافق rpmbuild الحديث (4.20+)، فنحوّلُ الـdeb العاملَ
+# إلى rpm عبر alien — أوثقُ على الأنظمة الحديثة.
+rpm_from_deb() {
+  command -v alien >/dev/null || { wrn "alien غير متوفّر — تُخطّى rpm (مستخدمو rpm يمكنهم AppImage)"; return 0; }
+  local deb; deb="$(ls -1 "$RELEASE"/*.deb 2>/dev/null | head -1)"
+  [ -n "$deb" ] || { err "لا deb لتحويله إلى rpm"; return 1; }
+  step "تحويلُ deb→rpm عبر alien"
+  ( cd "$RELEASE" && fakeroot alien --to-rpm --scripts "$(basename "$deb")" >/dev/null 2>&1 )
+  ls -1 "$RELEASE"/*.rpm >/dev/null 2>&1 && ok "rpm في release/" || err "فشل توليد rpm"
+}
+
 build_apk() {
   step "تحزيمُ أندرويد (Capacitor)"
-  if [ ! -d "$ROOT/node_modules/@capacitor/cli" ]; then
-    step "تثبيتُ Capacitor (مرّةً واحدة، --no-save)"
-    npm install --no-save @capacitor/cli@^6 @capacitor/core@^6 @capacitor/android@^6 || { err "فشل تثبيت Capacitor"; exit 1; }
-  fi
+  # Capacitor (core/cli/android) في package.json — يُثبَّت عاديًّا. (assets ثقيلٌ بـsharp → عند الطلب فقط.)
+  [ -d "$ROOT/node_modules/@capacitor/android" ] || { step "تثبيتُ تبعيّات Capacitor"; npm install || { err "فشل npm install"; exit 1; }; }
   do_build
   [ -d "$ANDROID" ] || { step "إنشاءُ مشروع أندرويد"; npx cap add android || { err "cap add android فشل"; exit 1; }; }
   npx cap sync android 2>&1 | tail -8
-  # أيقوناتُ التطبيقِ وشاشةُ البدء من assets/ (icon-foreground/background + splash) إلى كلّ مجلّدات res.
+  # أيقوناتُ التطبيقِ وشاشةُ البدء من assets/ → كلّ مجلّدات res. (assets --no-save لا يَحذِفُ تبعيّاتِ package.json.)
   if [ -f "$ROOT/assets/icon.png" ]; then
     [ -d "$ROOT/node_modules/@capacitor/assets" ] || npm install --no-save @capacitor/assets@^3 >/dev/null 2>&1
     step "توليدُ أيقونات أندرويد وشاشةِ البدء (@capacitor/assets)"
     npx @capacitor/assets generate --android --iconBackgroundColor '#39562a' --iconBackgroundColorDark '#1d3214' 2>&1 | tail -3
   fi
   [ -n "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}" ] || wrn "ANDROID_HOME غير مضبوط — قد يفشل gradlew"
-  ( cd "$ANDROID" && chmod +x gradlew && ./gradlew assembleDebug 2>&1 | tail -12 )
   local apk="$ANDROID/app/build/outputs/apk/debug/app-debug.apk"
-  [ -f "$apk" ] && { cp "$apk" "$RELEASE/$APP_NAME-$VERSION-debug.apk"; ok "APK في release/$APP_NAME-$VERSION-debug.apk"; } || err "لم يُنتَج APK"
+  rm -f "$apk"  # لئلّا يُنسَخَ APK قديمٌ إن فشل البناء
+  ( cd "$ANDROID" && chmod +x gradlew && ./gradlew assembleDebug 2>&1 | tail -12 )
+  [ -f "$apk" ] && { cp "$apk" "$RELEASE/$APP_NAME-$VERSION-debug.apk"; ok "APK في release/$APP_NAME-$VERSION-debug.apk"; } || { err "لم يُنتَج APK"; return 1; }
 }
 
 check_deps() {
@@ -92,10 +102,10 @@ case "$TARGET" in
   icons)     gen_icons ;;
   appimage)  do_build; build_linux "AppImage" ;;
   deb)       do_build; build_linux "deb" ;;
-  rpm)       do_build; build_linux "rpm" ;;
-  linux)     do_build; build_linux "AppImage deb rpm" ;;
+  rpm)       do_build; build_linux "deb"; rpm_from_deb ;;
+  linux)     do_build; build_linux "AppImage deb"; rpm_from_deb ;;
   apk)       build_apk ;;
-  all)       do_build; build_linux "AppImage deb rpm"; build_apk ;;
+  all)       do_build; build_linux "AppImage deb"; rpm_from_deb; build_apk ;;
   check-deps) check_deps ;;
   *) err "هدفٌ غير معروف: $TARGET"; exit 1 ;;
 esac

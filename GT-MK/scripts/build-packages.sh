@@ -45,8 +45,8 @@ do_build() {
 
 ensure_eb() {
   if [ ! -d "$ROOT/node_modules/electron-builder" ]; then
-    step "تثبيتُ electron + electron-builder (مرّةً واحدة)"
-    npm install --save-dev electron@^33 electron-builder@^25 || { err "فشل التثبيت"; exit 1; }
+    step "تثبيتُ electron + electron-builder (مرّةً واحدة، --no-save لإبقاء نشرِ الويب خفيفًا)"
+    npm install --no-save electron@^33 electron-builder@^25 || { err "فشل التثبيت"; exit 1; }
   fi
 }
 
@@ -62,8 +62,8 @@ build_linux() { # $1 = أهداف electron-builder (مثل: "AppImage deb rpm")
 build_apk() {
   step "تحزيمُ أندرويد (Capacitor)"
   if [ ! -d "$ROOT/node_modules/@capacitor/cli" ]; then
-    step "تثبيتُ Capacitor (مرّةً واحدة)"
-    npm install --save-dev @capacitor/cli@^6 && npm install @capacitor/core@^6 @capacitor/android@^6 || { err "فشل تثبيت Capacitor"; exit 1; }
+    step "تثبيتُ Capacitor (مرّةً واحدة، --no-save)"
+    npm install --no-save @capacitor/cli@^6 @capacitor/core@^6 @capacitor/android@^6 || { err "فشل تثبيت Capacitor"; exit 1; }
   fi
   do_build
   [ -d "$ANDROID" ] || { step "إنشاءُ مشروع أندرويد"; npx cap add android || { err "cap add android فشل"; exit 1; }; }

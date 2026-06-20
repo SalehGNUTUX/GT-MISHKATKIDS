@@ -24,13 +24,35 @@
     "productName": "GT-MISHKATKIDS",
     "copyright": "© 2026 SalehGNUTUX — GNU GPL v3",
     "asar": true,
-    "files": ["dist/**/*", "electron/**/*", "package.json"],
-    "directories": { "output": "release", "buildResources": "build" },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
     "linux": {
       "target": [
-        { "target": "AppImage", "arch": ["x64"] },
-        { "target": "deb", "arch": ["x64"] },
-        { "target": "rpm", "arch": ["x64"] }
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "rpm",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "icon": "build/icons",
       "category": "Education",
@@ -44,7 +66,9 @@
         "Categories": "Education;"
       }
     },
-    "appImage": { "artifactName": "${productName}-${version}-${arch}.AppImage" }
+    "appImage": {
+      "artifactName": "${productName}-${version}-${arch}.AppImage"
+    }
   },
   "dependencies": {
     "jspdf": "^4.2.1"

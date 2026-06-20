@@ -11,7 +11,7 @@ export default {
 
   // الأبجديّة + كلمةٌ مثالٌ ورمزٌ معبّر لكلّ حرف. name = نطقُ اسمِ الحرف صوتيّاً (يقرؤه Piper ككلمةٍ سليمة).
   letters: [
-    { ch: "A", name: "ay",         word: "Apple",     emoji: "🍎" },
+    { ch: "A", name: "eigh",       word: "Apple",     emoji: "🍎" },
     { ch: "B", name: "bee",        word: "Ball",      emoji: "⚽" },
     { ch: "C", name: "see",        word: "Cat",       emoji: "🐱" },
     { ch: "D", name: "dee",        word: "Dog",       emoji: "🐶" },

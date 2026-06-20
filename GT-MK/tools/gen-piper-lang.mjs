@@ -29,8 +29,12 @@ const sha = s => createHash("sha1").update(s).digest("hex").slice(0, 12);
 const L = (await import(CFG.content)).default;
 const SET = CFG.set;
 const uniq = a => [...new Set(a.filter(Boolean).map(s => String(s).trim()).filter(Boolean))];
+// أسماءُ الأحرف صوتيّاً (name) — يُنطِقُها العصبيُّ كبقيّة المحتوى. مفتاحُها = name، لكنّ نصَّ
+// التركيب يُذيَّل بنقطةٍ (LETTER_DOT) لإعطاء النموذج خاتمةً جُمليّةً تُثبّتُ المقطعَ القصيرَ جدّاً.
+const LETTER_NAMES = new Set(uniq((L.letters || []).map(x => x.name || x.ch)));
 const texts = uniq([
-  ...(L.letters || []).flatMap(x => [x.name || x.ch, x.word]), // اسمُ الحرف صوتيّاً + كلمةُ المثال
+  ...LETTER_NAMES,                       // أسماءُ الأحرف (عصبيّ)
+  ...(L.letters || []).map(x => x.word), // كلمةُ المثال
   ...(L.numbers || []).map(x => x.word),
   ...(L.words || []).flatMap(c => (c.items || []).map(it => it.w)),
   ...(L.phrases || []).flatMap(c => (c.items || []).map(it => it.t)),
@@ -42,7 +46,9 @@ const texts = uniq([
 const setHash = sha(SET.id);
 const setDir = join(OUTDIR, setHash);
 mkdirSync(setDir, { recursive: true });
-const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: t, out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
+// المفتاحُ يبقى النصَّ الأصليَّ (للمطابقة في lang.html)؛ نصُّ التركيبِ لأسماء الأحرف يُذيَّل بنقطةٍ
+// (خاتمةٌ جُمليّةٌ تُحسّنُ نطقَ العصبيّ للوحدة المنفردة وتُقلّل تشويهَ الحوافّ).
+const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: LETTER_NAMES.has(t) ? t + " ." : t, out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
 
 console.log(`🔊 توليد ${tasks.length} مقطعًا بصوت Piper (${SET.id} ← ${CFG.model})…`);
 const tasksFile = join(ROOT, ".piper-tasks.json");

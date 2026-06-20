@@ -172,7 +172,7 @@ function webSpeak(text, code){
 }
 function say(text, L){
   if(!text) return;
-  try{ if(playClipForSet(text, L.voice)) return; }catch(e){} // مقطع Piper المُدمج
+  try{ if(playClipForSet(text, L.voice)) return; }catch(e){} // مقطع Piper العصبيّ المُدمج (أحرفٌ وكلماتٌ وجمل)
   webSpeak(text, L.code);
 }
 // نسخةٌ وعديّة (لقراءة القصّة كاملةً): تُحَلّ عند انتهاء النطق.

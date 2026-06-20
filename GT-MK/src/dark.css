@@ -91,13 +91,29 @@ html[data-theme="dark"] .rr button.rr-help{background:#2a2a34;border-color:#6e5a
 html[data-theme="dark"] .rr-st{color:var(--muted)}
 
 /* ====== ألعابُ واختباراتُ اللغات: خلايا/إجاباتٌ واضحةُ التباين في الوضع الداكن ======
-   كانت الخلايا (var(--card)) قريبةً من خلفيّة الصفحة فتبهُت؛ نرفعُها سطحًا أزرقَ-رماديًّا
-   بنصٍّ ناصعٍ وحدٍّ واضح، ونُصحّحُ ألوانَ حالات الصواب/الخطأ المثبّتة الفاتحة. */
-html[data-theme="dark"] .mcard,html[data-theme="dark"] .qzopt{
+   خلايا لعبة المطابقة (lang) كانت (var(--card)) قريبةً من خلفيّة الصفحة فتبهُت؛ نرفعُها سطحًا
+   أزرقَ-رماديًّا بنصٍّ ناصع. مَقصورةٌ على .matchwrap كي لا تمسَّ بطاقاتِ ذاكرة play (.mcard أيضًا). */
+html[data-theme="dark"] .matchwrap .mcard,html[data-theme="dark"] .qzopt{
   background:#2b3543 !important;border-color:#44546a !important;color:#F1F5FA !important}
-html[data-theme="dark"] .mcard .ltr{color:#F1F5FA}
-html[data-theme="dark"] .mcard.sel{border-color:var(--primary) !important;box-shadow:0 0 0 2px var(--primary) inset}
-html[data-theme="dark"] .mcard.done,html[data-theme="dark"] .qzopt.ok{
+html[data-theme="dark"] .matchwrap .mcard .ltr{color:#F1F5FA}
+html[data-theme="dark"] .matchwrap .mcard.sel{border-color:var(--primary) !important;box-shadow:0 0 0 2px var(--primary) inset}
+html[data-theme="dark"] .matchwrap .mcard.done,html[data-theme="dark"] .qzopt.ok{
   background:#244a30 !important;border-color:#8BC36B !important;color:#d7f0d9 !important;opacity:1}
-html[data-theme="dark"] .qzopt.bad,html[data-theme="dark"] .mcard.bad{
+html[data-theme="dark"] .qzopt.bad,html[data-theme="dark"] .matchwrap .mcard.bad{
   background:#4d2530 !important;border-color:#E0566B !important;color:#ffd9df !important}
+
+/* ====== استكمالُ تغطية الوضع الداكن لباقي الأنشطة (أسطحٌ مخصّصةٌ غيرُ مغطّاة) ====== */
+/* الألعاب: خاناتُ التغذية الراجعة (التالية/الممتلئة/الخطأ) */
+html[data-theme="dark"] .slot.next{background:#3a2e26 !important}
+html[data-theme="dark"] .slot.full,html[data-theme="dark"] .s-train .slot.full,
+html[data-theme="dark"] .s-fish .caught .slot.full{background:#1f3340 !important;color:#cfe6f2 !important}
+html[data-theme="dark"] .slot.err{background:#4d2530 !important}
+/* بطاقاتُ ذاكرة play: تبقى الحالةُ «مطابَقة» خضراءَ واضحةً */
+html[data-theme="dark"] .mcard.matched{background:#22351f !important;border-color:#3a5a30 !important}
+/* الألغاز: صندوقُ الحلّ */
+html[data-theme="dark"] .solbox{background:#22351f !important;border-color:#3a5a30 !important;color:#a8e08a !important}
+/* الاختبارات: رقاقةُ فئة السؤال */
+html[data-theme="dark"] .qcat{background:#2e2a26 !important;color:var(--primary-d) !important}
+/* القراءة بالتركيب: المقطعُ المضيءُ (lit) لا يفقدُ تمييزَه + بطاقةُ الخطوة */
+html[data-theme="dark"] .sword.lit{background:#22351f !important;border-color:#8BC36B !important;color:#a8e08a !important}
+html[data-theme="dark"] .gcard .step{background:#2e2a26 !important}

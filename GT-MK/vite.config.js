@@ -53,7 +53,7 @@ export default defineConfig({
       },
       workbox: {
         // mp3 = مقاطع النطق المُولَّدة مسبقاً (لتعمل دون إنترنت على كل جهاز)
-        globPatterns: ["**/*.{js,css,html,svg,json,webmanifest,woff2,ttf,otf,mp3}"],
+        globPatterns: ["**/*.{js,css,html,svg,json,webmanifest,woff2,ttf,otf,mp3,webp}"],
         // تلاوةُ القرآن (الحصري، ~79م) لا تُحمَّل مسبقاً (تُثقِل التثبيت)؛ تُخزَّن عند الاستماع (CacheFirst)
         // فتعمل دون إنترنت بعد أوّل استماعٍ لكلِّ سورة. النصُّ مُضمَّنٌ في الحزمة فيعملُ دائمًا.
         globIgnores: ["**/quran/husary/**"],

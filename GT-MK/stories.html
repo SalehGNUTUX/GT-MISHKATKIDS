@@ -40,6 +40,7 @@
   /* reader */
   .reader{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:16px;text-align:center}
   .reader .stage svg{width:100%;height:auto;display:block;border-radius:16px;background:#FBF4EF;border:1px solid var(--line)}
+  .pimg{width:100%;max-width:520px;height:auto;display:block;margin:0 auto;border-radius:16px;border:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.12);background:var(--card)}
   .rtitle{font-size:15px;color:var(--muted);margin:10px 0 0}
   .ptext{font-size:20px;line-height:1.9;margin:12px 6px;min-height:84px}
   .lesson{background:#EEF6E9;border:1px solid #CDE6BE;color:#3f6b2c;border-radius:14px;padding:12px;font-size:17px;font-weight:700;margin:10px 0}
@@ -82,12 +83,16 @@ const STORIES = data.stories || [];
 let si = -1, pi = 0;
 const view = document.getElementById("view");
 const art = k => STORY_ART[k] || "";
+const esc = s => String(s||"").replace(/"/g,"&quot;");
+// وسائطُ الصفحة/الغلاف: صورةٌ جاهزةٌ (قصصٌ مصوّرةٌ بلوحاتٍ كـ«الكتاب السحريّ») أو فنُّ SVG البرمجيّ.
+const pageMedia = p => p.img ? `<img class="pimg" src="${p.img}" alt="${esc(p.text)}" loading="lazy">` : art(p.art);
+const coverMedia = s => s.coverImg ? `<img class="pimg" src="${s.coverImg}" alt="${esc(s.title)}" loading="lazy">` : art(s.cover);
 
 function renderCovers(){
   si = -1;
   view.innerHTML = `<div class="covers">` + STORIES.map((s,i)=>
     `<div class="cover" data-i="${i}">
-       <div class="art">${art(s.cover)}</div>
+       <div class="art">${coverMedia(s)}</div>
        <div class="t">${s.title}</div>
        <div class="v">⭐ ${s.value} · ${s.age_band}</div>
      </div>`).join("") + `</div>`;
@@ -98,11 +103,12 @@ function openStory(i){ si=i; pi=0; renderPage(); }
 
 function renderPage(){
   const s = STORIES[si], last = pi === s.pages.length-1, p = s.pages[pi];
+  const imgMode = !!p.img; // قصّةٌ بلوحاتٍ مصوّرة: النصُّ مخبوزٌ في الصورة (لا نُكرّره ولا توگلَ تشكيل)
   view.innerHTML = `<div class="reader">
-    <div class="stage">${art(p.art)}</div>
+    <div class="stage">${pageMedia(p)}</div>
     <div class="rtitle">${disp(s.title)}</div>
-    <div class="ptext">${disp(p.text)}</div>
-    <div style="text-align:center;margin:4px 0">${tashBtn()}</div>
+    ${imgMode ? "" : `<div class="ptext">${disp(p.text)}</div>
+    <div style="text-align:center;margin:4px 0">${tashBtn()}</div>`}
     ${isStoryReadOn() ? `<div id="srHost"></div>` : ""}
     <div id="rrHost"></div>
     ${last ? `<div class="lesson">الدرس: ${disp(s.lesson)}</div>` : ""}
@@ -116,7 +122,7 @@ function renderPage(){
   document.getElementById("prev").onclick = ()=>{ if(pi>0){ pi--; renderPage(); } };
   document.getElementById("next").onclick = ()=>{ if(pi < s.pages.length-1){ pi++; renderPage(); } else { renderCovers(); } };
   document.getElementById("back").onclick = renderCovers;
-  document.getElementById("tashToggle").onclick = ()=>{ setShowTashkeel(!showTashkeel()); renderPage(); };
+  const tt = document.getElementById("tashToggle"); if(tt) tt.onclick = ()=>{ setShowTashkeel(!showTashkeel()); renderPage(); };
   attachReader(document.getElementById("rrHost"), p.text, { label:"قراءتك للصفحة" });
   // قراءةُ القصّة بصوتٍ (القارئ المختار) — صفحةً أو كاملةً مع الانتقال التلقائيّ. النصُّ المُقرَّر بالشكل الكامل.
   if(isStoryReadOn()) attachStoryReader(document.getElementById("srHost"), {
@@ -125,7 +131,10 @@ function renderPage(){
   });
 }
 
-renderCovers();
+// رابطٌ عميق: ?story=<id> يفتح القصّةَ مباشرةً (تُستعمَل من بطاقة «قصّة الأرقام» في الرياضيّات).
+const wantStory = new URLSearchParams(location.search).get("story");
+const wantIdx = wantStory ? STORIES.findIndex(s=>s.id===wantStory) : -1;
+if(wantIdx>=0) openStory(wantIdx); else renderCovers();
 </script>
 </body>
 </html>

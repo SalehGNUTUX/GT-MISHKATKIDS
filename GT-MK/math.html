@@ -132,6 +132,13 @@
 
   /* قصّة الأرقام */
   .nintro{background:#FFF6EE;border:1px solid #F0DDC8;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.8;margin:8px 2px}
+  .ncomic{display:flex;align-items:center;gap:12px;margin:10px 2px;padding:12px 14px;border-radius:16px;text-decoration:none;color:#fff;
+    background:linear-gradient(135deg,#6FB3D6,#7B86E0);box-shadow:0 4px 14px rgba(99,102,200,.32);transition:transform .12s,box-shadow .12s}
+  .ncomic:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(99,102,200,.42)}
+  .ncomic:active{transform:scale(.98)}
+  .ncomic .ico{font-size:30px;flex:0 0 auto}
+  .ncomic .tx{flex:1;line-height:1.5} .ncomic .tx small{opacity:.92;font-size:12px}
+  .ncomic .go{font-size:22px;font-weight:800;flex:0 0 auto}
   .nfams{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:10px 2px}
   .nfam{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px;text-align:center}
   .nfam .gl{font-size:24px;font-weight:800;letter-spacing:3px;color:var(--primary-d);direction:ltr}
@@ -294,6 +301,11 @@ function startNumerals(){
   const N = NUMERALS, bold = s => String(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
   view.innerHTML = backBar()+
     `<div class="nintro">${N.intro} <button class="back" id="readIntro" style="padding:3px 9px">🔊</button></div>
+     <a class="ncomic" href="stories.html?story=magic-numbers">
+       <span class="ico">📖</span>
+       <span class="tx"><b>الكِتابُ السِّحْريُّ — رِحْلَةُ الأَرْقام</b><br><small>قصّةٌ مصوّرةٌ: كيف رحلتِ الأرقامُ والصِّفرُ من الهند إلى بغداد فالعالَم 🌍</small></span>
+       <span class="go">▸</span>
+     </a>
      <div class="nfams">${N.families.map(f=>`<div class="nfam"><div class="gl">${f.glyphs}</div><div class="ti">${f.title}</div><div class="nt">${f.note}</div></div>`).join("")}</div>
      <h3 style="margin:14px 2px 4px;color:var(--primary-d)">📜 رحلةُ الأرقام عبر الزمن</h3>
      <div class="ntl">${N.timeline.map(e=>`<div class="row"><span class="y">${e.y}</span><span class="t">${e.t}</span><div class="d">${e.d}</div></div>`).join("")}</div>

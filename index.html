@@ -164,6 +164,12 @@
   .pri:hover .e{transform:scale(1.18)}
   .feat:hover .e{transform:scale(1.16);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
   @media(prefers-reduced-motion:reduce){ .opt,.opt .ico,.pri,.pri .e,.feat .e{transition:none} .opt:hover,.pri:hover{transform:none} }
+
+  /* بطاقةُ GT-SARARIM: أيقونةُ البرنامج + تحريكٌ خفيفٌ خاصٌّ بها (يَستبدلُ نبضةَ البطاقات العامّة) */
+  .sararim-ic{width:64px;height:64px;border-radius:16px;display:block;box-shadow:0 4px 12px rgba(0,0,0,.14)}
+  .opt.sararim-card .ico{transition:transform .35s ease}
+  .opt.sararim-card:hover .ico{transform:translateY(-4px) scale(1.04)}
+  @media(prefers-reduced-motion:reduce){ .opt.sararim-card:hover .ico{transform:none} }
 </style>
 </head>
 <body>
@@ -292,8 +298,8 @@
     <h2>من مشاريع GNUTUX للأطفال</h2>
     <p class="section-sub">إن أعجبك مِشكاة، فقد يَسُرُّك أيضًا:</p>
     <div class="options" style="max-width:560px;margin:0 auto">
-      <div class="opt">
-        <div class="ico" data-i="book-open">📖</div>
+      <div class="opt sararim-card">
+        <div class="ico"><img class="sararim-ic" src="assets/gt-sararim-icon.png" alt="GT-SARARIM — سارة وريم" width="64" height="64" /></div>
         <h3>GT-SARARIM — سارة وريم</h3>
         <p>تطبيقٌ تعليميٌّ وترفيهيٌّ <strong>متكاملٌ</strong> للطفل العربيّ المسلم: قصصٌ وعِبَرٌ وألعابٌ وتلوينٌ ووصلُ نقاطٍ واختبارات — يعملُ دون اتصال. وهو مصدرُ قصصِ العِبَر في مِشكاة.</p>
         <div class="act">

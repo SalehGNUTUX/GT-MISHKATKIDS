@@ -12,7 +12,7 @@
 | [`content-format.md`](content-format.md) | تنسيقُ ملفّات المحتوى (`content/*.js`): الحقول والبنية لتأليف المحتوى يدويّاً. |
 | [`packaging.md`](packaging.md) | ⭐ التحزيمُ والنشر: **Linux** (AppImage/DEB/RPM) · **Android** (APK عبر Capacitor) · PWA؛ السقالة، الأوامر، الأيقونات/شاشةُ البدء، مبدأُ التبعيّات، والمزالق. |
 | [`CREDITS.md`](CREDITS.md) | المصادرُ والتراخيص: GT‑SARARIM (GPL‑3.0)، eSpeak NG، Piper، Font Awesome Free (CC BY 4.0). |
-| [`PLAN.md`](PLAN.md) | خطّةُ العمل الحيّة وسجلُّ التطويرات المؤرَّخ (نقطةُ الاستئناف). |
+| [`PLAN.md`](PLAN.md) | خطّةُ العمل الحيّة وسجلُّ التطويرات المؤرَّخ + **خارطةُ طريق الإصدارات القادمة** (v1.0.x→v2.0). |
 
 ## أوامرُ التطوير الأساسيّة (من داخل `GT-MK/`)
 

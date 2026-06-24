@@ -375,20 +375,25 @@ function renderMaze(){
 }
 
 /* ===================== 🎡 WHEEL ===================== */
-let reels=[0,0,0], found=0, seen=new Set();
+let reels=[0,0,0], found=0, seen=new Set(), wheelN=3; // عددُ الأحرف قابلٌ للاختيار (2–5)
 const rnd=()=>Math.floor(Math.random()*WL.length), joined=()=>reels.map(i=>WL[i]).join("");
-function startWheel(){ reels=[rnd(),rnd(),rnd()]; renderWheel(false); }
+const spinReels=()=>{ reels=Array.from({length:wheelN},rnd); };
+function startWheel(){ spinReels(); renderWheel(false); }
 function renderWheel(an){
   const j=joined(), isW=WORDS.some(w=>w.word===j);
-  view.innerHTML = backBar()+`<div class="clue" style="padding:12px"><div class="say">أدِر العجلة أو اضغط حرفًا لتغييره، ثمّ انطق الكلمة!</div></div>`+
-    `<div class="reels" id="reels"><div class="reel ${an?"spin":""}" data-r="0">${WL[reels[0]]}</div><div class="reel ${an?"spin":""}" data-r="1">${WL[reels[1]]}</div><div class="reel ${an?"spin":""}" data-r="2">${WL[reels[2]]}</div><span class="eq">=</span><div class="blend" dir="rtl">${j}</div></div>`+
+  const reelsHtml = reels.map((ri,idx)=>`<div class="reel ${an?"spin":""}" data-r="${idx}">${WL[ri]}</div>`).join("");
+  const nSel = [2,3,4,5].map(n=>`<button data-n="${n}" style="min-width:42px;border:2px solid var(--line);border-radius:10px;padding:7px 12px;font-weight:800;font-family:inherit;cursor:pointer;background:${n===wheelN?"var(--primary)":"var(--card)"};color:${n===wheelN?"#fff":"var(--ink)"}">${n}</button>`).join("");
+  view.innerHTML = backBar()+`<div class="clue" style="padding:12px"><div class="say">اختَرْ عددَ الأحرف، أدِرِ العجلةَ أو اضغطْ حرفًا لتغييره، ثمّ انطقِ الكلمة!</div></div>`+
+    `<div class="nrow" style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin:8px 0"><span class="pill">عددُ الأحرف:</span>${nSel}</div>`+
+    `<div class="reels" id="reels">${reelsHtml}<span class="eq">=</span><div class="blend" dir="rtl">${j}</div></div>`+
     `<div class="wstatus ${isW?"real":"fake"}">${isW?"🎉 كلمة حقيقية!":"كلمة من خيالك 🛸 — جرّب نطقها"}</div>`+
     `<div class="controls"><button class="go" data-w="spin">🎡 أدِر</button><button data-w="say">🔊 انطق</button><span class="pill" style="align-self:center">كلمات حقيقية: <b id="found">${found}</b></span></div>`+
-    `<div class="hint">كلّ حرفٍ له صوت — ادمج الأصوات معًا. حتى الكلمات المضحكة تدرّب على الدمج!</div>`;
+    `<div class="hint">كلّ حرفٍ له صوت — ادمج الأصوات معًا. كلَّما زادتِ الأحرفُ زادَ احتمالُ كلمةٍ ذاتِ معنًى!</div>`;
   wireBack();
   if(isW&&!seen.has(j)){ seen.add(j); found++; const f=document.getElementById("found"); if(f)f.textContent=found; robo.read(j); }
+  view.querySelector(".nrow").addEventListener("click",e=>{ const b=e.target.closest("[data-n]"); if(!b)return; wheelN=+b.getAttribute("data-n"); startWheel(); });
   view.querySelector("#reels").addEventListener("click",e=>{ const d=e.target.closest(".reel"); if(!d)return; const r=+d.getAttribute("data-r"); reels[r]=(reels[r]+1)%WL.length; renderWheel(false); });
-  view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-w]"); if(!b)return; if(b.getAttribute("data-w")==="spin"){reels=[rnd(),rnd(),rnd()];renderWheel(true);} else robo.read(joined()); });
+  view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-w]"); if(!b)return; if(b.getAttribute("data-w")==="spin"){spinReels();renderWheel(true);} else robo.read(joined()); });
 }
 
 /* ===================== 🖨️ PRINT ===================== */

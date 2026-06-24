@@ -221,6 +221,7 @@ const GAMES = [
   { id:"add",     ic:"➕", t:"الجمع",          d:"تدرَّبْ على جمع الأعداد بصريّاً" },
   { id:"sub",     ic:"➖", t:"الطرح",          d:"تدرَّبْ على الطرح" },
   { id:"mul",     ic:"✖️", t:"الضرب",          d:"جدول الضرب البسيط" },
+  { id:"div",     ic:"➗", t:"القسمة",         d:"تدرَّبْ على القسمة (نتائجُ صحيحة)" },
   { id:"find",    ic:"🔍", t:"اعثر على الشكل", d:"اسمعِ اسمَ الشكلِ واضغطْه" },
   { id:"compare", ic:"⚖️", t:"عُدّ وقارن",     d:"أيُّ مجموعةٍ أكثر؟" },
   { id:"pattern", ic:"🔁", t:"أكمل النمط",     d:"ما العنصرُ التالي؟" },
@@ -237,7 +238,7 @@ function renderMenu(){
     <div class="hint">الشاشةُ محفِّز، والعمل الحقيقيّ بيدك — هيّا لنصنعَ ونتعلّم 🌟</div>`;
   view.querySelector(".menu").addEventListener("click", e=>{
     const c=e.target.closest("[data-g]"); if(!c) return;
-    ({numbers:startNumbers,numerals:startNumerals,add:()=>startArith("+"),sub:()=>startArith("-"),mul:()=>startArith("×"),
+    ({numbers:startNumbers,numerals:startNumerals,add:()=>startArith("+"),sub:()=>startArith("-"),mul:()=>startArith("×"),div:()=>startArith("÷"),
       find:startFind,compare:startCompare,pattern:startPattern,size:startSize,
       basic:startBasicShapes,adv:startAdvShapes,crafts:startCrafts})[c.getAttribute("data-g")]();
   });
@@ -336,9 +337,13 @@ function genArith(){
   let a, b, ans, q;
   if (arOp === "+") { a = 1+rand(max); b = 1+rand(max); ans = a+b; q = `${a} + ${b} = ?`; }
   else if (arOp === "-") { a = 1+rand(max); b = rand(a); ans = a-b; q = `${a} − ${b} = ?`; } // لا نتائج سالبة
-  else { // ×
+  else if (arOp === "×") {
     const m1 = arLevel===1 ? 5 : arLevel===2 ? 7 : 10;
     a = 1+rand(m1); b = 1+rand(m1); ans = a*b; q = `${a} × ${b} = ?`;
+  }
+  else { // ÷ — نتائجُ صحيحةٌ دائمًا: المقسومُ = القاسم × الناتج (لا كسور)
+    const m1 = arLevel===1 ? 5 : arLevel===2 ? 7 : 10;
+    b = 1+rand(m1); ans = 1+rand(m1); a = b*ans; q = `${a} ÷ ${b} = ?`;
   }
   // مشتّتات: مقاربةٌ للجواب ولكنّها مختلفة
   const pool = new Set([ans]);
@@ -357,9 +362,13 @@ function visualOp(p){
     const taken = Array.from({length:p.b},()=>"❌").join("");
     return left + " " + taken;
   }
-  // ×: مجموعات متكرّرة
+  if (arOp === "×") { // مجموعات متكرّرة
+    const em = EMOJIS[rand(EMOJIS.length)];
+    return Array.from({length:p.a},()=>`<span style='display:inline-block;border:1px dashed #ECE6DA;border-radius:8px;padding:2px 4px;margin:2px'>${Array.from({length:p.b},()=>em).join("")}</span>`).join("");
+  }
+  // ÷: المقسومُ كاملًا (a رمزًا) ليوزّعَه الطفلُ ذهنيًّا على عددِ المجموعات (b) — لا يكشفُ الناتج
   const em = EMOJIS[rand(EMOJIS.length)];
-  return Array.from({length:p.a},()=>`<span style='display:inline-block;border:1px dashed #ECE6DA;border-radius:8px;padding:2px 4px;margin:2px'>${Array.from({length:p.b},()=>em).join("")}</span>`).join("");
+  return Array.from({length:p.a},()=>em).join("") + ` <span style='color:#C7613F;font-weight:800'>÷ ${p.b}</span>`;
 }
 let curArith = null, arMissed = false;
 function nextArith(){
@@ -369,7 +378,7 @@ function nextArith(){
     `<div class="gbar"><span class="pill">⭐ <b>${arScore}</b></span>${autoToggleHtml()}</div>
      <div class="ageb">${[1,2,3].map(L=>`<button data-l="${L}" class="${L===arLevel?'on':''}">${L===1?'صغير (4–6)':L===2?'متوسّط (7–8)':'كبير (9–10)'}</button>`).join("")}</div>
      <div class="card">
-       <div class="prompt">${{["+"]:"كم المجموع؟",["-"]:"كم الباقي؟",["×"]:"كم الناتج؟"}[arOp]}</div>
+       <div class="prompt">${{["+"]:"كم المجموع؟",["-"]:"كم الباقي؟",["×"]:"كم الناتج؟",["÷"]:"كم ناتجُ القسمة؟"}[arOp]}</div>
        <div class="opvis">${p.q}</div>
        <div class="picview">${visualOp(p)}</div>
        <button class="reveal" id="reveal">🤔 احسُبْ… ثمّ أظهِرِ الخيارات</button>

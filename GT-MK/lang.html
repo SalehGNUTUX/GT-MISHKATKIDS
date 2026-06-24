@@ -202,9 +202,9 @@ function sayAsync(text, L){
 const _pick = a => (a && a.length) ? a[Math.floor(Math.random() * a.length)] : null;
 function react(L, good){
   const r = _pick(good ? (L.reactions || []) : (L.encourage || []));
-  if(!r) return;
+  if(!r) return Promise.resolve();
   robo.show(r.t + " · " + r.ar, good ? "happy" : "sad", { good });  // الآليُّ + الفقاعةُ (بلا نطقٍ آليّ)
-  sayAsync(r.t, L).then(() => speak(r.ar));                          // لغةُ القسم ثمّ ترجمتُها العربيّة (عصبيّ)
+  return sayAsync(r.t, L).then(() => speak(r.ar));                   // لغةُ القسم ثمّ ترجمتُها العربيّة (عصبيّ) — يُرجِعُ وعدًا لِيُنتظَر اكتمالُه
 }
 const praise = L => react(L, true);
 const encourageReact = L => react(L, false);
@@ -338,11 +338,17 @@ function renderSpell(L, host){
         <div class="snav"><button class="secbtn" id="spClear">↺ امسحْ</button></div>`;
       host.querySelector("#spSay").onclick=()=>say(target, L);
       host.querySelector("#spClear").onclick=()=>{ built=[]; redraw(); };
-      host.querySelectorAll(".lchip").forEach(b=>b.onclick=()=>{ const idx=+b.getAttribute("data-idx"); built.push({idx, ch:letters[idx]});
-        if(built.length===target.length){ const made=built.map(x=>x.ch).join("");
-          if(made===target){ score++; praise(L); setTimeout(()=>{ i++; ask(); }, 1600); }
-          else { encourageReact(L); setTimeout(()=>{ built=[]; redraw(); }, 750); } }
-        else redraw(); });
+      host.querySelectorAll(".lchip").forEach(b=>b.onclick=()=>{
+        const idx=+b.getAttribute("data-idx"); if(built.find(x=>x.idx===idx)) return;
+        built.push({idx, ch:letters[idx]}); redraw(); // يُعادُ الرسمُ دائمًا ليظهرَ الحرفُ (حتى الأخير) في خانته
+        if(built.length!==target.length) return;
+        const made=built.map(x=>x.ch).join("");
+        if(made===target){ score++;
+          let done=false; const go=()=>{ if(done) return; done=true; i++; ask(); };
+          (praise(L)||Promise.resolve()).then(()=>setTimeout(go, 500)); // ننتظرُ اكتمالَ ردّ الآلي ثمّ نتقدّم
+          setTimeout(go, 5000);                                          // أمانٌ إن لم يُحَلَّ الوعد
+        } else { encourageReact(L); setTimeout(()=>{ built=[]; redraw(); }, 900); }
+      });
     }
     redraw(); say(target, L); // ينطقُ الكلمةَ تلقائيًّا أوّلَ مرّة
   }
@@ -364,7 +370,8 @@ function renderListen(L, host){
     host.querySelector("#lsSay").onclick=()=>say(correct.w, L);
     host.querySelectorAll(".lsopt").forEach(b=>b.onclick=()=>{ const w=b.getAttribute("data-w");
       if(w===correct.w){ b.classList.add("ok"); score++; host.querySelectorAll(".lsopt").forEach(x=>x.disabled=true);
-        setTimeout(()=>praise(L), 700); setTimeout(()=>{ i++; ask(); }, 2000); }
+        let done=false; const go=()=>{ if(done) return; done=true; i++; ask(); };
+        (praise(L)||Promise.resolve()).then(()=>setTimeout(go, 500)); setTimeout(go, 5000); }
       else { b.classList.add("bad"); encourageReact(L); setTimeout(()=>b.classList.remove("bad"), 450); } });
     say(correct.w, L); // نطقٌ تلقائيٌّ أوّلَ مرّة
   }

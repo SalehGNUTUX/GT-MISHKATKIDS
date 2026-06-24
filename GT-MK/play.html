@@ -108,10 +108,15 @@
   .lvl{display:flex;gap:6px;margin-inline-start:auto}
   .lvl button{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
   .lvl button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
-  .lvl.wrap{flex-wrap:wrap;margin-inline-start:0}
   .pill.turn{background:var(--primary);color:#fff} .pill.turn b{color:#fff}
-  .setrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 2px}
-  #memStart{background:var(--primary);color:#fff}
+  /* بطاقةُ إعداد لعبة الذاكرة */
+  .memset{max-width:580px;margin:14px auto;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 16px;box-shadow:var(--shadow)}
+  .memset .setrow{margin:0 0 16px}
+  .memset .setlbl{font-weight:800;font-size:14px;color:var(--muted);margin-bottom:8px}
+  .memset .lvl{margin-inline-start:0;flex-wrap:wrap}
+  .memset .lvl button{font-size:15px;padding:9px 16px}
+  #memStart{width:100%;margin-top:4px;padding:14px;border:none;border-radius:14px;font-weight:800;font-family:inherit;font-size:16px;cursor:pointer;background:var(--primary);color:#fff;transition:transform .12s,background .12s}
+  #memStart:hover{background:var(--primary-d)} #memStart:active{transform:scale(.98)}
   .mgrid{display:grid;gap:10px;grid-template-columns:repeat(4,1fr);margin-top:10px}
   .mcard{aspect-ratio:1/1;border-radius:16px;cursor:pointer;position:relative;border:2px solid var(--line);background:var(--card);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;overflow:hidden}
   .mcard .fback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#E07A5F,#E8A07F);color:#fff;font-size:30px;transition:opacity .15s}
@@ -244,12 +249,12 @@ function renderMemSetup(){
     + sibs.map(s=>`<button data-opp="${s.key}" class="${m_opp===s.key?"on":""}">${s.avatar} ${s.name}</button>`).join("")
     + `<button data-opp="parent" class="${m_opp==="parent"?"on":""}">${getParentAvatar()} ${getParentName()}</button>`;
   view.innerHTML = backBar()+
-    `<div class="clue" style="padding:12px"><div class="say">لعبةُ الذاكرة: اختَرِ الصعوبةَ والخصمَ ثمّ ابدأ! 🧠</div></div>
+    `<div class="clue" style="padding:12px"><div class="say">لعبةُ الذاكرة 🧠 — اختَرِ الصعوبةَ والخصمَ ثمّ ابدأ!</div></div>
      <div class="memset">
-       <div class="setrow"><span class="pill">الصعوبة:</span><div class="lvl" id="mlvl"><button data-p="4" class="${m_pairs===4?"on":""}">سهل · 8</button><button data-p="6" class="${m_pairs===6?"on":""}">متوسّط · 12</button><button data-p="8" class="${m_pairs===8?"on":""}">صعب · 16</button></div></div>
-       <div class="setrow"><span class="pill">اللعب:</span><div class="lvl wrap" id="mopp">${oppList}</div></div>
-       <div class="setrow" id="airow" style="${m_opp==="ai"?"":"display:none"}"><span class="pill">مستوى الآليّ:</span><div class="lvl" id="maint"><button data-ai="easy" class="${m_ai==="easy"?"on":""}">سهل</button><button data-ai="medium" class="${m_ai==="medium"?"on":""}">متوسّط</button><button data-ai="hard" class="${m_ai==="hard"?"on":""}">صعب</button></div></div>
-       <button class="go" id="memStart" style="margin-top:12px;width:100%;padding:13px;border-radius:14px;border:none;font-weight:800;font-family:inherit;font-size:16px;cursor:pointer">▶ ابدأ اللعب</button>
+       <div class="setrow"><div class="setlbl">🎚️ الصعوبة</div><div class="lvl" id="mlvl"><button data-p="4" class="${m_pairs===4?"on":""}">سهل · 8</button><button data-p="6" class="${m_pairs===6?"on":""}">متوسّط · 12</button><button data-p="8" class="${m_pairs===8?"on":""}">صعب · 16</button></div></div>
+       <div class="setrow"><div class="setlbl">👥 اللعبُ مع</div><div class="lvl" id="mopp">${oppList}</div></div>
+       <div class="setrow" id="airow" style="${m_opp==="ai"?"":"display:none"}"><div class="setlbl">🤖 مستوى الآليّ</div><div class="lvl" id="maint"><button data-ai="easy" class="${m_ai==="easy"?"on":""}">سهل</button><button data-ai="medium" class="${m_ai==="medium"?"on":""}">متوسّط</button><button data-ai="hard" class="${m_ai==="hard"?"on":""}">صعب</button></div></div>
+       <button id="memStart">▶ ابدأ اللعب</button>
      </div>`;
   wireBack();
   document.getElementById("mlvl").addEventListener("click",e=>{ const b=e.target.closest("[data-p]"); if(!b)return; m_pairs=+b.getAttribute("data-p"); renderMemSetup(); });

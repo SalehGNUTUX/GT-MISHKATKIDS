@@ -181,7 +181,7 @@ import { wireThemeToggle } from "./src/theme.js";
 import { iconHtml } from "./src/icons.js";
 wireThemeToggle(document.getElementById("themeBtn"));
 import DATA from "./content/words.js";
-import { WORLD_ART } from "./src/art.js";
+import { WORLD_ART, MEMORY_ART } from "./src/art.js";
 import { logEvent, recordMastery, getChildAge } from "./src/progress.js";
 import { pickAdaptive } from "./src/adaptive.js";
 import { speak } from "./src/speak.js";
@@ -264,7 +264,7 @@ function renderMemSetup(){
 }
 
 function newMemGame(){
-  const ICONS=Object.keys(WORLD_ART);
+  const ICONS=Object.keys(MEMORY_ART);
   const chosen=shuffle([...ICONS]).slice(0,m_pairs);
   m_deck=shuffle([...chosen,...chosen]); m_flip=[]; m_match=new Set(); m_moves=0; m_lock=false; m_seen=new Map(); m_turn=0;
   const me=meCard();
@@ -284,7 +284,7 @@ function renderMemory(){
   view.innerHTML = backBar()+`<div class="gbar">${board}</div>${turnNote}<div class="mgrid" id="grid"></div><div id="msg"></div>`;
   wireBack();
   const grid=document.getElementById("grid");
-  grid.innerHTML=m_deck.map((k,i)=>{ const up=m_flip.includes(i)||m_match.has(i); return `<div class="mcard ${up?"up":""} ${m_match.has(i)?"matched":""}" data-i="${i}"><div class="fback">🤖</div><div class="ffront">${WORLD_ART[k]}</div></div>`; }).join("");
+  grid.innerHTML=m_deck.map((k,i)=>{ const up=m_flip.includes(i)||m_match.has(i); return `<div class="mcard ${up?"up":""} ${m_match.has(i)?"matched":""}" data-i="${i}"><div class="fback">🤖</div><div class="ffront">${MEMORY_ART[k]}</div></div>`; }).join("");
   grid.querySelectorAll(".mcard").forEach(c=>c.addEventListener("click",()=>onMemCard(+c.getAttribute("data-i"))));
 }
 function onMemCard(i){

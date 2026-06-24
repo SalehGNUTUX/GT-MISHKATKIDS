@@ -108,6 +108,10 @@
   .lvl{display:flex;gap:6px;margin-inline-start:auto}
   .lvl button{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
   .lvl button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .lvl.wrap{flex-wrap:wrap;margin-inline-start:0}
+  .pill.turn{background:var(--primary);color:#fff} .pill.turn b{color:#fff}
+  .setrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 2px}
+  #memStart{background:var(--primary);color:#fff}
   .mgrid{display:grid;gap:10px;grid-template-columns:repeat(4,1fr);margin-top:10px}
   .mcard{aspect-ratio:1/1;border-radius:16px;cursor:pointer;position:relative;border:2px solid var(--line);background:var(--card);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;overflow:hidden}
   .mcard .fback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#E07A5F,#E8A07F);color:#fff;font-size:30px;transition:opacity .15s}
@@ -177,6 +181,7 @@ import { logEvent, recordMastery, getChildAge } from "./src/progress.js";
 import { pickAdaptive } from "./src/adaptive.js";
 import { speak } from "./src/speak.js";
 import { robo } from "./src/robo-companion.js";
+import { listProfiles, getProfile, getCurrentUser, getParentName, getParentAvatar } from "./src/accounts.js";
 robo.mount();
 const WORDS = DATA.words || [];
 const WL = DATA.wheel_letters || [];
@@ -223,34 +228,112 @@ function renderMenu(){
 }
 function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,print:renderPrint})[id](); }
 
-/* ===================== 🧠 MEMORY MATCH ===================== */
+/* ===================== 🧠 MEMORY MATCH (وحدي · الإخوة · الوالد · الآليّ) ===================== */
+// الصعوبة: 4 أزواج=8 بطاقات · 6=12 · 8=16. الخصم: solo | ai | parent | p:<id>. مستوى الآليّ: easy/medium/hard.
 let m_pairs=6, m_deck=[], m_flip=[], m_match=new Set(), m_moves=0, m_lock=false;
-function startMemory(){ newMemGame(); }
+let m_opp="solo", m_ai="medium", m_players=[], m_turn=0, m_seen=new Map();
+
+function startMemory(){ renderMemSetup(); }
+function meCard(){ const u=getCurrentUser(); return (u && u.name) ? { name:u.name, avatar:u.avatar||"🙂" } : { name:"أنت", avatar:"🧒" }; }
+function siblings(){ const u=getCurrentUser(); return listProfiles().filter(p=>!u||p.id!==u.id).map(p=>({ key:"p:"+p.id, name:p.name, avatar:p.avatar||"🙂" })); }
+
+function renderMemSetup(){
+  const sibs = siblings();
+  const oppList = `<button data-opp="solo" class="${m_opp==="solo"?"on":""}">🧒 وحدي</button>`
+    + `<button data-opp="ai" class="${m_opp==="ai"?"on":""}">🤖 ضدّ الآليّ</button>`
+    + sibs.map(s=>`<button data-opp="${s.key}" class="${m_opp===s.key?"on":""}">${s.avatar} ${s.name}</button>`).join("")
+    + `<button data-opp="parent" class="${m_opp==="parent"?"on":""}">${getParentAvatar()} ${getParentName()}</button>`;
+  view.innerHTML = backBar()+
+    `<div class="clue" style="padding:12px"><div class="say">لعبةُ الذاكرة: اختَرِ الصعوبةَ والخصمَ ثمّ ابدأ! 🧠</div></div>
+     <div class="memset">
+       <div class="setrow"><span class="pill">الصعوبة:</span><div class="lvl" id="mlvl"><button data-p="4" class="${m_pairs===4?"on":""}">سهل · 8</button><button data-p="6" class="${m_pairs===6?"on":""}">متوسّط · 12</button><button data-p="8" class="${m_pairs===8?"on":""}">صعب · 16</button></div></div>
+       <div class="setrow"><span class="pill">اللعب:</span><div class="lvl wrap" id="mopp">${oppList}</div></div>
+       <div class="setrow" id="airow" style="${m_opp==="ai"?"":"display:none"}"><span class="pill">مستوى الآليّ:</span><div class="lvl" id="maint"><button data-ai="easy" class="${m_ai==="easy"?"on":""}">سهل</button><button data-ai="medium" class="${m_ai==="medium"?"on":""}">متوسّط</button><button data-ai="hard" class="${m_ai==="hard"?"on":""}">صعب</button></div></div>
+       <button class="go" id="memStart" style="margin-top:12px;width:100%;padding:13px;border-radius:14px;border:none;font-weight:800;font-family:inherit;font-size:16px;cursor:pointer">▶ ابدأ اللعب</button>
+     </div>`;
+  wireBack();
+  document.getElementById("mlvl").addEventListener("click",e=>{ const b=e.target.closest("[data-p]"); if(!b)return; m_pairs=+b.getAttribute("data-p"); renderMemSetup(); });
+  document.getElementById("mopp").addEventListener("click",e=>{ const b=e.target.closest("[data-opp]"); if(!b)return; m_opp=b.getAttribute("data-opp"); renderMemSetup(); });
+  document.getElementById("maint").addEventListener("click",e=>{ const b=e.target.closest("[data-ai]"); if(!b)return; m_ai=b.getAttribute("data-ai"); renderMemSetup(); });
+  document.getElementById("memStart").onclick=newMemGame;
+}
+
 function newMemGame(){
   const ICONS=Object.keys(WORLD_ART);
   const chosen=shuffle([...ICONS]).slice(0,m_pairs);
-  m_deck=shuffle([...chosen,...chosen]); m_flip=[]; m_match=new Set(); m_moves=0; m_lock=false; renderMemory();
+  m_deck=shuffle([...chosen,...chosen]); m_flip=[]; m_match=new Set(); m_moves=0; m_lock=false; m_seen=new Map(); m_turn=0;
+  const me=meCard();
+  if(m_opp==="ai") m_players=[{...me,score:0,cpu:false},{name:"الآليّ",avatar:"🤖",score:0,cpu:true}];
+  else if(m_opp==="parent") m_players=[{...me,score:0,cpu:false},{name:getParentName(),avatar:getParentAvatar(),score:0,cpu:false}];
+  else if(m_opp.startsWith("p:")){ const p=getProfile(m_opp.slice(2)); m_players=[{...me,score:0,cpu:false},{name:p?p.name:"اللاعب 2",avatar:(p&&p.avatar)||"🙂",score:0,cpu:false}]; }
+  else m_players=[{...me,score:0,cpu:false}]; // وحدي
+  renderMemory();
 }
+
 function renderMemory(){
-  view.innerHTML = backBar()+
-    `<div class="gbar"><span class="pill">المحاولات: <b id="mv">${m_moves}</b></span><span class="pill">المطابقات: <b id="pf">${m_match.size/2}</b></span>
-      <div class="lvl" id="lvl"><button data-p="4" class="${m_pairs===4?"on":""}">سهل</button><button data-p="6" class="${m_pairs===6?"on":""}">متوسّط</button><button data-p="7" class="${m_pairs===7?"on":""}">صعب</button></div></div>
-    <div class="mgrid" id="grid"></div><div id="msg"></div>`;
+  const multi=m_players.length>1;
+  const board = multi
+    ? m_players.map((p,k)=>`<span class="pill ${k===m_turn?"turn":""}">${p.avatar} ${p.name}: <b>${p.score}</b></span>`).join("")
+    : `<span class="pill">المحاولات: <b>${m_moves}</b></span><span class="pill">المطابقات: <b>${m_match.size/2}</b></span>`;
+  const turnNote = multi ? `<div class="hint">${m_players[m_turn].cpu?"دورُ الآليّ… 🤖":"دورُ "+m_players[m_turn].avatar+" "+m_players[m_turn].name}</div>` : "";
+  view.innerHTML = backBar()+`<div class="gbar">${board}</div>${turnNote}<div class="mgrid" id="grid"></div><div id="msg"></div>`;
   wireBack();
   const grid=document.getElementById("grid");
   grid.innerHTML=m_deck.map((k,i)=>{ const up=m_flip.includes(i)||m_match.has(i); return `<div class="mcard ${up?"up":""} ${m_match.has(i)?"matched":""}" data-i="${i}"><div class="fback">🤖</div><div class="ffront">${WORLD_ART[k]}</div></div>`; }).join("");
   grid.querySelectorAll(".mcard").forEach(c=>c.addEventListener("click",()=>onMemCard(+c.getAttribute("data-i"))));
-  document.getElementById("lvl").addEventListener("click",e=>{ const b=e.target.closest("button[data-p]"); if(!b)return; m_pairs=+b.getAttribute("data-p"); newMemGame(); });
 }
 function onMemCard(i){
   if(m_lock||m_flip.includes(i)||m_match.has(i))return;
-  m_flip.push(i); renderMemory();
-  if(m_flip.length===2){ m_moves++; const mv=document.getElementById("mv"); if(mv) mv.textContent=m_moves;
-    const [a,b]=m_flip;
-    if(m_deck[a]===m_deck[b]){ m_match.add(a); m_match.add(b); m_flip=[]; renderMemory(); if(m_match.size===m_deck.length) memWin(); }
-    else { m_lock=true; setTimeout(()=>{ m_flip=[]; m_lock=false; renderMemory(); },750); } }
+  if(m_players.length>1 && m_players[m_turn].cpu) return; // دورُ الآليّ
+  flipCard(i);
 }
-function memWin(){ logEvent("memory_win"); robo.cheer(); document.getElementById("msg").innerHTML=`<div class="win">🌟 أحسنت! وجدتَ كلّ المطابقات في <b>${m_moves}</b> محاولة.<div class="controls"><button class="go" id="again">العب من جديد</button></div></div>`; document.getElementById("again").onclick=newMemGame; }
+function flipCard(i){
+  m_flip.push(i); m_seen.set(i,m_deck[i]); renderMemory();
+  if(m_flip.length<2) return;
+  m_moves++; m_lock=true;
+  const [a,b]=m_flip, multi=m_players.length>1;
+  if(m_deck[a]===m_deck[b]){
+    setTimeout(()=>{ m_match.add(a); m_match.add(b); if(multi) m_players[m_turn].score++; m_flip=[]; m_lock=false; renderMemory();
+      if(m_match.size===m_deck.length){ memWin(); return; }
+      if(multi && m_players[m_turn].cpu) aiTurn(); // الآليّ يطابقَ ⇒ يلعبُ ثانيةً
+    },520);
+  } else {
+    setTimeout(()=>{ m_flip=[]; m_lock=false; if(multi) m_turn=(m_turn+1)%m_players.length; renderMemory();
+      if(multi && m_players[m_turn].cpu) aiTurn();
+    },820);
+  }
+}
+function aiPickPair(){
+  const avail=[...m_deck.keys()].filter(i=>!m_match.has(i));
+  const knownByIcon={}; for(const i of avail){ if(m_seen.has(i)) (knownByIcon[m_deck[i]]=knownByIcon[m_deck[i]]||[]).push(i); }
+  const knownPair=Object.values(knownByIcon).find(arr=>arr.length>=2);
+  const useMem = m_ai==="hard" ? true : m_ai==="medium" ? Math.random()<0.6 : false;
+  if(useMem && knownPair) return [knownPair[0],knownPair[1]];
+  const a=avail[Math.floor(Math.random()*avail.length)];
+  let b=null;
+  if(useMem){ b=avail.find(i=>i!==a && m_seen.has(i) && m_deck[i]===m_deck[a]) || null; }
+  if(b==null){ const rest=avail.filter(i=>i!==a); b=rest[Math.floor(Math.random()*rest.length)]; }
+  return [a,b];
+}
+function aiTurn(){
+  m_lock=true;
+  setTimeout(()=>{ const [a,b]=aiPickPair(); m_flip=[a]; m_seen.set(a,m_deck[a]); renderMemory();
+    setTimeout(()=>{ m_lock=false; flipCard(b); }, 750);
+  }, 750);
+}
+function memWin(){
+  logEvent("memory_win");
+  let html;
+  if(m_players.length>1){
+    const [p0,p1]=m_players;
+    const res = p0.score>p1.score ? `🌟 فاز ${p0.avatar} ${p0.name}!` : p1.score>p0.score ? (p1.cpu?"🤖 فاز الآليّ!":`🌟 فاز ${p1.avatar} ${p1.name}!`) : "🤝 تعادُل!";
+    if(p0.score>=p1.score) robo.cheer(); else robo.encourage();
+    html=`<div class="win">${res}<br><span style="font-size:15px">${p0.avatar} ${p0.name}: ${p0.score} · ${p1.avatar} ${p1.name}: ${p1.score}</span>`;
+  } else { robo.cheer(); html=`<div class="win">🌟 أحسنت! وجدتَ كلَّ المطابقات في <b>${m_moves}</b> محاولة.`; }
+  document.getElementById("msg").innerHTML=html+`<div class="controls"><button class="go" id="again">العب ثانيةً</button> <button id="reset2">↻ إعدادات</button></div></div>`;
+  document.getElementById("again").onclick=newMemGame;
+  document.getElementById("reset2").onclick=startMemory;
+}
 
 /* ===================== 🚂 TRAIN — ORDER ===================== */
 let t_tiles=[], t_order=[], t_placed=[], t_solved=false;

@@ -97,6 +97,15 @@ export default {
     { id: "actions", ar: "أفعال", items: [
       { w: "Eat", ar: "يأكل", emoji: "🍽️" }, { w: "Drink", ar: "يشرب", emoji: "🥤" }, { w: "Run", ar: "يجري", emoji: "🏃" },
       { w: "Sleep", ar: "ينام", emoji: "😴" }, { w: "Read", ar: "يقرأ", emoji: "📖" }, { w: "Write", ar: "يكتب", emoji: "✍️" }, { w: "Play", ar: "يلعب", emoji: "🎮" } ] },
+    { id: "jobs", ar: "مهن", items: [
+      { w: "Doctor", ar: "طبيب", emoji: "🧑‍⚕️" }, { w: "Teacher", ar: "معلّم", emoji: "👨‍🏫" }, { w: "Farmer", ar: "مزارع", emoji: "🧑‍🌾" },
+      { w: "Cook", ar: "طبّاخ", emoji: "👨‍🍳" }, { w: "Pilot", ar: "طيّار", emoji: "🧑‍✈️" }, { w: "Police", ar: "شرطيّ", emoji: "👮" } ] },
+    { id: "sports", ar: "رياضة", items: [
+      { w: "Football", ar: "كرة القدم", emoji: "⚽" }, { w: "Swimming", ar: "سباحة", emoji: "🏊" }, { w: "Running", ar: "جري", emoji: "🏃" },
+      { w: "Cycling", ar: "ركوب الدرّاجة", emoji: "🚴" }, { w: "Basketball", ar: "كرة السلّة", emoji: "🏀" }, { w: "Tennis", ar: "تنس", emoji: "🎾" } ] },
+    { id: "house", ar: "أدوات البيت", items: [
+      { w: "Table", ar: "طاولة", emoji: "🪑" }, { w: "Door", ar: "باب", emoji: "🚪" }, { w: "Window", ar: "نافذة", emoji: "🪟" },
+      { w: "Bed", ar: "سرير", emoji: "🛏️" }, { w: "Lamp", ar: "مصباح", emoji: "💡" }, { w: "Key", ar: "مفتاح", emoji: "🔑" } ] },
   ],
 
   // القصص المصوّرة (نفسُ رسوم العربيّة ومعرّفاتها — content/stories.js — مترجمةً).
@@ -191,6 +200,14 @@ export default {
       { t: "Very good!",             ar: "أحسنتَ!" },
       { t: "Sit down, please.",      ar: "اجلسْ من فضلك." },
       { t: "I have a question.",     ar: "عندي سؤال." },
+    ] },
+    { id: "sentences", ar: "جُمَلٌ مفيدة", items: [
+      { t: "My name is Adam.",           ar: "اسمي آدم." },
+      { t: "I like apples very much.",   ar: "أُحبُّ التفّاحَ كثيراً." },
+      { t: "Where is the school, please?", ar: "أين المدرسة، من فضلك؟" },
+      { t: "I am very happy today.",     ar: "أنا سعيدٌ جدّاً اليوم." },
+      { t: "Can you help me, please?",   ar: "هل يمكنك مساعدتي، من فضلك؟" },
+      { t: "Thank you very much, my friend.", ar: "شكراً جزيلاً يا صديقي." },
     ] },
   ],
 

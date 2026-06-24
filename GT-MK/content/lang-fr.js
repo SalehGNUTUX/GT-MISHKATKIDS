@@ -96,6 +96,15 @@ export default {
     { id: "actions", ar: "أفعال", items: [
       { w: "Manger", ar: "يأكل", emoji: "🍽️" }, { w: "Boire", ar: "يشرب", emoji: "🥤" }, { w: "Courir", ar: "يجري", emoji: "🏃" },
       { w: "Dormir", ar: "ينام", emoji: "😴" }, { w: "Lire", ar: "يقرأ", emoji: "📖" }, { w: "Écrire", ar: "يكتب", emoji: "✍️" }, { w: "Jouer", ar: "يلعب", emoji: "🎮" } ] },
+    { id: "jobs", ar: "مهن", items: [
+      { w: "Médecin", ar: "طبيب", emoji: "🧑‍⚕️" }, { w: "Enseignant", ar: "معلّم", emoji: "👨‍🏫" }, { w: "Agriculteur", ar: "مزارع", emoji: "🧑‍🌾" },
+      { w: "Cuisinier", ar: "طبّاخ", emoji: "👨‍🍳" }, { w: "Pilote", ar: "طيّار", emoji: "🧑‍✈️" }, { w: "Policier", ar: "شرطيّ", emoji: "👮" } ] },
+    { id: "sports", ar: "رياضة", items: [
+      { w: "Football", ar: "كرة القدم", emoji: "⚽" }, { w: "Natation", ar: "سباحة", emoji: "🏊" }, { w: "Course", ar: "جري", emoji: "🏃" },
+      { w: "Vélo", ar: "ركوب الدرّاجة", emoji: "🚴" }, { w: "Basket", ar: "كرة السلّة", emoji: "🏀" }, { w: "Tennis", ar: "تنس", emoji: "🎾" } ] },
+    { id: "house", ar: "أدوات البيت", items: [
+      { w: "Table", ar: "طاولة", emoji: "🪑" }, { w: "Porte", ar: "باب", emoji: "🚪" }, { w: "Fenêtre", ar: "نافذة", emoji: "🪟" },
+      { w: "Lit", ar: "سرير", emoji: "🛏️" }, { w: "Lampe", ar: "مصباح", emoji: "💡" }, { w: "Clé", ar: "مفتاح", emoji: "🔑" } ] },
   ],
 
   // القصص المصوّرة (نفسُ رسوم العربيّة ومعرّفاتها — مترجمةً للفرنسيّة).
@@ -190,6 +199,14 @@ export default {
       { t: "Très bien !",            ar: "أحسنتَ!" },
       { t: "Assieds-toi, s'il te plaît.", ar: "اجلسْ من فضلك." },
       { t: "J'ai une question.",     ar: "عندي سؤال." },
+    ] },
+    { id: "sentences", ar: "جُمَلٌ مفيدة", items: [
+      { t: "Je m'appelle Adam.",             ar: "اسمي آدم." },
+      { t: "J'aime beaucoup les pommes.",    ar: "أُحبُّ التفّاحَ كثيراً." },
+      { t: "Où est l'école, s'il te plaît ?", ar: "أين المدرسة، من فضلك؟" },
+      { t: "Je suis très content aujourd'hui.", ar: "أنا سعيدٌ جدّاً اليوم." },
+      { t: "Peux-tu m'aider, s'il te plaît ?", ar: "هل يمكنك مساعدتي، من فضلك؟" },
+      { t: "Merci beaucoup, mon ami.",       ar: "شكراً جزيلاً يا صديقي." },
     ] },
   ],
 

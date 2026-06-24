@@ -51,7 +51,40 @@ function mountPanelGear() {
     else host.insertBefore(g, host.firstChild);
   } catch (e) {}
 }
+// زرُّ الرجوع في أندرويد (Capacitor): تنقّلٌ تدريجيٌّ عبر الصفحات؛ وعلى الفهرس (home) رسالةُ
+// تأكيدِ الخروج/البقاء. يعملُ في الحزمة الأصليّة فقط (يَعتمدُ جسرَ Capacitor المحقون).
+function exitConfirm(onYes) {
+  if (document.getElementById("exitConfirm")) return;
+  const ov = document.createElement("div");
+  ov.id = "exitConfirm";
+  ov.style.cssText = "position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55)";
+  ov.innerHTML = '<div style="background:var(--card,#fff);color:var(--ink,#2b2b2b);border-radius:18px;padding:22px 20px;max-width:300px;width:84%;text-align:center;font-family:inherit;box-shadow:0 12px 44px rgba(0,0,0,.45)">'
+    + '<div style="font-size:18px;font-weight:800;margin-bottom:16px">هل تريدُ الخروجَ من التطبيق؟</div>'
+    + '<div style="display:flex;gap:10px;justify-content:center">'
+    + '<button id="exitNo" style="flex:1;border:none;border-radius:12px;padding:12px;font-weight:800;font-family:inherit;cursor:pointer;background:var(--primary,#6FB3D6);color:#fff">البقاء</button>'
+    + '<button id="exitYes" style="flex:1;border:none;border-radius:12px;padding:12px;font-weight:800;font-family:inherit;cursor:pointer;background:#E0566B;color:#fff">خروج</button>'
+    + '</div></div>';
+  document.body.appendChild(ov);
+  ov.querySelector("#exitYes").onclick = () => { ov.remove(); onYes(); };
+  ov.querySelector("#exitNo").onclick = () => ov.remove();
+}
+function mountNativeBack() {
+  try {
+    const Cap = window.Capacitor;
+    const App = Cap && Cap.Plugins && Cap.Plugins.App;
+    if (!App || !App.addListener) return; // ليست حزمةً أصليّة
+    const isLauncher = /(^|\/)home\.html$/.test(location.pathname) || location.pathname.endsWith("/");
+    App.addListener("backButton", () => {
+      const dlg = document.getElementById("exitConfirm");
+      if (dlg) { dlg.remove(); return; } // نافذةُ التأكيد مفتوحةٌ → أغلِقْها
+      if (!isLauncher && window.history.length > 1) { window.history.back(); return; } // رجوعٌ تدريجيّ
+      if (!isLauncher) { location.href = "home.html"; return; }                          // لا تاريخ → الفهرس
+      exitConfirm(() => App.exitApp());                                                  // على الفهرس → تأكيدُ الخروج
+    });
+  } catch (e) {}
+}
 if (typeof document !== "undefined") {
-  if (document.readyState !== "loading") mountPanelGear();
-  else document.addEventListener("DOMContentLoaded", mountPanelGear);
+  const onReady = () => { mountPanelGear(); mountNativeBack(); };
+  if (document.readyState !== "loading") onReady();
+  else document.addEventListener("DOMContentLoaded", onReady);
 }

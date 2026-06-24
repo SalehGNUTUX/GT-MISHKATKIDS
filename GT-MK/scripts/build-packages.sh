@@ -83,6 +83,12 @@ build_apk() {
     step "توليدُ أيقونات أندرويد وشاشةِ البدء (@capacitor/assets)"
     npx @capacitor/assets generate --android --iconBackgroundColor '#39562a' --iconBackgroundColorDark '#1d3214' 2>&1 | tail -3
   fi
+  # صلاحيةُ الميكروفون (تسجيلُ نُطق الطفل) — تُضاف للـmanifest المُولَّد إن غابت (android/ مُولَّدٌ فيُعاد كلَّ بناء).
+  local mani="$ANDROID/app/src/main/AndroidManifest.xml"
+  if [ -f "$mani" ] && ! grep -q "RECORD_AUDIO" "$mani"; then
+    sed -i 's#<application#<uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n\n    <application#' "$mani"
+    step "أُضيفت صلاحيّةُ RECORD_AUDIO إلى AndroidManifest"
+  fi
   [ -n "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}" ] || wrn "ANDROID_HOME غير مضبوط — قد يفشل gradlew"
   local apk="$ANDROID/app/build/outputs/apk/debug/app-debug.apk"
   rm -f "$apk"  # لئلّا يُنسَخَ APK قديمٌ إن فشل البناء

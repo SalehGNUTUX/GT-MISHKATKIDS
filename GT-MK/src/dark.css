@@ -13,9 +13,29 @@ html[data-theme="dark"] body{background:var(--bg);color:var(--ink)}
 
 /* أسطحٌ بطاقيّة */
 html[data-theme="dark"] .card,html[data-theme="dark"] .bcard,html[data-theme="dark"] .index,
-html[data-theme="dark"] .navcard,html[data-theme="dark"] .panel,html[data-theme="dark"] .win,
+html[data-theme="dark"] .panel,html[data-theme="dark"] .win,
 html[data-theme="dark"] .cluecard,html[data-theme="dark"] .qcard,html[data-theme="dark"] .region{
   background:var(--card);border-color:var(--line)}
+
+/* ====== بطاقاتُ الفهرس (navcard) في الداكن: زجاجيّةٌ ملوّنةٌ خفيفةٌ عصريّة ======
+   لكلِّ بطاقةٍ تدرّجٌ شفّافٌ بلون هُويّتها على سطحٍ داكنٍ ضبابيّ (glassmorphism)،
+   مع وهجٍ داخليٍّ علويّ. النصُّ فاتح، والأيقونةُ بلونٍ أنصعَ للوضوح. */
+html[data-theme="dark"] .navcard{
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 6px 22px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.07);
+  -webkit-backdrop-filter:blur(9px); backdrop-filter:blur(9px); color:var(--ink)}
+html[data-theme="dark"] .navcard .t{color:#ECE7DD}
+html[data-theme="dark"] .navcard:nth-child(8n+1){background:linear-gradient(145deg,rgba(224,103,63,.20),rgba(224,103,63,.05));border-color:rgba(224,103,63,.34);--ik:#F2916F}
+html[data-theme="dark"] .navcard:nth-child(8n+2){background:linear-gradient(145deg,rgba(78,140,58,.20),rgba(78,140,58,.05));border-color:rgba(78,140,58,.34);--ik:#86C96B}
+html[data-theme="dark"] .navcard:nth-child(8n+3){background:linear-gradient(145deg,rgba(63,130,196,.20),rgba(63,130,196,.05));border-color:rgba(63,130,196,.34);--ik:#6FB3E6}
+html[data-theme="dark"] .navcard:nth-child(8n+4){background:linear-gradient(145deg,rgba(210,148,31,.20),rgba(210,148,31,.05));border-color:rgba(210,148,31,.34);--ik:#E8B84D}
+html[data-theme="dark"] .navcard:nth-child(8n+5){background:linear-gradient(145deg,rgba(139,102,184,.20),rgba(139,102,184,.05));border-color:rgba(139,102,184,.34);--ik:#BB9FE6}
+html[data-theme="dark"] .navcard:nth-child(8n+6){background:linear-gradient(145deg,rgba(214,92,134,.20),rgba(214,92,134,.05));border-color:rgba(214,92,134,.34);--ik:#ED8AAE}
+html[data-theme="dark"] .navcard:nth-child(8n+7){background:linear-gradient(145deg,rgba(47,158,146,.20),rgba(47,158,146,.05));border-color:rgba(47,158,146,.34);--ik:#5CC9BC}
+html[data-theme="dark"] .navcard:nth-child(8n){background:linear-gradient(145deg,rgba(168,118,47,.20),rgba(168,118,47,.05));border-color:rgba(168,118,47,.34);--ik:#CCA46C}
+html[data-theme="dark"] .navcard:hover,html[data-theme="dark"] .navcard:focus-visible{box-shadow:0 14px 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.10)}
+/* لوحةُ الأهل المفصّلة تبقى سطحًا داكنًا مسطّحًا (لا زجاج) */
+html[data-theme="dark"] .nav.detailed .navcard{background:var(--card)!important;border:1px solid var(--line)!important;backdrop-filter:none!important}
 
 /* مدخلاتٌ وقوائم — !important ليتغلّب على background:#fff المضمَّن inline (vSelStyle وغيره) */
 html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea,

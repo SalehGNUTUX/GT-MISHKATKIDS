@@ -17,7 +17,7 @@ const MAP = {
   quiz: "bullseye", progress: "trophy", print: "print", shield: "user-shield",
   components: "box-open", reports: "chart-column", accounts: "users", gear: "gear",
   // الرياضيّات
-  numbers: "list-ol", add: "plus", sub: "minus", mul: "xmark", find: "magnifying-glass",
+  numbers: "list-ol", add: "plus", sub: "minus", mul: "xmark", div: "divide", find: "magnifying-glass",
   compare: "scale-balanced", pattern: "repeat", size: "ruler", circle: "circle", crafts: "scissors",
   // الألعاب
   brain: "brain", train: "train", pins: "basket-shopping", blocks: "cubes", fish: "fish",
@@ -37,7 +37,7 @@ const MAP = {
 
 // خريطةُ الإيموجي (المستعمَلة كأيقونات بطاقاتٍ في صفحاتٍ تُرسَم من بياناتٍ) ← الاسم الدلاليّ
 const EMOJI = {
-  "🤖": "robot", "🔢": "numbers", "📜": "tales", "➕": "add", "➖": "sub", "✖️": "mul",
+  "🤖": "robot", "🔢": "numbers", "📜": "tales", "➕": "add", "➖": "sub", "✖️": "mul", "➗": "div",
   "🔍": "find", "⚖️": "compare", "🔁": "pattern", "📏": "size", "🔵": "circle", "🔷": "math",
   "✂️": "crafts", "🧠": "brain", "🚂": "train", "🧺": "pins", "🧱": "blocks", "🎣": "fish",
   "🧩": "puzzles", "🌀": "maze", "🎡": "wheel", "🖨️": "print", "📑": "index", "🔤": "basics",

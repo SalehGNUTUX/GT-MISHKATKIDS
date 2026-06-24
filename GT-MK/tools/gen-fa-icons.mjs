@@ -21,7 +21,7 @@ const MAP = {
   compare: "scale-balanced", pattern: "repeat", size: "ruler", circle: "circle", crafts: "scissors",
   // الألعاب
   brain: "brain", train: "train", pins: "basket-shopping", blocks: "cubes", fish: "fish",
-  maze: "route", wheel: "arrows-spin",
+  maze: "route", wheel: "arrows-spin", cards: "clone", spellcheck: "spell-check", earlisten: "ear-listen",
   // الأساسيّات والقراءة
   index: "table-list", mic: "microphone", link: "link",
   // قصص وعِبَر
@@ -46,7 +46,7 @@ const EMOJI = {
   "🦁": "animals", "🎨": "colors", "👪": "family", "🍎": "food", "🧒": "body", "👋": "hand",
   "🏫": "school", "🌳": "nature", "🚗": "transport", "🍇": "fruits", "👕": "clothes",
   "🌦️": "weather", "📅": "days", "🏃": "actions", "🙏": "polite", "❓": "questions",
-  "⚙️": "gear",
+  "⚙️": "gear", "🃏": "cards", "🔡": "spellcheck", "👂": "earlisten",
 };
 
 function clean(name) {

@@ -131,6 +131,15 @@
   .mcard .ltr{font-size:16px;font-weight:800}
   .mcard.sel{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary) inset}
   .mcard.done{background:#EEF6E9;border-color:var(--good);opacity:.6;cursor:default}
+  .mcard.mar{font-size:18px;font-weight:800}
+  /* إملاء: خاناتُ الحروف وأزرارُها */
+  .spslot{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 2px}
+  .spslot span{width:42px;height:50px;border:2px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:var(--ink)}
+  .spslot span.full{border-style:solid;border-color:var(--primary);background:color-mix(in srgb,var(--primary) 12%,var(--card))}
+  .splet{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:6px 2px}
+  .lchip{min-width:46px;height:50px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font-size:24px;font-weight:800;cursor:pointer;font-family:inherit}
+  .lchip:disabled{opacity:.32;cursor:default}
+  .lchip:not(:disabled):active{transform:scale(.94)}
 </style>
 </head>
 <body>
@@ -288,6 +297,77 @@ function renderGame(L, host){
   }
   draw();
 }
+
+// لعبة: طابِقِ الكلمةَ الأجنبيّةَ بمعناها العربيّ (نصًّا لا صورة).
+function renderMatchAr(L, host){
+  const set = shuffle(allWords(L)).slice(0, 6);
+  const wordsCol = shuffle(set), arCol = shuffle(set);
+  const matched = new Set(); let sel = null;
+  function draw(){
+    const done = matched.size === set.length;
+    host.innerHTML = `<div class="hint">انقرِ الكلمةَ (تُنطَق) ثمّ معناها العربيّ 🔗</div>
+      <div class="matchwrap">
+        <div class="mcol">${wordsCol.map(w=>`<button class="mcard mword ${matched.has(w.w)?'done':''}" data-w="${esc(w.w)}" ${matched.has(w.w)?'disabled':''}><span class="ltr">${esc(w.w)}</span></button>`).join("")}</div>
+        <div class="mcol">${arCol.map(w=>`<button class="mcard mar ${matched.has(w.w)?'done':''}" data-w="${esc(w.w)}" ${matched.has(w.w)?'disabled':''}>${esc(w.ar)}</button>`).join("")}</div>
+      </div>${done?`<div class="qzdone">🎉 أحسنت!<button class="secbtn on" id="gmAgain">🔁 جديد</button></div>`:""}`;
+    if(done){ host.querySelector("#gmAgain").onclick=()=>renderMatchAr(L, host); return; }
+    host.querySelectorAll(".mword").forEach(b=>b.onclick=()=>{ sel=b.getAttribute("data-w"); say(sel, L); host.querySelectorAll(".mword").forEach(x=>x.classList.toggle("sel", x===b)); });
+    host.querySelectorAll(".mar").forEach(b=>b.onclick=()=>{ const w=b.getAttribute("data-w"); if(!sel) return;
+      if(w===sel){ matched.add(w); sel=null; praise(L); draw(); } else { b.classList.add("bad"); encourageReact(L); setTimeout(()=>b.classList.remove("bad"), 450); } });
+  }
+  draw();
+}
+
+// لعبة إملاء/تهجئة: استمعْ للكلمة ثمّ رتّبْ حروفَها المبعثرة (كلماتُ القسم الأجنبيّة).
+function renderSpell(L, host){
+  const pool = shuffle(allWords(L)).filter(w => w.w && !w.w.includes(" ") && w.w.length>=2 && w.w.length<=8);
+  const N = Math.min(6, pool.length); let i = 0, score = 0;
+  function ask(){
+    if(i >= N){ host.innerHTML = `<div class="qzdone">🎉 <b>${score}/${N}</b><div class="hint">أحسنت!</div><button class="secbtn on" id="spAgain">🔁 أعد</button></div>`;
+      host.querySelector("#spAgain").onclick=()=>renderSpell(L, host); return; }
+    const word = pool[i], target = word.w, letters = shuffle(target.split(""));
+    let built = [];
+    function redraw(){
+      host.innerHTML = `<div class="qzn">إملاء ${i+1}/${N} · ⭐ ${score}</div>
+        <div class="qzprompt"><span class="qzemoji">${word.emoji}</span><span class="qzar">${esc(word.ar)}</span>
+          <div><button class="secbtn" id="spSay">🔊 استمعْ</button></div></div>
+        <div class="spslot ltr">${target.split("").map((_,k)=>`<span class="${built[k]?'full':''}">${built[k]?esc(built[k].ch):''}</span>`).join("")}</div>
+        <div class="splet">${letters.map((ch,idx)=>`<button class="lchip ltr" data-idx="${idx}" ${built.find(b=>b.idx===idx)?'disabled':''}>${esc(ch)}</button>`).join("")}</div>
+        <div class="snav"><button class="secbtn" id="spClear">↺ امسحْ</button></div>`;
+      host.querySelector("#spSay").onclick=()=>say(target, L);
+      host.querySelector("#spClear").onclick=()=>{ built=[]; redraw(); };
+      host.querySelectorAll(".lchip").forEach(b=>b.onclick=()=>{ const idx=+b.getAttribute("data-idx"); built.push({idx, ch:letters[idx]});
+        if(built.length===target.length){ const made=built.map(x=>x.ch).join("");
+          if(made===target){ score++; praise(L); setTimeout(()=>{ i++; ask(); }, 1600); }
+          else { encourageReact(L); setTimeout(()=>{ built=[]; redraw(); }, 750); } }
+        else redraw(); });
+    }
+    redraw(); say(target, L); // ينطقُ الكلمةَ تلقائيًّا أوّلَ مرّة
+  }
+  ask();
+}
+
+// لعبة استماعٍ واختيار: تُنطَقُ الكلمةُ (تلقائيًّا + زرُّ إعادة) ← اختَرِ الصورةَ الصحيحة.
+function renderListen(L, host){
+  const pool = shuffle(allWords(L)); const N = Math.min(8, pool.length); const qs = pool.slice(0, N);
+  let i = 0, score = 0;
+  function ask(){
+    if(i >= N){ host.innerHTML = `<div class="qzdone">🎉 <b>${score}/${N}</b><div class="hint">أحسنت!</div><button class="secbtn on" id="lsAgain">🔁 أعد</button></div>`;
+      host.querySelector("#lsAgain").onclick=()=>renderListen(L, host); return; }
+    const correct = qs[i];
+    const opts = shuffle([correct, ...shuffle(allWords(L).filter(w => w.w !== correct.w)).slice(0,3)]);
+    host.innerHTML = `<div class="qzn">استماع ${i+1}/${N} · ⭐ ${score}</div>
+      <div class="qzprompt"><button class="secbtn on" id="lsSay">🔊 استمعْ ثمّ اختَرِ الصورة</button></div>
+      <div class="grid">${opts.map(o=>`<button class="gcard lsopt" data-w="${esc(o.w)}"><span style="font-size:40px">${o.emoji}</span></button>`).join("")}</div>`;
+    host.querySelector("#lsSay").onclick=()=>say(correct.w, L);
+    host.querySelectorAll(".lsopt").forEach(b=>b.onclick=()=>{ const w=b.getAttribute("data-w");
+      if(w===correct.w){ b.classList.add("ok"); score++; host.querySelectorAll(".lsopt").forEach(x=>x.disabled=true);
+        setTimeout(()=>praise(L), 700); setTimeout(()=>{ i++; ask(); }, 2000); }
+      else { b.classList.add("bad"); encourageReact(L); setTimeout(()=>b.classList.remove("bad"), 450); } });
+    say(correct.w, L); // نطقٌ تلقائيٌّ أوّلَ مرّة
+  }
+  ask();
+}
 function renderLang(k){
   const L = LANGS[k]; if(!L){ goHome(); return; }
   document.getElementById("hTitle").innerHTML = `${L.flag} <span class="ltr">${esc(L.name)}</span>`;
@@ -370,19 +450,29 @@ function renderLang(k){
   } else if(sec==="quiz"){
     topnav = nav("↩ الأقسام","secs")+`<span class="cur">🎯 اختبار</span>`; body = `<div id="qz"></div>`;
   } else if(sec==="games"){
-    topnav = nav("↩ الأقسام","secs")+`<span class="cur">🎮 ألعاب</span>`; body = `<div id="gm"></div>`;
+    const g = qp.get("g");
+    if(!g){
+      topnav = nav("↩ الأقسام","secs")+`<span class="cur">🎮 ألعاب</span>`;
+      const GAMES=[{g:"match",ic:"🃏",ar:"مطابقةُ الصور"},{g:"matchar",ic:"🔗",ar:"مطابقةُ المعنى"},{g:"spell",ic:"🔡",ar:"الإملاء"},{g:"listen",ic:"👂",ar:"استماعٌ واختيار"}];
+      body = `<div class="lgrid">${GAMES.map(x=>`<button class="lcard" data-g="${x.g}"><span class="ic">${iconHtml(x.ic)}</span><span class="lt">${x.ar}</span></button>`).join("")}</div>`;
+    } else {
+      const T={match:"🃏 مطابقةُ الصور",matchar:"🔗 مطابقةُ المعنى",spell:"🔡 الإملاء",listen:"👂 استماعٌ واختيار"};
+      topnav = nav("↩ الألعاب","games")+`<span class="cur">${T[g]||"🎮 ألعاب"}</span>`; body = `<div id="gm"></div>`;
+    }
   }
   view.innerHTML = `<div class="topnav">${topnav}</div>${body}`;
   // التنقّل بالرجوع
   view.querySelectorAll(".backbtn[data-go]").forEach(b=>b.onclick=()=>{ const a=b.getAttribute("data-go"); cancelRead();
     if(a==="langs"){ goHome(); return; }
     const u=new URL(location.href);
-    if(a==="secs") ["sec","cat","story","pg"].forEach(p=>u.searchParams.delete(p));
+    if(a==="secs") ["sec","cat","story","pg","g"].forEach(p=>u.searchParams.delete(p));
     else if(a==="cats") u.searchParams.delete("cat");
+    else if(a==="games") u.searchParams.delete("g");
     else if(a==="stlist"){ u.searchParams.delete("story"); u.searchParams.delete("pg"); }
     history.replaceState(null,"",u); render(); });
   view.querySelectorAll(".lcard[data-sec]").forEach(b=>b.onclick=()=>setParam("sec", b.getAttribute("data-sec")));
   view.querySelectorAll(".lcard[data-cat]").forEach(b=>b.onclick=()=>setParam("cat", b.getAttribute("data-cat")));
+  view.querySelectorAll(".lcard[data-g]").forEach(b=>b.onclick=()=>setParam("g", b.getAttribute("data-g")));
   // النطق: الكلمةُ عند الضغط على الاسم أو الصورة، والحرفُ عند الضغط على الحرف أو أيّ مكانٍ آخر.
   view.querySelectorAll(".gcard").forEach(b=>{
     b.onclick=(e)=>{ const sayWord = e.target.closest(".wd") || e.target.closest(".em");
@@ -415,7 +505,8 @@ function renderLang(k){
     if(rdAll) rdAll.onclick=()=>{ if(reading){ cancelRead(); render(); } else readWhole(); };
   }
   if(sec==="quiz"){ const h=document.getElementById("qz"); if(h) renderQuiz(L, h); }
-  if(sec==="games"){ const h=document.getElementById("gm"); if(h) renderGame(L, h); }
+  if(sec==="games" && qp.get("g")){ const g=qp.get("g"), h=document.getElementById("gm");
+    if(h){ ({match:renderGame, matchar:renderMatchAr, spell:renderSpell, listen:renderListen}[g]||renderGame)(L, h); } }
   startTitleAlt();
   try{ logEvent("lang_open", {add:{}}); }catch(e){}
 }

@@ -122,6 +122,12 @@ export default {
 
   // القصص المصوّرة (نفسُ رسوم العربيّة ومعرّفاتها — content/stories.js — مترجمةً).
   stories: [
+    { id: "numerals-journey", cover: "numerals-2", title: "The Journey of Numbers", pages: [
+      { art: "numerals-1", text: "Long ago, people counted with pebbles and marks on stone. But big numbers were very hard to write!" },
+      { art: "numerals-2", text: "Then clever Muslim scholars created an easy way to write any number with just ten signs: 0 1 2 3 4 5 6 7 8 9." },
+      { art: "numerals-3", text: "Their greatest idea was the ZERO (sifr) — a circle that means «nothing», yet it gives every number its place!" },
+      { art: "numerals-4", text: "These numbers traveled across the whole world. That is why we still call them «Arabic numerals» today." } ],
+      lesson: "The numbers you write today are a gift from Arab and Muslim scholars. 🔢" },
     { id: "ant-perseverance", cover: "ant-1", title: "The Ant That Never Gave Up", pages: [
       { art: "ant-1", text: "The little ant found a big crumb, much bigger than herself! She said excitedly: «I will take it home.»" },
       { art: "ant-2", text: "She carried it up the hill… but she slipped, and the crumb rolled down! The ant took a breath and said: «I will try again.»" },

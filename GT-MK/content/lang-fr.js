@@ -121,6 +121,12 @@ export default {
 
   // القصص المصوّرة (نفسُ رسوم العربيّة ومعرّفاتها — مترجمةً للفرنسيّة).
   stories: [
+    { id: "numerals-journey", cover: "numerals-2", title: "Le Voyage des Chiffres", pages: [
+      { art: "numerals-1", text: "Autrefois, les gens comptaient avec des cailloux et des marques sur la pierre. Mais les grands nombres étaient très difficiles à écrire !" },
+      { art: "numerals-2", text: "Puis de savants musulmans ont créé une façon facile d'écrire tout nombre avec seulement dix signes : 0 1 2 3 4 5 6 7 8 9." },
+      { art: "numerals-3", text: "Leur plus grande idée fut le ZÉRO (sifr) — un cercle qui signifie «rien», et pourtant il donne sa place à chaque nombre !" },
+      { art: "numerals-4", text: "Ces chiffres ont voyagé dans le monde entier. C'est pourquoi on les appelle encore «chiffres arabes» aujourd'hui." } ],
+      lesson: "Les chiffres que tu écris aujourd'hui sont un cadeau des savants arabes et musulmans. 🔢" },
     { id: "ant-perseverance", cover: "ant-1", title: "La fourmi qui n'a jamais abandonné", pages: [
       { art: "ant-1", text: "La petite fourmi a trouvé une grande miette, bien plus grande qu'elle ! Elle a dit avec enthousiasme : «Je vais l'emporter chez moi.»" },
       { art: "ant-2", text: "Elle l'a portée en haut de la colline… mais elle a glissé, et la miette a roulé en bas ! La fourmi a respiré et a dit : «Je vais réessayer.»" },

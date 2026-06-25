@@ -108,6 +108,18 @@ export default {
       { w: "Bed", ar: "سرير", emoji: "🛏️" }, { w: "Lamp", ar: "مصباح", emoji: "💡" }, { w: "Key", ar: "مفتاح", emoji: "🔑" } ] },
   ],
 
+  // الأفعالُ والأزمنة: تصريفُ كلّ فعلٍ في الماضي/المضارع/المستقبل (صيغةُ المتكلّم) + ترجمةٌ عربيّة.
+  verbs: [
+    { v: "eat",   ar: "يأكل",  emoji: "🍽️", past:{w:"I ate",       ar:"أكلتُ"},   present:{w:"I eat",       ar:"آكُلُ"},   future:{w:"I will eat",      ar:"سآكُلُ"} },
+    { v: "drink", ar: "يشرب",  emoji: "🥤", past:{w:"I drank",     ar:"شربتُ"},   present:{w:"I drink",     ar:"أشربُ"},   future:{w:"I will drink",    ar:"سأشربُ"} },
+    { v: "play",  ar: "يلعب",  emoji: "⚽", past:{w:"I played",   ar:"لعبتُ"},   present:{w:"I play",      ar:"ألعبُ"},   future:{w:"I will play",     ar:"سألعبُ"} },
+    { v: "read",  ar: "يقرأ",  emoji: "📖", past:{w:"I read",     ar:"قرأتُ"},   present:{w:"I read",      ar:"أقرأُ"},   future:{w:"I will read",     ar:"سأقرأُ"} },
+    { v: "write", ar: "يكتب",  emoji: "✍️", past:{w:"I wrote",    ar:"كتبتُ"},   present:{w:"I write",     ar:"أكتبُ"},   future:{w:"I will write",    ar:"سأكتبُ"} },
+    { v: "go",    ar: "يذهب",  emoji: "🚶", past:{w:"I went",     ar:"ذهبتُ"},   present:{w:"I go",        ar:"أذهبُ"},   future:{w:"I will go",       ar:"سأذهبُ"} },
+    { v: "sleep", ar: "ينام",  emoji: "😴", past:{w:"I slept",    ar:"نمتُ"},    present:{w:"I sleep",     ar:"أنامُ"},   future:{w:"I will sleep",    ar:"سأنامُ"} },
+    { v: "see",   ar: "يرى",   emoji: "👁️", past:{w:"I saw",      ar:"رأيتُ"},   present:{w:"I see",       ar:"أرى"},     future:{w:"I will see",      ar:"سأرى"} },
+  ],
+
   // القصص المصوّرة (نفسُ رسوم العربيّة ومعرّفاتها — content/stories.js — مترجمةً).
   stories: [
     { id: "ant-perseverance", cover: "ant-1", title: "The Ant That Never Gave Up", pages: [

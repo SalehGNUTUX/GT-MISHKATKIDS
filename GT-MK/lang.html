@@ -140,6 +140,14 @@
   .lchip{min-width:46px;height:50px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font-size:24px;font-weight:800;cursor:pointer;font-family:inherit}
   .lchip:disabled{opacity:.32;cursor:default}
   .lchip:not(:disabled):active{transform:scale(.94)}
+  /* الأفعال والأزمنة */
+  .vcard{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .vtenses{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+  .vrow{display:flex;align-items:center;gap:10px;width:100%;text-align:start;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .vrow .vt{background:var(--primary);color:#fff;border-radius:999px;padding:3px 12px;font-size:13px;font-weight:800;white-space:nowrap}
+  .vrow .vf{font-size:18px;font-weight:800;flex:1}
+  .vrow .va{font-size:15px;color:var(--muted)}
+  .vrow:active{transform:scale(.99)}
 </style>
 </head>
 <body>
@@ -233,6 +241,7 @@ const SECTIONS = [
   { key:"words",   icon:"📝", ar:"الكلمات",     en:"Words",    fr:"Mots" },
   { key:"phrases", icon:"💬", ar:"عبارات وجمل", en:"Phrases",  fr:"Phrases" },
   { key:"stories", icon:"📚", ar:"قصص مصوّرة",  en:"Stories",  fr:"Histoires" },
+  { key:"verbs",   icon:"🕰️", ar:"الأفعال والأزمنة", en:"Verbs & Tenses", fr:"Verbes & Temps" },
   { key:"quiz",    icon:"🎯", ar:"اختبار",      en:"Quiz",     fr:"Quiz" },
   { key:"games",   icon:"🎮", ar:"ألعاب",       en:"Games",    fr:"Jeux" },
 ];
@@ -381,6 +390,24 @@ function renderListen(L, host){
   }
   ask();
 }
+// الأفعالُ والأزمنة: قائمةُ أفعالٍ ← تصريفُ الفعل في الماضي/المضارع/المستقبل (يُنطَق عند الضغط).
+function renderVerbs(L, host){
+  const verbs = L.verbs || [];
+  function list(){
+    host.innerHTML = `<div class="hint">اختَرْ فعلاً لترى تصريفَه في الأزمنة الثلاثة 🕰️</div>
+      <div class="grid">${verbs.map((v,idx)=>`<button class="gcard vcard" data-i="${idx}"><span style="font-size:34px">${v.emoji}</span><span class="ltr" style="font-weight:800;font-size:16px">${esc(v.v)}</span><span style="font-size:13px;color:var(--muted)">${esc(v.ar)}</span></button>`).join("")}</div>`;
+    host.querySelectorAll(".vcard").forEach(b=>b.onclick=()=>{ const i=+b.getAttribute("data-i"); detail(i); say(verbs[i].v, L); });
+  }
+  function detail(i){
+    const v = verbs[i], rows = [["الماضي",v.past],["المضارع",v.present],["المستقبل",v.future]];
+    host.innerHTML = `<button class="secbtn" id="vback">↩ الأفعال</button>
+      <div class="qzprompt"><span class="qzemoji">${v.emoji}</span><span class="qzar">${esc(v.ar)} · <span class="ltr">${esc(v.v)}</span></span></div>
+      <div class="vtenses">${rows.map(([t,f])=>`<button class="vrow" data-say="${esc(f.w)}"><span class="vt">${t}</span><span class="vf ltr">${esc(f.w)}</span><span class="va">${esc(f.ar)}</span><span class="vs">🔊</span></button>`).join("")}</div>`;
+    host.querySelector("#vback").onclick=list;
+    host.querySelectorAll(".vrow").forEach(b=>b.onclick=()=>say(b.getAttribute("data-say"), L));
+  }
+  list();
+}
 function renderLang(k){
   const L = LANGS[k]; if(!L){ goHome(); return; }
   document.getElementById("hTitle").innerHTML = `${L.flag} <span class="ltr">${esc(L.name)}</span>`;
@@ -460,6 +487,8 @@ function renderLang(k){
           </div>
           <div class="dots">${st.pages.map((_,i)=>`<span class="${i===pg?'on':''}"></span>`).join("")}</div></div>`;
     }
+  } else if(sec==="verbs"){
+    topnav = nav("↩ الأقسام","secs")+`<span class="cur">🕰️ الأفعال والأزمنة</span>`; body = `<div id="vb"></div>`;
   } else if(sec==="quiz"){
     topnav = nav("↩ الأقسام","secs")+`<span class="cur">🎯 اختبار</span>`; body = `<div id="qz"></div>`;
   } else if(sec==="games"){
@@ -517,6 +546,7 @@ function renderLang(k){
       reading=false; render(); }
     if(rdAll) rdAll.onclick=()=>{ if(reading){ cancelRead(); render(); } else readWhole(); };
   }
+  if(sec==="verbs"){ const h=document.getElementById("vb"); if(h) renderVerbs(L, h); }
   if(sec==="quiz"){ const h=document.getElementById("qz"); if(h) renderQuiz(L, h); }
   if(sec==="games" && qp.get("g")){ const g=qp.get("g"), h=document.getElementById("gm");
     if(h){ ({match:renderGame, matchar:renderMatchAr, spell:renderSpell, listen:renderListen}[g]||renderGame)(L, h); } }

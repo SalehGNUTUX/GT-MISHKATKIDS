@@ -107,6 +107,18 @@ export default {
       { w: "Lit", ar: "سرير", emoji: "🛏️" }, { w: "Lampe", ar: "مصباح", emoji: "💡" }, { w: "Clé", ar: "مفتاح", emoji: "🔑" } ] },
   ],
 
+  // الأفعالُ والأزمنة: الماضي (passé composé)/المضارع/المستقبل لصيغة المتكلّم + ترجمةٌ عربيّة.
+  verbs: [
+    { v: "manger",  ar: "يأكل", emoji: "🍽️", past:{w:"J'ai mangé",   ar:"أكلتُ"},  present:{w:"Je mange",   ar:"آكُلُ"},  future:{w:"Je mangerai",  ar:"سآكُلُ"} },
+    { v: "boire",   ar: "يشرب", emoji: "🥤", past:{w:"J'ai bu",      ar:"شربتُ"},  present:{w:"Je bois",    ar:"أشربُ"},  future:{w:"Je boirai",    ar:"سأشربُ"} },
+    { v: "jouer",   ar: "يلعب", emoji: "⚽", past:{w:"J'ai joué",    ar:"لعبتُ"},  present:{w:"Je joue",    ar:"ألعبُ"},  future:{w:"Je jouerai",   ar:"سألعبُ"} },
+    { v: "lire",    ar: "يقرأ", emoji: "📖", past:{w:"J'ai lu",      ar:"قرأتُ"},  present:{w:"Je lis",     ar:"أقرأُ"},  future:{w:"Je lirai",     ar:"سأقرأُ"} },
+    { v: "écrire",  ar: "يكتب", emoji: "✍️", past:{w:"J'ai écrit",   ar:"كتبتُ"},  present:{w:"J'écris",    ar:"أكتبُ"},  future:{w:"J'écrirai",    ar:"سأكتبُ"} },
+    { v: "aller",   ar: "يذهب", emoji: "🚶", past:{w:"Je suis allé", ar:"ذهبتُ"},  present:{w:"Je vais",    ar:"أذهبُ"},  future:{w:"J'irai",       ar:"سأذهبُ"} },
+    { v: "dormir",  ar: "ينام", emoji: "😴", past:{w:"J'ai dormi",   ar:"نمتُ"},   present:{w:"Je dors",    ar:"أنامُ"},  future:{w:"Je dormirai",  ar:"سأنامُ"} },
+    { v: "voir",    ar: "يرى",  emoji: "👁️", past:{w:"J'ai vu",      ar:"رأيتُ"},  present:{w:"Je vois",    ar:"أرى"},    future:{w:"Je verrai",    ar:"سأرى"} },
+  ],
+
   // القصص المصوّرة (نفسُ رسوم العربيّة ومعرّفاتها — مترجمةً للفرنسيّة).
   stories: [
     { id: "ant-perseverance", cover: "ant-1", title: "La fourmi qui n'a jamais abandonné", pages: [

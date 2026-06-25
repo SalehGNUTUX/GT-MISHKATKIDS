@@ -63,11 +63,18 @@ build_linux() { # $1 = أهداف electron-builder (مثل: "AppImage deb rpm")
 # إلى rpm عبر alien — أوثقُ على الأنظمة الحديثة.
 rpm_from_deb() {
   command -v alien >/dev/null || { wrn "alien غير متوفّر — تُخطّى rpm (مستخدمو rpm يمكنهم AppImage)"; return 0; }
-  local deb; deb="$(ls -1 "$RELEASE"/*.deb 2>/dev/null | head -1)"
+  # نختارُ deb الإصدارِ الحاليّ تحديدًا (لا أوّلَ نتيجةٍ أبجديّة، فقد تبقى حزمُ إصداراتٍ سابقةٍ في release/).
+  local deb; deb="$(ls -1 "$RELEASE"/*"-$VERSION-"*.deb 2>/dev/null | head -1)"
+  [ -n "$deb" ] || deb="$(ls -t "$RELEASE"/*.deb 2>/dev/null | head -1)"   # احتياط: الأحدث
   [ -n "$deb" ] || { err "لا deb لتحويله إلى rpm"; return 1; }
-  step "تحويلُ deb→rpm عبر alien"
-  ( cd "$RELEASE" && fakeroot alien --to-rpm --scripts "$(basename "$deb")" >/dev/null 2>&1 )
-  ls -1 "$RELEASE"/*.rpm >/dev/null 2>&1 && ok "rpm في release/" || err "فشل توليد rpm"
+  local base; base="$(basename "$deb")"
+  step "تحويلُ deb→rpm عبر alien ($base)"
+  ( cd "$RELEASE" && fakeroot alien --to-rpm --scripts "$base" >/dev/null 2>&1 )
+  # alien يُسمّي المُخرَجَ باسم الحزمة الداخليّ (tilmithi)؛ نُعيدُ تسميتَه ليُطابقَ AppImage/deb.
+  local out; out="$(ls -t "$RELEASE"/tilmithi-*.rpm 2>/dev/null | head -1)"
+  local want="$RELEASE/${base%%-$VERSION-*}-${VERSION}-x86_64.rpm"
+  if [ -n "$out" ] && [ -f "$out" ]; then mv -f "$out" "$want"; ok "rpm في release/$(basename "$want")"
+  else ls -1 "$RELEASE"/*.rpm >/dev/null 2>&1 && ok "rpm في release/" || err "فشل توليد rpm"; fi
 }
 
 build_apk() {

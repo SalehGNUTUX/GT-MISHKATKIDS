@@ -31,7 +31,7 @@ export const WORD_UNITS = [
 ];
 export const SENTENCE_UNITS = [
   { key: "sread", label: "جمل القراءة", items: uniq((reading.sentences || []).map(s => s.text)) },
-  { key: "robo",  label: "عبارات روبو", items: uniq([].concat(...Object.values(REACTIONS || {}), PRAISE || [])) },
+  { key: "robo",  label: "عبارات الآليّ", items: uniq([].concat(...Object.values(REACTIONS || {}), PRAISE || [])) },
   // إشعاراتُ الآليّ السياقيّة (نهاية سورة، حلّ لغز، ورشة، ألعاب…) — تُنطَق بمقاطع espeak وتُسجَّل بشريًّا.
   { key: "notices", label: "إشعارات الآليّ", items: uniq(Object.values(NOTICES || {})) },
   // نصوص قصّة الأرقام (لتسجيلها بصوتٍ بشريّ ولها مقاطع احتياطية).

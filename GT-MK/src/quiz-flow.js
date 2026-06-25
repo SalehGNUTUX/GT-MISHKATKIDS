@@ -36,7 +36,7 @@ function appendNext(view, next, label, cls) {
   d.querySelector("button").onclick = () => { try { d.remove(); } catch (e) {} next && next(); };
 }
 
-// إجابةٌ صحيحة: يَنطق روبو الجوابَ الصحيح أوّلًا (إن مُرِّر: كلمة/رقم/حرف) ثمّ ردّةَ الفعل،
+// إجابةٌ صحيحة: يَنطق الآليّ الجوابَ الصحيح أوّلًا (إن مُرِّر: كلمة/رقم/حرف) ثمّ ردّةَ الفعل،
 // ثمّ ينتقل (تلقائيّ بعد انتهاء الكلام، أو زرٌّ يدويّ لا يَقطع الصوت). لا تتداخلُ الأصوات.
 export function onCorrect(robo, view, next, praise, answer) {
   ensureStyle();

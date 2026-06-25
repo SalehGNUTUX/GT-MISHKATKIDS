@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#E07A5F" />
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="icon" href="icon.svg" type="image/svg+xml" />
-<title>تلميذي — روبو يتعافى</title>
+<title>تلميذي — الآليّ يتعافى</title>
 <style>
   :root{
     --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
@@ -106,13 +106,13 @@
   <header>
     <div>
       <h1>تلميذي 🤖</h1>
-      <div class="sub">علّمْ روبو… فيتذكّر ويتعافى</div>
+      <div class="sub">علّمْ الآليّ… فيتذكّر ويتعافى</div>
     </div>
     <button class="topbtn" id="parentBtn">👪 لوحة الأهل</button>
   </header>
 
   <div class="stage">
-    <svg class="robo-svg" viewBox="0 0 240 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="روبو">
+    <svg class="robo-svg" viewBox="0 0 240 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="الآليّ">
       <line x1="120" y1="40" x2="120" y2="22" stroke="#8A93A0" stroke-width="3"/>
       <circle cx="120" cy="18" r="6" class="part" data-part="الدماغ"/>
       <rect x="70" y="44" width="100" height="84" rx="18" class="robo-base"/>
@@ -219,7 +219,7 @@ function renderRobo(){
     else { el.style.fill=""; el.classList.remove("lit"); }
   });
   document.getElementById("laugh").textContent =
-    progress.completed.length>=THRESH ? "🎉 عادت ضحكة روبو! لقد أعدتَه إلى الحياة." : "";
+    progress.completed.length>=THRESH ? "🎉 عادت ضحكة الآليّ! لقد أعدتَه إلى الحياة." : "";
 }
 function renderWorld(){
   document.getElementById("world").innerHTML = Object.keys(WORLD_EMOJI).map(w=>
@@ -240,7 +240,7 @@ function renderIdle(){
       <p class="muted">بدّل الفئة العمريّة، أو فعّل مجالاتٍ أخرى من لوحة الأهل.</p></div>`;
     return;
   }
-  host.innerHTML=`<div class="card center"><div class="robo-says">روبو ينتظر ذكرى جديدة…</div>
+  host.innerHTML=`<div class="card center"><div class="robo-says">الآليّ ينتظر ذكرى جديدة…</div>
     <p class="muted">في ذاكرته ${AR(left)} ذكرى ناقصة. هل تساعده؟</p>
     <div class="btns" style="justify-content:center"><button class="act" onclick="spark()">✨ شرارة ذكرى</button></div></div>`;
 }
@@ -279,16 +279,16 @@ function renderCard(){
       <div class="robo-says">${m.teach.robo_question}</div>
       <div class="succ">✅ علامة النجاح (يقرّرها الأهل): ${m.teach.success_signal}</div>
       ${capHtml}
-      <div class="btns"><button class="act" onclick="heal()">نعم، علّمَ روبو! 💡</button>
+      <div class="btns"><button class="act" onclick="heal()">نعم، علّمَ الآليّ! 💡</button>
       <button class="ghost" onclick="go('task')">→ لم نُنجِزها بعد</button></div></div>`;
     updateCapStatus();
   } else if(state==="heal"){
     const r=m.heal.reward;
-    const label=r.type==="world"?`أضاء ${r.target} في عالم روبو ${WORLD_EMOJI[r.target]||""}`:`أضاء ${r.target} في روبو`;
+    const label=r.type==="world"?`أضاء ${r.target} في عالم الآليّ ${WORLD_EMOJI[r.target]||""}`:`أضاء ${r.target} في الآليّ`;
     host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.heal}</span>
       <div class="robo-says">${m.heal.robo_reaction}</div>
       <div class="heal-reward">✨ ${label}</div>
-      <div class="btns"><button class="act" onclick="spark()">ذكرى جديدة لروبو ←</button>
+      <div class="btns"><button class="act" onclick="spark()">ذكرى جديدة للآليّ ←</button>
       <button class="ghost" onclick="renderIdle()">توقّف الآن</button></div></div>`;
   }
 }
@@ -379,7 +379,7 @@ async function openDashboard(){
     <div class="sec"><h3>نظرة عامة</h3>
       <div class="statgrid">
         <div class="stat"><div class="n">${AR(done)}</div><div class="t">ذكرى مُستعادة</div></div>
-        <div class="stat"><div class="n">${AR(litP)}/٧</div><div class="t">أجزاء روبو</div></div>
+        <div class="stat"><div class="n">${AR(litP)}/٧</div><div class="t">أجزاء الآليّ</div></div>
         <div class="stat"><div class="n">${AR(litW)}/٧</div><div class="t">عناصر العالم</div></div>
         <div class="stat"><div class="n">${done>=THRESH?"🎉":AR(Math.max(0,THRESH-done))}</div><div class="t">${done>=THRESH?"عادت الضحكة":"تبقّى للضحكة"}</div></div>
       </div>
@@ -397,7 +397,7 @@ async function openDashboard(){
     <div class="sec"><h3>إعدادات</h3>
       <div class="dom-row">
         <span style="flex:none;width:210px;font-size:13px">👯 ذكريات الإخوة (لطفلين معًا)</span>
-        <span class="muted" style="font-size:12px;flex:1">إظهارها ضمن ذكريات روبو</span>
+        <span class="muted" style="font-size:12px;flex:1">إظهارها ضمن ذكريات الآليّ</span>
         <button class="toggle ${progress.settings.showPair!==false?"on":""}" id="pairToggle" title="إظهار/إخفاء"></button>
       </div>
     </div>
@@ -429,7 +429,7 @@ async function openDashboard(){
     saveProgress(); if(state==="idle") renderIdle();
   });
   document.getElementById("wipe").addEventListener("click", async ()=>{
-    if(confirm("مسح كل تقدّم روبو والتسجيلات نهائيًّا؟")){
+    if(confirm("مسح كل تقدّم الآليّ والتسجيلات نهائيًّا؟")){
       progress={completed:[],parts:{},world:{},log:[],settings:{enabledDomains:{},showPair:true}};
       DOMAINS.forEach(d=>progress.settings.enabledDomains[d]=true);
       saveProgress(); await clearCaptures();

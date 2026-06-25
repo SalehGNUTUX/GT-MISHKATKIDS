@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.1.0",
   "type": "module",
-  "description": "تلميذي — الطفل يُعلّم روبو فيتذكّر ويتعافى (محليّ، بلا اتصال، بلا ذكاء اصطناعي)",
+  "description": "تلميذي — الطفل يُعلّم الآليّ فيتذكّر ويتعافى (محليّ، بلا اتصال، بلا ذكاء اصطناعي)",
   "homepage": "https://github.com/SalehGNUTUX/GT-MISHKATKIDS",
   "author": "SalehGNUTUX <gnutux.arabic@gmail.com>",
   "main": "electron/main.cjs",

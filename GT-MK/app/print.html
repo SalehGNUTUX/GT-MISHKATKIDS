@@ -96,21 +96,21 @@ function rewardLabel(m){
 function cardHTML(m){
   return `<div class="pcard">
     <div class="pc-head"><span class="badge">${esc(m.domain)} · ${esc(m.age_band)}${m.mode==="pair"?" · 👯 لطفلين":""}</span><span class="cut">✂︎ قُصّ</span></div>
-    <div class="says">🤖 روبو يقول: «${esc(m.spark.robo_line)}»</div>
+    <div class="says">🤖 الآليّ يقول: «${esc(m.spark.robo_line)}»</div>
     <div class="pc-title">${esc(m.title)}</div>
     <div class="pc-prompt"><b>مهمّتك:</b> ${esc(m.task.prompt)}</div>
     <ol>${m.task.child_steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
     <div class="pc-mat"><b>تحتاج:</b> ${esc(m.task.materials.join("، "))} · 📍 ${esc(m.task.location)}</div>
     <div class="pc-parent"><b>للأهل:</b> ${esc(m.task.parent_role)} · ✅ ${esc(m.teach.success_signal)}</div>
-    <div class="pc-foot"><span>أنجزتَها؟ يضيء <b>${esc(rewardLabel(m))}</b> في روبو</span><span class="tick"></span></div>
+    <div class="pc-foot"><span>أنجزتَها؟ يضيء <b>${esc(rewardLabel(m))}</b> في الآليّ</span><span class="tick"></span></div>
   </div>`;
 }
 
 function posterHTML(){
   const ring = Object.keys(WORLD_EMOJI).map(w=>`<div class="wp"><div class="ring">${WORLD_EMOJI[w]}</div><div class="n">${w}</div></div>`).join("");
   return `<section class="poster">
-    <h2>خريطة شفاء روبو 🤖</h2>
-    <div class="ps">لوّن جزءًا من روبو كلّما علّمتَه ذكرى جديدة — وأعِدْه إلى الحياة!</div>
+    <h2>خريطة شفاء الآليّ 🤖</h2>
+    <div class="ps">لوّن جزءًا من الآليّ كلّما علّمتَه ذكرى جديدة — وأعِدْه إلى الحياة!</div>
     <svg viewBox="0 0 600 470" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#333" stroke-width="2">
       <!-- antenna + brain -->
       <line x1="300" y1="92" x2="300" y2="70"/><circle cx="300" cy="62" r="9"/>
@@ -144,7 +144,7 @@ function posterHTML(){
         <text x="116" y="164">الأذنان (الإصغاء)</text>
       </g>
     </svg>
-    <h3 style="margin:6px 0 0">عناصر عالم روبو — لوّنها كلّما أضاءت</h3>
+    <h3 style="margin:6px 0 0">عناصر عالم الآليّ — لوّنها كلّما أضاءت</h3>
     <div class="world-print">${ring}</div>
   </section>`;
 }

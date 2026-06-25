@@ -1,7 +1,7 @@
-// src/robo-companion.js — رفيق روبو المشترك لصفحات الأنشطة. محلّيّ بالكامل.
-// يُحقَن في أيّ صفحةٍ روبو مصغّرٌ في الزاوية، يتفاعل مع إنجازات الطفل وأخطائه
-// بصوتٍ وحركةٍ ونبرةٍ إسلامية. تجسيدٌ لمبدأ «الطفل يُعلّم روبو» في كل أقسام التطبيق.
-// روبو متحرّكٌ متجاوبٌ (لا يُوصَف بحيّ).
+// src/robo-companion.js — رفيق الآليّ المشترك لصفحات الأنشطة. محلّيّ بالكامل.
+// يُحقَن في أيّ صفحةٍ الآليّ مصغّرٌ في الزاوية، يتفاعل مع إنجازات الطفل وأخطائه
+// بصوتٍ وحركةٍ ونبرةٍ إسلامية. تجسيدٌ لمبدأ «الطفل يُعلّم الآليّ» في كل أقسام التطبيق.
+// الآليّ متحرّكٌ متجاوبٌ (لا يُوصَف بحيّ).
 import { roboSay, roboPhrase } from "./robo-voice.js";
 import { speak } from "./speak.js";
 import * as sfx from "./sfx.js";
@@ -28,7 +28,7 @@ const STYLE = `
 .rc-bubble.show{opacity:1;transform:translateY(0)}
 `;
 
-const SVG = `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="روبو">
+const SVG = `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="الآليّ">
   <line x1="40" y1="16" x2="40" y2="8" stroke="#8A93A0" stroke-width="2.4"/>
   <circle cx="40" cy="6" r="3.4" fill="#F4C95D"/>
   <rect x="16" y="16" width="48" height="40" rx="11" fill="#B8C0CC"/>
@@ -71,7 +71,7 @@ export const robo = {
   applaud() { ensureMounted(); flash("cheer"); sfx.success(); },
   // كلامٌ عامّ بمزاجٍ مُحدَّد. opts.then يُستدعى عند انتهاء الكلام.
   say(text, mood = "talk", opts = {}) { ensureMounted(); flash(mood === "happy" ? "cheer" : ""); showBubble(text); roboSay(text, { mood, onend: opts.then }); },
-  // قراءةُ حرفٍ أو كلمةٍ بوضوحٍ (بلا نبضةٍ روبوتية كي لا تُزعجَ عند التكرار).
+  // قراءةُ حرفٍ أو كلمةٍ بوضوحٍ (بلا نبضةٍ آليّة كي لا تُزعجَ عند التكرار).
   read(text, opts = {}) { ensureMounted(); flash(""); showBubble(text); speak(text, { rate: opts.rate != null ? opts.rate : 0.7, onend: opts.then }); },
   // عرضٌ مرئيٌّ فقط (فقاعة + مزاج + مؤثّر) بلا نطقٍ آليّ — ليُشغَّلَ نطقٌ خارجيٌّ بعده (كاللغات الأجنبيّة).
   // opts.good: true=فرح+نغمةُ نجاح، false=طمأنة+نغمةُ خطأ.

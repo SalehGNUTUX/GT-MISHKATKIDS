@@ -61,7 +61,7 @@ export const BADGES = [
   { id: "letters", ic: "🔍", label: "صديق الحروف",       cond: s => (s.counts.basics_correct || 0) >= 15 },
   { id: "decoder", ic: "🔡", label: "أقرأُ بنفسي",        cond: s => (s.counts.read_practice || 0) >= 10 },
   { id: "memory",  ic: "🧠", label: "ذاكرة قويّة",        cond: s => (s.counts.memory_win || 0) >= 3 },
-  { id: "robo",    ic: "🤖", label: "معلّم روبو",         cond: s => (s.counts.memory_heal || 0) >= 5 },
+  { id: "robo",    ic: "🤖", label: "معلّم الآليّ",         cond: s => (s.counts.memory_heal || 0) >= 5 },
   { id: "streak3", ic: "🔥", label: "ثلاثة أيّامٍ متتالية", cond: s => s.streak >= 3 },
   { id: "streak7", ic: "⭐", label: "أسبوعٌ كامل",        cond: s => s.streak >= 7 },
   { id: "explorer",ic: "🧭", label: "مُستكشِف",           cond: s => s.sections >= 4 },

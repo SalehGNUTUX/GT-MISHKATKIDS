@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="مِشكاة" />
 <meta name="theme-color" content="#E07A5F" />
-<title>مِشكاة — روبو يتعافى</title>
+<title>مِشكاة — الآليّ يتعافى</title>
 <style>
   :root{
     --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
@@ -36,7 +36,7 @@
   .part.lit{filter:drop-shadow(0 0 6px currentColor)}
   .robo-base{fill:var(--robo)}
 
-  /* روبو متحرّك متجاوب: يتنفّس ويرمش وينبض هوائيُّه، ويتفاعل بمزاجه مع الطفل (لا يكون جامدًا) */
+  /* الآليّ متحرّك متجاوب: يتنفّس ويرمش وينبض هوائيُّه، ويتفاعل بمزاجه مع الطفل (لا يكون جامدًا) */
   .robo-svg{transform-origin:50% 82%}
   @media (prefers-reduced-motion: no-preference){
     .robo-svg{animation:robo-breathe 3.6s ease-in-out infinite}
@@ -177,10 +177,10 @@
   <header>
     <div>
       <h1>تلميذي 🤖</h1>
-      <div class="sub">علّمْ روبو… فيتذكّر ويتعافى</div>
+      <div class="sub">علّمْ الآليّ… فيتذكّر ويتعافى</div>
     </div>
     <div class="topbtns">
-      <button class="iconbtn" id="muteBtn" title="صوت روبو: تشغيل/كتم">🔊</button>
+      <button class="iconbtn" id="muteBtn" title="صوت الآليّ: تشغيل/كتم">🔊</button>
       <button class="iconbtn" id="themeBtn" title="الوضع الداكن" aria-label="الوضع الداكن">🌙</button>
       <a class="topbtn" href="home.html" style="text-decoration:none">🏠 الفهرس</a>
       <button class="topbtn" id="parentBtn">🛡️ لوحة التحكّم</button>
@@ -188,7 +188,7 @@
   </header>
 
   <div class="stage">
-    <svg class="robo-svg" viewBox="0 0 240 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="روبو">
+    <svg class="robo-svg" viewBox="0 0 240 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="الآليّ">
       <line x1="120" y1="40" x2="120" y2="22" stroke="#8A93A0" stroke-width="3"/>
       <circle cx="120" cy="18" r="6" class="part antenna" data-part="الدماغ"/>
       <rect x="70" y="44" width="100" height="84" rx="18" class="robo-base"/>
@@ -220,7 +220,7 @@
     <button data-f="4-6">4–6 سنوات</button>
     <button data-f="7-10">7–10 سنوات</button>
   </div>
-  <div class="center muted" style="font-size:13px;margin-top:14px">🗺️ خريطة عالم روبو — اختر منطقةً لتستكشفها</div>
+  <div class="center muted" style="font-size:13px;margin-top:14px">🗺️ خريطة عالم الآليّ — اختر منطقةً لتستكشفها</div>
   <div class="filters" id="domfilters"></div>
 
   <div id="cardHost"></div>
@@ -277,7 +277,7 @@ const AR = n => String(n);
 
 let LIB=null, MEM=[], THRESH=8;
 let filter=getChildAge(), domFilter="all", current=null, state="idle", pending=[];
-let teachStage=0, wrongState=0; // حوار التلقين: 0=جواب الطفل، 1=تعميق التفكير | خطأ روبو: 0 مخفيّ،1 معروض،2 صُحِّح
+let teachStage=0, wrongState=0; // حوار التلقين: 0=جواب الطفل، 1=تعميق التفكير | خطأ الآليّ: 0 مخفيّ،1 معروض،2 صُحِّح
 let pendingNote=""; // جواب الطفل المكتوب (اختياريّ) يُحفظ مع توثيق الجلسة
 let coopMode=false; // وضع الإخوة: يقتصر على ذكريات «لطفلين معًا»
 let mediaRec=null, recChunks=[];
@@ -318,7 +318,7 @@ function init(){
   // لا يُدخَل التطبيق دون حسابٍ نشط: غيابُ الحساب (ولا قصدَ للوحة الأهل) ⇒ شاشة الدخول.
   // (هذا يُغلق ثغرة «الحساب المجهول» = وضع «بلا حساب» الذي كان يظهر عند فتح اللوحة.)
   if(!cu && !wantsParent){ location.replace("home.html"); return; }
-  // أيُّ قدومٍ بـ?parent=1 = لوحةُ التحكّم وحدها (حاجزة): لا نرسم حلقة «علّم روبو» خلفها،
+  // أيُّ قدومٍ بـ?parent=1 = لوحةُ التحكّم وحدها (حاجزة): لا نرسم حلقة «علّم الآليّ» خلفها،
   // والخروجُ يعيد لشاشة الدخول/الحساب الذي فُتحت منه. (لا يُترَك المستخدم في الحلقة.)
   parentOnly = wantsParent;
   if(parentOnly) overlay.style.background="#FBF7EF"; // خلفيّةٌ معتمةٌ فلا يظهر أيُّ شيءٍ خلف البوّابة
@@ -340,7 +340,7 @@ function renderRobo(){
     else { el.style.fill=""; el.classList.remove("lit"); }
   });
   document.getElementById("laugh").textContent =
-    progress.completed.length>=THRESH ? "🎉 عادت ضحكة روبو! لقد أعدتَ إليه كلّ ذكرياته." : "";
+    progress.completed.length>=THRESH ? "🎉 عادت ضحكة الآليّ! لقد أعدتَ إليه كلّ ذكرياته." : "";
 }
 function renderWorld(){
   document.getElementById("world").innerHTML = Object.keys(WORLD_EMOJI).map(w=>
@@ -367,7 +367,7 @@ function renderIdle(){
   const coopBar = coopMode
     ? `<div class="parent" style="border-right-color:var(--violet);background:#F6F0FB;margin-bottom:10px"><b style="color:#7a4fa0">👯 وضع الإخوة</b> — نشاطٌ يفعله طفلان معًا.</div>`
     : "";
-  host.innerHTML=`<div class="card center">${coopBar}<div class="robo-says">${coopMode?"روبو وصديقُه ينتظران نشاطًا للأخوين…":"روبو ينتظر ذكرى جديدة…"}</div>
+  host.innerHTML=`<div class="card center">${coopBar}<div class="robo-says">${coopMode?"الآليّ وصديقُه ينتظران نشاطًا للأخوين…":"الآليّ ينتظر ذكرى جديدة…"}</div>
     <p class="muted">${coopMode?`أنشطةٌ للأخوين: ${AR(left)} متبقّية.`:`في ذاكرته ${AR(left)} ذكرى ناقصة. هل تساعده؟`}</p>
     <div class="btns" style="justify-content:center"><button class="act" onclick="spark()">✨ شرارة ذكرى</button>
     ${coopMode
@@ -422,12 +422,12 @@ function renderCard(){
     }
     host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.teach}</span>
       <div class="robo-says">🤖 ${m.teach.robo_question}</div>
-      <div class="cue">أجِبْ روبو بصوتك، أو اكتبْ جوابك، أو أرِهِ ما صنعت.</div>
+      <div class="cue">أجِبْ الآليّ بصوتك، أو اكتبْ جوابك، أو أرِهِ ما صنعت.</div>
       <div class="succ">✅ علامة النجاح (يقرّرها الأهل): ${m.teach.success_signal}</div>
       ${capHtml}
-      <div class="capture"><div class="lbl">✍️ اكتبْ جواب الطفل عن سؤال روبو (اختياريّ):</div>
+      <div class="capture"><div class="lbl">✍️ اكتبْ جواب الطفل عن سؤال الآليّ (اختياريّ):</div>
         <textarea id="noteField" class="notefield" rows="2" placeholder="${m.teach.robo_question}"></textarea></div>
-      <div class="btns"><button class="act" onclick="goTeach(1)">أجابَ الطفلُ روبو ←</button>
+      <div class="btns"><button class="act" onclick="goTeach(1)">أجابَ الطفلُ الآليّ ←</button>
       <button class="ghost" onclick="go('task')">→ لم نُنجِزها بعد</button></div></div>`;
     updateCapStatus();
     const nf=document.getElementById("noteField");
@@ -437,41 +437,41 @@ function renderCard(){
     let wrongHtml="";
     if(rw){
       if(wrongState===0) wrongHtml=`<div class="capture"><div class="lbl">🧠 تحدٍّ إضافيّ للتفكير:</div>
-        <button class="capbtn" onclick="askRoboWrong()">اسمعْ فكرة روبو… أصوابٌ هي؟</button></div>`;
+        <button class="capbtn" onclick="askRoboWrong()">اسمعْ فكرة الآليّ… أصوابٌ هي؟</button></div>`;
       else if(wrongState===1) wrongHtml=`<div class="capture"><div class="robo-says" style="font-size:16px">🤖 ${rw}</div>
-        <button class="capbtn rec" onclick="fixRoboWrong()">✋ لا يا روبو، الصوابُ غيرُ ذلك!</button></div>`;
+        <button class="capbtn rec" onclick="fixRoboWrong()">✋ لا أيّها الآليّ، الصوابُ غيرُ ذلك!</button></div>`;
       else wrongHtml=`<div class="capture"><div class="succ done" style="color:var(--good-d)">🤖 صحّحتَني يا معلّمي! ما كنتُ لأعرفَ لولاك. 🌟</div></div>`;
     }
     host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.teach} · تفكير</span>
       <div class="robo-says">🤖 ${dq}</div>
-      <div class="cue">اشرَحْ لروبو سببَ تفكيرك — لا توجد إجابةٌ واحدة.</div>
+      <div class="cue">اشرَحْ للآليّ سببَ تفكيرك — لا توجد إجابةٌ واحدة.</div>
       ${wrongHtml}
-      <div class="btns"><button class="act" onclick="heal()">علّمَ روبو! 💡</button>
+      <div class="btns"><button class="act" onclick="heal()">علّمَ الآليّ! 💡</button>
       <button class="ghost" onclick="goTeach(0)">→ رجوع</button></div></div>`;
   } else if(state==="heal"){
     const r=m.heal.reward;
-    const label=r.type==="world"?`أضاء ${r.target} في عالم روبو ${WORLD_EMOJI[r.target]||""}`:`أضاء ${r.target} في روبو`;
+    const label=r.type==="world"?`أضاء ${r.target} في عالم الآليّ ${WORLD_EMOJI[r.target]||""}`:`أضاء ${r.target} في الآليّ`;
     const isl=praise(progress.completed.length), td=tadabburFor(m.domain);
     const cheer=roboPhrase("praise", progress.completed.length);
     host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.heal}</span>
       <div class="robo-says">${cheer} ${m.heal.robo_reaction}</div>
       <div class="cue">${isl}${td?" "+td:""}</div>
       <div class="heal-reward">✨ ${label}</div>
-      <div class="btns"><button class="act" onclick="spark()">ذكرى جديدة لروبو ←</button>
+      <div class="btns"><button class="act" onclick="spark()">ذكرى جديدة للآليّ ←</button>
       <button class="ghost" onclick="renderIdle()">توقّف الآن</button></div></div>`;
     roboSay(`${cheer} ${m.heal.robo_reaction} ${isl}${td?" "+td:""}`, {mood:"happy"});
   }
 }
 function go(s){ state=s; if(s==="teach"){teachStage=0; wrongState=0; pendingNote="";} renderCard(); if(s==="teach") roboSay(current.teach.robo_question,{mood:"ask"}); }
 
-// حوار التلقين: انتقالات تُنطَق فيها كلمات روبو في وقت الانتقال (لا في كل إعادة رسم).
+// حوار التلقين: انتقالات تُنطَق فيها كلمات الآليّ في وقت الانتقال (لا في كل إعادة رسم).
 function goTeach(n){ teachStage=n; if(n===0) wrongState=0; renderCard();
   if(n===1) logEvent("think_deep"); // وسام المُفكِّر
   roboSay(n===1 ? deepenFor(current) : current.teach.robo_question, {mood:"ask"}); }
 function askRoboWrong(){ wrongState=1; renderCard(); roboSay(roboWrongFor(current), {mood:"talk"}); }
 function fixRoboWrong(){ wrongState=2; logEvent("wrong_fixed"); renderCard(); roboSay(`${roboPhrase("thanks")} صحّحتَني، شكرًا يا معلّمي!`, {mood:"happy"}); }
 
-// مزاج روبو: يجعل العلاقة تفاعلية نشطة — فضولٌ عند الشرارة، تفكيرٌ عند السؤال، فرحٌ عند الشفاء.
+// مزاج الآليّ: يجعل العلاقة تفاعلية نشطة — فضولٌ عند الشرارة، تفكيرٌ عند السؤال، فرحٌ عند الشفاء.
 function setMood(mood){
   const svg=document.querySelector(".robo-svg"); if(!svg) return;
   svg.classList.remove("thinking","happy","curious");
@@ -715,7 +715,7 @@ async function openDashboard(){
         <div style="font-size:20px;line-height:1.7">${earned.length?earned.map(b=>`<span title="${b.label}">${b.ic}</span>`).join(" "):'<span class="muted" style="font-size:12px">لا أوسمة بعد</span>'}</div>
         <div class="muted" style="font-size:12px;margin:8px 0 4px">التقدّم بالمجالات:</div>
         ${perDom.map(pd=>`<div class="dom-row"><span style="flex:none;width:120px;font-size:12px">${pd.d}</span><span class="bar"><i style="width:${pd.pct}%"></i></span><span class="muted" style="font-size:11px;width:46px;text-align:center">${AR(pd.dn)}/${AR(pd.tot)}</span></div>`).join("")}
-        <div class="muted" style="font-size:11px;margin-top:6px">أجزاء روبو ${AR(partsLit)}/7 · عناصر العالم ${AR(worldLit)}/7</div>
+        <div class="muted" style="font-size:11px;margin-top:6px">أجزاء الآليّ ${AR(partsLit)}/7 · عناصر العالم ${AR(worldLit)}/7</div>
       </div>
     </div>`;
   };
@@ -728,7 +728,7 @@ async function openDashboard(){
     <div class="sec"><h3>نظرة عامة</h3>
       <div class="statgrid">
         <div class="stat"><div class="n">${AR(done)}</div><div class="t">ذكرى مُستعادة</div></div>
-        <div class="stat"><div class="n">${AR(litP)}/7</div><div class="t">أجزاء روبو</div></div>
+        <div class="stat"><div class="n">${AR(litP)}/7</div><div class="t">أجزاء الآليّ</div></div>
         <div class="stat"><div class="n">${AR(litW)}/7</div><div class="t">عناصر العالم</div></div>
         <div class="stat"><div class="n">${done>=THRESH?"🎉":AR(Math.max(0,THRESH-done))}</div><div class="t">${done>=THRESH?"عادت الضحكة":"تبقّى للضحكة"}</div></div>
       </div>
@@ -761,16 +761,16 @@ async function openDashboard(){
       </div>
       <div class="dom-row">
         <span style="flex:none;width:210px;font-size:13px">👯 ذكريات الإخوة (لطفلين معًا)</span>
-        <span class="muted" style="font-size:12px;flex:1">إظهارها ضمن ذكريات روبو</span>
+        <span class="muted" style="font-size:12px;flex:1">إظهارها ضمن ذكريات الآليّ</span>
         <button class="toggle ${progress.settings.showPair!==false?"on":""}" id="pairToggle" title="إظهار/إخفاء"></button>
       </div>
       <div class="dom-row">
-        <span style="flex:none;width:210px;font-size:13px">🎵 نغمات روبو</span>
+        <span style="flex:none;width:210px;font-size:13px">🎵 نغمات الآليّ</span>
         <span class="muted" style="font-size:12px;flex:1">النبضات ومؤثّرات النجاح/الخطأ</span>
         <button class="toggle ${isTonesOn()?"on":""}" id="tonesToggle" title="تشغيل/إيقاف النغمات"></button>
       </div>
       <div class="dom-row">
-        <span style="flex:none;width:210px;font-size:13px">🗣️ نطق روبو (الكلمات)</span>
+        <span style="flex:none;width:210px;font-size:13px">🗣️ نطق الآليّ (الكلمات)</span>
         <span class="muted" style="font-size:12px;flex:1">قراءة الكلمات والحروف بصوتٍ عربيّ</span>
         <button class="toggle ${isVoiceOn()?"on":""}" id="voiceToggle" title="تشغيل/إيقاف النطق"></button>
       </div>
@@ -910,7 +910,7 @@ async function openDashboard(){
     openDashboard();
   }));
   document.getElementById("wipe").addEventListener("click", async ()=>{
-    if(await confirmWithPassword("مسح كل تقدّم روبو والتسجيلات نهائيًّا؟ ستظهر مهلةُ تراجع.")){
+    if(await confirmWithPassword("مسح كل تقدّم الآليّ والتسجيلات نهائيًّا؟ ستظهر مهلةُ تراجع.")){
       undoable("سيُمسَح كلُّ التقدّم…", async ()=>{
         progress={completed:[],parts:{},world:{},log:[],settings:{enabledDomains:{},showPair:true}};
         DOMAINS.forEach(d=>progress.settings.enabledDomains[d]=true);

@@ -1,7 +1,7 @@
-// src/robo-voice.js — شخصية صوت روبو المتجاوبة. محلّيّة بالكامل، بلا ملفات.
-// طبقتان: (1) نبضة روبوتية مميِّزة عبر WebAudio تعطيه شخصية متجاوبة،
+// src/robo-voice.js — شخصية صوت الآليّ المتجاوبة. محلّيّة بالكامل، بلا ملفات.
+// طبقتان: (1) نبضة آليّة مميِّزة عبر WebAudio تعطيه شخصية متجاوبة،
 //         (2) نطقٌ عربيّ حقيقيّ للكلمات عبر speak.js ليفهمها الطفل ويتعلّمها.
-// الفكرة: نبضةٌ قصيرة (بحسب المزاج) ثم ينطق روبو كلماته — كأنّه يشتغل ثمّ يتكلّم.
+// الفكرة: نبضةٌ قصيرة (بحسب المزاج) ثم ينطق الآليّ كلماته — كأنّه يشتغل ثمّ يتكلّم.
 import { isTonesOn } from "./sound-prefs.js";
 import { speak } from "./speak.js";
 import { REACTIONS, QUESTION_STARTERS } from "./robo-phrases.js";
@@ -17,7 +17,7 @@ export function roboPhrase(kind, i) {
   return arr[((n % arr.length) + arr.length) % arr.length];
 }
 
-/* ---------- النبضة الروبوتية (WebAudio) ---------- */
+/* ---------- النبضة الآليّة (WebAudio) ---------- */
 let ctx = null;
 function ac() {
   try {
@@ -53,15 +53,15 @@ export function roboBlip(mood = "talk") {
   }
 }
 
-/* ---------- نطق روبو: نبضةٌ مميِّزة ثمّ كلماتٌ حقيقية ---------- */
+/* ---------- نطق الآليّ: نبضةٌ مميِّزة ثمّ كلماتٌ حقيقية ---------- */
 // mood: talk | ask | happy | wonder | curious | ok
 export function roboSay(text, opts = {}) {
   const mood = opts.mood || "talk";
   roboBlip(mood);
-  // صوتٌ ودودٌ روبوتيّ لطيف: نبرةٌ أعلى قليلًا وإيقاعٌ مُتمهِّل يناسب الصغار.
+  // صوتٌ ودودٌ آليّ لطيف: نبرةٌ أعلى قليلًا وإيقاعٌ مُتمهِّل يناسب الصغار.
   speak(text, {
     pitch: opts.pitch != null ? opts.pitch : 1.25,
     rate: opts.rate != null ? opts.rate : 0.85,
-    onend: opts.onend,   // إشعارٌ بانتهاء كلام روبو (لتأخير الانتقال للسؤال التالي)
+    onend: opts.onend,   // إشعارٌ بانتهاء كلام الآليّ (لتأخير الانتقال للسؤال التالي)
   });
 }

@@ -419,7 +419,7 @@ function nextFind(){
     `<div class="gbar"><span class="pill">⭐ <b>${sScore}</b></span>${autoToggleHtml()}</div>
      <div class="prompt">أين «${target.name}»؟ <button id="rep">🔊</button></div>
      <div class="grid" id="grid">${opts.map(o=>`<button class="tile" data-id="${o.id}">${o.svg(col)}</button>`).join("")}</div>
-     <div class="hint">اضغط الشكل الصحيح — روبو يستمع</div>`;
+     <div class="hint">اضغط الشكل الصحيح — الآليّ يستمع</div>`;
   wireBack(); wireAuto(view);
   document.getElementById("rep").onclick=()=>robo.read(target.name);
   robo.say("أين "+target.name+"؟","ask");

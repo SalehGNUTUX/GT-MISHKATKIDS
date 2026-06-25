@@ -41,6 +41,9 @@ const texts = uniq([
   ...(L.reactions || []).map(r => r.t),    // ردودُ أفعال الآلي (مدح) بلغة القسم
   ...(L.encourage || []).map(r => r.t),    // ردودُ التشجيع عند الخطأ بلغة القسم
   ...(L.stories || []).flatMap(s => [s.title, ...(s.pages || []).map(p => p.text), s.lesson]),
+  ...(L.verbs || []).flatMap(v => [v.v,                                   // المصدرُ/الفعل
+    ...(v.conj || []).map(c => c.w),                                       // تصريفُ الضمائر (المضارع)
+    ...["past", "present", "future"].map(t => v.tenses && v.tenses[t] && v.tenses[t].w)]), // الأزمنة (أنا)
 ]);
 
 const setHash = sha(SET.id);

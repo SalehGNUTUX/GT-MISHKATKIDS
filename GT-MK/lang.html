@@ -106,8 +106,9 @@
   .storycard .cover{width:100%;height:64px;overflow:hidden}
   .storycard .cover svg{width:100%;height:100%}
   .storyview{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px;margin-top:8px;text-align:center}
-  .storyview .cover.big{max-width:320px;margin:0 auto}
-  .storyview .cover.big svg{width:100%;height:auto;border-radius:12px}
+  .storyview .cover.big{max-width:320px;margin:0 auto;position:relative}
+  .storyview .cover.big svg{width:100%;height:auto;border-radius:12px;display:block}
+  .scaption{position:absolute;left:10px;right:10px;bottom:10px;background:rgba(255,255,255,.94);color:#23314a;border-radius:12px;padding:7px 12px;font-size:14px;font-weight:800;box-shadow:0 3px 10px rgba(0,0,0,.25);line-height:1.4}
   .storytext{font-size:17px;line-height:1.7;margin:12px 4px;text-align:start}
   .snav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px}
   .snav .secbtn[disabled]{opacity:.4;cursor:default}
@@ -148,6 +149,8 @@
   .vrow .vf{font-size:18px;font-weight:800;flex:1}
   .vrow .va{font-size:15px;color:var(--muted)}
   .vrow:active{transform:scale(.99)}
+  .vsec{font-weight:800;font-size:14px;color:var(--primary-d);margin:16px 2px 4px;text-align:start}
+  .vrec{margin-top:14px;text-align:center}
 </style>
 </head>
 <body>
@@ -248,7 +251,7 @@ const SECTIONS = [
 // رموزٌ تعبيريّةٌ + ترجماتٌ لفئات الكلمات (يتبدّل العنوانُ بين العربيّة ولغة القسم كلَّ 5ث)
 const CAT_ICON = { animals:"🦁", colors:"🎨", family:"👪", food:"🍎", body:"🧒", greetings:"👋", school:"🏫", nature:"🌳", transport:"🚗", fruits:"🍇", clothes:"👕", weather:"🌦️", shapes:"🔷", days:"📅", actions:"🏃",
   jobs:"💼", sports:"⚽", house:"🏠",
-  hello:"👋", polite:"🙏", useful:"💬", questions:"❓", class:"🏫", sentences:"🗨️" };
+  hello:"👋", polite:"🙏", useful:"💬", questions:"❓", class:"🏫", sentences:"🗨️", asking:"🙋" };
 const CAT_I18N = {
   animals:{en:"Animals",fr:"Animaux"}, colors:{en:"Colors",fr:"Couleurs"}, family:{en:"Family",fr:"Famille"},
   food:{en:"Food",fr:"Nourriture"}, body:{en:"Body",fr:"Corps"}, greetings:{en:"Greetings",fr:"Salutations"},
@@ -258,6 +261,7 @@ const CAT_I18N = {
   jobs:{en:"Jobs",fr:"Métiers"}, sports:{en:"Sports",fr:"Sports"}, house:{en:"House",fr:"Maison"}, sentences:{en:"Sentences",fr:"Phrases"},
   hello:{en:"Greetings",fr:"Salutations"}, polite:{en:"Politeness",fr:"Politesse"}, useful:{en:"Useful",fr:"Utiles"},
   questions:{en:"Questions",fr:"Questions"}, class:{en:"Classroom",fr:"En classe"},
+  asking:{en:"How to Ask",fr:"Comment demander"},
 };
 const shuffle = a => { const r=a.slice(); for(let k=r.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [r[k],r[j]]=[r[j],r[k]]; } return r; };
 const allWords = L => (L.words||[]).flatMap(c => (c.items||[]).map(it => ({ ...it, cat:c.id })));
@@ -398,13 +402,22 @@ function renderVerbs(L, host){
       <div class="grid">${verbs.map((v,idx)=>`<button class="gcard vcard" data-i="${idx}"><span style="font-size:34px">${v.emoji}</span><span class="ltr" style="font-weight:800;font-size:16px">${esc(v.v)}</span><span style="font-size:13px;color:var(--muted)">${esc(v.ar)}</span></button>`).join("")}</div>`;
     host.querySelectorAll(".vcard").forEach(b=>b.onclick=()=>{ const i=+b.getAttribute("data-i"); detail(i); say(verbs[i].v, L); });
   }
+  const row = (label,fw,arw) => `<button class="vrow" data-say="${esc(fw)}"><span class="vt">${esc(label)}</span><span class="vf ltr">${esc(fw)}</span><span class="va">${esc(arw)}</span><span class="vs">🔊</span></button>`;
   function detail(i){
-    const v = verbs[i], rows = [["الماضي",v.past],["المضارع",v.present],["المستقبل",v.future]];
+    const v = verbs[i], tenseRows = [["الماضي",v.tenses.past],["المضارع",v.tenses.present],["المستقبل",v.tenses.future]];
     host.innerHTML = `<button class="secbtn" id="vback">↩ الأفعال</button>
       <div class="qzprompt"><span class="qzemoji">${v.emoji}</span><span class="qzar">${esc(v.ar)} · <span class="ltr">${esc(v.v)}</span></span></div>
-      <div class="vtenses">${rows.map(([t,f])=>`<button class="vrow" data-say="${esc(f.w)}"><span class="vt">${t}</span><span class="vf ltr">${esc(f.w)}</span><span class="va">${esc(f.ar)}</span><span class="vs">🔊</span></button>`).join("")}</div>`;
+      <div class="vsec">🕰️ الأزمنة (مع «أنا»)</div>
+      <div class="vtenses">${tenseRows.map(([t,f])=>row(t,f.w,f.ar)).join("")}</div>
+      <div class="vsec">👥 التصريفُ في المضارع</div>
+      <div class="vtenses">${(v.conj||[]).map(c=>row(c.ar,c.w,c.arw)).join("")}</div>
+      <div class="vrec"><button class="secbtn" id="vrecBtn">🎙️ سجّلْ نُطقك</button><div id="vrecHost" hidden></div></div>`;
     host.querySelector("#vback").onclick=list;
     host.querySelectorAll(".vrow").forEach(b=>b.onclick=()=>say(b.getAttribute("data-say"), L));
+    host.querySelector("#vrecBtn").onclick=async()=>{
+      const b=host.querySelector("#vrecBtn"), h=host.querySelector("#vrecHost"); b.hidden=true; h.hidden=false;
+      await attachReader(h, v.v, { label:"نُطقك", helpLabel:"🔊 النطق الصحيح", onHelp:()=>say(v.v, L) });
+    };
   }
   list();
 }
@@ -476,7 +489,7 @@ function renderLang(k){
       const pg = Math.max(0, Math.min(+qp.get("pg")||0, st.pages.length-1));
       const p = st.pages[pg], last = pg===st.pages.length-1;
       topnav = nav("↩ القصص","stlist")+`<span class="cur ltr">${esc(st.title)}</span>`;
-      body = `<div class="storyview"><div class="cover big">${STORY_ART[p.art]||""}</div>
+      body = `<div class="storyview"><div class="cover big">${STORY_ART[p.art]||""}${p.caption?`<div class="scaption ltr">${esc(p.caption)}</div>`:""}</div>
           <p class="storytext ltr">${esc(p.text)}</p>
           ${last?`<div class="lesson ltr">⭐ ${esc(st.lesson)}</div>`:""}
           <div class="snav">
@@ -536,7 +549,7 @@ function renderLang(k){
     const pg=Math.max(0,Math.min(+qp.get("pg")||0, st.pages.length-1));
     const rd=document.getElementById("stRead"); if(rd) rd.onclick=()=>{ cancelRead(); say(st.pages[pg].text, L); };
     const showPage=i=>{ const sv=view.querySelector(".storyview"); if(!sv)return;
-      const c=sv.querySelector(".cover.big"); if(c) c.innerHTML=STORY_ART[st.pages[i].art]||"";
+      const c=sv.querySelector(".cover.big"); if(c) c.innerHTML=(STORY_ART[st.pages[i].art]||"")+(st.pages[i].caption?`<div class="scaption ltr">${esc(st.pages[i].caption)}</div>`:"");
       const t=sv.querySelector(".storytext"); if(t) t.textContent=st.pages[i].text;
       sv.querySelectorAll(".dots span").forEach((d,j)=>d.classList.toggle("on", j===i));
       const u=new URL(location.href); u.searchParams.set("pg", i); history.replaceState(null,"",u); };

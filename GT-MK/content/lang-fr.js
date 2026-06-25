@@ -107,25 +107,47 @@ export default {
       { w: "Lit", ar: "سرير", emoji: "🛏️" }, { w: "Lampe", ar: "مصباح", emoji: "💡" }, { w: "Clé", ar: "مفتاح", emoji: "🔑" } ] },
   ],
 
-  // الأفعالُ والأزمنة: الماضي (passé composé)/المضارع/المستقبل لصيغة المتكلّم + ترجمةٌ عربيّة.
+  // الأفعالُ والأزمنة: تصريفُ المضارع لكلّ الضمائر (conj) + الأزمنةُ الثلاثُ لصيغة المتكلّم (tenses).
   verbs: [
-    { v: "manger",  ar: "يأكل", emoji: "🍽️", past:{w:"J'ai mangé",   ar:"أكلتُ"},  present:{w:"Je mange",   ar:"آكُلُ"},  future:{w:"Je mangerai",  ar:"سآكُلُ"} },
-    { v: "boire",   ar: "يشرب", emoji: "🥤", past:{w:"J'ai bu",      ar:"شربتُ"},  present:{w:"Je bois",    ar:"أشربُ"},  future:{w:"Je boirai",    ar:"سأشربُ"} },
-    { v: "jouer",   ar: "يلعب", emoji: "⚽", past:{w:"J'ai joué",    ar:"لعبتُ"},  present:{w:"Je joue",    ar:"ألعبُ"},  future:{w:"Je jouerai",   ar:"سألعبُ"} },
-    { v: "lire",    ar: "يقرأ", emoji: "📖", past:{w:"J'ai lu",      ar:"قرأتُ"},  present:{w:"Je lis",     ar:"أقرأُ"},  future:{w:"Je lirai",     ar:"سأقرأُ"} },
-    { v: "écrire",  ar: "يكتب", emoji: "✍️", past:{w:"J'ai écrit",   ar:"كتبتُ"},  present:{w:"J'écris",    ar:"أكتبُ"},  future:{w:"J'écrirai",    ar:"سأكتبُ"} },
-    { v: "aller",   ar: "يذهب", emoji: "🚶", past:{w:"Je suis allé", ar:"ذهبتُ"},  present:{w:"Je vais",    ar:"أذهبُ"},  future:{w:"J'irai",       ar:"سأذهبُ"} },
-    { v: "dormir",  ar: "ينام", emoji: "😴", past:{w:"J'ai dormi",   ar:"نمتُ"},   present:{w:"Je dors",    ar:"أنامُ"},  future:{w:"Je dormirai",  ar:"سأنامُ"} },
-    { v: "voir",    ar: "يرى",  emoji: "👁️", past:{w:"J'ai vu",      ar:"رأيتُ"},  present:{w:"Je vois",    ar:"أرى"},    future:{w:"Je verrai",    ar:"سأرى"} },
+    { v:"manger", ar:"يأكل", emoji:"🍽️",
+      conj:[{ar:"أنا",w:"Je mange",arw:"آكُلُ"},{ar:"أنتَ",w:"Tu manges",arw:"تأكُلُ"},{ar:"هو",w:"Il mange",arw:"يأكُلُ"},{ar:"هي",w:"Elle mange",arw:"تأكُلُ"},{ar:"نحن",w:"Nous mangeons",arw:"نأكُلُ"},{ar:"هم",w:"Ils mangent",arw:"يأكُلون"}],
+      tenses:{past:{w:"J'ai mangé",ar:"أكلتُ"},present:{w:"Je mange",ar:"آكُلُ"},future:{w:"Je mangerai",ar:"سآكُلُ"}} },
+    { v:"boire", ar:"يشرب", emoji:"🥤",
+      conj:[{ar:"أنا",w:"Je bois",arw:"أشربُ"},{ar:"أنتَ",w:"Tu bois",arw:"تشربُ"},{ar:"هو",w:"Il boit",arw:"يشربُ"},{ar:"هي",w:"Elle boit",arw:"تشربُ"},{ar:"نحن",w:"Nous buvons",arw:"نشربُ"},{ar:"هم",w:"Ils boivent",arw:"يشربون"}],
+      tenses:{past:{w:"J'ai bu",ar:"شربتُ"},present:{w:"Je bois",ar:"أشربُ"},future:{w:"Je boirai",ar:"سأشربُ"}} },
+    { v:"jouer", ar:"يلعب", emoji:"⚽",
+      conj:[{ar:"أنا",w:"Je joue",arw:"ألعبُ"},{ar:"أنتَ",w:"Tu joues",arw:"تلعبُ"},{ar:"هو",w:"Il joue",arw:"يلعبُ"},{ar:"هي",w:"Elle joue",arw:"تلعبُ"},{ar:"نحن",w:"Nous jouons",arw:"نلعبُ"},{ar:"هم",w:"Ils jouent",arw:"يلعبون"}],
+      tenses:{past:{w:"J'ai joué",ar:"لعبتُ"},present:{w:"Je joue",ar:"ألعبُ"},future:{w:"Je jouerai",ar:"سألعبُ"}} },
+    { v:"lire", ar:"يقرأ", emoji:"📖",
+      conj:[{ar:"أنا",w:"Je lis",arw:"أقرأُ"},{ar:"أنتَ",w:"Tu lis",arw:"تقرأُ"},{ar:"هو",w:"Il lit",arw:"يقرأُ"},{ar:"هي",w:"Elle lit",arw:"تقرأُ"},{ar:"نحن",w:"Nous lisons",arw:"نقرأُ"},{ar:"هم",w:"Ils lisent",arw:"يقرؤون"}],
+      tenses:{past:{w:"J'ai lu",ar:"قرأتُ"},present:{w:"Je lis",ar:"أقرأُ"},future:{w:"Je lirai",ar:"سأقرأُ"}} },
+    { v:"écrire", ar:"يكتب", emoji:"✍️",
+      conj:[{ar:"أنا",w:"J'écris",arw:"أكتبُ"},{ar:"أنتَ",w:"Tu écris",arw:"تكتبُ"},{ar:"هو",w:"Il écrit",arw:"يكتبُ"},{ar:"هي",w:"Elle écrit",arw:"تكتبُ"},{ar:"نحن",w:"Nous écrivons",arw:"نكتبُ"},{ar:"هم",w:"Ils écrivent",arw:"يكتبون"}],
+      tenses:{past:{w:"J'ai écrit",ar:"كتبتُ"},present:{w:"J'écris",ar:"أكتبُ"},future:{w:"J'écrirai",ar:"سأكتبُ"}} },
+    { v:"aller", ar:"يذهب", emoji:"🚶",
+      conj:[{ar:"أنا",w:"Je vais",arw:"أذهبُ"},{ar:"أنتَ",w:"Tu vas",arw:"تذهبُ"},{ar:"هو",w:"Il va",arw:"يذهبُ"},{ar:"هي",w:"Elle va",arw:"تذهبُ"},{ar:"نحن",w:"Nous allons",arw:"نذهبُ"},{ar:"هم",w:"Ils vont",arw:"يذهبون"}],
+      tenses:{past:{w:"Je suis allé",ar:"ذهبتُ"},present:{w:"Je vais",ar:"أذهبُ"},future:{w:"J'irai",ar:"سأذهبُ"}} },
+    { v:"dormir", ar:"ينام", emoji:"😴",
+      conj:[{ar:"أنا",w:"Je dors",arw:"أنامُ"},{ar:"أنتَ",w:"Tu dors",arw:"تنامُ"},{ar:"هو",w:"Il dort",arw:"ينامُ"},{ar:"هي",w:"Elle dort",arw:"تنامُ"},{ar:"نحن",w:"Nous dormons",arw:"ننامُ"},{ar:"هم",w:"Ils dorment",arw:"ينامون"}],
+      tenses:{past:{w:"J'ai dormi",ar:"نمتُ"},present:{w:"Je dors",ar:"أنامُ"},future:{w:"Je dormirai",ar:"سأنامُ"}} },
+    { v:"voir", ar:"يرى", emoji:"👁️",
+      conj:[{ar:"أنا",w:"Je vois",arw:"أرى"},{ar:"أنتَ",w:"Tu vois",arw:"ترى"},{ar:"هو",w:"Il voit",arw:"يرى"},{ar:"هي",w:"Elle voit",arw:"ترى"},{ar:"نحن",w:"Nous voyons",arw:"نرى"},{ar:"هم",w:"Ils voient",arw:"يرَوْن"}],
+      tenses:{past:{w:"J'ai vu",ar:"رأيتُ"},present:{w:"Je vois",ar:"أرى"},future:{w:"Je verrai",ar:"سأرى"}} },
+    { v:"courir", ar:"يجري", emoji:"🏃",
+      conj:[{ar:"أنا",w:"Je cours",arw:"أجري"},{ar:"أنتَ",w:"Tu cours",arw:"تجري"},{ar:"هو",w:"Il court",arw:"يجري"},{ar:"هي",w:"Elle court",arw:"تجري"},{ar:"نحن",w:"Nous courons",arw:"نجري"},{ar:"هم",w:"Ils courent",arw:"يجرون"}],
+      tenses:{past:{w:"J'ai couru",ar:"جريتُ"},present:{w:"Je cours",ar:"أجري"},future:{w:"Je courrai",ar:"سأجري"}} },
+    { v:"vouloir", ar:"يريد", emoji:"🙋",
+      conj:[{ar:"أنا",w:"Je veux",arw:"أريدُ"},{ar:"أنتَ",w:"Tu veux",arw:"تريدُ"},{ar:"هو",w:"Il veut",arw:"يريدُ"},{ar:"هي",w:"Elle veut",arw:"تريدُ"},{ar:"نحن",w:"Nous voulons",arw:"نريدُ"},{ar:"هم",w:"Ils veulent",arw:"يريدون"}],
+      tenses:{past:{w:"J'ai voulu",ar:"أردتُ"},present:{w:"Je veux",ar:"أريدُ"},future:{w:"Je voudrai",ar:"سأريدُ"}} },
   ],
 
   // القصص المصوّرة (نفسُ رسوم العربيّة ومعرّفاتها — مترجمةً للفرنسيّة).
   stories: [
     { id: "numerals-journey", cover: "numerals-2", title: "Le Voyage des Chiffres", pages: [
-      { art: "numerals-1", text: "Autrefois, les gens comptaient avec des cailloux et des marques sur la pierre. Mais les grands nombres étaient très difficiles à écrire !" },
-      { art: "numerals-2", text: "Puis de savants musulmans ont créé une façon facile d'écrire tout nombre avec seulement dix signes : 0 1 2 3 4 5 6 7 8 9." },
-      { art: "numerals-3", text: "Leur plus grande idée fut le ZÉRO (sifr) — un cercle qui signifie «rien», et pourtant il donne sa place à chaque nombre !" },
-      { art: "numerals-4", text: "Ces chiffres ont voyagé dans le monde entier. C'est pourquoi on les appelle encore «chiffres arabes» aujourd'hui." } ],
+      { art: "numerals-1", caption: "Compter était difficile…", text: "Autrefois, les gens comptaient avec des cailloux et des marques sur la pierre. Mais les grands nombres étaient très difficiles à écrire !" },
+      { art: "numerals-2", caption: "Dix signes faciles !", text: "Puis de savants musulmans ont créé une façon facile d'écrire tout nombre avec seulement dix signes : 0 1 2 3 4 5 6 7 8 9." },
+      { art: "numerals-3", caption: "Zéro — rien, et pourtant tout !", text: "Leur plus grande idée fut le ZÉRO (sifr) — un cercle qui signifie «rien», et pourtant il donne sa place à chaque nombre !" },
+      { art: "numerals-4", caption: "Des chiffres pour le monde entier !", text: "Ces chiffres ont voyagé dans le monde entier. C'est pourquoi on les appelle encore «chiffres arabes» aujourd'hui." } ],
       lesson: "Les chiffres que tu écris aujourd'hui sont un cadeau des savants arabes et musulmans. 🔢" },
     { id: "ant-perseverance", cover: "ant-1", title: "La fourmi qui n'a jamais abandonné", pages: [
       { art: "ant-1", text: "La petite fourmi a trouvé une grande miette, bien plus grande qu'elle ! Elle a dit avec enthousiasme : «Je vais l'emporter chez moi.»" },
@@ -171,6 +193,20 @@ export default {
 
   // عباراتٌ وجملٌ مركّبة (بطاقةٌ خاصّة): t = العبارة، ar = معناها بالعربيّة.
   phrases: [
+    { id: "asking", ar: "كيف أسأل؟", items: [
+      { t: "Comment vas-tu ?",            ar: "كيف حالك؟" },
+      { t: "Qu'est-ce que tu as ?",       ar: "ماذا بك؟" },
+      { t: "Où vas-tu ?",                 ar: "إلى أين أنت ذاهب؟" },
+      { t: "Que manges-tu ?",             ar: "ماذا تأكل؟" },
+      { t: "Que fais-tu ?",               ar: "ماذا تفعل؟" },
+      { t: "Veux-tu jouer ?",             ar: "هل تريد أن تلعب؟" },
+      { t: "Pourquoi es-tu triste ?",     ar: "لماذا أنت حزين؟" },
+      { t: "Où sont les toilettes ?",     ar: "أين الحمّام؟" },
+      { t: "Combien ça coûte ?",          ar: "بكم هذا؟" },
+      { t: "Quelle est ta couleur préférée ?", ar: "ما لونك المفضّل؟" },
+      { t: "As-tu faim ?",                ar: "هل أنت جائع؟" },
+      { t: "Puis-je t'aider ?",           ar: "هل أستطيع مساعدتك؟" },
+    ] },
     { id: "hello", ar: "تحايا", items: [
       { t: "Bonjour !",              ar: "مرحباً! / صباح الخير." },
       { t: "Bonsoir.",               ar: "مساء الخير." },

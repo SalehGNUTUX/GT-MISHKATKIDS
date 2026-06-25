@@ -108,25 +108,47 @@ export default {
       { w: "Bed", ar: "سرير", emoji: "🛏️" }, { w: "Lamp", ar: "مصباح", emoji: "💡" }, { w: "Key", ar: "مفتاح", emoji: "🔑" } ] },
   ],
 
-  // الأفعالُ والأزمنة: تصريفُ كلّ فعلٍ في الماضي/المضارع/المستقبل (صيغةُ المتكلّم) + ترجمةٌ عربيّة.
+  // الأفعالُ والأزمنة: لكلّ فعلٍ تصريفٌ في المضارع لكلّ الضمائر (conj) + الأزمنةُ الثلاثُ لصيغة المتكلّم (tenses).
   verbs: [
-    { v: "eat",   ar: "يأكل",  emoji: "🍽️", past:{w:"I ate",       ar:"أكلتُ"},   present:{w:"I eat",       ar:"آكُلُ"},   future:{w:"I will eat",      ar:"سآكُلُ"} },
-    { v: "drink", ar: "يشرب",  emoji: "🥤", past:{w:"I drank",     ar:"شربتُ"},   present:{w:"I drink",     ar:"أشربُ"},   future:{w:"I will drink",    ar:"سأشربُ"} },
-    { v: "play",  ar: "يلعب",  emoji: "⚽", past:{w:"I played",   ar:"لعبتُ"},   present:{w:"I play",      ar:"ألعبُ"},   future:{w:"I will play",     ar:"سألعبُ"} },
-    { v: "read",  ar: "يقرأ",  emoji: "📖", past:{w:"I read",     ar:"قرأتُ"},   present:{w:"I read",      ar:"أقرأُ"},   future:{w:"I will read",     ar:"سأقرأُ"} },
-    { v: "write", ar: "يكتب",  emoji: "✍️", past:{w:"I wrote",    ar:"كتبتُ"},   present:{w:"I write",     ar:"أكتبُ"},   future:{w:"I will write",    ar:"سأكتبُ"} },
-    { v: "go",    ar: "يذهب",  emoji: "🚶", past:{w:"I went",     ar:"ذهبتُ"},   present:{w:"I go",        ar:"أذهبُ"},   future:{w:"I will go",       ar:"سأذهبُ"} },
-    { v: "sleep", ar: "ينام",  emoji: "😴", past:{w:"I slept",    ar:"نمتُ"},    present:{w:"I sleep",     ar:"أنامُ"},   future:{w:"I will sleep",    ar:"سأنامُ"} },
-    { v: "see",   ar: "يرى",   emoji: "👁️", past:{w:"I saw",      ar:"رأيتُ"},   present:{w:"I see",       ar:"أرى"},     future:{w:"I will see",      ar:"سأرى"} },
+    { v:"eat", ar:"يأكل", emoji:"🍽️",
+      conj:[{ar:"أنا",w:"I eat",arw:"آكُلُ"},{ar:"أنتَ",w:"You eat",arw:"تأكُلُ"},{ar:"هو",w:"He eats",arw:"يأكُلُ"},{ar:"هي",w:"She eats",arw:"تأكُلُ"},{ar:"نحن",w:"We eat",arw:"نأكُلُ"},{ar:"هم",w:"They eat",arw:"يأكُلون"}],
+      tenses:{past:{w:"I ate",ar:"أكلتُ"},present:{w:"I eat",ar:"آكُلُ"},future:{w:"I will eat",ar:"سآكُلُ"}} },
+    { v:"drink", ar:"يشرب", emoji:"🥤",
+      conj:[{ar:"أنا",w:"I drink",arw:"أشربُ"},{ar:"أنتَ",w:"You drink",arw:"تشربُ"},{ar:"هو",w:"He drinks",arw:"يشربُ"},{ar:"هي",w:"She drinks",arw:"تشربُ"},{ar:"نحن",w:"We drink",arw:"نشربُ"},{ar:"هم",w:"They drink",arw:"يشربون"}],
+      tenses:{past:{w:"I drank",ar:"شربتُ"},present:{w:"I drink",ar:"أشربُ"},future:{w:"I will drink",ar:"سأشربُ"}} },
+    { v:"play", ar:"يلعب", emoji:"⚽",
+      conj:[{ar:"أنا",w:"I play",arw:"ألعبُ"},{ar:"أنتَ",w:"You play",arw:"تلعبُ"},{ar:"هو",w:"He plays",arw:"يلعبُ"},{ar:"هي",w:"She plays",arw:"تلعبُ"},{ar:"نحن",w:"We play",arw:"نلعبُ"},{ar:"هم",w:"They play",arw:"يلعبون"}],
+      tenses:{past:{w:"I played",ar:"لعبتُ"},present:{w:"I play",ar:"ألعبُ"},future:{w:"I will play",ar:"سألعبُ"}} },
+    { v:"read", ar:"يقرأ", emoji:"📖",
+      conj:[{ar:"أنا",w:"I read",arw:"أقرأُ"},{ar:"أنتَ",w:"You read",arw:"تقرأُ"},{ar:"هو",w:"He reads",arw:"يقرأُ"},{ar:"هي",w:"She reads",arw:"تقرأُ"},{ar:"نحن",w:"We read",arw:"نقرأُ"},{ar:"هم",w:"They read",arw:"يقرؤون"}],
+      tenses:{past:{w:"I read",ar:"قرأتُ"},present:{w:"I read",ar:"أقرأُ"},future:{w:"I will read",ar:"سأقرأُ"}} },
+    { v:"write", ar:"يكتب", emoji:"✍️",
+      conj:[{ar:"أنا",w:"I write",arw:"أكتبُ"},{ar:"أنتَ",w:"You write",arw:"تكتبُ"},{ar:"هو",w:"He writes",arw:"يكتبُ"},{ar:"هي",w:"She writes",arw:"تكتبُ"},{ar:"نحن",w:"We write",arw:"نكتبُ"},{ar:"هم",w:"They write",arw:"يكتبون"}],
+      tenses:{past:{w:"I wrote",ar:"كتبتُ"},present:{w:"I write",ar:"أكتبُ"},future:{w:"I will write",ar:"سأكتبُ"}} },
+    { v:"go", ar:"يذهب", emoji:"🚶",
+      conj:[{ar:"أنا",w:"I go",arw:"أذهبُ"},{ar:"أنتَ",w:"You go",arw:"تذهبُ"},{ar:"هو",w:"He goes",arw:"يذهبُ"},{ar:"هي",w:"She goes",arw:"تذهبُ"},{ar:"نحن",w:"We go",arw:"نذهبُ"},{ar:"هم",w:"They go",arw:"يذهبون"}],
+      tenses:{past:{w:"I went",ar:"ذهبتُ"},present:{w:"I go",ar:"أذهبُ"},future:{w:"I will go",ar:"سأذهبُ"}} },
+    { v:"sleep", ar:"ينام", emoji:"😴",
+      conj:[{ar:"أنا",w:"I sleep",arw:"أنامُ"},{ar:"أنتَ",w:"You sleep",arw:"تنامُ"},{ar:"هو",w:"He sleeps",arw:"ينامُ"},{ar:"هي",w:"She sleeps",arw:"تنامُ"},{ar:"نحن",w:"We sleep",arw:"ننامُ"},{ar:"هم",w:"They sleep",arw:"ينامون"}],
+      tenses:{past:{w:"I slept",ar:"نمتُ"},present:{w:"I sleep",ar:"أنامُ"},future:{w:"I will sleep",ar:"سأنامُ"}} },
+    { v:"see", ar:"يرى", emoji:"👁️",
+      conj:[{ar:"أنا",w:"I see",arw:"أرى"},{ar:"أنتَ",w:"You see",arw:"ترى"},{ar:"هو",w:"He sees",arw:"يرى"},{ar:"هي",w:"She sees",arw:"ترى"},{ar:"نحن",w:"We see",arw:"نرى"},{ar:"هم",w:"They see",arw:"يرَوْن"}],
+      tenses:{past:{w:"I saw",ar:"رأيتُ"},present:{w:"I see",ar:"أرى"},future:{w:"I will see",ar:"سأرى"}} },
+    { v:"run", ar:"يجري", emoji:"🏃",
+      conj:[{ar:"أنا",w:"I run",arw:"أجري"},{ar:"أنتَ",w:"You run",arw:"تجري"},{ar:"هو",w:"He runs",arw:"يجري"},{ar:"هي",w:"She runs",arw:"تجري"},{ar:"نحن",w:"We run",arw:"نجري"},{ar:"هم",w:"They run",arw:"يجرون"}],
+      tenses:{past:{w:"I ran",ar:"جريتُ"},present:{w:"I run",ar:"أجري"},future:{w:"I will run",ar:"سأجري"}} },
+    { v:"want", ar:"يريد", emoji:"🙋",
+      conj:[{ar:"أنا",w:"I want",arw:"أريدُ"},{ar:"أنتَ",w:"You want",arw:"تريدُ"},{ar:"هو",w:"He wants",arw:"يريدُ"},{ar:"هي",w:"She wants",arw:"تريدُ"},{ar:"نحن",w:"We want",arw:"نريدُ"},{ar:"هم",w:"They want",arw:"يريدون"}],
+      tenses:{past:{w:"I wanted",ar:"أردتُ"},present:{w:"I want",ar:"أريدُ"},future:{w:"I will want",ar:"سأريدُ"}} },
   ],
 
   // القصص المصوّرة (نفسُ رسوم العربيّة ومعرّفاتها — content/stories.js — مترجمةً).
   stories: [
     { id: "numerals-journey", cover: "numerals-2", title: "The Journey of Numbers", pages: [
-      { art: "numerals-1", text: "Long ago, people counted with pebbles and marks on stone. But big numbers were very hard to write!" },
-      { art: "numerals-2", text: "Then clever Muslim scholars created an easy way to write any number with just ten signs: 0 1 2 3 4 5 6 7 8 9." },
-      { art: "numerals-3", text: "Their greatest idea was the ZERO (sifr) — a circle that means «nothing», yet it gives every number its place!" },
-      { art: "numerals-4", text: "These numbers traveled across the whole world. That is why we still call them «Arabic numerals» today." } ],
+      { art: "numerals-1", caption: "Counting was so hard…", text: "Long ago, people counted with pebbles and marks on stone. But big numbers were very hard to write!" },
+      { art: "numerals-2", caption: "Ten easy signs!", text: "Then clever Muslim scholars created an easy way to write any number with just ten signs: 0 1 2 3 4 5 6 7 8 9." },
+      { art: "numerals-3", caption: "Zero — nothing, yet everything!", text: "Their greatest idea was the ZERO (sifr) — a circle that means «nothing», yet it gives every number its place!" },
+      { art: "numerals-4", caption: "Numbers for the whole world!", text: "These numbers traveled across the whole world. That is why we still call them «Arabic numerals» today." } ],
       lesson: "The numbers you write today are a gift from Arab and Muslim scholars. 🔢" },
     { id: "ant-perseverance", cover: "ant-1", title: "The Ant That Never Gave Up", pages: [
       { art: "ant-1", text: "The little ant found a big crumb, much bigger than herself! She said excitedly: «I will take it home.»" },
@@ -172,6 +194,20 @@ export default {
 
   // عباراتٌ وجملٌ مركّبة (بطاقةٌ خاصّة): t = العبارة، ar = معناها بالعربيّة.
   phrases: [
+    { id: "asking", ar: "كيف أسأل؟", items: [
+      { t: "How are you?",                ar: "كيف حالك؟" },
+      { t: "What's wrong?",               ar: "ماذا بك؟" },
+      { t: "Where are you going?",        ar: "إلى أين أنت ذاهب؟" },
+      { t: "What do you eat?",            ar: "ماذا تأكل؟" },
+      { t: "What are you doing?",         ar: "ماذا تفعل؟" },
+      { t: "Do you want to play?",        ar: "هل تريد أن تلعب؟" },
+      { t: "Why are you sad?",            ar: "لماذا أنت حزين؟" },
+      { t: "Where is the bathroom?",      ar: "أين الحمّام؟" },
+      { t: "How much is this?",           ar: "بكم هذا؟" },
+      { t: "What is your favorite color?", ar: "ما لونك المفضّل؟" },
+      { t: "Are you hungry?",             ar: "هل أنت جائع؟" },
+      { t: "May I help you?",             ar: "هل أستطيع مساعدتك؟" },
+    ] },
     { id: "hello", ar: "تحايا", items: [
       { t: "Hello!",                 ar: "مرحباً!" },
       { t: "Good morning.",          ar: "صباح الخير." },

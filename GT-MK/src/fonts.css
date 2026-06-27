@@ -1,0 +1,11 @@
+/* خطُّ الواجهة الافتراضيّ: «Noto Sans Arabic» (المعتمَدُ في GT-SARARIM) — واضحٌ ومقروءٌ للأطفال،
+   مُضمَّنٌ محلّيًّا (offline). Vite يُبصِم ملفَّ الخطّ ويُصحّحُ مسارَه تلقائيًّا تحت أيِّ base. */
+@font-face {
+  font-family: 'Noto Sans Arabic';
+  src: url('./fonts/NotoSansArabic-Regular.ttf') format('truetype');
+  font-weight: normal;        /* وجهٌ واحدٌ؛ المتصفّحُ يُغمِّقُ تلقائيًّا للعريض (يحفظُ تراتُبيّةَ العناوين) */
+  font-style: normal;
+  font-display: swap;
+}
+:root { --app-font: 'Noto Sans Arabic', 'Segoe UI', Tahoma, system-ui, sans-serif; }
+body, button, input, select, textarea { font-family: var(--app-font); }

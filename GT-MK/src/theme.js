@@ -1,5 +1,6 @@
 // src/theme.js — تبديلُ السمة (فاتح/داكن). محلّيٌّ بالكامل، يُحفَظ في localStorage ويُطبَّق على <html data-theme>.
 // منعُ الوميض: يضع كلُّ صفحةٍ سكربتًا كلاسيكيًّا صغيرًا في <head> يضبط data-theme قبل الرسم؛ وهذه الوحدة للتبديل.
+import "./fonts.css"; // الخطُّ الافتراضيُّ «Ubuntu Arabic» (مُضمَّنٌ، على كلّ الصفحات)
 import "./dark.css"; // أنماطُ السمة الداكنة المشتركة (يستخرجها Vite كـ<link>)
 import "./topbar.css"; // تنسيقٌ موحّدٌ لشريط الأزرار العلويّ في كلّ الصفحات
 import "./nav-icons.css"; // حجمُ وتلوينُ أيقونات بطاقات الأقسام (SVG)
@@ -77,9 +78,12 @@ function mountNativeBack() {
     App.addListener("backButton", () => {
       const dlg = document.getElementById("exitConfirm");
       if (dlg) { dlg.remove(); return; } // نافذةُ التأكيد مفتوحةٌ → أغلِقْها
-      if (!isLauncher && window.history.length > 1) { window.history.back(); return; } // رجوعٌ تدريجيّ
+      // مُعالِجُ الصفحة (إن وُجِد): يتراجعُ مستوًى واحدًا داخل الصفحة (لغات/ألعاب) ويُرجِعُ true إن تراجَع
+      // — فلا نخسرَ ما يفعلُه الطفلُ كما في سارة وريم.
+      try { if (typeof window.appBack === "function" && window.appBack()) return; } catch (e) {}
+      if (!isLauncher && window.history.length > 1) { window.history.back(); return; } // رجوعٌ تدريجيّ بين الصفحات
       if (!isLauncher) { location.href = "home.html"; return; }                          // لا تاريخ → الفهرس
-      exitConfirm(() => App.exitApp());                                                  // على الفهرس → تأكيدُ الخروج
+      exitConfirm(() => App.exitApp());                                                  // على الفهرس → تأكيدُ الخروج/البقاء
     });
   } catch (e) {}
 }

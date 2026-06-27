@@ -15,7 +15,7 @@
 <style>
   :root{ --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B; --line:#ECE6DA;
     --primary:#6FB3D6; --primary-d:#3a7da0; --good:#7BB661; --shadow:0 6px 20px rgba(0,0,0,.07);
-    font-family:"Segoe UI",Tahoma,system-ui,"Noto Naskh Arabic",sans-serif; }
+    font-family:"Noto Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif; }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
   .wrap{max-width:760px;margin:0 auto;padding:16px 16px 56px}
@@ -592,6 +592,20 @@ function render(){
 primeWS();
 if("speechSynthesis" in window) speechSynthesis.onvoiceschanged = primeWS;
 try{ robo.mount(); }catch(e){}   // الآليُّ الظاهرُ (كبقيّة الأقسام)
+
+// زرُّ الرجوع في الهاتف (Capacitor، عبر theme.js): يتراجعُ مستوًى واحدًا في هرم اللغات
+// (قصّة→فئات · لعبة→ألعاب · فئة→فئات · قسم→أقسام · لغة→مُنتقي) — فلا يخرجُ ولا يفقدُ الطفلُ موضعَه.
+window.appBack = () => {
+  const u = new URL(location.href), p = u.searchParams;
+  if(p.has("story")){ p.delete("story"); p.delete("pg"); }
+  else if(p.has("g")){ p.delete("g"); }
+  else if(p.has("cat")){ p.delete("cat"); }
+  else if(p.has("sec")){ ["sec","cat","story","pg","g"].forEach(k=>p.delete(k)); }
+  else if(p.has("lng")){ p.delete("lng"); }
+  else return false; // عند مُنتقي اللغة → دعِ الرجوعَ الأصليَّ يأخذُه للفهرس
+  try{ cancelRead(); }catch(e){}
+  history.replaceState(null,"",u); render(); return true;
+};
 render();
 </script>
 </body>

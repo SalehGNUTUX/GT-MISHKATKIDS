@@ -51,7 +51,11 @@ const setDir = join(OUTDIR, setHash);
 mkdirSync(setDir, { recursive: true });
 // المفتاحُ يبقى النصَّ الأصليَّ (للمطابقة في lang.html)؛ نصُّ التركيبِ لأسماء الأحرف يُذيَّل بنقطةٍ
 // (خاتمةٌ جُمليّةٌ تُحسّنُ نطقَ العصبيّ للوحدة المنفردة وتُقلّل تشويهَ الحوافّ).
-const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: LETTER_NAMES.has(t) ? t + " ." : t, out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
+// تصحيحُ نطقٍ لكلماتٍ يُضعِّفُ النموذجُ حروفَها: المفتاحُ/الملفُّ يبقى الأصلَ، ونصُّ التركيبِ بديلٌ
+// أوضحُ بنفس النطق (مثلاً «Père» /pɛʁ/ ضعيفةُ الـp في tom ← «paire» نظيرتُها بنفس اللفظ).
+const SYNTH_FIX = { "Père": "paire" };
+const synthText = t => SYNTH_FIX[t] || (LETTER_NAMES.has(t) ? t + " ." : t);
+const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: synthText(t), out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
 
 console.log(`🔊 توليد ${tasks.length} مقطعًا بصوت Piper (${SET.id} ← ${CFG.model})…`);
 const tasksFile = join(ROOT, ".piper-tasks.json");

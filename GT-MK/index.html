@@ -269,7 +269,7 @@ import { deepenFor, roboWrongFor } from "./src/think.js";
 import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, getVoiceSet, setVoiceSet, CLIPS, AUTO, getStoryVoice, setStoryVoice, isStoryReadOn, setStoryReadOn } from "./src/sound-prefs.js";
 import { listSets, primeVoices } from "./src/voices.js";
 import { practiceByAccount, clearAccount as clearPracticeAccount } from "./src/practice.js";
-import { verifyParentPassword, markParentAuthed, isParentAuthed, isParent, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser, addProfile, updateProfile } from "./src/accounts.js";
+import { verifyParentPassword, markParentAuthed, isParentAuthed, isParent, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser, addProfile, updateProfile, AVATARS } from "./src/accounts.js";
 import { confirmWithPassword, undoable } from "./src/confirm-action.js";
 import voicesBundled from "./src/voices-bundled.json";
 const STATE_TAG = {spark:"1) الشرارة", task:"2) المهمة", teach:"3) التلقين", heal:"4) الشفاء"};
@@ -576,24 +576,28 @@ function closePanel(){
 function openAcctForm(pid){
   const p = pid ? listProfiles().find(x=>x.id===pid) : null;
   const host = document.getElementById("acctForm"); if(!host) return;
-  const ages=["4-6","7-10","all"], curAge = p?p.ageGroup:"4-6";
+  const ages=["4-6","7-10","all"], curAge = p?p.ageGroup:"4-6", curAv = (p&&p.avatar)||AVATARS[0];
   host.innerHTML=`<div style="border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:8px;background:var(--bg)">
     <div style="font-weight:700;margin-bottom:6px">${p?"تعديل: "+p.name:"حساب طفلٍ جديد"}</div>
     <input id="afName" placeholder="الاسم" value="${p?String(p.name).replace(/"/g,"&quot;"):""}" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-family:inherit;margin-bottom:6px">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:3px">الرمز:</div>
+    <div id="afAvRow" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">${AVATARS.map(a=>`<button class="afav" data-a="${a}" style="font-size:22px;border:2px solid ${a===curAv?"var(--primary)":"var(--line)"};border-radius:10px;padding:3px 7px;cursor:pointer;background:var(--card)">${a}</button>`).join("")}</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:3px">الفئة العمريّة:</div>
     <div style="display:flex;gap:6px;margin-bottom:6px">${ages.map(a=>`<button class="afage" data-a="${a}" style="flex:1;border:1px solid var(--line);border-radius:8px;padding:6px;cursor:pointer;font-family:inherit;${curAge===a?"background:var(--primary);color:#fff":"background:var(--card)"}">${a==="all"?"الكل":a}</button>`).join("")}</div>
     <input id="afPw" type="password" placeholder="${p&&p.password?"كلمة مرور جديدة (فارغ = إبقاء)":"كلمة مرور (اختياريّة)"}" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-family:inherit;margin-bottom:6px">
     ${p&&p.password?'<label style="font-size:12px;display:block;margin-bottom:6px"><input type="checkbox" id="afClear"> إزالة كلمة المرور</label>':""}
     <div class="btns"><button class="act" id="afSave">حفظ</button> <button class="ghost" id="afCancel">إلغاء</button></div>
   </div>`;
-  let age=curAge;
+  let age=curAge, av=curAv;
   host.querySelectorAll(".afage").forEach(b=>b.onclick=()=>{ age=b.getAttribute("data-a"); host.querySelectorAll(".afage").forEach(x=>{x.style.background="#fff";x.style.color="";}); b.style.background="var(--primary)"; b.style.color="#fff"; });
+  host.querySelectorAll(".afav").forEach(b=>b.onclick=()=>{ av=b.getAttribute("data-a"); host.querySelectorAll(".afav").forEach(x=>x.style.borderColor="var(--line)"); b.style.borderColor="var(--primary)"; });
   document.getElementById("afCancel").onclick=()=>{ host.innerHTML=""; };
   document.getElementById("afSave").onclick=()=>{
     const name=document.getElementById("afName").value.trim()||"طفلي";
     const pw=document.getElementById("afPw").value;
     const clr=document.getElementById("afClear")&&document.getElementById("afClear").checked;
-    if(p){ const patch={name,ageGroup:age}; if(clr) patch.password=""; else if(pw) patch.password=pw; updateProfile(p.id,patch); }
-    else addProfile({name,ageGroup:age,password:pw});
+    if(p){ const patch={name,ageGroup:age,avatar:av}; if(clr) patch.password=""; else if(pw) patch.password=pw; updateProfile(p.id,patch); }
+    else addProfile({name,ageGroup:age,avatar:av,password:pw});
     openDashboard();
   };
 }

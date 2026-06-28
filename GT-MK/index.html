@@ -589,7 +589,7 @@ function openAcctForm(pid){
     <div class="btns"><button class="act" id="afSave">حفظ</button> <button class="ghost" id="afCancel">إلغاء</button></div>
   </div>`;
   let age=curAge, av=curAv;
-  host.querySelectorAll(".afage").forEach(b=>b.onclick=()=>{ age=b.getAttribute("data-a"); host.querySelectorAll(".afage").forEach(x=>{x.style.background="#fff";x.style.color="";}); b.style.background="var(--primary)"; b.style.color="#fff"; });
+  host.querySelectorAll(".afage").forEach(b=>b.onclick=()=>{ age=b.getAttribute("data-a"); host.querySelectorAll(".afage").forEach(x=>{x.style.background="var(--card)";x.style.color="var(--ink)";}); b.style.background="var(--primary)"; b.style.color="#fff"; });
   host.querySelectorAll(".afav").forEach(b=>b.onclick=()=>{ av=b.getAttribute("data-a"); host.querySelectorAll(".afav").forEach(x=>x.style.borderColor="var(--line)"); b.style.borderColor="var(--primary)"; });
   document.getElementById("afCancel").onclick=()=>{ host.innerHTML=""; };
   document.getElementById("afSave").onclick=()=>{

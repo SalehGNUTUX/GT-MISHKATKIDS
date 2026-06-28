@@ -61,6 +61,24 @@ build_linux() { # $1 = أهداف electron-builder (مثل: "AppImage deb rpm")
 
 # rpm: fpm المرفقُ في electron-builder (1.9.3) لا يوافق rpmbuild الحديث (4.20+)، فنحوّلُ الـdeb العاملَ
 # إلى rpm عبر alien — أوثقُ على الأنظمة الحديثة.
+# يحقن ملفَّ الرخصة (Debian copyright) ووصفَ AppStream في الـdeb (يقرؤهما مديرُ البرامج لعرض الرخصة).
+# يُستدعى قبل rpm_from_deb فيرثُهما الـrpm عبر alien أيضًا.
+inject_deb_metadata() {
+  command -v dpkg-deb >/dev/null || { wrn "dpkg-deb غير متوفّر — تُخطّى إضافةُ الرخصة/الوصف"; return 0; }
+  local deb; deb="$(ls -1 "$RELEASE"/*"-$VERSION-"*.deb 2>/dev/null | head -1)"
+  [ -f "$deb" ] || return 0
+  step "إضافةُ الرخصة (copyright) ووصفِ AppStream إلى $(basename "$deb")"
+  local tmp; tmp="$(mktemp -d)"
+  if dpkg-deb -R "$deb" "$tmp" >/dev/null 2>&1; then
+    mkdir -p "$tmp/usr/share/metainfo" "$tmp/usr/share/doc/tilmithi"
+    cp "$ROOT/scripts/com.gnutux.gtmishkatkids.metainfo.xml" "$tmp/usr/share/metainfo/com.gnutux.gtmishkatkids.metainfo.xml"
+    cp "$ROOT/scripts/deb-copyright" "$tmp/usr/share/doc/tilmithi/copyright"
+    ( cd "$tmp" && md5sum $(find usr -type f) > DEBIAN/md5sums 2>/dev/null )  # تحديثُ المجاميع
+    dpkg-deb -b "$tmp" "$deb" >/dev/null 2>&1 && ok "أُضيفت الرخصةُ ووصفُ AppStream" || err "تعذّر إعادةُ بناء الـdeb"
+  else err "تعذّر فكُّ الـdeb لإضافة الرخصة"; fi
+  rm -rf "$tmp"
+}
+
 rpm_from_deb() {
   command -v alien >/dev/null || { wrn "alien غير متوفّر — تُخطّى rpm (مستخدمو rpm يمكنهم AppImage)"; return 0; }
   # نختارُ deb الإصدارِ الحاليّ تحديدًا (لا أوّلَ نتيجةٍ أبجديّة، فقد تبقى حزمُ إصداراتٍ سابقةٍ في release/).
@@ -114,11 +132,11 @@ case "$TARGET" in
   build)     do_build ;;
   icons)     gen_icons ;;
   appimage)  do_build; build_linux "AppImage" ;;
-  deb)       do_build; build_linux "deb" ;;
-  rpm)       do_build; build_linux "deb"; rpm_from_deb ;;
-  linux)     do_build; build_linux "AppImage deb"; rpm_from_deb ;;
+  deb)       do_build; build_linux "deb"; inject_deb_metadata ;;
+  rpm)       do_build; build_linux "deb"; inject_deb_metadata; rpm_from_deb ;;
+  linux)     do_build; build_linux "AppImage deb"; inject_deb_metadata; rpm_from_deb ;;
   apk)       build_apk ;;
-  all)       do_build; build_linux "AppImage deb"; rpm_from_deb; build_apk ;;
+  all)       do_build; build_linux "AppImage deb"; inject_deb_metadata; rpm_from_deb; build_apk ;;
   check-deps) check_deps ;;
   *) err "هدفٌ غير معروف: $TARGET"; exit 1 ;;
 esac

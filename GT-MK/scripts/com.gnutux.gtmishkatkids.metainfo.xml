@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.gnutux.gtmishkatkids</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>مِشكاةُ الطفلِ والآليّ</name>
+  <name xml:lang="en">GT-MISHKATKIDS</name>
+  <summary>تطبيقٌ تعليميٌّ إسلاميٌّ للأطفال — الطفلُ يُعلّم الآليّ</summary>
+  <summary xml:lang="en">Islamic educational app for kids — the child teaches the robot</summary>
+  <description>
+    <p>
+      تطبيقٌ تعليميٌّ إسلاميٌّ للأطفال (4–10) يعملُ محلّيًّا بالكامل دون إنترنت ودون ذكاءٍ
+      اصطناعيٍّ وقتَ التشغيل، بفكرةِ قلبِ الأدوار: الطفلُ يُعلّم آليًّا فقَدَ ذاكرتَه فيتذكّرُ ويتعافى.
+    </p>
+    <p xml:lang="en">
+      A fully offline, no-runtime-AI Islamic educational app for children (4–10), built on
+      role-reversal: the child teaches a robot that lost its memory.
+    </p>
+  </description>
+  <launchable type="desktop-id">tilmithi.desktop</launchable>
+  <url type="homepage">https://github.com/SalehGNUTUX/GT-MISHKATKIDS</url>
+  <developer_name>SalehGNUTUX</developer_name>
+  <provides>
+    <binary>GT-MISHKATKIDS</binary>
+  </provides>
+  <content_rating type="oars-1.1"/>
+</component>

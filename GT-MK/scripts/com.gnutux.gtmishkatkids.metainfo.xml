@@ -19,7 +19,9 @@
   </description>
   <launchable type="desktop-id">tilmithi.desktop</launchable>
   <url type="homepage">https://github.com/SalehGNUTUX/GT-MISHKATKIDS</url>
-  <developer_name>SalehGNUTUX</developer_name>
+  <developer id="io.github.salehgnutux">
+    <name>SalehGNUTUX</name>
+  </developer>
   <provides>
     <binary>GT-MISHKATKIDS</binary>
   </provides>

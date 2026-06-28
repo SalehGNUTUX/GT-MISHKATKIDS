@@ -73,7 +73,8 @@ inject_deb_metadata() {
     mkdir -p "$tmp/usr/share/metainfo" "$tmp/usr/share/doc/tilmithi"
     cp "$ROOT/scripts/com.gnutux.gtmishkatkids.metainfo.xml" "$tmp/usr/share/metainfo/com.gnutux.gtmishkatkids.metainfo.xml"
     cp "$ROOT/scripts/deb-copyright" "$tmp/usr/share/doc/tilmithi/copyright"
-    ( cd "$tmp" && md5sum $(find usr -type f) > DEBIAN/md5sums 2>/dev/null )  # تحديثُ المجاميع
+    # نُلحِقُ مجاميعَ الملفّين الجديدين بـmd5sums القائم (لا نعيدُ توليدَه كي لا تُفقَدَ مداخلُ /opt).
+    ( cd "$tmp" && md5sum usr/share/metainfo/com.gnutux.gtmishkatkids.metainfo.xml usr/share/doc/tilmithi/copyright >> DEBIAN/md5sums 2>/dev/null )
     dpkg-deb -b "$tmp" "$deb" >/dev/null 2>&1 && ok "أُضيفت الرخصةُ ووصفُ AppStream" || err "تعذّر إعادةُ بناء الـdeb"
   else err "تعذّر فكُّ الـdeb لإضافة الرخصة"; fi
   rm -rf "$tmp"

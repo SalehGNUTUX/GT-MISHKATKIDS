@@ -5,8 +5,9 @@ const { app, BrowserWindow, shell, Menu, session } = require('electron');
 const path = require('path');
 
 const APP_ENTRY = path.join(__dirname, '..', 'dist', 'home.html'); // الفهرس/المُشغِّل هو المدخل
-// أيقونةُ النافذة من المخرَج المُحزَّم (dist مُضمَّنٌ في asar؛ build/ ليس كذلك). يصلحُ شريطَ المهامّ والنافذة.
-const APP_ICON = path.join(__dirname, '..', 'dist', 'icon-512.png');
+// أيقونةُ النافذة = الشعارُ الكامل (dist/icon.png 1024²)، لا الأيقونةَ المحشوّةَ icon-512 (هامشُها كبير
+// لقناع PWA فيظهرُ الشعارُ صغيرًا). dist مُضمَّنٌ في asar؛ build/ ليس كذلك.
+const APP_ICON = path.join(__dirname, '..', 'dist', 'icon.png');
 let win = null;
 
 function createWindow() {

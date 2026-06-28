@@ -88,7 +88,7 @@ build_apk() {
   if [ -f "$ROOT/assets/icon.png" ]; then
     [ -d "$ROOT/node_modules/@capacitor/assets" ] || npm install --no-save @capacitor/assets@^3 >/dev/null 2>&1
     step "توليدُ أيقونات أندرويد وشاشةِ البدء (@capacitor/assets)"
-    npx @capacitor/assets generate --android --iconBackgroundColor '#39562a' --iconBackgroundColorDark '#1d3214' 2>&1 | tail -3
+    npx @capacitor/assets generate --android --iconBackgroundColor '#39562a' --iconBackgroundColorDark '#1d3214' --splashBackgroundColor '#39562a' --splashBackgroundColorDark '#1d3214' 2>&1 | tail -3
   fi
   # صلاحيةُ الميكروفون (تسجيلُ نُطق الطفل) — تُضاف للـmanifest المُولَّد إن غابت (android/ مُولَّدٌ فيُعاد كلَّ بناء).
   local mani="$ANDROID/app/src/main/AndroidManifest.xml"

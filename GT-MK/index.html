@@ -284,6 +284,7 @@ let filter=getChildAge(), domFilter="all", current=null, state="idle", pending=[
 let teachStage=0, wrongState=0; // حوار التلقين: 0=جواب الطفل، 1=تعميق التفكير | خطأ الآليّ: 0 مخفيّ،1 معروض،2 صُحِّح
 let pendingNote=""; // جواب الطفل المكتوب (اختياريّ) يُحفظ مع توثيق الجلسة
 let coopMode=false; // وضع الإخوة: يقتصر على ذكريات «لطفلين معًا»
+let coopPartnerId=null; // الشريكُ في وضع الإخوة — تُضافُ نقاطُ الإنجاز لحسابه أيضًا
 let mediaRec=null, recChunks=[];
 let parentOnly=false; // دخلنا «لوحة الأهل» دون جلسةِ حسابٍ خلفها (بوّابةٌ حاجزة؛ الإلغاء ⇒ شاشة الدخول)
 let progress = loadProgress();
@@ -369,7 +370,7 @@ function renderIdle(){
     return;
   }
   const coopBar = coopMode
-    ? `<div class="parent" style="border-right-color:var(--violet);background:#F6F0FB;margin-bottom:10px"><b style="color:#7a4fa0">👯 وضع الإخوة</b> — نشاطٌ يفعله طفلان معًا.</div>`
+    ? `<div class="parent" style="border-right-color:var(--violet);background:#F6F0FB;margin-bottom:10px"><b style="color:#7a4fa0">👯 وضع الإخوة</b> — نشاطٌ لطفلين معًا${coopPartnerId?`، والنقاطُ تُضافُ لك ولـ${coopPartnerName()}.`:"."}</div>`
     : "";
   host.innerHTML=`<div class="card center">${coopBar}<div class="robo-says">${coopMode?"الآليّ وصديقُه ينتظران نشاطًا للأخوين…":"الآليّ ينتظر ذكرى جديدة…"}</div>
     <p class="muted">${coopMode?`أنشطةٌ للأخوين: ${AR(left)} متبقّية.`:`في ذاكرته ${AR(left)} ذكرى ناقصة. هل تساعده؟`}</p>
@@ -379,7 +380,38 @@ function renderIdle(){
       : '<button class="ghost" onclick="surprise()">🎲 فاجئني</button><button class="ghost" onclick="toggleCoop()">👯 وضع الإخوة</button>'}</div></div>`;
 }
 // وضع الإخوة: يقصر الذكريات على أنشطة «لطفلين معًا» ويؤطّرها لطفلين.
-function toggleCoop(){ coopMode=!coopMode; state="idle"; renderIdle(); }
+function coopOthers(){ const cu=getCurrentUser(); return listProfiles().filter(p=>!cu||p.id!==cu.id); }
+function coopPartnerName(){ const p=coopPartnerId&&listProfiles().find(x=>x.id===coopPartnerId); return p?`${p.avatar||"🙂"} ${p.name}`:""; }
+function toggleCoop(){
+  if(coopMode){ coopMode=false; coopPartnerId=null; state="idle"; renderIdle(); return; }
+  const others=coopOthers();
+  if(others.length>1){ showCoopPicker(); return; }            // أكثرُ من حسابٍ → اختَرِ الشريك
+  coopPartnerId = others.length===1 ? others[0].id : null;     // حسابٌ واحدٌ آخر → تلقائيّ
+  coopMode=true; state="idle"; renderIdle();
+}
+// اختيارُ شريكِ الإخوة (عند وجود أكثرَ من حساب) — تُضافُ النقاطُ لكلا الحسابين.
+function showCoopPicker(){
+  const cu=getCurrentUser(), others=coopOthers(), host=document.getElementById("cardHost");
+  host.innerHTML=`<div class="card center"><div class="robo-says">👯 وضع الإخوة — مع مَن يلعبُ ${cu&&cu.name?cu.name:"الطفل"}؟</div>
+    <p class="muted">تُضافُ نقاطُ كلّ نشاطٍ لكلا الحسابين معًا.</p>
+    <div class="map" style="margin-top:8px">${others.map(p=>`<div class="region coop-pick" data-id="${p.id}"><div style="font-size:30px;line-height:38px">${p.avatar||"🙂"}</div><div class="rt">${p.name}</div></div>`).join("")}</div>
+    <div class="btns" style="justify-content:center;margin-top:10px"><button class="ghost" onclick="renderIdle()">إلغاء</button></div></div>`;
+  host.querySelectorAll(".coop-pick").forEach(b=>b.onclick=()=>{ coopPartnerId=b.getAttribute("data-id"); coopMode=true; state="idle"; renderIdle(); });
+  try{ host.scrollIntoView({behavior:"smooth",block:"center"}); }catch(_){}
+}
+// يَنسبُ الإنجازَ نفسَه لحساب الشريك (ذكرى مكتملةٌ + جزءُ الآلي/عنصرُ العالم + سجلّ).
+function creditSibling(id, m, r, entry){
+  if(!id) return;
+  try{
+    const key="tilmithi_progress_v1__"+id, sp=JSON.parse(localStorage.getItem(key)||"{}");
+    sp.completed=sp.completed||[]; sp.parts=sp.parts||{}; sp.world=sp.world||{}; sp.log=sp.log||[];
+    if(!sp.completed.includes(m.id)) sp.completed.push(m.id);
+    if(r.type==="robo_part") sp.parts[r.target]=r.color||"#E0566B";
+    else if(r.type==="world") sp.world[r.target]=r.color||"#7BB661";
+    sp.log.push({...entry, coop:true});
+    localStorage.setItem(key, JSON.stringify(sp));
+  }catch(e){}
+}
 // فاجئني: ذكرى عشوائية من كلّ المناطق المُفعَّلة (تتجاوز اختيار المنطقة الحاليّ) — للاستكشاف.
 function surprise(){
   const en=progress.settings.enabledDomains;
@@ -522,6 +554,7 @@ async function heal(){
     try{ await putCapture({key:ts+"-"+(i++)+"-note",ts,memId:m.id,title:m.title,type:"note",text:pendingNote.trim()}); entry.hasNote=true; }catch(e){}
   }
   progress.log.push(entry); pending=[]; pendingNote=""; saveProgress();
+  if(coopMode && coopPartnerId) creditSibling(coopPartnerId, m, r, entry); // وضعُ الإخوة: النقاطُ للحسابين معًا
   logEvent("memory_heal");
   if(m.mode==="pair") logEvent("coop_done"); // وسام رفيق الإخوة
   state="heal"; renderRobo(); renderWorld(); renderProgress(); renderMap(); renderCard();

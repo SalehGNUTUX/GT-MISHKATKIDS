@@ -127,6 +127,12 @@
   .ncopts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:330px;margin:0 auto}
   .ncopt{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:15px;font-size:26px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--ink)}
   .ncopt:hover{border-color:var(--primary)} .ncopt.ok{background:#EEF6E9;border-color:var(--good);color:#2f5a1f} .ncopt.bad{background:#FCEBEE;border-color:var(--bad)}
+  .hutarget{text-align:center;font-size:21px;font-weight:800;margin:6px 0;color:var(--ink)} .hutarget b{color:var(--primary-d);font-size:30px}
+  .hubar{height:9px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px;margin:6px auto 12px}
+  .hubar span{display:block;height:100%;background:var(--primary);width:100%}
+  .hugrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:8px;max-width:380px;margin:0 auto}
+  .hucell{aspect-ratio:1/1;background:var(--card);border:2px solid var(--line);border-radius:12px;font-size:24px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .hucell:hover{border-color:var(--primary)} .hucell.ok{background:#EEF6E9;border-color:var(--good);color:#2f5a1f} .hucell.bad{background:#FCEBEE;border-color:var(--bad)}
   #memStart{width:100%;margin-top:4px;padding:14px;border:none;border-radius:14px;font-weight:800;font-family:inherit;font-size:16px;cursor:pointer;background:var(--primary);color:#fff;transition:transform .12s,background .12s}
   #memStart:hover{background:var(--primary-d)} #memStart:active{transform:scale(.98)}
   .mgrid{display:grid;gap:10px;grid-template-columns:repeat(4,1fr);margin-top:10px}
@@ -241,6 +247,7 @@ const GAMES = [
   { id:"wheel",  ic:"🎡", t:"عجلة الحروف", d:"أدِر وادمج الأصوات" },
   { id:"xo",     ic:"⭕", t:"دائرةٌ وعلامة", d:"ثلاثةٌ في خطٍّ ضدّ الآليّ" },
   { id:"numrace",ic:"🔢", t:"تحدّي الأعداد", d:"سابِقِ الآليَّ في الحساب" },
+  { id:"hunt",   ic:"🔎", t:"صيدُ الحرف/الرقم", d:"اعثرْ على المطلوبِ بسرعة" },
   { id:"print",  ic:"🖨️", t:"أنشطة للطباعة", d:"7 ألعاب حسّيّة بالورق" },
 ];
 function renderMenu(){
@@ -250,7 +257,7 @@ function renderMenu(){
   wireAge(renderMenu);
   view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
 }
-function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,xo:startXO,numrace:startNC,print:renderPrint})[id](); }
+function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,xo:startXO,numrace:startNC,hunt:startHU,print:renderPrint})[id](); }
 
 /* ===================== 🧠 MEMORY MATCH (وحدي · الإخوة · الوالد · الآليّ) ===================== */
 // الصعوبة: 4 أزواج=8 بطاقات · 6=12 · 8=16. الخصم: solo | ai | parent | p:<id>. مستوى الآليّ: easy/medium/hard.
@@ -681,6 +688,55 @@ function ncEnd(){
   wireBack();
   document.getElementById("ncag").onclick=newNC;
   document.getElementById("ncrs").onclick=startNC;
+}
+
+/* ===================== 🔎 صيدُ الحرف/الرقم (تناوبٌ بمؤقّت · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
+let hu_diff="easy", hu_ps=[], hu_turn=0, hu_lock=false, hu_cells=[], hu_target="", hu_raf=null; const HU_TARGET=5;
+const HU_CFG={ easy:{n:12,ms:6000,pr:0.6,d:1800}, medium:{n:16,ms:4500,pr:0.78,d:1300}, hard:{n:20,ms:3200,pr:0.9,d:900} };
+const AR_LETTERS="ا ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ي".split(" ");
+function startHU(){ vsSetup({ say:"صيدُ الحرف/الرقم 🔎 — اعثرْ على المطلوبِ قبل نفادِ الوقت!", diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>hu_diff, setDiff:v=>{hu_diff=v;}, start:newHU }); }
+function newHU(){ hu_ps=vsMakePlayers(true); hu_ps.forEach(p=>p.score=0); hu_turn=0; hu_lock=false; huNext(); }
+function huNext(){
+  if(hu_ps.some(p=>p.score>=HU_TARGET)){ huEnd(); return; }
+  const cfg=HU_CFG[hu_diff], useNum=Math.random()<0.5;
+  const pool=useNum ? shuffle(Array.from({length:40},(_,i)=>String(i+1))) : shuffle([...AR_LETTERS]);
+  hu_cells=pool.slice(0,cfg.n); hu_target=hu_cells[Math.floor(Math.random()*hu_cells.length)]; hu_lock=false;
+  renderHU();
+  if(hu_ps[hu_turn].cpu) huAI(); else huTimer(cfg.ms);
+}
+function renderHU(){
+  const cur=hu_ps[hu_turn];
+  view.innerHTML=backBar()+`<div class="clue" style="padding:10px"><div class="say">صيدُ الحرف/الرقم 🔎 — أوّلُ من يبلغُ ${HU_TARGET} يفوز!</div></div>`
+    + vsScoreHtml(hu_ps)
+    + `<div class="vsturn" style="color:${cur.color}">${cur.cpu?"🤖 دورُ الآليّ…":`${cur.avatar} دورُ ${cur.name}`}</div>`
+    + `<div class="hutarget">اعثرْ على: <b>${hu_target}</b></div>`
+    + `<div class="hubar"><span id="hubar"></span></div>`
+    + `<div class="hugrid" id="hugrid">`+hu_cells.map(c=>`<button class="hucell" data-c="${c}">${c}</button>`).join("")+`</div>`
+    + `<div id="hufb"></div>`;
+  wireBack();
+  document.getElementById("hugrid").addEventListener("click",e=>{ const b=e.target.closest("[data-c]"); if(!b) return; huTap(b.getAttribute("data-c"), b); });
+}
+function huTimer(ms){ const start=Date.now(), bar=document.getElementById("hubar"); cancelAnimationFrame(hu_raf);
+  const tick=()=>{ const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ if(!hu_lock){ hu_lock=true; huResolve(false,null); } return; } hu_raf=requestAnimationFrame(tick); }; tick();
+}
+function huTap(c,btn){ if(hu_lock||hu_ps[hu_turn].cpu) return; cancelAnimationFrame(hu_raf); hu_lock=true; sfx.tap(); huResolve(c===hu_target, btn); }
+function huAI(){ hu_lock=true; const cfg=HU_CFG[hu_diff]; setTimeout(()=>huResolve(Math.random()<cfg.pr,null), cfg.d); }
+function huResolve(ok,btn){
+  cancelAnimationFrame(hu_raf); const cur=hu_ps[hu_turn];
+  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); sfx.success(); }
+  else { if(btn) btn.classList.add("bad"); sfx.nope(); document.querySelectorAll("#hugrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===hu_target) b.classList.add("ok"); }); }
+  const fb=document.getElementById("hufb"); if(fb) fb.innerHTML=`<div class="fb">${ok?"✅ أحسنت! صيدٌ سريع":`⌛ المطلوبُ كان «${hu_target}»`}</div>`;
+  setTimeout(()=>{ hu_turn=(hu_turn+1)%hu_ps.length; huNext(); }, 1150);
+}
+function huEnd(){
+  logEvent("hunt_win");
+  const s=[...hu_ps].sort((a,b)=>b.score-a.score);
+  const res = (s[1]&&s[0].score===s[1].score) ? "🤝 تعادُل!" : `${s[0].cpu?"🤖":"🌟"} فاز ${s[0].avatar} ${s[0].name}!`;
+  const me=hu_ps.find(p=>!p.cpu), o=hu_ps.find(p=>p.cpu); if(o&&me) vsReact(me,o); else robo.read(vP(VS_KIDS));
+  view.innerHTML=backBar()+`<div class="clue" style="padding:10px"><div class="say">انتهتِ المباراة!</div></div>`+vsScoreHtml(hu_ps)+`<div class="win">${res}</div><div class="controls" style="margin-top:14px"><button class="go" id="huag">العب ثانيةً</button> <button id="hurs">↻ إعدادات</button></div>`;
+  wireBack();
+  document.getElementById("huag").onclick=newHU;
+  document.getElementById("hurs").onclick=startHU;
 }
 
 function renderPrint(){

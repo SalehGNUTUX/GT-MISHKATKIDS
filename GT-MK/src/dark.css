@@ -51,6 +51,12 @@ html[data-theme="dark"] .hbtn,html[data-theme="dark"] .dchip,html[data-theme="da
 html[data-theme="dark"] .topbtn,html[data-theme="dark"] .choice,
 html[data-theme="dark"] .syl,html[data-theme="dark"] .sword,html[data-theme="dark"] .saysm{
   background:#2a2a34;color:var(--ink);border-color:var(--line)}
+/* الحالةُ المختارة (.on) تبقى بلون الأساس في الداكن — تتجاوزُ سطحَ العنصر العامّ أعلاه (أعلى تخصيصًا)؛
+   كان الاختيارُ لا يظهرُ في الوضع الداكن (الفئاتُ/الخيارات في اختبارات تعليمية وغيرها). */
+html[data-theme="dark"] .chip.on,html[data-theme="dark"] .dchip.on,html[data-theme="dark"] .region.on,
+html[data-theme="dark"] .numb.on,html[data-theme="dark"] .ltile.on,html[data-theme="dark"] .pill.on,
+html[data-theme="dark"] .opt.on,html[data-theme="dark"] .tile.on{
+  background:var(--primary);color:#fff;border-color:var(--primary)}
 
 /* أشرطةٌ ورؤوسٌ خفيفة */
 html[data-theme="dark"] .gbar,html[data-theme="dark"] .clue,html[data-theme="dark"] .domhead,

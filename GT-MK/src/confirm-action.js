@@ -49,7 +49,7 @@ export function confirmChoice(message, okText = "نعم", cancelText = "إلغا
   ensureStyle();
   return new Promise(resolve => {
     const ov = document.createElement("div"); ov.className = "ca-ov";
-    ov.innerHTML = `<div class="ca-card"><p style="font-size:15px;color:#2B2B2B;margin:4px 0 14px">${message}</p>
+    ov.innerHTML = `<div class="ca-card"><p style="font-size:15px;color:var(--ink,#2B2B2B);margin:4px 0 14px">${message}</p>
       <div class="ca-btns"><button class="ca-go">${okText}</button><button class="ca-cancel">${cancelText}</button></div></div>`;
     document.body.appendChild(ov);
     const done = v => { ov.remove(); resolve(v); };

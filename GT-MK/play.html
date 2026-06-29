@@ -330,13 +330,23 @@ function aiTurn(){
     setTimeout(()=>{ m_lock=false; flipCard(b); }, 750);
   }, 750);
 }
+// ردودُ الآليّ التنافسيّة (لا «خطأٌ في اختبار») — يخسرُ بروحٍ رياضيّةٍ ويفوزُ بتواضع.
+const MEM_BEATAI=["فُزتَ عليّ! 🎉 ذاكرتُك أقوى من ذاكرتي اليوم.","أحسنت! غلبتَني بجدارة 🌟 الفضلُ لله.","واو! كنتَ أسرعَ في التذكّر مني 👏 أعِدها لأحاولَ ثانية؟"];
+const MEM_AIWON=["فُزتُ هذه المرّة 🤖 لكنّك تتحسّن بسرعة! أعِدها؟","كانت مباراةً قريبةً جدًّا 💪 تذكّرتُ بطاقتين أكثر — دورُك أن تغلبَني!","ذاكرتي أسعفتني الآن 🤖 لكنّي أراهنُ أنّك ستفوزُ في الجولة القادمة!"];
+const MEM_TIE=["تعادُل! 🤝 ذاكرتانا متساويتان — جولةٌ فاصلة؟","مباراةٌ متكافئةٌ تمامًا 🤝 من يفوزُ في المرّة القادمة؟"];
+const MEM_KIDWIN=["مباراةٌ رائعة! 🌟 أحسنتما.","لعبٌ جميلٌ منكما 👏 ذاكرتُكما تنمو!"];
 function memWin(){
   logEvent("memory_win");
+  const P=a=>a[Math.floor(Math.random()*a.length)];
   let html;
   if(m_players.length>1){
     const [p0,p1]=m_players;
     const res = p0.score>p1.score ? `🌟 فاز ${p0.avatar} ${p0.name}!` : p1.score>p0.score ? (p1.cpu?"🤖 فاز الآليّ!":`🌟 فاز ${p1.avatar} ${p1.name}!`) : "🤝 تعادُل!";
-    if(p0.score>=p1.score) robo.cheer(); else robo.encourage();
+    if(p1.cpu){ // مباراةٌ ضدّ الآليّ ⇒ ردودٌ تنافسيّة
+      if(p0.score>p1.score) robo.read(P(MEM_BEATAI));
+      else if(p1.score>p0.score) robo.read(P(MEM_AIWON));
+      else robo.read(P(MEM_TIE));
+    } else { robo.read(P(MEM_KIDWIN)); } // مباراةُ إخوة
     html=`<div class="win">${res}<br><span style="font-size:15px">${p0.avatar} ${p0.name}: ${p0.score} · ${p1.avatar} ${p1.name}: ${p1.score}</span>`;
   } else { robo.cheer(); html=`<div class="win">🌟 أحسنت! وجدتَ كلَّ المطابقات في <b>${m_moves}</b> محاولة.`; }
   document.getElementById("msg").innerHTML=html+`<div class="controls"><button class="go" id="again">العب ثانيةً</button> <button id="reset2">↻ إعدادات</button></div></div>`;

@@ -80,7 +80,7 @@
     <label class="chk"><input type="checkbox" id="cCards" checked /> بطاقات المهام</label>
     <label class="chk"><input type="checkbox" id="cPoster" checked /> ملصق الشفاء</label>
     <span class="count" id="count"></span>
-    <button class="print" onclick="window.print()">اطبع / احفظ PDF</button>
+    <button class="print" onclick="smartPrint(document.querySelector('.sheet'),'أنشطة-مِشكاة.pdf')">اطبع / احفظ PDF</button>
   </div>
   <div class="sheet">
     <div class="hint noprint">اختر ما تريد طباعته، ثمّ «اطبع / احفظ PDF» — ومن نافذة الطباعة اختر «حفظ كـ PDF». البطاقات بحدودٍ متقطّعة لقصّها. 🌿</div>
@@ -89,6 +89,7 @@
   </div>
 
 <script type="module">
+import { smartPrint } from "./src/smart-print.js"; window.smartPrint = smartPrint; // طباعةٌ تعملُ على الهاتف أيضًا
 import library from "./content/library.js";
 import { ART } from "./src/art.js";
 const WORLD_EMOJI={"قمر":"🌕","شمس":"☀️","شجرة":"🌳","صديق":"🧑‍🤝‍🧑","نهر":"🌊","نجمة":"⭐","طائر":"🐦"};

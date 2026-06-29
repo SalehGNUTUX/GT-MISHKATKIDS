@@ -188,6 +188,7 @@ import { speak } from "./src/speak.js";
 import { robo } from "./src/robo-companion.js";
 import { listProfiles, getProfile, getCurrentUser, getParentName, getParentAvatar } from "./src/accounts.js";
 import { attachReader } from "./src/reader-recorder.js"; // تسجيلُ نُطق الطفل للكلمة المُكوَّنة
+import { smartPrint } from "./src/smart-print.js"; window.smartPrint = smartPrint; // طباعةٌ تعملُ على الهاتف أيضًا
 // كلماتٌ شائعةٌ يُمكنُ تكوينُها من أحرف العجلة الـ20 (لتوسعة التعرّف على الكلمات ذات المعنى).
 const EXTRA_WHEEL_WORDS = new Set(["بيت","بنت","باب","جبل","حبل","دار","رمل","سمك","شمس","قمر","قلم","كلب","لبن","نهر","نمر","ورد","جمل","حليب","سرير","كتاب","نار","ليل","نهار","شجر","حجر","بقر","سحب","ريح","برد","فرح","علم","نور","كرم","جسم","رمح","سيف","درع","حرب","سلم","قلب","شعر","فيل","ديك","حمل","نمل","سمن","لحم","تمر","عنب","تين","رمان","ليمون","جبن","سكر","ملح","عسل","شاي","بحر","حلم","نجم","عمل","رسم","قدم","سهل","فهد","ثعلب","دجاج","حمار","حوت","ريش","جناح","حقل","نبت","ثمر","فرع","نحل","رجل","عين","حر","حب","حق","دم","سن","دب","فم","يد","عش","شمع","نبع","سفر","حكم","لعب","كسر","فكر","نشر","حسن"]);
 robo.mount();
@@ -503,8 +504,8 @@ const ACTS=[
   {emoji:"🎡",title:"عجلة الحروف الدوّارة",mat:"قرص مقوّى · مؤشّر",steps:["قرصٌ مقسومٌ حروفًا ومؤشّرٌ دوّار.","لُفّه مرّتين أو ثلاثًا وادمج الحروف.","ولو كلمةً خياليّة — فهي تدرّب صوت الدمج!"]},
 ];
 function renderPrint(){
-  view.innerHTML = backBar()+`<div class="intro">النسخة الحسّيّة الورقيّة للأهل — «نشاطٌ واقعيّ أوّلًا». اطبعها وعلّقها.</div><button class="printbtn" onclick="window.print()">🖨️ اطبع الأنشطة</button>`+
-    ACTS.map(a=>`<div class="acard"><h3>${a.emoji} ${a.title}</h3><span class="mat">🧰 ${a.mat}</span><ol>${a.steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>`).join("");
+  view.innerHTML = backBar()+`<div class="intro">النسخة الحسّيّة الورقيّة للأهل — «نشاطٌ واقعيّ أوّلًا». اطبعها وعلّقها.</div><button class="printbtn" onclick="smartPrint(document.getElementById('printActs'),'أنشطة-مِشكاة.pdf')">🖨️ اطبع الأنشطة</button>`+
+    `<div id="printActs">`+ACTS.map(a=>`<div class="acard"><h3>${a.emoji} ${a.title}</h3><span class="mat">🧰 ${a.mat}</span><ol>${a.steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>`).join("")+`</div>`;
   wireBack();
 }
 

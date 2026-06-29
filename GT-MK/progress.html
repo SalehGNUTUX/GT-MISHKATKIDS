@@ -103,13 +103,14 @@
   <div id="cert"></div>
 
   <div class="noprint" style="display:flex;gap:8px;margin-top:12px">
-    <button class="btn" onclick="window.print()">🖨️ اطبع الشهادة</button>
+    <button class="btn" onclick="smartPrint('cert','شهادة-إنجاز.pdf')">🖨️ اطبع الشهادة</button>
     <button class="btn ghost" id="reset">تصفير التقدّم</button>
   </div>
 </div>
 
 <script type="module">
 import { wireThemeToggle } from "./src/theme.js";
+import { smartPrint } from "./src/smart-print.js"; window.smartPrint = smartPrint; // طباعةٌ تعملُ على الهاتف أيضًا
 wireThemeToggle(document.getElementById("themeBtn"));
 import { getStats, getBadges, getDailyMission, getName, setName, resetProgress, SECTION_OF } from "./src/progress.js";
 import { confirmWithPassword, undoable } from "./src/confirm-action.js";

@@ -187,6 +187,9 @@ import { pickAdaptive } from "./src/adaptive.js";
 import { speak } from "./src/speak.js";
 import { robo } from "./src/robo-companion.js";
 import { listProfiles, getProfile, getCurrentUser, getParentName, getParentAvatar } from "./src/accounts.js";
+import { attachReader } from "./src/reader-recorder.js"; // تسجيلُ نُطق الطفل للكلمة المُكوَّنة
+// كلماتٌ شائعةٌ يُمكنُ تكوينُها من أحرف العجلة الـ20 (لتوسعة التعرّف على الكلمات ذات المعنى).
+const EXTRA_WHEEL_WORDS = new Set(["بيت","بنت","باب","جبل","حبل","دار","رمل","سمك","شمس","قمر","قلم","كلب","لبن","نهر","نمر","ورد","جمل","حليب","سرير","كتاب","نار","ليل","نهار","شجر","حجر","بقر","سحب","ريح","برد","فرح","علم","نور","كرم","جسم","رمح","سيف","درع","حرب","سلم","قلب","شعر","فيل","ديك","حمل","نمل","سمن","لحم","تمر","عنب","تين","رمان","ليمون","جبن","سكر","ملح","عسل","شاي","بحر","حلم","نجم","عمل","رسم","قدم","سهل","فهد","ثعلب","دجاج","حمار","حوت","ريش","جناح","حقل","نبت","ثمر","فرع","نحل","رجل","عين","حر","حب","حق","دم","سن","دب","فم","يد","عش","شمع","نبع","سفر","حكم","لعب","كسر","فكر","نشر","حسن"]);
 robo.mount();
 const WORDS = DATA.words || [];
 const WL = DATA.wheel_letters || [];
@@ -468,20 +471,25 @@ const rnd=()=>Math.floor(Math.random()*WL.length), joined=()=>reels.map(i=>WL[i]
 const spinReels=()=>{ reels=Array.from({length:wheelN},rnd); };
 function startWheel(){ spinReels(); renderWheel(false); }
 function renderWheel(an){
-  const j=joined(), isW=WORDS.some(w=>w.word===j);
+  const j=joined(), isW=WORDS.some(w=>w.word===j) || EXTRA_WHEEL_WORDS.has(j);
   const reelsHtml = reels.map((ri,idx)=>`<div class="reel ${an?"spin":""}" data-r="${idx}">${WL[ri]}</div>`).join("");
   const nSel = [2,3,4,5].map(n=>`<button data-n="${n}" style="min-width:42px;border:2px solid var(--line);border-radius:10px;padding:7px 12px;font-weight:800;font-family:inherit;cursor:pointer;background:${n===wheelN?"var(--primary)":"var(--card)"};color:${n===wheelN?"#fff":"var(--ink)"}">${n}</button>`).join("");
   view.innerHTML = backBar()+`<div class="clue" style="padding:12px"><div class="say">اختَرْ عددَ الأحرف، أدِرِ العجلةَ أو اضغطْ حرفًا لتغييره، ثمّ انطقِ الكلمة!</div></div>`+
     `<div class="nrow" style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin:8px 0"><span class="pill">عددُ الأحرف:</span>${nSel}</div>`+
     `<div class="reels" id="reels">${reelsHtml}<span class="eq">=</span><div class="blend" dir="rtl">${j}</div></div>`+
     `<div class="wstatus ${isW?"real":"fake"}">${isW?"🎉 كلمة حقيقية!":"كلمة من خيالك 🛸 — جرّب نطقها"}</div>`+
-    `<div class="controls"><button class="go" data-w="spin">🎡 أدِر</button><button data-w="say">🔊 انطق</button><span class="pill" style="align-self:center">كلمات حقيقية: <b id="found">${found}</b></span></div>`+
-    `<div class="hint">كلّ حرفٍ له صوت — ادمج الأصوات معًا. كلَّما زادتِ الأحرفُ زادَ احتمالُ كلمةٍ ذاتِ معنًى!</div>`;
+    `<div class="controls"><button class="go" data-w="spin">🎡 أدِر</button><button data-w="say">🔊 انطق</button><button data-w="rec">🎙️ سجّلْ نطقك</button><span class="pill" style="align-self:center">كلمات حقيقية: <b id="found">${found}</b></span></div>`+
+    `<div id="wheelRec" hidden style="margin-top:10px"></div>`+
+    `<div class="hint">كلّ حرفٍ له صوت — ادمجِ الأصوات معًا. اضغطْ 🔊 لسماعِ أيّ كلمةٍ تُكوّنُها، و🎙️ لتسجيلِ نطقك. كلَّما زادتِ الأحرفُ زادَ احتمالُ كلمةٍ ذاتِ معنًى!</div>`;
   wireBack();
   if(isW&&!seen.has(j)){ seen.add(j); found++; const f=document.getElementById("found"); if(f)f.textContent=found; robo.read(j); }
   view.querySelector(".nrow").addEventListener("click",e=>{ const b=e.target.closest("[data-n]"); if(!b)return; wheelN=+b.getAttribute("data-n"); startWheel(); });
   view.querySelector("#reels").addEventListener("click",e=>{ const d=e.target.closest(".reel"); if(!d)return; const r=+d.getAttribute("data-r"); reels[r]=(reels[r]+1)%WL.length; renderWheel(false); });
-  view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-w]"); if(!b)return; if(b.getAttribute("data-w")==="spin"){spinReels();renderWheel(true);} else robo.read(joined()); });
+  view.querySelector(".controls").addEventListener("click",async e=>{ const b=e.target.closest("[data-w]"); if(!b)return; const a=b.getAttribute("data-w");
+    if(a==="spin"){ spinReels(); renderWheel(true); }
+    else if(a==="say"){ robo.read(joined()); }
+    else if(a==="rec"){ const host=document.getElementById("wheelRec"); host.hidden=false; host.innerHTML=""; await attachReader(host, joined(), { label:"نُطقك", helpLabel:"🔊 استمعْ", onHelp:()=>robo.read(joined()) }); }
+  });
 }
 
 /* ===================== 🖨️ PRINT ===================== */

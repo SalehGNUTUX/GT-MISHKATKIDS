@@ -115,6 +115,14 @@
   .memset .setlbl{font-weight:800;font-size:14px;color:var(--muted);margin-bottom:8px}
   .memset .lvl{margin-inline-start:0;flex-wrap:wrap}
   .memset .lvl button{font-size:15px;padding:9px 16px}
+  /* الألعابُ التنافسيّة */
+  .vsturn{font-weight:800;font-size:16px;margin:8px 0 12px;text-align:center}
+  .vsscore{display:flex;justify-content:center;gap:14px;margin:8px 0 4px;flex-wrap:wrap}
+  .vschip{font-weight:800;font-size:15px;border-radius:999px;padding:5px 14px;border:2px solid}
+  .xob{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:300px;margin:6px auto}
+  .xoc{aspect-ratio:1/1;background:var(--card);border:2px solid var(--line);border-radius:16px;font-size:46px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;user-select:none;transition:transform .08s}
+  .xoc:hover{border-color:var(--primary)} .xoc:active{transform:scale(.95)}
+  .xoc.wn{background:#EEF6E9;border-color:var(--good)}
   #memStart{width:100%;margin-top:4px;padding:14px;border:none;border-radius:14px;font-weight:800;font-family:inherit;font-size:16px;cursor:pointer;background:var(--primary);color:#fff;transition:transform .12s,background .12s}
   #memStart:hover{background:var(--primary-d)} #memStart:active{transform:scale(.98)}
   .mgrid{display:grid;gap:10px;grid-template-columns:repeat(4,1fr);margin-top:10px}
@@ -226,6 +234,7 @@ const GAMES = [
   { id:"cards",  ic:"🧩", t:"بطاقات الصور", d:"اختر الكتابة الصحيحة" },
   { id:"maze",   ic:"🌀", t:"متاهة الحروف", d:"امشِ على الحروف بالترتيب" },
   { id:"wheel",  ic:"🎡", t:"عجلة الحروف", d:"أدِر وادمج الأصوات" },
+  { id:"xo",     ic:"⭕", t:"إكس-أو", d:"ثلاثةٌ في خطٍّ ضدّ الآليّ" },
   { id:"print",  ic:"🖨️", t:"أنشطة للطباعة", d:"7 ألعاب حسّيّة بالورق" },
 ];
 function renderMenu(){
@@ -235,7 +244,7 @@ function renderMenu(){
   wireAge(renderMenu);
   view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
 }
-function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,print:renderPrint})[id](); }
+function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,xo:startXO,print:renderPrint})[id](); }
 
 /* ===================== 🧠 MEMORY MATCH (وحدي · الإخوة · الوالد · الآليّ) ===================== */
 // الصعوبة: 4 أزواج=8 بطاقات · 6=12 · 8=16. الخصم: solo | ai | parent | p:<id>. مستوى الآليّ: easy/medium/hard.
@@ -513,6 +522,113 @@ const ACTS=[
   {emoji:"🌀",title:"المتاهة",mat:"ورق · قلم",steps:["ارسم متاهةً تبدأ بحرفٍ وتمرّ بحروف.","تنتهي عند صورة الهدف (ب → نـ → ت = «بنت»)."]},
   {emoji:"🎡",title:"عجلة الحروف الدوّارة",mat:"قرص مقوّى · مؤشّر",steps:["قرصٌ مقسومٌ حروفًا ومؤشّرٌ دوّار.","لُفّه مرّتين أو ثلاثًا وادمج الحروف.","ولو كلمةً خياليّة — فهي تدرّب صوت الدمج!"]},
 ];
+/* ===================== الإطارُ التنافسيُّ المشترك (خصم + صعوبة + ردود + ألوان) ===================== */
+// يتقاسمُه ألعابُ: إكس-أو · سباقُ المطابقة · سباقُ الأعداد · صيدُ الحرف · شبكةُ الكلمات.
+let vs_opp="ai", vs_ai="medium";
+const VS_BEATAI=["فُزتَ عليّ! 🎉 أحسنت، الفضلُ لله.","غلبتَني بجدارة 🌟 لعبٌ ذكيٌّ منك!","واو! كنتَ أذكى مني هذه المرّة 👏 أعِدها؟"];
+const VS_AIWON=["فُزتُ هذه المرّة 🤖 لكنّك تتحسّن بسرعة! أعِدها؟","مباراةٌ قريبةٌ جدًّا 💪 دورُك أن تغلبَني!","ذكائي أسعفني الآن 🤖 أراهنُ أنّك ستفوزُ في القادمة!"];
+const VS_TIE=["تعادُل! 🤝 جولةٌ فاصلة؟","مباراةٌ متكافئةٌ تمامًا 🤝 من يفوزُ في المرّة القادمة؟"];
+const VS_KIDS=["مباراةٌ رائعة! 🌟 أحسنتما.","لعبٌ جميلٌ منكما 👏 واصِلا!"];
+const vP=a=>a[Math.floor(Math.random()*a.length)];
+const VS_COLA="#E0566B", VS_COLB="#4C8BF5";
+function vsMakePlayers(forceTwo){
+  const me=meCard(), m={...me,score:0,cpu:false,color:VS_COLA};
+  if(vs_opp==="ai") return [m,{name:"الآليّ",avatar:"🤖",score:0,cpu:true,color:VS_COLB}];
+  if(vs_opp==="parent") return [m,{name:getParentName(),avatar:getParentAvatar(),score:0,cpu:false,color:VS_COLB}];
+  if(vs_opp.startsWith("p:")){ const p=getProfile(vs_opp.slice(2)); return [m,{name:p?p.name:"اللاعب 2",avatar:(p&&p.avatar)||"🙂",score:0,cpu:false,color:VS_COLB}]; }
+  return forceTwo ? [m,{name:"الآليّ",avatar:"🤖",score:0,cpu:true,color:VS_COLB}] : [m]; // وحدي (أو إجبارُ خصمٍ للألعاب الثنائيّة)
+}
+function vsReact(p0,p1){ if(!p1){ robo.cheer(); return; } if(p1.cpu){ if(p0.score>p1.score) robo.read(vP(VS_BEATAI)); else if(p1.score>p0.score) robo.read(vP(VS_AIWON)); else robo.read(vP(VS_TIE)); } else robo.read(vP(VS_KIDS)); }
+function vsScoreHtml(ps){ return `<div class="vsscore">`+ps.map((p,i)=>`<span class="vschip" style="border-color:${p.color};color:${p.color}">${p.avatar} ${p.name}: ${p.score}</span>`).join("")+`</div>`; }
+// شاشةُ إعدادٍ عامّة: cfg={ say, diffLabel?, diffs:[{v,label}], getDiff, setDiff, start, soloOk? }
+function vsSetup(cfg){
+  const sibs=siblings();
+  const opp = (cfg.soloOk?`<button data-opp="solo" class="${vs_opp==="solo"?"on":""}">🧒 وحدي</button>`:"")
+    +`<button data-opp="ai" class="${vs_opp==="ai"?"on":""}">🤖 ضدّ الآليّ</button>`
+    +sibs.map(s=>`<button data-opp="${s.key}" class="${vs_opp===s.key?"on":""}">${s.avatar} ${s.name}</button>`).join("")
+    +`<button data-opp="parent" class="${vs_opp==="parent"?"on":""}">${getParentAvatar()} ${getParentName()}</button>`;
+  if(!cfg.soloOk && vs_opp==="solo") vs_opp="ai";
+  const dh = cfg.diffs.map(d=>`<button data-d="${d.v}" class="${cfg.getDiff()==d.v?"on":""}">${d.label}</button>`).join("");
+  view.innerHTML = backBar()
+    +`<div class="clue" style="padding:12px"><div class="say">${cfg.say}</div></div>
+      <div class="memset">
+        <div class="setrow"><div class="setlbl">${cfg.diffLabel||"🎚️ الصعوبة"}</div><div class="lvl" id="vdiff">${dh}</div></div>
+        <div class="setrow"><div class="setlbl">👥 اللعبُ مع</div><div class="lvl" id="vopp">${opp}</div></div>
+        <div class="setrow" id="vairow" style="${vs_opp==="ai"?"":"display:none"}"><div class="setlbl">🤖 مستوى الآليّ</div><div class="lvl" id="vai"><button data-ai="easy" class="${vs_ai==="easy"?"on":""}">سهل</button><button data-ai="medium" class="${vs_ai==="medium"?"on":""}">متوسّط</button><button data-ai="hard" class="${vs_ai==="hard"?"on":""}">صعب</button></div></div>
+        <button id="vStart">▶ ابدأ اللعب</button>
+      </div>`;
+  wireBack();
+  const rr=()=>vsSetup(cfg);
+  document.getElementById("vdiff").addEventListener("click",e=>{ const b=e.target.closest("[data-d]"); if(!b)return; cfg.setDiff(b.getAttribute("data-d")); rr(); });
+  document.getElementById("vopp").addEventListener("click",e=>{ const b=e.target.closest("[data-opp]"); if(!b)return; vs_opp=b.getAttribute("data-opp"); rr(); });
+  document.getElementById("vai").addEventListener("click",e=>{ const b=e.target.closest("[data-ai]"); if(!b)return; vs_ai=b.getAttribute("data-ai"); rr(); });
+  document.getElementById("vStart").onclick=cfg.start;
+}
+
+/* ===================== ⭕✖ إكس-أو (ضدّ الآليّ بثلاث صعوبات · أو الحسابات) ===================== */
+let xo_diff="medium", xo_b=[], xo_ps=[], xo_turn=0, xo_lock=false, xo_done=false;
+const XO_LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+const XO_MK=["✖","◯"];
+function startXO(){ vsSetup({ say:"إكس-أو ⭕✖ — اصنعْ ثلاثةً في خطٍّ قبلَ خصمك!", diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>xo_diff, setDiff:v=>{xo_diff=v;}, start:newXO }); }
+function newXO(){ xo_b=Array(9).fill(null); xo_ps=vsMakePlayers(true); xo_turn=0; xo_lock=false; xo_done=false; renderXO(); if(xo_ps[0].cpu) xoAI(); }
+function xoWinner(b){ for(const L of XO_LINES){ const [a,c,d]=L; if(b[a]!=null && b[a]===b[c] && b[a]===b[d]) return {p:b[a],line:L}; } return b.every(x=>x!=null)?{p:-1,line:null}:null; }
+function renderXO(){
+  const w=xoWinner(xo_b), cur=xo_ps[xo_turn];
+  let turnHtml = xo_done ? "" : `<div class="vsturn" style="color:${cur.color}">${cur.cpu?"🤖 دورُ الآليّ…":`${cur.avatar} دورُ ${cur.name}`}</div>`;
+  const cells = xo_b.map((v,i)=>{ const mk=v==null?"":XO_MK[v]; const col=v==null?"":xo_ps[v].color; const wn=w&&w.line&&w.line.includes(i)?" wn":""; return `<div class="xoc${wn}" data-i="${i}" style="color:${col}">${mk}</div>`; }).join("");
+  view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">إكس-أو ⭕✖ — ثلاثةٌ في خطٍّ تفوز!</div></div>`
+    + vsScoreHtml(xo_ps) + turnHtml + `<div class="xob" id="xob">${cells}</div>`
+    + `<div id="xomsg"></div>`
+    + `<div class="controls" style="margin-top:14px"><button class="go" id="xoagain">جولةٌ جديدة</button> <button id="xoreset">↻ إعدادات</button></div>`;
+  wireBack();
+  document.getElementById("xob").addEventListener("click",e=>{ const c=e.target.closest("[data-i]"); if(!c) return; xoPlay(+c.getAttribute("data-i")); });
+  document.getElementById("xoagain").onclick=newXO;
+  document.getElementById("xoreset").onclick=startXO;
+}
+function xoPlay(i){
+  if(xo_lock||xo_done||xo_b[i]!=null) return;
+  if(xo_ps[xo_turn].cpu) return;
+  xo_b[i]=xo_turn; afterXOMove();
+}
+function afterXOMove(){
+  const w=xoWinner(xo_b);
+  if(w){ xoEnd(w); return; }
+  xo_turn=(xo_turn+1)%xo_ps.length; renderXO();
+  if(xo_ps[xo_turn].cpu) xoAI();
+}
+function xoAI(){
+  xo_lock=true;
+  setTimeout(()=>{ const me=xo_turn, opp=(xo_turn+1)%2; const mv=xoChoose(xo_b,me,opp); xo_b[mv]=me; xo_lock=false; afterXOMove(); }, 620);
+}
+function xoChoose(b,me,opp){
+  const empty=[...b.keys()].filter(i=>b[i]==null);
+  if(xo_diff==="easy") return empty[Math.floor(Math.random()*empty.length)];
+  // متوسّط/صعب: اربحْ إن أمكن، وإلّا اسدُدْ خطرَ الخصم
+  for(const i of empty){ const t=[...b]; t[i]=me; if(xoWinner(t)&&xoWinner(t).p===me) return i; }
+  for(const i of empty){ const t=[...b]; t[i]=opp; if(xoWinner(t)&&xoWinner(t).p===opp) return i; }
+  if(xo_diff==="medium"){ if(Math.random()<0.5 && b[4]==null) return 4; return empty[Math.floor(Math.random()*empty.length)]; }
+  // صعب: مينيماكس مثاليّ
+  let best=-Infinity, bi=empty[0];
+  for(const i of empty){ const t=[...b]; t[i]=me; const s=xoMinimax(t,opp,me,opp,1); if(s>best){ best=s; bi=i; } }
+  return bi;
+}
+function xoMinimax(b,turn,me,opp,depth){
+  const w=xoWinner(b);
+  if(w){ if(w.p===me) return 10-depth; if(w.p===opp) return depth-10; return 0; }
+  const empty=[...b.keys()].filter(i=>b[i]==null);
+  if(turn===me){ let best=-Infinity; for(const i of empty){ const t=[...b]; t[i]=me; best=Math.max(best,xoMinimax(t,opp,me,opp,depth+1)); } return best; }
+  let best=Infinity; for(const i of empty){ const t=[...b]; t[i]=opp; best=Math.min(best,xoMinimax(t,me,me,opp,depth+1)); } return best;
+}
+function xoEnd(w){
+  xo_done=true; logEvent("xo_win");
+  let res;
+  if(w.p===-1){ res="🤝 تعادُل!"; }
+  else { const p=xo_ps[w.p]; p.score++; res=`${p.cpu?"🤖":"🌟"} فاز ${p.avatar} ${p.name}!`; }
+  if(xo_ps.length>1){ const o=xo_ps.find(p=>p.cpu); if(o){ const me=xo_ps.find(p=>!p.cpu); vsReact(me, o); } else robo.read(vP(VS_KIDS)); }
+  renderXO();
+  document.getElementById("xomsg").innerHTML=`<div class="win" style="margin-top:12px">${res}</div>`;
+}
+
 function renderPrint(){
   view.innerHTML = backBar()+`<div class="intro">النسخة الحسّيّة الورقيّة للأهل — «نشاطٌ واقعيّ أوّلًا». اطبعها وعلّقها.</div><button class="printbtn" onclick="smartPrint(document.getElementById('printActs'),'أنشطة-مِشكاة.pdf')">🖨️ اطبع الأنشطة</button>`+
     `<div id="printActs">`+ACTS.map(a=>`<div class="acard"><h3>${a.emoji} ${a.title}</h3><span class="mat">🧰 ${a.mat}</span><ol>${a.steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>`).join("")+`</div>`;

@@ -269,7 +269,7 @@ function renderMenu(){
   wireAge(renderMenu);
   view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
 }
-function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,xo:startXO,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,print:renderPrint})[id](); }
+function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,xo:startXO,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,print:()=>location.assign("print.html")})[id](); }
 
 /* ===================== 🧠 MEMORY MATCH (وحدي · الإخوة · الوالد · الآليّ) ===================== */
 // الصعوبة: 4 أزواج=8 بطاقات · 6=12 · 8=16. الخصم: solo | ai | parent | p:<id>. مستوى الآليّ: easy/medium/hard.
@@ -554,6 +554,10 @@ const VS_BEATAI=["فُزتَ عليّ! 🎉 أحسنت، الفضلُ لله.","
 const VS_AIWON=["فُزتُ هذه المرّة 🤖 لكنّك تتحسّن بسرعة! أعِدها؟","مباراةٌ قريبةٌ جدًّا 💪 دورُك أن تغلبَني!","ذكائي أسعفني الآن 🤖 أراهنُ أنّك ستفوزُ في القادمة!"];
 const VS_TIE=["تعادُل! 🤝 جولةٌ فاصلة؟","مباراةٌ متكافئةٌ تمامًا 🤝 من يفوزُ في المرّة القادمة؟"];
 const VS_KIDS=["مباراةٌ رائعة! 🌟 أحسنتما.","لعبٌ جميلٌ منكما 👏 واصِلا!"];
+// تفاعلاتُ الجولة (تُعرَض وتُنطَق بالنصّ نفسِه): فرحٌ/تشجيعٌ للطفل، وافتخارٌ للآليّ.
+const VS_OK=["أحسنت! 🌟","رائعٌ، نقطةٌ لك! 👏","ما شاءَ الله، صحيح!","ممتاز! 💚"];
+const VS_NO=["لا بأس، حاولْ ثانيةً 💪","قريبٌ جدًّا! المرّةَ القادمة 🌱","ركّزْ قليلاً، تستطيع 🙂"];
+const VS_AIOK=["نقطةٌ لي! 🤖","أصبتُ هذه المرّة ⚡","حسبتُها بسرعة! 🤖"];
 const vP=a=>a[Math.floor(Math.random()*a.length)];
 const VS_COLA="#E0566B", VS_COLB="#4C8BF5";
 function vsMakePlayers(forceTwo){
@@ -686,8 +690,9 @@ function ncAnswer(v, btn){ if(nc_lock||nc_ps[nc_turn].cpu) return; nc_lock=true;
 function ncAI(){ nc_lock=true; const pr=nc_diff==="easy"?0.6:nc_diff==="medium"?0.78:0.9; setTimeout(()=>{ ncResolve(Math.random()<pr, null); }, 950); }
 function ncResolve(correct, btn){
   const cur=nc_ps[nc_turn], human=!cur.cpu;
-  if(correct){ cur.score++; if(btn) btn.classList.add("ok"); if(human) robo.cheer(); else sfx.success(); }
-  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(); else sfx.nope(); }
+  if(correct){ cur.score++; if(btn) btn.classList.add("ok"); const won=cur.score>=NC_TARGET;
+    if(won) sfx.success(); else if(human) robo.cheer(vP(VS_OK)); else { sfx.success(); if(Math.random()<0.45) robo.say(vP(VS_AIOK),"happy"); } }
+  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(vP(VS_NO)); else sfx.nope(); }
   const fb=document.getElementById("ncfb"); if(fb) fb.innerHTML=`<div class="fb">${correct?`✅ صحيح! ${nc_q.a} ${nc_q.op} ${nc_q.b} = ${nc_q.ans}`:`❌ الصحيحُ هو ${nc_q.ans}`}</div>`;
   setTimeout(()=>{ nc_turn=(nc_turn+1)%nc_ps.length; ncNext(); }, 1150);
 }
@@ -735,8 +740,9 @@ function huTap(c,btn){ if(hu_lock||hu_ps[hu_turn].cpu) return; cancelAnimationFr
 function huAI(){ hu_lock=true; const cfg=HU_CFG[hu_diff], ok=Math.random()<cfg.pr; huTimer(cfg.d, ()=>huResolve(ok,null)); } // الشريطُ يَنزِفُ خلالَ تفكيرِ الآليّ أيضًا
 function huResolve(ok,btn){
   cancelAnimationFrame(hu_raf); const cur=hu_ps[hu_turn], human=!cur.cpu;
-  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); if(human) robo.cheer(); else sfx.success(); }
-  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(); else sfx.nope(); document.querySelectorAll("#hugrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===hu_target) b.classList.add("ok"); }); }
+  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); const won=cur.score>=HU_TARGET;
+    if(won) sfx.success(); else if(human) robo.cheer(vP(VS_OK)); else { sfx.success(); if(Math.random()<0.45) robo.say(vP(VS_AIOK),"happy"); } }
+  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(vP(VS_NO)); else sfx.nope(); document.querySelectorAll("#hugrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===hu_target) b.classList.add("ok"); }); }
   const fb=document.getElementById("hufb"); if(fb) fb.innerHTML=`<div class="fb">${ok?"✅ أحسنت! صيدٌ سريع":`⌛ المطلوبُ كان «${hu_target}»`}</div>`;
   setTimeout(()=>{ hu_turn=(hu_turn+1)%hu_ps.length; huNext(); }, 1150);
 }
@@ -779,8 +785,9 @@ function smTap(c,btn){ if(sm_lock||sm_ps[sm_turn].cpu) return; cancelAnimationFr
 function smAI(){ sm_lock=true; const cfg=SM_CFG[sm_diff], ok=Math.random()<cfg.pr; smTimer(cfg.d, ()=>smResolve(ok,null)); }
 function smResolve(ok,btn){
   cancelAnimationFrame(sm_raf); const cur=sm_ps[sm_turn], human=!cur.cpu;
-  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); if(human) robo.cheer(); else sfx.success(); }
-  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(); else sfx.nope(); document.querySelectorAll("#smgrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===sm_target) b.classList.add("ok"); }); }
+  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); const won=cur.score>=SM_TARGET;
+    if(won) sfx.success(); else if(human) robo.cheer(vP(VS_OK)); else { sfx.success(); if(Math.random()<0.45) robo.say(vP(VS_AIOK),"happy"); } }
+  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(vP(VS_NO)); else sfx.nope(); document.querySelectorAll("#smgrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===sm_target) b.classList.add("ok"); }); }
   const fb=document.getElementById("smfb"); if(fb) fb.innerHTML=`<div class="fb">${ok?"✅ مطابقةٌ صحيحة!":"⌛ هذه هي المطابِقة"}</div>`;
   setTimeout(()=>{ sm_turn=(sm_turn+1)%sm_ps.length; smNext(); },1100);
 }
@@ -850,14 +857,14 @@ function wgTap(i){
   if(!pre(wg_seq,fwd) && !pre(wg_seq,rev)){ // كسرَ التسلسل ⇒ خطأٌ وتمريرُ الدور
     wg_seq=[]; wg_lock=true; renderWG();
     const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">❌ ليست هي — ينتقلُ الدورُ للخصم.</div>`;
-    robo.encourage();
+    robo.encourage(vP(VS_NO));
     setTimeout(()=>{ wg_turn=(wg_turn+1)%wg_ps.length; wg_lock=false; renderWG(); if(wg_ps[wg_turn].cpu) wgAI(); }, 1150);
     return;
   }
   if(wg_seq.length===cur.path.length){ // اكتملتِ الكلمة
-    cur.path.forEach(idx=>wg_owner[idx]=wg_turn); wg_ps[wg_turn].score++; wg_found++; wg_seq=[]; robo.cheer();
-    if(wg_found>=wg_words.length){ renderWG(); wgEnd(); return; }
-    renderWG(); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">✅ أحسنت! «${cur.word}» — تابِعْ بالكلمة التالية.</div>`;
+    cur.path.forEach(idx=>wg_owner[idx]=wg_turn); wg_ps[wg_turn].score++; wg_found++; wg_seq=[];
+    if(wg_found>=wg_words.length){ renderWG(); wgEnd(); return; } // الفوزُ: يتولّى wgEnd ردَّ الفعل (لا ازدواجَ صوت)
+    robo.cheer(vP(VS_OK)); renderWG(); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">✅ أحسنت! «${cur.word}» — تابِعْ بالكلمة التالية.</div>`;
   } else { renderWG(); }
 }
 function wgAI(){

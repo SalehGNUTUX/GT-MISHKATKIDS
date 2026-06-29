@@ -254,7 +254,7 @@ function renderMemSetup(){
   view.innerHTML = backBar()+
     `<div class="clue" style="padding:12px"><div class="say">لعبةُ الذاكرة 🧠 — اختَرِ الصعوبةَ والخصمَ ثمّ ابدأ!</div></div>
      <div class="memset">
-       <div class="setrow"><div class="setlbl">🎚️ الصعوبة</div><div class="lvl" id="mlvl"><button data-p="4" class="${m_pairs===4?"on":""}">سهل · 8</button><button data-p="6" class="${m_pairs===6?"on":""}">متوسّط · 12</button><button data-p="8" class="${m_pairs===8?"on":""}">صعب · 16</button></div></div>
+       <div class="setrow"><div class="setlbl">🎚️ الصعوبة</div><div class="lvl" id="mlvl"><button data-p="4" class="${m_pairs===4?"on":""}">سهل · 8</button><button data-p="6" class="${m_pairs===6?"on":""}">متوسّط · 12</button><button data-p="8" class="${m_pairs===8?"on":""}">صعب · 16</button><button data-p="10" class="${m_pairs===10?"on":""}">خبير · 20</button></div></div>
        <div class="setrow"><div class="setlbl">👥 اللعبُ مع</div><div class="lvl" id="mopp">${oppList}</div></div>
        <div class="setrow" id="airow" style="${m_opp==="ai"?"":"display:none"}"><div class="setlbl">🤖 مستوى الآليّ</div><div class="lvl" id="maint"><button data-ai="easy" class="${m_ai==="easy"?"on":""}">سهل</button><button data-ai="medium" class="${m_ai==="medium"?"on":""}">متوسّط</button><button data-ai="hard" class="${m_ai==="hard"?"on":""}">صعب</button></div></div>
        <button id="memStart">▶ ابدأ اللعب</button>

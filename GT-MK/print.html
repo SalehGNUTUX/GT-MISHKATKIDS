@@ -25,7 +25,8 @@
   .chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
   .count{font-size:13px;color:var(--muted)}
   button.print{margin-inline-start:auto;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:10px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
-  a.back{color:var(--muted);font-size:13px;text-decoration:none}
+  a.back{display:inline-flex;align-items:center;gap:6px;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:14px;font-weight:700;text-decoration:none}
+  a.back:active{transform:scale(.96)}
   .sheet{max-width:820px;margin:16px auto;padding:0 16px}
   .hint{color:var(--muted);font-size:13px;text-align:center;margin:8px 0 16px}
 
@@ -90,6 +91,8 @@
 
 <script type="module">
 import { smartPrint } from "./src/smart-print.js"; window.smartPrint = smartPrint; // طباعةٌ تعملُ على الهاتف أيضًا
+// زرُّ الرجوع المادّيّ (أندرويد): هذه الصفحةُ تُفتَح مستقلّةً فلا تَرِثُ معالجَ الرجوع ⇒ نُسجّلُه هنا → الفهرس.
+try { const A = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App; if (A && A.addListener) A.addListener("backButton", () => { location.href = "home.html"; }); } catch (e) {}
 import library from "./content/library.js";
 import { ART } from "./src/art.js";
 const WORLD_EMOJI={"قمر":"🌕","شمس":"☀️","شجرة":"🌳","صديق":"🧑‍🤝‍🧑","نهر":"🌊","نجمة":"⭐","طائر":"🐦"};

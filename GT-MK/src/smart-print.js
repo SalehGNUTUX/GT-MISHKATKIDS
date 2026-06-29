@@ -1,7 +1,8 @@
 // src/smart-print.js — طباعةٌ تعملُ على كلّ المنصّات.
 //   الويب/سطح المكتب: نافذةُ الطباعة المعتادة (window.print).
-//   الهاتف (Capacitor): window.print لا يعمل في WebView أندرويد ⇒ نُولّدُ PDF من المحتوى
-//   (jsPDF + html2canvas المُضمَّنان) ونحفظُه ليطبعَه الأهلُ لاحقًا. محلّيٌّ بالكامل.
+//   الهاتف (Capacitor): window.print لا يعمل في WebView أندرويد، و pdf.save() لا يُظهِرُ الملفَّ.
+//   لذا نُولّدُ PDF (jsPDF + html2canvas المُضمَّنان) ونكتبُه في ذاكرةِ التطبيق المؤقّتة
+//   ثمّ نفتحُ صحيفةَ المشاركة (Filesystem + Share) ليحفظَه/يطبعَه الأهل. محلّيٌّ بالكامل.
 
 function isNativePhone() {
   try { return !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" && window.Capacitor.isNativePlatform()); }
@@ -28,10 +29,21 @@ export async function smartPrint(el, filename = "مِشكاة.pdf") {
       html2canvas: { scale, useCORS: true, backgroundColor: "#ffffff" },
       width: pageW - 32, windowWidth: node.scrollWidth,
     });
-    pdf.save(filename);
+    const base64 = pdf.output("datauristring").split(",")[1];
+    const P = (window.Capacitor && window.Capacitor.Plugins) || {};
+    const Filesystem = P.Filesystem, Share = P.Share;
+    if (Filesystem && Share) {
+      // الذاكرةُ المؤقّتة (Cache) — لا تحتاجُ صلاحيّاتٍ، وتُشارَكُ عبر FileProvider.
+      await Filesystem.writeFile({ path: filename, data: base64, directory: "CACHE" });
+      const { uri } = await Filesystem.getUri({ path: filename, directory: "CACHE" });
+      await Share.share({ title: filename, text: "ملفُّ الطباعة من مِشكاة 🖨️", files: [uri] });
+    } else {
+      pdf.save(filename); // ارتدادٌ إن غابتِ الإضافات
+    }
   } catch (e) {
-    try { window.print(); } catch (_) {}
-    try { alert("تعذّر إنشاءُ ملفّ الطباعة على الهاتف. يمكنك الطباعةُ من نسخة الحاسوب أو الموقع."); } catch (_) {}
+    const m = (e && e.message) || e;
+    if (String(m).toLowerCase().includes("cancel")) return; // ألغى المستخدمُ المشاركة
+    try { alert("تعذّر إنشاءُ ملفّ الطباعة على الهاتف: " + m + "\nيمكنك الطباعةُ من نسخة الحاسوب أو الموقع."); } catch (_) {}
   } finally {
     if (busy) busy.remove();
   }

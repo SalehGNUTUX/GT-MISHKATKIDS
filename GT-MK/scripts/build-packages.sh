@@ -96,6 +96,26 @@ rpm_from_deb() {
   else ls -1 "$RELEASE"/*.rpm >/dev/null 2>&1 && ok "rpm في release/" || err "فشل توليد rpm"; fi
 }
 
+# يُعيدُ توليدَ أيقونات أندرويد بدقّةٍ عالية ومن المصدر المحشوّ (assets/icon-foreground.png ضمن المنطقة الآمنة):
+# @capacitor/assets يولّدُها بأحجامٍ صغيرة (≤192px) ويملأُ الإطارَ فتبدو رديئةً وتَقُصُّها أقنعةُ أندرويد.
+fix_android_icons() {
+  command -v magick >/dev/null || { wrn "ImageMagick مطلوب لضبط الأيقونات — تُخطّى"; return 0; }
+  local res="$ANDROID/app/src/main/res" FG="$ROOT/assets/icon-foreground.png" BG="$ROOT/assets/icon-background.png"
+  [ -f "$FG" ] && [ -f "$BG" ] || return 0
+  step "ضبطُ أيقونات أندرويد: دقّةٌ عالية + حشوٌ في كلّ الكثافات (لا قَصَّ ولا ضبابيّة)"
+  local dens="ldpi mdpi hdpi xhdpi xxhdpi xxxhdpi" fgsz="81 108 162 216 324 432" lasz="36 48 72 96 144 192" i=1
+  for d in $dens; do
+    local dir="$res/mipmap-$d"
+    local f l; f="$(echo $fgsz | cut -d' ' -f$i)"; l="$(echo $lasz | cut -d' ' -f$i)"; i=$((i+1))
+    [ -d "$dir" ] || continue
+    magick "$FG" -resize ${f}x${f} "$dir/ic_launcher_foreground.png"                                   # واجهةٌ تكيّفيّةٌ عاليةُ الدقّة ومحشوّة
+    magick "$BG" "$FG" -gravity center -composite -resize ${l}x${l} "$dir/ic_launcher.png"               # قديمةٌ مربّعة (خلفيّة+واجهة)
+    magick "$BG" "$FG" -gravity center -composite -resize ${l}x${l} \
+      \( -size ${l}x${l} xc:none -fill white -draw "circle $((l/2)),$((l/2)) $((l/2)),0" \) -alpha set -compose DstIn -composite "$dir/ic_launcher_round.png"  # قديمةٌ دائريّة
+  done
+  ok "أُعيد توليدُ أيقونات أندرويد بدقّةٍ عالية ومحشوّة"
+}
+
 build_apk() {
   step "تحزيمُ أندرويد (Capacitor)"
   # Capacitor (core/cli/android) في package.json — يُثبَّت عاديًّا. (assets ثقيلٌ بـsharp → عند الطلب فقط.)
@@ -108,6 +128,7 @@ build_apk() {
     [ -d "$ROOT/node_modules/@capacitor/assets" ] || npm install --no-save @capacitor/assets@^3 >/dev/null 2>&1
     step "توليدُ أيقونات أندرويد وشاشةِ البدء (@capacitor/assets)"
     npx @capacitor/assets generate --android --iconBackgroundColor '#39562a' --iconBackgroundColorDark '#1d3214' --splashBackgroundColor '#39562a' --splashBackgroundColorDark '#1d3214' 2>&1 | tail -3
+    fix_android_icons   # يُصحّحُ ما يُفسدُه @capacitor/assets: واجهةٌ بدقّةٍ عالية ومحشوّةٌ بدل أحجامٍ صغيرةٍ مملوءةٍ تَقُصُّها الأقنعة
   fi
   # صلاحيةُ الميكروفون (تسجيلُ نُطق الطفل) — تُضاف للـmanifest المُولَّد إن غابت (android/ مُولَّدٌ فيُعاد كلَّ بناء).
   local mani="$ANDROID/app/src/main/AndroidManifest.xml"

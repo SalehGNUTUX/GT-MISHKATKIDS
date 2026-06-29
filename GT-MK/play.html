@@ -133,6 +133,10 @@
   .hugrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:8px;max-width:380px;margin:0 auto}
   .hucell{aspect-ratio:1/1;background:var(--card);border:2px solid var(--line);border-radius:12px;font-size:24px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--ink)}
   .hucell:hover{border-color:var(--primary)} .hucell.ok{background:#EEF6E9;border-color:var(--good);color:#2f5a1f} .hucell.bad{background:#FCEBEE;border-color:var(--bad)}
+  .smtarget{text-align:center;margin:4px 0 6px} .smtarget svg{width:88px;height:88px}
+  .smgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;max-width:380px;margin:0 auto}
+  .smcell{aspect-ratio:1/1;background:var(--card);border:2px solid var(--line);border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:9px}
+  .smcell svg{width:100%;height:100%} .smcell:hover{border-color:var(--primary)} .smcell.ok{background:#EEF6E9;border-color:var(--good)} .smcell.bad{background:#FCEBEE;border-color:var(--bad)}
   #memStart{width:100%;margin-top:4px;padding:14px;border:none;border-radius:14px;font-weight:800;font-family:inherit;font-size:16px;cursor:pointer;background:var(--primary);color:#fff;transition:transform .12s,background .12s}
   #memStart:hover{background:var(--primary-d)} #memStart:active{transform:scale(.98)}
   .mgrid{display:grid;gap:10px;grid-template-columns:repeat(4,1fr);margin-top:10px}
@@ -248,6 +252,7 @@ const GAMES = [
   { id:"xo",     ic:"⭕", t:"دائرةٌ وعلامة", d:"ثلاثةٌ في خطٍّ ضدّ الآليّ" },
   { id:"numrace",ic:"🔢", t:"تحدّي الأعداد", d:"سابِقِ الآليَّ في الحساب" },
   { id:"hunt",   ic:"🔎", t:"صيدُ الحرف/الرقم", d:"اعثرْ على المطلوبِ بسرعة" },
+  { id:"smatch", ic:"⚡", t:"سباقُ المطابقة", d:"جِدِ الصورةَ المطابقةَ أسرع" },
   { id:"print",  ic:"🖨️", t:"أنشطة للطباعة", d:"7 ألعاب حسّيّة بالورق" },
 ];
 function renderMenu(){
@@ -257,7 +262,7 @@ function renderMenu(){
   wireAge(renderMenu);
   view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
 }
-function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,xo:startXO,numrace:startNC,hunt:startHU,print:renderPrint})[id](); }
+function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,xo:startXO,numrace:startNC,hunt:startHU,smatch:startSM,print:renderPrint})[id](); }
 
 /* ===================== 🧠 MEMORY MATCH (وحدي · الإخوة · الوالد · الآليّ) ===================== */
 // الصعوبة: 4 أزواج=8 بطاقات · 6=12 · 8=16. الخصم: solo | ai | parent | p:<id>. مستوى الآليّ: easy/medium/hard.
@@ -737,6 +742,50 @@ function huEnd(){
   wireBack();
   document.getElementById("huag").onclick=newHU;
   document.getElementById("hurs").onclick=startHU;
+}
+
+/* ===================== ⚡ سباقُ المطابقة (تناوبٌ بمؤقّت · صورٌ · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
+let sm_diff="easy", sm_ps=[], sm_turn=0, sm_lock=false, sm_target="", sm_opts=[], sm_raf=null; const SM_TARGET=5;
+const SM_CFG={ easy:{n:4,ms:6000,pr:0.6,d:1700}, medium:{n:6,ms:4500,pr:0.78,d:1200}, hard:{n:9,ms:3200,pr:0.9,d:850} };
+function startSM(){ vsSetup({ say:"سباقُ المطابقة ⚡ — جِدِ الصورةَ المطابقةَ بسرعة!", diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>sm_diff, setDiff:v=>{sm_diff=v;}, start:newSM }); }
+function newSM(){ sm_ps=vsMakePlayers(true); sm_ps.forEach(p=>p.score=0); sm_turn=0; sm_lock=false; smNext(); }
+function smNext(){
+  if(sm_ps.some(p=>p.score>=SM_TARGET)){ smEnd(); return; }
+  const cfg=SM_CFG[sm_diff], icons=shuffle(Object.keys(MEMORY_ART));
+  sm_target=icons[0]; sm_opts=shuffle([sm_target,...icons.slice(1,cfg.n)]); sm_lock=false;
+  renderSM(); if(sm_ps[sm_turn].cpu) smAI(); else smTimer(cfg.ms);
+}
+function renderSM(){
+  const cur=sm_ps[sm_turn];
+  view.innerHTML=backBar()+`<div class="clue" style="padding:10px"><div class="say">سباقُ المطابقة ⚡ — أوّلُ من يبلغُ ${SM_TARGET} يفوز!</div></div>`
+    + vsScoreHtml(sm_ps)
+    + `<div class="vsturn" style="color:${cur.color}">${cur.cpu?"🤖 دورُ الآليّ…":`${cur.avatar} دورُ ${cur.name}`}</div>`
+    + `<div class="hint" style="text-align:center;margin:2px 0">جِدْ مثلَ هذه الصورة:</div><div class="smtarget">${MEMORY_ART[sm_target]}</div>`
+    + `<div class="hubar"><span id="smbar"></span></div>`
+    + `<div class="smgrid" id="smgrid">`+sm_opts.map(o=>`<button class="smcell" data-c="${o}">${MEMORY_ART[o]}</button>`).join("")+`</div>`
+    + `<div id="smfb"></div>`;
+  wireBack();
+  document.getElementById("smgrid").addEventListener("click",e=>{ const b=e.target.closest("[data-c]"); if(!b) return; smTap(b.getAttribute("data-c"),b); });
+}
+function smTimer(ms){ const start=Date.now(),bar=document.getElementById("smbar"); cancelAnimationFrame(sm_raf); const tick=()=>{ const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ if(!sm_lock){ sm_lock=true; smResolve(false,null);} return; } sm_raf=requestAnimationFrame(tick); }; tick(); }
+function smTap(c,btn){ if(sm_lock||sm_ps[sm_turn].cpu) return; cancelAnimationFrame(sm_raf); sm_lock=true; sfx.tap(); smResolve(c===sm_target,btn); }
+function smAI(){ sm_lock=true; const cfg=SM_CFG[sm_diff]; setTimeout(()=>smResolve(Math.random()<cfg.pr,null),cfg.d); }
+function smResolve(ok,btn){
+  cancelAnimationFrame(sm_raf); const cur=sm_ps[sm_turn];
+  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); sfx.success(); }
+  else { if(btn) btn.classList.add("bad"); sfx.nope(); document.querySelectorAll("#smgrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===sm_target) b.classList.add("ok"); }); }
+  const fb=document.getElementById("smfb"); if(fb) fb.innerHTML=`<div class="fb">${ok?"✅ مطابقةٌ صحيحة!":"⌛ هذه هي المطابِقة"}</div>`;
+  setTimeout(()=>{ sm_turn=(sm_turn+1)%sm_ps.length; smNext(); },1100);
+}
+function smEnd(){
+  logEvent("smatch_win");
+  const s=[...sm_ps].sort((a,b)=>b.score-a.score);
+  const res = (s[1]&&s[0].score===s[1].score) ? "🤝 تعادُل!" : `${s[0].cpu?"🤖":"🌟"} فاز ${s[0].avatar} ${s[0].name}!`;
+  const me=sm_ps.find(p=>!p.cpu), o=sm_ps.find(p=>p.cpu); if(o&&me) vsReact(me,o); else robo.read(vP(VS_KIDS));
+  view.innerHTML=backBar()+`<div class="clue" style="padding:10px"><div class="say">انتهتِ المباراة!</div></div>`+vsScoreHtml(sm_ps)+`<div class="win">${res}</div><div class="controls" style="margin-top:14px"><button class="go" id="smag">العب ثانيةً</button> <button id="smrs">↻ إعدادات</button></div>`;
+  wireBack();
+  document.getElementById("smag").onclick=newSM;
+  document.getElementById("smrs").onclick=startSM;
 }
 
 function renderPrint(){

@@ -256,7 +256,7 @@ function tplMath(){
   const col=ttl=>`<div class="ms-col"><h3>${ttl}</h3>${probs.map(p=>`<div class="ms-p">${p}</div>`).join("")}</div>`;
   return `<section class="tpl"><h2>🔢 تحدّي الأعداد</h2>${nameStrip()}
     <p class="tpl-h">لاعبان، كلٌّ في عموده (والمسائلُ نفسُها). عند «ابدأ» يَحلّان معًا؛ أوّلُ من يُنهي بصحّةٍ يفوز!</p>
-    <div class="ms-wrap">${col("اللاعب ١")}${col("اللاعب ٢")}</div></section>`;
+    <div class="ms-wrap">${col("اللاعب 1")}${col("اللاعب 2")}</div></section>`;
 }
 const TEMPLATES=[
   {id:"t_xo",label:"⭕ دائرة وعلامة",fn:tplXO},

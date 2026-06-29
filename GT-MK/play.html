@@ -260,7 +260,7 @@ const GAMES = [
   { id:"hunt",   ic:"🔎", t:"صيدُ الحرف/الرقم", d:"اعثرْ على المطلوبِ بسرعة" },
   { id:"smatch", ic:"⚡", t:"سباقُ المطابقة", d:"جِدِ الصورةَ المطابقةَ أسرع" },
   { id:"wgrid",  ic:"🔤", t:"شبكةُ الكلمات", d:"كوّنِ الكلماتِ وتنافسْ بالألوان" },
-  { id:"print",  ic:"🖨️", t:"أنشطة للطباعة", d:"7 ألعاب حسّيّة بالورق" },
+  { id:"print",  ic:"🖨️", t:"ألعاب/أنشطة للطباعة", d:"ألعابٌ تُلعَبُ على الورق + أنشطةٌ حسّيّة" },
 ];
 function renderMenu(){
   view.innerHTML = ageChips() + `<div class="menu">` +
@@ -685,9 +685,9 @@ function renderNC(){
 function ncAnswer(v, btn){ if(nc_lock||nc_ps[nc_turn].cpu) return; nc_lock=true; sfx.tap(); ncResolve(v===nc_q.ans, btn); }
 function ncAI(){ nc_lock=true; const pr=nc_diff==="easy"?0.6:nc_diff==="medium"?0.78:0.9; setTimeout(()=>{ ncResolve(Math.random()<pr, null); }, 950); }
 function ncResolve(correct, btn){
-  const cur=nc_ps[nc_turn];
-  if(correct){ cur.score++; if(btn) btn.classList.add("ok"); sfx.success(); }
-  else { if(btn) btn.classList.add("bad"); sfx.nope(); }
+  const cur=nc_ps[nc_turn], human=!cur.cpu;
+  if(correct){ cur.score++; if(btn) btn.classList.add("ok"); if(human) robo.cheer(); else sfx.success(); }
+  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(); else sfx.nope(); }
   const fb=document.getElementById("ncfb"); if(fb) fb.innerHTML=`<div class="fb">${correct?`✅ صحيح! ${nc_q.a} ${nc_q.op} ${nc_q.b} = ${nc_q.ans}`:`❌ الصحيحُ هو ${nc_q.ans}`}</div>`;
   setTimeout(()=>{ nc_turn=(nc_turn+1)%nc_ps.length; ncNext(); }, 1150);
 }
@@ -714,7 +714,7 @@ function huNext(){
   const pool=useNum ? shuffle(Array.from({length:40},(_,i)=>String(i+1))) : shuffle([...AR_LETTERS]);
   hu_cells=pool.slice(0,cfg.n); hu_target=hu_cells[Math.floor(Math.random()*hu_cells.length)]; hu_lock=false;
   renderHU();
-  if(hu_ps[hu_turn].cpu) huAI(); else huTimer(cfg.ms);
+  if(hu_ps[hu_turn].cpu) huAI(); else huTimer(cfg.ms, ()=>{ if(!hu_lock){ hu_lock=true; huResolve(false,null); } });
 }
 function renderHU(){
   const cur=hu_ps[hu_turn];
@@ -728,15 +728,15 @@ function renderHU(){
   wireBack();
   document.getElementById("hugrid").addEventListener("click",e=>{ const b=e.target.closest("[data-c]"); if(!b) return; huTap(b.getAttribute("data-c"), b); });
 }
-function huTimer(ms){ const start=Date.now(), bar=document.getElementById("hubar"); cancelAnimationFrame(hu_raf);
-  const tick=()=>{ const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ if(!hu_lock){ hu_lock=true; huResolve(false,null); } return; } hu_raf=requestAnimationFrame(tick); }; tick();
+function huTimer(ms, onEnd){ const start=Date.now(), bar=document.getElementById("hubar"); cancelAnimationFrame(hu_raf);
+  const tick=()=>{ const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ onEnd&&onEnd(); return; } hu_raf=requestAnimationFrame(tick); }; tick();
 }
 function huTap(c,btn){ if(hu_lock||hu_ps[hu_turn].cpu) return; cancelAnimationFrame(hu_raf); hu_lock=true; sfx.tap(); huResolve(c===hu_target, btn); }
-function huAI(){ hu_lock=true; const cfg=HU_CFG[hu_diff]; setTimeout(()=>huResolve(Math.random()<cfg.pr,null), cfg.d); }
+function huAI(){ hu_lock=true; const cfg=HU_CFG[hu_diff], ok=Math.random()<cfg.pr; huTimer(cfg.d, ()=>huResolve(ok,null)); } // الشريطُ يَنزِفُ خلالَ تفكيرِ الآليّ أيضًا
 function huResolve(ok,btn){
-  cancelAnimationFrame(hu_raf); const cur=hu_ps[hu_turn];
-  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); sfx.success(); }
-  else { if(btn) btn.classList.add("bad"); sfx.nope(); document.querySelectorAll("#hugrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===hu_target) b.classList.add("ok"); }); }
+  cancelAnimationFrame(hu_raf); const cur=hu_ps[hu_turn], human=!cur.cpu;
+  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); if(human) robo.cheer(); else sfx.success(); }
+  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(); else sfx.nope(); document.querySelectorAll("#hugrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===hu_target) b.classList.add("ok"); }); }
   const fb=document.getElementById("hufb"); if(fb) fb.innerHTML=`<div class="fb">${ok?"✅ أحسنت! صيدٌ سريع":`⌛ المطلوبُ كان «${hu_target}»`}</div>`;
   setTimeout(()=>{ hu_turn=(hu_turn+1)%hu_ps.length; huNext(); }, 1150);
 }
@@ -760,7 +760,7 @@ function smNext(){
   if(sm_ps.some(p=>p.score>=SM_TARGET)){ smEnd(); return; }
   const cfg=SM_CFG[sm_diff], icons=shuffle(Object.keys(MEMORY_ART));
   sm_target=icons[0]; sm_opts=shuffle([sm_target,...icons.slice(1,cfg.n)]); sm_lock=false;
-  renderSM(); if(sm_ps[sm_turn].cpu) smAI(); else smTimer(cfg.ms);
+  renderSM(); if(sm_ps[sm_turn].cpu) smAI(); else smTimer(cfg.ms, ()=>{ if(!sm_lock){ sm_lock=true; smResolve(false,null); } });
 }
 function renderSM(){
   const cur=sm_ps[sm_turn];
@@ -774,13 +774,13 @@ function renderSM(){
   wireBack();
   document.getElementById("smgrid").addEventListener("click",e=>{ const b=e.target.closest("[data-c]"); if(!b) return; smTap(b.getAttribute("data-c"),b); });
 }
-function smTimer(ms){ const start=Date.now(),bar=document.getElementById("smbar"); cancelAnimationFrame(sm_raf); const tick=()=>{ const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ if(!sm_lock){ sm_lock=true; smResolve(false,null);} return; } sm_raf=requestAnimationFrame(tick); }; tick(); }
+function smTimer(ms, onEnd){ const start=Date.now(),bar=document.getElementById("smbar"); cancelAnimationFrame(sm_raf); const tick=()=>{ const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ onEnd&&onEnd(); return; } sm_raf=requestAnimationFrame(tick); }; tick(); }
 function smTap(c,btn){ if(sm_lock||sm_ps[sm_turn].cpu) return; cancelAnimationFrame(sm_raf); sm_lock=true; sfx.tap(); smResolve(c===sm_target,btn); }
-function smAI(){ sm_lock=true; const cfg=SM_CFG[sm_diff]; setTimeout(()=>smResolve(Math.random()<cfg.pr,null),cfg.d); }
+function smAI(){ sm_lock=true; const cfg=SM_CFG[sm_diff], ok=Math.random()<cfg.pr; smTimer(cfg.d, ()=>smResolve(ok,null)); }
 function smResolve(ok,btn){
-  cancelAnimationFrame(sm_raf); const cur=sm_ps[sm_turn];
-  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); sfx.success(); }
-  else { if(btn) btn.classList.add("bad"); sfx.nope(); document.querySelectorAll("#smgrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===sm_target) b.classList.add("ok"); }); }
+  cancelAnimationFrame(sm_raf); const cur=sm_ps[sm_turn], human=!cur.cpu;
+  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); if(human) robo.cheer(); else sfx.success(); }
+  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(); else sfx.nope(); document.querySelectorAll("#smgrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===sm_target) b.classList.add("ok"); }); }
   const fb=document.getElementById("smfb"); if(fb) fb.innerHTML=`<div class="fb">${ok?"✅ مطابقةٌ صحيحة!":"⌛ هذه هي المطابِقة"}</div>`;
   setTimeout(()=>{ sm_turn=(sm_turn+1)%sm_ps.length; smNext(); },1100);
 }
@@ -796,7 +796,7 @@ function smEnd(){
 }
 
 /* ===================== 🔤 شبكةُ الكلمات (تناوبٌ · تكوينُ الكلمات بالترتيب · ألوانُ اللاعبين · ضدّ الآليّ/الحسابات) ===================== */
-let wg_diff="easy", wg_ps=[], wg_turn=0, wg_words=[], wg_found=0, wg_owner=[], wg_pick=null, wg_lock=false, wg_grid=[]; const WG_N=6;
+let wg_diff="easy", wg_ps=[], wg_turn=0, wg_words=[], wg_found=0, wg_owner=[], wg_seq=[], wg_lock=false, wg_grid=[]; const WG_N=6;
 const WG_CFG={ easy:{count:4,len:[3,3],pr:0.5}, medium:{count:5,len:[3,4],pr:0.68}, hard:{count:6,len:[3,5],pr:0.82} };
 function startWG(){ vsSetup({ say:"شبكةُ الكلمات 🔤 — كوّنِ الكلماتِ بالترتيب! من يُكوّنُ أكثرَ يفوز.", diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>wg_diff, setDiff:v=>{wg_diff=v;}, start:newWG }); }
 function wgGen(){
@@ -823,14 +823,14 @@ function wgGen(){
 function newWG(){
   wg_ps=vsMakePlayers(true); wg_ps.forEach(p=>p.score=0);
   const g=wgGen(); if(!g){ view.innerHTML=backBar()+`<div class="clue"><div class="say">تعذّر توليدُ الشبكة، حاولْ ثانيةً.</div></div>`; wireBack(); return; }
-  wg_grid=g.grid; wg_words=g.words; wg_found=0; wg_owner=Array(WG_N*WG_N).fill(null); wg_pick=null; wg_turn=0; wg_lock=false;
+  wg_grid=g.grid; wg_words=g.words; wg_found=0; wg_owner=Array(WG_N*WG_N).fill(null); wg_seq=[]; wg_turn=0; wg_lock=false;
   renderWG(); if(wg_ps[wg_turn].cpu) wgAI();
 }
 function renderWG(){
   const cur=wg_ps[wg_turn];
   const list=wg_words.map((w,i)=>`<span class="wgw ${i<wg_found?"done":""} ${i===wg_found?"cur":""}">${w.word}</span>`).join("");
-  const cells=wg_grid.map((ch,i)=>{ const own=wg_owner[i], sel=wg_pick===i?" sel":"", oc=own!=null?" own":"", st=own!=null?`style="background:${wg_ps[own].color}"`:""; return `<button class="wgc${sel}${oc}" data-i="${i}" ${st}>${ch}</button>`; }).join("");
-  view.innerHTML=backBar()+`<div class="clue" style="padding:10px"><div class="say">شبكةُ الكلمات 🔤 — كوّنِ الكلمةَ المُحدَّدة: انقرْ أوّلَ حرفٍ ثمّ آخرَه.</div></div>`
+  const cells=wg_grid.map((ch,i)=>{ const own=wg_owner[i], sel=wg_seq.includes(i)?" sel":"", oc=own!=null?" own":"", st=own!=null?`style="background:${wg_ps[own].color}"`:""; return `<button class="wgc${sel}${oc}" data-i="${i}" ${st}>${ch}</button>`; }).join("");
+  view.innerHTML=backBar()+`<div class="clue" style="padding:10px"><div class="say">شبكةُ الكلمات 🔤 — كوّنِ الكلمةَ المُحدَّدة: انقرْ حروفَها بالترتيب (أفقيًّا أو رأسيًّا).</div></div>`
     + vsScoreHtml(wg_ps)
     + `<div class="vsturn" style="color:${cur.color}">${cur.cpu?"🤖 دورُ الآليّ…":`${cur.avatar} دورُ ${cur.name}`}</div>`
     + `<div class="wglist">${list}</div>`
@@ -839,31 +839,36 @@ function renderWG(){
   wireBack();
   document.getElementById("wggrid").addEventListener("click",e=>{ const b=e.target.closest("[data-i]"); if(!b) return; wgTap(+b.getAttribute("data-i")); });
 }
+// تتبُّعُ الكلمة حرفًا حرفًا بالترتيب (تكوينُها فعليّاً)، صعودًا أو نزولًا على مسارها.
 function wgTap(i){
   if(wg_lock||wg_ps[wg_turn].cpu||wg_owner[i]!=null) return;
-  if(wg_pick==null){ wg_pick=i; renderWG(); return; }
-  const a=wg_pick, b=i; wg_pick=null;
-  if(a===b){ renderWG(); return; }
-  sfx.tap(); wgCheck(a,b);
-}
-function wgCheck(a,b){
-  const cur=wg_words[wg_found], ends=[cur.path[0], cur.path[cur.path.length-1]];
-  const ok=(a===ends[0]&&b===ends[1])||(a===ends[1]&&b===ends[0]);
-  if(ok){ cur.path.forEach(idx=>wg_owner[idx]=wg_turn); wg_ps[wg_turn].score++; wg_found++; sfx.success();
+  if(wg_seq.length && wg_seq[wg_seq.length-1]===i){ wg_seq.pop(); renderWG(); return; } // إعادةُ النقر = تراجُع
+  if(wg_seq.includes(i)) return;
+  wg_seq.push(i); sfx.tap();
+  const cur=wg_words[wg_found], fwd=cur.path, rev=[...cur.path].reverse();
+  const pre=(seq,path)=>seq.length<=path.length && seq.every((c,k)=>c===path[k]);
+  if(!pre(wg_seq,fwd) && !pre(wg_seq,rev)){ // كسرَ التسلسل ⇒ خطأٌ وتمريرُ الدور
+    wg_seq=[]; wg_lock=true; renderWG();
+    const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">❌ ليست هي — ينتقلُ الدورُ للخصم.</div>`;
+    robo.encourage();
+    setTimeout(()=>{ wg_turn=(wg_turn+1)%wg_ps.length; wg_lock=false; renderWG(); if(wg_ps[wg_turn].cpu) wgAI(); }, 1150);
+    return;
+  }
+  if(wg_seq.length===cur.path.length){ // اكتملتِ الكلمة
+    cur.path.forEach(idx=>wg_owner[idx]=wg_turn); wg_ps[wg_turn].score++; wg_found++; wg_seq=[]; robo.cheer();
     if(wg_found>=wg_words.length){ renderWG(); wgEnd(); return; }
     renderWG(); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">✅ أحسنت! «${cur.word}» — تابِعْ بالكلمة التالية.</div>`;
-  } else { sfx.nope(); wg_lock=true; renderWG(); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">❌ ليست هي — ينتقلُ الدورُ للخصم.</div>`;
-    setTimeout(()=>{ wg_turn=(wg_turn+1)%wg_ps.length; wg_lock=false; renderWG(); if(wg_ps[wg_turn].cpu) wgAI(); }, 1150);
-  }
+  } else { renderWG(); }
 }
 function wgAI(){
   wg_lock=true;
   setTimeout(()=>{
     const cfg=WG_CFG[wg_diff], cur=wg_words[wg_found];
     if(Math.random()<cfg.pr){ cur.path.forEach(idx=>wg_owner[idx]=wg_turn); wg_ps[wg_turn].score++; wg_found++; sfx.success(); wg_lock=false;
+      if(Math.random()<0.4) robo.say(`كوّنتُ «${cur.word}» 🤖`, "happy");
       if(wg_found>=wg_words.length){ renderWG(); wgEnd(); return; }
       renderWG(); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">🤖 كوّنَ الآليُّ «${cur.word}».</div>`; wgAI();
-    } else { sfx.nope(); wg_lock=false; wg_turn=(wg_turn+1)%wg_ps.length; renderWG(); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">🤖 أخطأ الآليُّ — دورُك الآن!</div>`; if(wg_ps[wg_turn].cpu) wgAI(); }
+    } else { sfx.nope(); wg_lock=false; wg_turn=(wg_turn+1)%wg_ps.length; renderWG(); robo.say("أخطأتُ! دورُك الآن 🤖","ok"); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">🤖 أخطأ الآليُّ — دورُك الآن!</div>`; if(wg_ps[wg_turn].cpu) wgAI(); }
   }, 950);
 }
 function wgEnd(){

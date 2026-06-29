@@ -68,6 +68,11 @@
   .hs-c{aspect-ratio:1/1;border:2px solid #333;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800}
   .ms-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:480px;margin:0 auto}
   .ms-col h3{text-align:center;margin:0 0 8px} .ms-p{font-size:18px;font-weight:700;padding:8px 4px;border-bottom:1px dashed #bbb}
+  .np-names{display:flex;justify-content:space-between;gap:16px;margin:0 0 14px;font-weight:800;font-size:14px;flex-wrap:wrap}
+  .tx-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;align-items:flex-start}
+  .tx-mini{flex:0 0 auto;width:30%;min-width:150px} .tx-lbl{text-align:center;font-weight:800;margin-bottom:6px;font-size:13px}
+  .cn-wrap{display:flex;justify-content:center;gap:80px;max-width:440px;margin:0 auto}
+  .cn-col{display:flex;flex-direction:column;gap:20px} .cn-c{font-size:34px;white-space:nowrap}
   .poster h2{font-size:26px;margin:0}
   .poster .ps{color:var(--muted);font-size:14px;margin:4px 0 8px}
   .poster svg{width:100%;max-width:560px;height:auto}
@@ -88,7 +93,7 @@
 </head>
 <body>
   <div class="bar noprint">
-    <h1>🖨️ مطبوعات «تلميذي»</h1>
+    <h1>🖨️ ألعابٌ وأنشطةٌ للطباعة</h1>
     <a class="back" href="home.html">🏠 الفهرس</a>
     <label>المجال:
       <select id="fDomain"><option value="all">الكلّ</option></select>
@@ -98,7 +103,9 @@
     </label>
     <label class="chk"><input type="checkbox" id="cCards" checked /> بطاقات المهام</label>
     <label class="chk"><input type="checkbox" id="cPoster" checked /> ملصق الشفاء</label>
-    <label class="chk"><input type="checkbox" id="cTemplates" checked /> نماذج للّعب</label>
+    <span class="chk" style="font-weight:800">🎲 ألعابٌ ورقيّة:</span>
+    <label class="chk"><input type="checkbox" id="tAll" checked /> الكلّ</label>
+    <span id="tplChecks" style="display:contents"></span>
     <span class="count" id="count"></span>
     <button class="print" onclick="smartPrint(document.querySelector('.sheet'),'أنشطة-مِشكاة.pdf')">اطبع / احفظ PDF</button>
   </div>
@@ -190,24 +197,32 @@ function posterHTML(){
 
 // ===== نماذجُ جاهزةٌ للطباعة واللعب (تُطبَع وتُلعَب على الورق) =====
 function shuf(a){ a=[...a]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function nameStrip(){ return `<div class="np-names"><span>👤 المتنافس الأوّل: ____________</span><span>👤 المتنافس الثاني: ____________</span></div>`; }
 function tplXO(){
-  const grid=`<div class="tx-g">${'<div class="tx-c"></div>'.repeat(9)}</div>`;
-  return `<section class="tpl"><h2>⭕✖ دائرةٌ وعلامة</h2>
-    <p class="tpl-h">لاعبان: واحدٌ ◯ وآخرُ ✖. بالتناوب ضَعْ علامتَك في خانة؛ مَن يَصنعُ ثلاثةً في خطٍّ (أفقيّ/رأسيّ/قُطريّ) يفوز! (أربعُ مبارياتٍ في الورقة)</p>
-    <div class="tx-wrap">${grid}${grid}${grid}${grid}</div></section>`;
+  const board=n=>`<div class="tx-mini"><div class="tx-lbl">${n===3?"سهل · 3×3":n===4?"متوسّط · 4×4":"صعب · 5×5"}</div><div class="tx-g" style="grid-template-columns:repeat(${n},1fr)">${'<div class="tx-c"></div>'.repeat(n*n)}</div></div>`;
+  return `<section class="tpl"><h2>⭕✖ دائرةٌ وعلامة</h2>${nameStrip()}
+    <p class="tpl-h">لاعبان: ◯ و✖. بالتناوب ضَعْ علامتَك؛ مَن يَصنعُ ثلاثةً في خطٍّ (وفي الكبيرة خطًّا كاملاً) يفوز. ثلاثُ صعوبات:</p>
+    <div class="tx-row">${board(3)}${board(4)}${board(5)}</div></section>`;
 }
 function tplMemory(){
   const pool=["🌙","⭐","🌳","🐦","🌊","☀️","🍎","🦋"]; // 8 أزواج = 16 بطاقة
   const cards=shuf([...pool,...pool]);
-  return `<section class="tpl"><h2>🧠 بطاقاتُ الذاكرة — قُصَّ والعب</h2>
-    <p class="tpl-h">اقطعِ البطاقاتِ الستَّ عشرة (ثمانيةُ أزواج)، اقلبها على وجهها واخلطها، ثمّ اقلبْ بطاقتين كلَّ دورٍ بحثًا عن المتطابقتين.</p>
+  return `<section class="tpl"><h2>🧠 بطاقاتُ الذاكرة — قُصَّ والعب</h2>${nameStrip()}
+    <p class="tpl-h">اقطعِ البطاقاتِ الستَّ عشرة (ثمانيةُ أزواج)، اقلبها على وجهها واخلطها، ثمّ اقلبْ بطاقتين كلَّ دورٍ بحثًا عن المتطابقتين. مَن يجمعُ أزواجًا أكثرَ يفوز.</p>
     <div class="tm-g">${cards.map(e=>`<div class="tm-c">${e}</div>`).join("")}</div></section>`;
 }
 function tplBingo(){
   const card=()=>`<div class="tb-card">${shuf(Array.from({length:30},(_,i)=>i+1)).slice(0,16).map(n=>`<div class="tb-c">${n}</div>`).join("")}</div>`;
-  return `<section class="tpl"><h2>🔢 بنغو الأعداد</h2>
-    <p class="tpl-h">اطبعْ بطاقةً لكلّ لاعب. يُنادي الأهلُ عددًا (1–30)؛ مَن وجدَه يُعلّمُه — وأوّلُ من يُكمِلُ صفًّا كاملاً (أفقيّ/رأسيّ/قُطريّ) ينادي «بنغو!» ويفوز.</p>
+  return `<section class="tpl"><h2>🔢 بنغو الأعداد</h2>${nameStrip()}
+    <p class="tpl-h">يُنادي الأهلُ عددًا (1–30)؛ مَن وجدَه يُعلّمُه — وأوّلُ من يُكمِلُ صفًّا كاملاً (أفقيّ/رأسيّ/قُطريّ) ينادي «بنغو!» ويفوز.</p>
     <div class="tb-wrap">${card()}${card()}</div></section>`;
+}
+function tplConnect(){
+  const pool=["🌙","⭐","🌳","🐦","🌊","☀️"];
+  const right=shuf([...pool]);
+  return `<section class="tpl"><h2>⚡ سباقُ المطابقة — وصِّلْ بخطّ</h2>${nameStrip()}
+    <p class="tpl-h">صِلْ كلَّ صورةٍ على جهةٍ بمثيلتها على الجهة الأخرى بخطّ. مَن يُكمِلُ الوصلَ الصحيحَ أسرعَ يفوز! (اطبعْ نسخةً لكلّ لاعب)</p>
+    <div class="cn-wrap"><div class="cn-col">${pool.map(e=>`<div class="cn-c">${e} ●</div>`).join("")}</div><div class="cn-col">${right.map(e=>`<div class="cn-c">● ${e}</div>`).join("")}</div></div></section>`;
 }
 const WS_WORDS=["شمس","قمر","بحر","نجم","ورد","سحب","جبل","نهر","تمر","عسل","ديك","فيل","نمل","حوت","باب","بيت","سمك","قلم"];
 const AR_L="ا ب ت ث ج ح د ر س ش ع ف ق ك ل م ن ه و ي".split(" ");
@@ -224,14 +239,14 @@ function placeWS(N, words){
 function tplWordSearch(){
   const N=9, words=shuf(WS_WORDS).filter(w=>[...w].length<=N).slice(0,7);
   const {grid,placed}=placeWS(N,words);
-  return `<section class="tpl"><h2>🔤 شبكةُ الكلمات</h2>
+  return `<section class="tpl"><h2>🔤 شبكةُ الكلمات</h2>${nameStrip()}
     <p class="tpl-h">ابحثْ عن الكلماتِ (أفقيًّا أو رأسيًّا) وحوّطْها بلونك. لاعبان كلٌّ بلون؛ من يجدُ كلماتٍ أكثرَ يفوز!</p>
     <div class="ws-g" style="grid-template-columns:repeat(${N},1fr)">${grid.map(c=>`<div class="ws-c">${c}</div>`).join("")}</div>
     <div class="ws-list">الكلمات: ${placed.join(" · ")}</div></section>`;
 }
 function tplHunt(){
   const N=6, items=shuf(Array.from({length:20},(_,i)=>String(i+1)).concat(AR_L)).slice(0,N*N);
-  return `<section class="tpl"><h2>🔎 صيدُ الحرف/الرقم</h2>
+  return `<section class="tpl"><h2>🔎 صيدُ الحرف/الرقم</h2>${nameStrip()}
     <p class="tpl-h">يُنادي الأهلُ حرفًا أو رقمًا؛ أوّلُ من يجدُه ويُحوّطُه يكسبُ نقطة. مَن يجمعُ نقاطًا أكثرَ يفوز!</p>
     <div class="hs-g">${items.map(c=>`<div class="hs-c">${c}</div>`).join("")}</div></section>`;
 }
@@ -239,24 +254,34 @@ function tplMath(){
   const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
   const probs=Array.from({length:10},()=>{ const a=R(2,9),b=R(1,9); return `${a} + ${b} = ____`; });
   const col=ttl=>`<div class="ms-col"><h3>${ttl}</h3>${probs.map(p=>`<div class="ms-p">${p}</div>`).join("")}</div>`;
-  return `<section class="tpl"><h2>🔢 تحدّي الأعداد</h2>
+  return `<section class="tpl"><h2>🔢 تحدّي الأعداد</h2>${nameStrip()}
     <p class="tpl-h">لاعبان، كلٌّ في عموده (والمسائلُ نفسُها). عند «ابدأ» يَحلّان معًا؛ أوّلُ من يُنهي بصحّةٍ يفوز!</p>
     <div class="ms-wrap">${col("اللاعب ١")}${col("اللاعب ٢")}</div></section>`;
 }
-function templatesHTML(){ return tplXO()+tplWordSearch()+tplHunt()+tplMath()+tplMemory()+tplBingo(); }
+const TEMPLATES=[
+  {id:"t_xo",label:"⭕ دائرة وعلامة",fn:tplXO},
+  {id:"t_ws",label:"🔤 شبكة الكلمات",fn:tplWordSearch},
+  {id:"t_hunt",label:"🔎 صيد الحرف/الرقم",fn:tplHunt},
+  {id:"t_math",label:"🔢 تحدّي الأعداد",fn:tplMath},
+  {id:"t_connect",label:"⚡ وصِّل بخطّ",fn:tplConnect},
+  {id:"t_mem",label:"🧠 بطاقات الذاكرة",fn:tplMemory},
+  {id:"t_bingo",label:"🎱 بنغو الأعداد",fn:tplBingo},
+];
+function checkedTemplates(){ return TEMPLATES.filter(t=>{ const el=document.getElementById(t.id); return el && el.checked; }); }
+function templatesHTML(){ return checkedTemplates().map(t=>t.fn()).join(""); }
 
 function render(){
   const dom=document.getElementById("fDomain").value;
   const age=document.getElementById("fAge").value;
   const showCards=document.getElementById("cCards").checked;
   const showPoster=document.getElementById("cPoster").checked;
-  const showTpl=document.getElementById("cTemplates").checked;
   const list=MEM.filter(m=>(dom==="all"||m.domain===dom)&&(age==="all"||m.age_band===age));
   document.getElementById("cards").innerHTML = list.map(cardHTML).join("");
   document.getElementById("cardsWrap").style.display = showCards ? "" : "none";
   document.getElementById("posterWrap").innerHTML = showPoster ? posterHTML() : "";
-  document.getElementById("templatesWrap").innerHTML = showTpl ? templatesHTML() : "";
-  document.getElementById("count").textContent = `${showCards? list.length+" بطاقة" : "بلا بطاقات"}${showPoster? " + ملصق" : ""}${showTpl? " + نماذج لعب" : ""}`;
+  document.getElementById("templatesWrap").innerHTML = templatesHTML();
+  const nTpl=checkedTemplates().length;
+  document.getElementById("count").textContent = `${showCards? list.length+" بطاقة" : "بلا بطاقات"}${showPoster? " + ملصق" : ""}${nTpl? ` + ${nTpl} لعبة ورقيّة` : ""}`;
 }
 
 function init(){
@@ -264,7 +289,13 @@ function init(){
   MEM=lib.memories||[];
   const sel=document.getElementById("fDomain");
   [...new Set(MEM.map(m=>m.domain))].forEach(d=>{ const o=document.createElement("option"); o.value=d; o.textContent=d; sel.appendChild(o); });
-  ["fDomain","fAge","cCards","cPoster","cTemplates"].forEach(id=>document.getElementById(id).addEventListener("change",render));
+  const tc=document.getElementById("tplChecks");
+  tc.innerHTML=TEMPLATES.map(t=>`<label class="chk"><input type="checkbox" class="tplc" id="${t.id}" checked /> ${t.label}</label>`).join("");
+  const tAll=document.getElementById("tAll");
+  const syncAll=()=>{ tAll.checked=[...document.querySelectorAll(".tplc")].every(c=>c.checked); };
+  ["fDomain","fAge","cCards","cPoster"].forEach(id=>document.getElementById(id).addEventListener("change",render));
+  document.querySelectorAll(".tplc").forEach(c=>c.addEventListener("change",()=>{ syncAll(); render(); }));
+  tAll.addEventListener("change",()=>{ document.querySelectorAll(".tplc").forEach(c=>c.checked=tAll.checked); render(); });
   render();
 }
 init();

@@ -50,6 +50,17 @@
 
   /* poster */
   .poster{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:18px;text-align:center;break-before:page;page-break-before:always}
+  /* نماذجُ اللعب للطباعة */
+  .tpl{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:18px;break-before:page;page-break-before:always}
+  .tpl h2{text-align:center;margin:0 0 4px;font-size:20px} .tpl-h{text-align:center;color:#555;font-size:13px;margin:0 0 16px}
+  .tx-wrap{display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:520px;margin:0 auto}
+  .tx-g{display:grid;grid-template-columns:repeat(3,1fr);width:100%;aspect-ratio:1/1;border:3px solid #333;border-radius:6px;overflow:hidden}
+  .tx-c{border:1.5px solid #333}
+  .tm-g{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:520px;margin:0 auto}
+  .tm-c{aspect-ratio:1/1;border:2px dashed #999;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:40px}
+  .tb-wrap{display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:560px;margin:0 auto}
+  .tb-card{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;border:3px solid #333;border-radius:10px;padding:6px}
+  .tb-c{aspect-ratio:1/1;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800}
   .poster h2{font-size:26px;margin:0}
   .poster .ps{color:var(--muted);font-size:14px;margin:4px 0 8px}
   .poster svg{width:100%;max-width:560px;height:auto}
@@ -80,6 +91,7 @@
     </label>
     <label class="chk"><input type="checkbox" id="cCards" checked /> بطاقات المهام</label>
     <label class="chk"><input type="checkbox" id="cPoster" checked /> ملصق الشفاء</label>
+    <label class="chk"><input type="checkbox" id="cTemplates" checked /> نماذج للّعب</label>
     <span class="count" id="count"></span>
     <button class="print" onclick="smartPrint(document.querySelector('.sheet'),'أنشطة-مِشكاة.pdf')">اطبع / احفظ PDF</button>
   </div>
@@ -87,6 +99,7 @@
     <div class="hint noprint">اختر ما تريد طباعته، ثمّ «اطبع / احفظ PDF» — ومن نافذة الطباعة اختر «حفظ كـ PDF». البطاقات بحدودٍ متقطّعة لقصّها. 🌿</div>
     <div id="cardsWrap"><div class="cards" id="cards"></div></div>
     <div id="posterWrap"></div>
+    <div id="templatesWrap"></div>
   </div>
 
 <script type="module">
@@ -168,16 +181,41 @@ function posterHTML(){
   </section>`;
 }
 
+// ===== نماذجُ جاهزةٌ للطباعة واللعب (تُطبَع وتُلعَب على الورق) =====
+function shuf(a){ a=[...a]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function tplXO(){
+  const grid=`<div class="tx-g">${'<div class="tx-c"></div>'.repeat(9)}</div>`;
+  return `<section class="tpl"><h2>⭕✖ دائرةٌ وعلامة</h2>
+    <p class="tpl-h">لاعبان: واحدٌ ◯ وآخرُ ✖. بالتناوب ضَعْ علامتَك في خانة؛ مَن يَصنعُ ثلاثةً في خطٍّ (أفقيّ/رأسيّ/قُطريّ) يفوز! (أربعُ مبارياتٍ في الورقة)</p>
+    <div class="tx-wrap">${grid}${grid}${grid}${grid}</div></section>`;
+}
+function tplMemory(){
+  const pool=["🌙","⭐","🌳","🐦","🌊","☀️","🍎","🦋"]; // 8 أزواج = 16 بطاقة
+  const cards=shuf([...pool,...pool]);
+  return `<section class="tpl"><h2>🧠 بطاقاتُ الذاكرة — قُصَّ والعب</h2>
+    <p class="tpl-h">اقطعِ البطاقاتِ الستَّ عشرة (ثمانيةُ أزواج)، اقلبها على وجهها واخلطها، ثمّ اقلبْ بطاقتين كلَّ دورٍ بحثًا عن المتطابقتين.</p>
+    <div class="tm-g">${cards.map(e=>`<div class="tm-c">${e}</div>`).join("")}</div></section>`;
+}
+function tplBingo(){
+  const card=()=>`<div class="tb-card">${shuf(Array.from({length:30},(_,i)=>i+1)).slice(0,16).map(n=>`<div class="tb-c">${n}</div>`).join("")}</div>`;
+  return `<section class="tpl"><h2>🔢 بنغو الأعداد</h2>
+    <p class="tpl-h">اطبعْ بطاقةً لكلّ لاعب. يُنادي الأهلُ عددًا (1–30)؛ مَن وجدَه يُعلّمُه — وأوّلُ من يُكمِلُ صفًّا كاملاً (أفقيّ/رأسيّ/قُطريّ) ينادي «بنغو!» ويفوز.</p>
+    <div class="tb-wrap">${card()}${card()}</div></section>`;
+}
+function templatesHTML(){ return tplXO()+tplMemory()+tplBingo(); }
+
 function render(){
   const dom=document.getElementById("fDomain").value;
   const age=document.getElementById("fAge").value;
   const showCards=document.getElementById("cCards").checked;
   const showPoster=document.getElementById("cPoster").checked;
+  const showTpl=document.getElementById("cTemplates").checked;
   const list=MEM.filter(m=>(dom==="all"||m.domain===dom)&&(age==="all"||m.age_band===age));
   document.getElementById("cards").innerHTML = list.map(cardHTML).join("");
   document.getElementById("cardsWrap").style.display = showCards ? "" : "none";
   document.getElementById("posterWrap").innerHTML = showPoster ? posterHTML() : "";
-  document.getElementById("count").textContent = `${showCards? list.length+" بطاقة" : "بلا بطاقات"}${showPoster? " + ملصق" : ""}`;
+  document.getElementById("templatesWrap").innerHTML = showTpl ? templatesHTML() : "";
+  document.getElementById("count").textContent = `${showCards? list.length+" بطاقة" : "بلا بطاقات"}${showPoster? " + ملصق" : ""}${showTpl? " + نماذج لعب" : ""}`;
 }
 
 function init(){
@@ -185,7 +223,7 @@ function init(){
   MEM=lib.memories||[];
   const sel=document.getElementById("fDomain");
   [...new Set(MEM.map(m=>m.domain))].forEach(d=>{ const o=document.createElement("option"); o.value=d; o.textContent=d; sel.appendChild(o); });
-  ["fDomain","fAge","cCards","cPoster"].forEach(id=>document.getElementById(id).addEventListener("change",render));
+  ["fDomain","fAge","cCards","cPoster","cTemplates"].forEach(id=>document.getElementById(id).addEventListener("change",render));
   render();
 }
 init();

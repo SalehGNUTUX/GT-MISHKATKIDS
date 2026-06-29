@@ -265,7 +265,7 @@ const GAMES = [
 function renderMenu(){
   view.innerHTML = ageChips() + `<div class="menu">` +
     GAMES.map(g=>`<div class="gcard" data-g="${g.id}"><div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
-    `</div><div class="hint">لعبة الذاكرة برسومنا الأصيلة · وسبع ألعابٍ <b>لدمج الحروف</b> بأفكارٍ مختلفة 🌱</div>`;
+    `</div><div class="hint">🎮 <b>ألعابٌ تنافسيّة</b> ضدّ الآليّ (بثلاث صعوبات) أو الإخوة: الذاكرة · دائرةٌ وعلامة · تحدّي الأعداد · صيدُ الحرف/الرقم · سباقُ المطابقة · شبكةُ الكلمات — مع ألعابِ دمجِ الحروف وأنشطةِ الطباعة 🌱</div>`;
   wireAge(renderMenu);
   view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
 }

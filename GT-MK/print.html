@@ -61,6 +61,13 @@
   .tb-wrap{display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:560px;margin:0 auto}
   .tb-card{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;border:3px solid #333;border-radius:10px;padding:6px}
   .tb-c{aspect-ratio:1/1;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800}
+  .ws-g{display:grid;gap:3px;max-width:440px;margin:0 auto}
+  .ws-c{aspect-ratio:1/1;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800}
+  .ws-list{text-align:center;margin-top:14px;font-size:16px;font-weight:800}
+  .hs-g{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;max-width:440px;margin:0 auto}
+  .hs-c{aspect-ratio:1/1;border:2px solid #333;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800}
+  .ms-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:480px;margin:0 auto}
+  .ms-col h3{text-align:center;margin:0 0 8px} .ms-p{font-size:18px;font-weight:700;padding:8px 4px;border-bottom:1px dashed #bbb}
   .poster h2{font-size:26px;margin:0}
   .poster .ps{color:var(--muted);font-size:14px;margin:4px 0 8px}
   .poster svg{width:100%;max-width:560px;height:auto}
@@ -202,7 +209,41 @@ function tplBingo(){
     <p class="tpl-h">اطبعْ بطاقةً لكلّ لاعب. يُنادي الأهلُ عددًا (1–30)؛ مَن وجدَه يُعلّمُه — وأوّلُ من يُكمِلُ صفًّا كاملاً (أفقيّ/رأسيّ/قُطريّ) ينادي «بنغو!» ويفوز.</p>
     <div class="tb-wrap">${card()}${card()}</div></section>`;
 }
-function templatesHTML(){ return tplXO()+tplMemory()+tplBingo(); }
+const WS_WORDS=["شمس","قمر","بحر","نجم","ورد","سحب","جبل","نهر","تمر","عسل","ديك","فيل","نمل","حوت","باب","بيت","سمك","قلم"];
+const AR_L="ا ب ت ث ج ح د ر س ش ع ف ق ك ل م ن ه و ي".split(" ");
+function placeWS(N, words){
+  const grid=Array(N*N).fill(null), placed=[];
+  for(const w of words){ const ch=[...w]; let done=false;
+    for(let t=0;t<120&&!done;t++){ const h=Math.random()<0.5, len=ch.length;
+      const r=Math.floor(Math.random()*(h?N:N-len+1)), c=Math.floor(Math.random()*(h?N-len+1:N));
+      const path=[]; for(let k=0;k<len;k++) path.push(h?(r*N+c+k):((r+k)*N+c));
+      if(path.every(i=>grid[i]===null)){ path.forEach((i,k)=>grid[i]=ch[k]); placed.push(w); done=true; } } }
+  for(let i=0;i<grid.length;i++) if(grid[i]===null) grid[i]=AR_L[Math.floor(Math.random()*AR_L.length)];
+  return {grid, placed};
+}
+function tplWordSearch(){
+  const N=9, words=shuf(WS_WORDS).filter(w=>[...w].length<=N).slice(0,7);
+  const {grid,placed}=placeWS(N,words);
+  return `<section class="tpl"><h2>🔤 شبكةُ الكلمات</h2>
+    <p class="tpl-h">ابحثْ عن الكلماتِ (أفقيًّا أو رأسيًّا) وحوّطْها بلونك. لاعبان كلٌّ بلون؛ من يجدُ كلماتٍ أكثرَ يفوز!</p>
+    <div class="ws-g" style="grid-template-columns:repeat(${N},1fr)">${grid.map(c=>`<div class="ws-c">${c}</div>`).join("")}</div>
+    <div class="ws-list">الكلمات: ${placed.join(" · ")}</div></section>`;
+}
+function tplHunt(){
+  const N=6, items=shuf(Array.from({length:20},(_,i)=>String(i+1)).concat(AR_L)).slice(0,N*N);
+  return `<section class="tpl"><h2>🔎 صيدُ الحرف/الرقم</h2>
+    <p class="tpl-h">يُنادي الأهلُ حرفًا أو رقمًا؛ أوّلُ من يجدُه ويُحوّطُه يكسبُ نقطة. مَن يجمعُ نقاطًا أكثرَ يفوز!</p>
+    <div class="hs-g">${items.map(c=>`<div class="hs-c">${c}</div>`).join("")}</div></section>`;
+}
+function tplMath(){
+  const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+  const probs=Array.from({length:10},()=>{ const a=R(2,9),b=R(1,9); return `${a} + ${b} = ____`; });
+  const col=ttl=>`<div class="ms-col"><h3>${ttl}</h3>${probs.map(p=>`<div class="ms-p">${p}</div>`).join("")}</div>`;
+  return `<section class="tpl"><h2>🔢 تحدّي الأعداد</h2>
+    <p class="tpl-h">لاعبان، كلٌّ في عموده (والمسائلُ نفسُها). عند «ابدأ» يَحلّان معًا؛ أوّلُ من يُنهي بصحّةٍ يفوز!</p>
+    <div class="ms-wrap">${col("اللاعب ١")}${col("اللاعب ٢")}</div></section>`;
+}
+function templatesHTML(){ return tplXO()+tplWordSearch()+tplHunt()+tplMath()+tplMemory()+tplBingo(); }
 
 function render(){
   const dom=document.getElementById("fDomain").value;

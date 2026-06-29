@@ -137,8 +137,14 @@
   .smgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;max-width:380px;margin:0 auto}
   .smcell{aspect-ratio:1/1;background:var(--card);border:2px solid var(--line);border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:9px}
   .smcell svg{width:100%;height:100%} .smcell:hover{border-color:var(--primary)} .smcell.ok{background:#EEF6E9;border-color:var(--good)} .smcell.bad{background:#FCEBEE;border-color:var(--bad)}
-  #memStart{width:100%;margin-top:4px;padding:14px;border:none;border-radius:14px;font-weight:800;font-family:inherit;font-size:16px;cursor:pointer;background:var(--primary);color:#fff;transition:transform .12s,background .12s}
-  #memStart:hover{background:var(--primary-d)} #memStart:active{transform:scale(.98)}
+  .wglist{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0}
+  .wgw{padding:5px 12px;border-radius:999px;font-weight:800;font-size:15px;background:var(--card);border:2px solid var(--line);color:var(--ink)}
+  .wgw.cur{border-color:var(--primary);color:var(--primary-d);box-shadow:0 0 0 2px var(--primary)} .wgw.done{text-decoration:line-through;opacity:.55}
+  .wggrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;max-width:330px;margin:10px auto}
+  .wgc{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;border:2px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer;font-family:inherit;color:var(--ink)}
+  .wgc.sel{border-color:var(--primary);transform:scale(.9)} .wgc.own{color:#fff;border-color:transparent}
+  #memStart,#vStart{width:100%;margin-top:4px;padding:14px;border:none;border-radius:14px;font-weight:800;font-family:inherit;font-size:16px;cursor:pointer;background:var(--primary);color:#fff;transition:transform .12s,background .12s}
+  #memStart:hover,#vStart:hover{background:var(--primary-d)} #memStart:active,#vStart:active{transform:scale(.98)}
   .mgrid{display:grid;gap:10px;grid-template-columns:repeat(4,1fr);margin-top:10px}
   .mcard{aspect-ratio:1/1;border-radius:16px;cursor:pointer;position:relative;border:2px solid var(--line);background:var(--card);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;overflow:hidden}
   .mcard .fback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#E07A5F,#E8A07F);color:#fff;font-size:30px;transition:opacity .15s}
@@ -253,6 +259,7 @@ const GAMES = [
   { id:"numrace",ic:"🔢", t:"تحدّي الأعداد", d:"سابِقِ الآليَّ في الحساب" },
   { id:"hunt",   ic:"🔎", t:"صيدُ الحرف/الرقم", d:"اعثرْ على المطلوبِ بسرعة" },
   { id:"smatch", ic:"⚡", t:"سباقُ المطابقة", d:"جِدِ الصورةَ المطابقةَ أسرع" },
+  { id:"wgrid",  ic:"🔤", t:"شبكةُ الكلمات", d:"كوّنِ الكلماتِ وتنافسْ بالألوان" },
   { id:"print",  ic:"🖨️", t:"أنشطة للطباعة", d:"7 ألعاب حسّيّة بالورق" },
 ];
 function renderMenu(){
@@ -262,7 +269,7 @@ function renderMenu(){
   wireAge(renderMenu);
   view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
 }
-function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,xo:startXO,numrace:startNC,hunt:startHU,smatch:startSM,print:renderPrint})[id](); }
+function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,xo:startXO,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,print:renderPrint})[id](); }
 
 /* ===================== 🧠 MEMORY MATCH (وحدي · الإخوة · الوالد · الآليّ) ===================== */
 // الصعوبة: 4 أزواج=8 بطاقات · 6=12 · 8=16. الخصم: solo | ai | parent | p:<id>. مستوى الآليّ: easy/medium/hard.
@@ -786,6 +793,86 @@ function smEnd(){
   wireBack();
   document.getElementById("smag").onclick=newSM;
   document.getElementById("smrs").onclick=startSM;
+}
+
+/* ===================== 🔤 شبكةُ الكلمات (تناوبٌ · تكوينُ الكلمات بالترتيب · ألوانُ اللاعبين · ضدّ الآليّ/الحسابات) ===================== */
+let wg_diff="easy", wg_ps=[], wg_turn=0, wg_words=[], wg_found=0, wg_owner=[], wg_pick=null, wg_lock=false, wg_grid=[]; const WG_N=6;
+const WG_CFG={ easy:{count:4,len:[3,3],pr:0.5}, medium:{count:5,len:[3,4],pr:0.68}, hard:{count:6,len:[3,5],pr:0.82} };
+function startWG(){ vsSetup({ say:"شبكةُ الكلمات 🔤 — كوّنِ الكلماتِ بالترتيب! من يُكوّنُ أكثرَ يفوز.", diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>wg_diff, setDiff:v=>{wg_diff=v;}, start:newWG }); }
+function wgGen(){
+  const cfg=WG_CFG[wg_diff];
+  const pool=[...EXTRA_WHEEL_WORDS].filter(w=>w.length>=cfg.len[0] && w.length<=cfg.len[1]);
+  for(let attempt=0; attempt<40; attempt++){
+    const words=shuffle(pool).slice(0,cfg.count);
+    const grid=Array(WG_N*WG_N).fill(null), placed=[]; let ok=true;
+    for(const w of words){
+      const ch=[...w], len=ch.length; let done=false;
+      for(let t=0;t<200 && !done;t++){
+        const horiz=Math.random()<0.5;
+        const r=Math.floor(Math.random()*(horiz?WG_N:WG_N-len+1));
+        const c=Math.floor(Math.random()*(horiz?WG_N-len+1:WG_N));
+        const path=[]; for(let k=0;k<len;k++) path.push(horiz?(r*WG_N+c+k):((r+k)*WG_N+c));
+        if(path.every(idx=>grid[idx]===null)){ path.forEach((idx,k)=>grid[idx]=ch[k]); placed.push({word:w,path}); done=true; }
+      }
+      if(!done){ ok=false; break; }
+    }
+    if(ok){ for(let i=0;i<grid.length;i++) if(grid[i]===null) grid[i]=AR_LETTERS[Math.floor(Math.random()*AR_LETTERS.length)]; return {grid, words:placed}; }
+  }
+  return null;
+}
+function newWG(){
+  wg_ps=vsMakePlayers(true); wg_ps.forEach(p=>p.score=0);
+  const g=wgGen(); if(!g){ view.innerHTML=backBar()+`<div class="clue"><div class="say">تعذّر توليدُ الشبكة، حاولْ ثانيةً.</div></div>`; wireBack(); return; }
+  wg_grid=g.grid; wg_words=g.words; wg_found=0; wg_owner=Array(WG_N*WG_N).fill(null); wg_pick=null; wg_turn=0; wg_lock=false;
+  renderWG(); if(wg_ps[wg_turn].cpu) wgAI();
+}
+function renderWG(){
+  const cur=wg_ps[wg_turn];
+  const list=wg_words.map((w,i)=>`<span class="wgw ${i<wg_found?"done":""} ${i===wg_found?"cur":""}">${w.word}</span>`).join("");
+  const cells=wg_grid.map((ch,i)=>{ const own=wg_owner[i], sel=wg_pick===i?" sel":"", oc=own!=null?" own":"", st=own!=null?`style="background:${wg_ps[own].color}"`:""; return `<button class="wgc${sel}${oc}" data-i="${i}" ${st}>${ch}</button>`; }).join("");
+  view.innerHTML=backBar()+`<div class="clue" style="padding:10px"><div class="say">شبكةُ الكلمات 🔤 — كوّنِ الكلمةَ المُحدَّدة: انقرْ أوّلَ حرفٍ ثمّ آخرَه.</div></div>`
+    + vsScoreHtml(wg_ps)
+    + `<div class="vsturn" style="color:${cur.color}">${cur.cpu?"🤖 دورُ الآليّ…":`${cur.avatar} دورُ ${cur.name}`}</div>`
+    + `<div class="wglist">${list}</div>`
+    + `<div class="wggrid" id="wggrid">${cells}</div>`
+    + `<div id="wgfb"></div>`;
+  wireBack();
+  document.getElementById("wggrid").addEventListener("click",e=>{ const b=e.target.closest("[data-i]"); if(!b) return; wgTap(+b.getAttribute("data-i")); });
+}
+function wgTap(i){
+  if(wg_lock||wg_ps[wg_turn].cpu||wg_owner[i]!=null) return;
+  if(wg_pick==null){ wg_pick=i; renderWG(); return; }
+  const a=wg_pick, b=i; wg_pick=null;
+  if(a===b){ renderWG(); return; }
+  sfx.tap(); wgCheck(a,b);
+}
+function wgCheck(a,b){
+  const cur=wg_words[wg_found], ends=[cur.path[0], cur.path[cur.path.length-1]];
+  const ok=(a===ends[0]&&b===ends[1])||(a===ends[1]&&b===ends[0]);
+  if(ok){ cur.path.forEach(idx=>wg_owner[idx]=wg_turn); wg_ps[wg_turn].score++; wg_found++; sfx.success();
+    if(wg_found>=wg_words.length){ renderWG(); wgEnd(); return; }
+    renderWG(); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">✅ أحسنت! «${cur.word}» — تابِعْ بالكلمة التالية.</div>`;
+  } else { sfx.nope(); wg_lock=true; renderWG(); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">❌ ليست هي — ينتقلُ الدورُ للخصم.</div>`;
+    setTimeout(()=>{ wg_turn=(wg_turn+1)%wg_ps.length; wg_lock=false; renderWG(); if(wg_ps[wg_turn].cpu) wgAI(); }, 1150);
+  }
+}
+function wgAI(){
+  wg_lock=true;
+  setTimeout(()=>{
+    const cfg=WG_CFG[wg_diff], cur=wg_words[wg_found];
+    if(Math.random()<cfg.pr){ cur.path.forEach(idx=>wg_owner[idx]=wg_turn); wg_ps[wg_turn].score++; wg_found++; sfx.success(); wg_lock=false;
+      if(wg_found>=wg_words.length){ renderWG(); wgEnd(); return; }
+      renderWG(); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">🤖 كوّنَ الآليُّ «${cur.word}».</div>`; wgAI();
+    } else { sfx.nope(); wg_lock=false; wg_turn=(wg_turn+1)%wg_ps.length; renderWG(); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">🤖 أخطأ الآليُّ — دورُك الآن!</div>`; if(wg_ps[wg_turn].cpu) wgAI(); }
+  }, 950);
+}
+function wgEnd(){
+  logEvent("wordgrid_win");
+  const s=[...wg_ps].sort((a,b)=>b.score-a.score);
+  const res=(s[1]&&s[0].score===s[1].score)?"🤝 تعادُل!":`${s[0].cpu?"🤖":"🌟"} فاز ${s[0].avatar} ${s[0].name}!`;
+  const me=wg_ps.find(p=>!p.cpu), o=wg_ps.find(p=>p.cpu); if(o&&me) vsReact(me,o); else robo.read(vP(VS_KIDS));
+  const msg=document.getElementById("wgfb"); if(msg) msg.innerHTML=`<div class="win">${res}</div><div class="controls" style="margin-top:12px"><button class="go" id="wgag">شبكةٌ جديدة</button> <button id="wgrs">↻ إعدادات</button></div>`;
+  const ag=document.getElementById("wgag"), rs=document.getElementById("wgrs"); if(ag) ag.onclick=newWG; if(rs) rs.onclick=startWG;
 }
 
 function renderPrint(){

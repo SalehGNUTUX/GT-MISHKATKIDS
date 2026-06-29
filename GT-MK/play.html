@@ -40,8 +40,10 @@
   .pill b{color:var(--primary-d)}
 
   .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-  .gcard{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
+  .gcard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
   .gcard:hover{transform:translateY(-3px);border-color:var(--primary)}
+  .gcard.vs{border-color:color-mix(in srgb,var(--primary) 45%,var(--line))}
+  .vsbadge{position:absolute;top:8px;inset-inline-start:8px;background:var(--primary);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.18)}
   .gcard .ic{font-size:40px}
   .gcard .t{font-size:16px;font-weight:800;margin-top:4px}
   .gcard .d{font-size:12px;color:var(--muted)}
@@ -215,6 +217,7 @@ import { pickAdaptive } from "./src/adaptive.js";
 import { speak } from "./src/speak.js";
 import { robo } from "./src/robo-companion.js";
 import * as sfx from "./src/sfx.js"; // أصواتٌ تفاعليّة (لمسة/نجاح/خطأ) للألعاب
+import { GAME_REACTIONS as GR } from "./src/robo-phrases.js"; // تفاعلاتُ الألعاب (مُولَّدةٌ عبر Piper)
 import { listProfiles, getProfile, getCurrentUser, getParentName, getParentAvatar } from "./src/accounts.js";
 import { attachReader } from "./src/reader-recorder.js"; // تسجيلُ نُطق الطفل للكلمة المُكوَّنة
 import { smartPrint } from "./src/smart-print.js"; window.smartPrint = smartPrint; // طباعةٌ تعملُ على الهاتف أيضًا
@@ -247,7 +250,7 @@ function celebrate(){ score++; streak++; logEvent("word_win"); if(cur) recordMas
 
 /* ===================== MENU ===================== */
 const GAMES = [
-  { id:"memory", ic:"🧠", t:"لعبة الذاكرة", d:"جِد الصورتين المتطابقتين" },
+  { id:"memory", ic:"🧠", t:"لعبة الذاكرة", d:"جِد الصورتين المتطابقتين", vs:1 },
   { id:"train",  ic:"🚂", t:"قطار الكلمات", d:"رتّب الحروف من الأوّل" },
   { id:"pins",   ic:"🧺", t:"مشابك الغسيل", d:"بدّل حرفين لتصحّح الترتيب" },
   { id:"blocks", ic:"🧱", t:"بناء المكعّبات", d:"أكمِل الحرف الناقص" },
@@ -255,16 +258,16 @@ const GAMES = [
   { id:"cards",  ic:"🧩", t:"بطاقات الصور", d:"اختر الكتابة الصحيحة" },
   { id:"maze",   ic:"🌀", t:"متاهة الحروف", d:"امشِ على الحروف بالترتيب" },
   { id:"wheel",  ic:"🎡", t:"عجلة الحروف", d:"أدِر وادمج الأصوات" },
-  { id:"xo",     ic:"⭕", t:"دائرةٌ وعلامة", d:"ثلاثةٌ في خطٍّ ضدّ الآليّ" },
-  { id:"numrace",ic:"🔢", t:"تحدّي الأعداد", d:"سابِقِ الآليَّ في الحساب" },
-  { id:"hunt",   ic:"🔎", t:"صيدُ الحرف/الرقم", d:"اعثرْ على المطلوبِ بسرعة" },
-  { id:"smatch", ic:"⚡", t:"سباقُ المطابقة", d:"جِدِ الصورةَ المطابقةَ أسرع" },
-  { id:"wgrid",  ic:"🔤", t:"شبكةُ الكلمات", d:"كوّنِ الكلماتِ وتنافسْ بالألوان" },
+  { id:"xo",     ic:"⭕", t:"دائرةٌ وعلامة", d:"ثلاثةٌ في خطٍّ ضدّ الآليّ", vs:1 },
+  { id:"numrace",ic:"🔢", t:"تحدّي الأعداد", d:"سابِقِ الآليَّ في الحساب", vs:1 },
+  { id:"hunt",   ic:"🔎", t:"صيدُ الحرف/الرقم", d:"اعثرْ على المطلوبِ بسرعة", vs:1 },
+  { id:"smatch", ic:"⚡", t:"سباقُ المطابقة", d:"جِدِ الصورةَ المطابقةَ أسرع", vs:1 },
+  { id:"wgrid",  ic:"🔤", t:"شبكةُ الكلمات", d:"كوّنِ الكلماتِ وتنافسْ بالألوان", vs:1 },
   { id:"print",  ic:"🖨️", t:"ألعاب/أنشطة للطباعة", d:"ألعابٌ تُلعَبُ على الورق + أنشطةٌ حسّيّة" },
 ];
 function renderMenu(){
   view.innerHTML = ageChips() + `<div class="menu">` +
-    GAMES.map(g=>`<div class="gcard" data-g="${g.id}"><div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
+    GAMES.map(g=>`<div class="gcard${g.vs?" vs":""}" data-g="${g.id}">${g.vs?'<span class="vsbadge">⚔️ تنافسيّة</span>':''}<div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
     `</div><div class="hint">🎮 <b>ألعابٌ تنافسيّة</b> ضدّ الآليّ (بثلاث صعوبات) أو الإخوة: الذاكرة · دائرةٌ وعلامة · تحدّي الأعداد · صيدُ الحرف/الرقم · سباقُ المطابقة · شبكةُ الكلمات — مع ألعابِ دمجِ الحروف وأنشطةِ الطباعة 🌱</div>`;
   wireAge(renderMenu);
   view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
@@ -336,8 +339,13 @@ function flipCard(i){
   m_moves++; m_lock=true;
   const [a,b]=m_flip, multi=m_players.length>1;
   if(m_deck[a]===m_deck[b]){
-    setTimeout(()=>{ m_match.add(a); m_match.add(b); sfx.success(); if(multi) m_players[m_turn].score++; m_flip=[]; m_lock=false; renderMemory();
-      if(m_match.size===m_deck.length){ memWin(); return; }
+    setTimeout(()=>{ m_match.add(a); m_match.add(b); if(multi) m_players[m_turn].score++; m_flip=[]; m_lock=false; renderMemory();
+      const done = m_match.size===m_deck.length;
+      if(!done){ // ردّةُ فعلِ الآليّ على المطابقة (بصوته العصبيّ)
+        if(multi){ const cur=m_players[m_turn]; if(cur.cpu){ sfx.success(); if(Math.random()<0.4) robo.say(vP(VS_AIOK),"happy"); } else robo.cheer(vP(VS_OK)); }
+        else sfx.success();
+      }
+      if(done){ memWin(); return; }
       if(multi && m_players[m_turn].cpu) aiTurn(); // الآليّ يطابقَ ⇒ يلعبُ ثانيةً
     },520);
   } else {
@@ -365,22 +373,13 @@ function aiTurn(){
   }, 750);
 }
 // ردودُ الآليّ التنافسيّة (لا «خطأٌ في اختبار») — يخسرُ بروحٍ رياضيّةٍ ويفوزُ بتواضع.
-const MEM_BEATAI=["فُزتَ عليّ! 🎉 ذاكرتُك أقوى من ذاكرتي اليوم.","أحسنت! غلبتَني بجدارة 🌟 الفضلُ لله.","واو! كنتَ أسرعَ في التذكّر مني 👏 أعِدها لأحاولَ ثانية؟"];
-const MEM_AIWON=["فُزتُ هذه المرّة 🤖 لكنّك تتحسّن بسرعة! أعِدها؟","كانت مباراةً قريبةً جدًّا 💪 تذكّرتُ بطاقتين أكثر — دورُك أن تغلبَني!","ذاكرتي أسعفتني الآن 🤖 لكنّي أراهنُ أنّك ستفوزُ في الجولة القادمة!"];
-const MEM_TIE=["تعادُل! 🤝 ذاكرتانا متساويتان — جولةٌ فاصلة؟","مباراةٌ متكافئةٌ تمامًا 🤝 من يفوزُ في المرّة القادمة؟"];
-const MEM_KIDWIN=["مباراةٌ رائعة! 🌟 أحسنتما.","لعبٌ جميلٌ منكما 👏 ذاكرتُكما تنمو!"];
 function memWin(){
   logEvent("memory_win");
-  const P=a=>a[Math.floor(Math.random()*a.length)];
   let html;
   if(m_players.length>1){
     const [p0,p1]=m_players;
     const res = p0.score>p1.score ? `🌟 فاز ${p0.avatar} ${p0.name}!` : p1.score>p0.score ? (p1.cpu?"🤖 فاز الآليّ!":`🌟 فاز ${p1.avatar} ${p1.name}!`) : "🤝 تعادُل!";
-    if(p1.cpu){ // مباراةٌ ضدّ الآليّ ⇒ ردودٌ تنافسيّة
-      if(p0.score>p1.score) robo.read(P(MEM_BEATAI));
-      else if(p1.score>p0.score) robo.read(P(MEM_AIWON));
-      else robo.read(P(MEM_TIE));
-    } else { robo.read(P(MEM_KIDWIN)); } // مباراةُ إخوة
+    vsReact(p0, p1); // ردودٌ تنافسيّةٌ مُولَّدةٌ عصبيًّا (تُنطَق)
     html=`<div class="win">${res}<br><span style="font-size:15px">${p0.avatar} ${p0.name}: ${p0.score} · ${p1.avatar} ${p1.name}: ${p1.score}</span>`;
   } else { robo.cheer(); html=`<div class="win">🌟 أحسنت! وجدتَ كلَّ المطابقات في <b>${m_moves}</b> محاولة.`; }
   document.getElementById("msg").innerHTML=html+`<div class="controls"><button class="go" id="again">العب ثانيةً</button> <button id="reset2">↻ إعدادات</button></div></div>`;
@@ -550,14 +549,8 @@ const ACTS=[
 /* ===================== الإطارُ التنافسيُّ المشترك (خصم + صعوبة + ردود + ألوان) ===================== */
 // يتقاسمُه ألعابُ: دائرةٌ وعلامة · سباقُ المطابقة · سباقُ الأعداد · صيدُ الحرف · شبكةُ الكلمات.
 let vs_opp="ai", vs_ai="medium";
-const VS_BEATAI=["فُزتَ عليّ! 🎉 أحسنت، الفضلُ لله.","غلبتَني بجدارة 🌟 لعبٌ ذكيٌّ منك!","واو! كنتَ أذكى مني هذه المرّة 👏 أعِدها؟"];
-const VS_AIWON=["فُزتُ هذه المرّة 🤖 لكنّك تتحسّن بسرعة! أعِدها؟","مباراةٌ قريبةٌ جدًّا 💪 دورُك أن تغلبَني!","ذكائي أسعفني الآن 🤖 أراهنُ أنّك ستفوزُ في القادمة!"];
-const VS_TIE=["تعادُل! 🤝 جولةٌ فاصلة؟","مباراةٌ متكافئةٌ تمامًا 🤝 من يفوزُ في المرّة القادمة؟"];
-const VS_KIDS=["مباراةٌ رائعة! 🌟 أحسنتما.","لعبٌ جميلٌ منكما 👏 واصِلا!"];
-// تفاعلاتُ الجولة (تُعرَض وتُنطَق بالنصّ نفسِه): فرحٌ/تشجيعٌ للطفل، وافتخارٌ للآليّ.
-const VS_OK=["أحسنت! 🌟","رائعٌ، نقطةٌ لك! 👏","ما شاءَ الله، صحيح!","ممتاز! 💚"];
-const VS_NO=["لا بأس، حاولْ ثانيةً 💪","قريبٌ جدًّا! المرّةَ القادمة 🌱","ركّزْ قليلاً، تستطيع 🙂"];
-const VS_AIOK=["نقطةٌ لي! 🤖","أصبتُ هذه المرّة ⚡","حسبتُها بسرعة! 🤖"];
+// النصوصُ من robo-phrases (GAME_REACTIONS) — مُولَّدةٌ عبر Piper فتُعرَض وتُنطَق بالنصّ نفسِه عصبيًّا.
+const VS_BEATAI=GR.beatai, VS_AIWON=GR.aiwon, VS_TIE=GR.tie, VS_KIDS=GR.kids, VS_OK=GR.ok, VS_NO=GR.no, VS_AIOK=GR.aiok;
 const vP=a=>a[Math.floor(Math.random()*a.length)];
 const VS_COLA="#E0566B", VS_COLB="#4C8BF5";
 function vsMakePlayers(forceTwo){

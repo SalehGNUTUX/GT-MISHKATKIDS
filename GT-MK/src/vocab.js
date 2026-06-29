@@ -11,7 +11,7 @@ import numerals from "../content/numerals.js";
 import stories from "../content/stories.js";
 import sararim from "../content/sararim-stories.js";
 import { numberNames } from "./numbers-ar.js";
-import { REACTIONS, NOTICES } from "./robo-phrases.js";
+import { REACTIONS, NOTICES, GAME_REACTIONS } from "./robo-phrases.js";
 import { PRAISE } from "./islamic.js";
 import langEn from "../content/lang-en.js";
 import langFr from "../content/lang-fr.js";
@@ -34,6 +34,8 @@ export const SENTENCE_UNITS = [
   { key: "robo",  label: "عبارات الآليّ", items: uniq([].concat(...Object.values(REACTIONS || {}), PRAISE || [])) },
   // إشعاراتُ الآليّ السياقيّة (نهاية سورة، حلّ لغز، ورشة، ألعاب…) — تُنطَق بمقاطع espeak وتُسجَّل بشريًّا.
   { key: "notices", label: "إشعارات الآليّ", items: uniq(Object.values(NOTICES || {})) },
+  // تفاعلاتُ الألعاب التنافسيّة — تُنطَق عصبيًّا (kareem) في الألعاب.
+  { key: "games", label: "تفاعلات الألعاب", items: uniq([].concat(...Object.values(GAME_REACTIONS || {}))) },
   // نصوص قصّة الأرقام (لتسجيلها بصوتٍ بشريّ ولها مقاطع احتياطية).
   { key: "numerals", label: "قصّة الأرقام", items: uniq([numerals.intro, (numerals.zero && numerals.zero.body || "").replace(/\*\*/g, ""), numerals.zero && numerals.zero.tadabbur, numerals.tadabbur, ...(numerals.timeline || []).map(t => t.d)]) },
   // نصوص القصص المصوّرة (صفحاتها) والقصص والعِبَر — لتسجيلها بصوت قارئٍ بشريّ.

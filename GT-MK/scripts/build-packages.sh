@@ -96,24 +96,24 @@ rpm_from_deb() {
   else ls -1 "$RELEASE"/*.rpm >/dev/null 2>&1 && ok "rpm في release/" || err "فشل توليد rpm"; fi
 }
 
-# يُعيدُ توليدَ أيقونات أندرويد بدقّةٍ عالية ومن المصدر المحشوّ (assets/icon-foreground.png ضمن المنطقة الآمنة):
-# @capacitor/assets يولّدُها بأحجامٍ صغيرة (≤192px) ويملأُ الإطارَ فتبدو رديئةً وتَقُصُّها أقنعةُ أندرويد.
+# يُعيدُ توليدَ أيقونات أندرويد من الشعار الكامل بالعنوان (assets/icon.png = الشعارُ على الأخضر، محشوٌّ ضمن المنطقة الآمنة):
+# @capacitor/assets يولّدُها بأحجامٍ صغيرة (≤192px) ويملأُ الإطارَ فتبدو رديئةً وتَقُصُّها أقنعةُ أندرويد. وبطلب المستخدم: الأيقونةُ = الشعارُ الكاملُ بالنصّ دون اجتزاء.
 fix_android_icons() {
   command -v magick >/dev/null || { wrn "ImageMagick مطلوب لضبط الأيقونات — تُخطّى"; return 0; }
-  local res="$ANDROID/app/src/main/res" FG="$ROOT/assets/icon-foreground.png" BG="$ROOT/assets/icon-background.png"
-  [ -f "$FG" ] && [ -f "$BG" ] || return 0
-  step "ضبطُ أيقونات أندرويد: دقّةٌ عالية + حشوٌ في كلّ الكثافات (لا قَصَّ ولا ضبابيّة)"
+  local res="$ANDROID/app/src/main/res" MASTER="$ROOT/assets/icon.png"
+  [ -f "$MASTER" ] || return 0
+  step "ضبطُ أيقونات أندرويد: الشعارُ الكاملُ بالعنوان بدقّةٍ عالية في كلّ الكثافات (دون اجتزاء)"
   local dens="ldpi mdpi hdpi xhdpi xxhdpi xxxhdpi" fgsz="81 108 162 216 324 432" lasz="36 48 72 96 144 192" i=1
   for d in $dens; do
     local dir="$res/mipmap-$d"
     local f l; f="$(echo $fgsz | cut -d' ' -f$i)"; l="$(echo $lasz | cut -d' ' -f$i)"; i=$((i+1))
     [ -d "$dir" ] || continue
-    magick "$FG" -resize ${f}x${f} "$dir/ic_launcher_foreground.png"                                   # واجهةٌ تكيّفيّةٌ عاليةُ الدقّة ومحشوّة
-    magick "$BG" "$FG" -gravity center -composite -resize ${l}x${l} "$dir/ic_launcher.png"               # قديمةٌ مربّعة (خلفيّة+واجهة)
-    magick "$BG" "$FG" -gravity center -composite -resize ${l}x${l} \
+    magick "$MASTER" -resize ${f}x${f} "$dir/ic_launcher_foreground.png"        # واجهةٌ تكيّفيّة (الشعارُ الكاملُ على الأخضر)
+    magick "$MASTER" -resize ${l}x${l} "$dir/ic_launcher.png"                    # قديمةٌ مربّعة
+    magick "$MASTER" -resize ${l}x${l} \
       \( -size ${l}x${l} xc:none -fill white -draw "circle $((l/2)),$((l/2)) $((l/2)),0" \) -alpha set -compose DstIn -composite "$dir/ic_launcher_round.png"  # قديمةٌ دائريّة
   done
-  ok "أُعيد توليدُ أيقونات أندرويد بدقّةٍ عالية ومحشوّة"
+  ok "أُعيد توليدُ أيقونات أندرويد بالشعار الكامل بالعنوان"
 }
 
 build_apk() {

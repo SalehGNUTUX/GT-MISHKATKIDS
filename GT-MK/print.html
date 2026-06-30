@@ -106,6 +106,7 @@
     <span class="chk" style="font-weight:800">🎲 ألعابٌ ورقيّة:</span>
     <label class="chk"><input type="checkbox" id="tAll" checked /> الكلّ</label>
     <span id="tplChecks" style="display:contents"></span>
+    <label>نُسخٌ في الورقة: <select id="copies"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
     <span class="count" id="count"></span>
     <button class="print" onclick="smartPrint(document.querySelector('.sheet'),'أنشطة-مِشكاة.pdf')">اطبع / احفظ PDF</button>
   </div>
@@ -268,7 +269,12 @@ const TEMPLATES=[
   {id:"t_bingo",label:"🎱 بنغو الأعداد",fn:tplBingo},
 ];
 function checkedTemplates(){ return TEMPLATES.filter(t=>{ const el=document.getElementById(t.id); return el && el.checked; }); }
-function templatesHTML(){ return checkedTemplates().map(t=>t.fn()).join(""); }
+// كلُّ لعبةٍ مختارةٍ تتكرّرُ «عددَ النُّسخ» مرّةً؛ كلُّ استدعاءٍ لـfn() يُولّدُ محتوًى جديدًا (الألعابُ المتغيّرة
+// كشبكة الكلمات والصيد والحساب والبنغو والمطابقة تُولِّدُ محتوًى مختلفًا غيرَ مكرّرٍ في كلّ نسخة).
+function templatesHTML(){
+  const n = Math.max(1, +(document.getElementById("copies")?.value || 1));
+  return checkedTemplates().map(t => Array.from({length:n}, ()=>t.fn()).join("")).join("");
+}
 
 function render(){
   const dom=document.getElementById("fDomain").value;
@@ -293,7 +299,7 @@ function init(){
   tc.innerHTML=TEMPLATES.map(t=>`<label class="chk"><input type="checkbox" class="tplc" id="${t.id}" checked /> ${t.label}</label>`).join("");
   const tAll=document.getElementById("tAll");
   const syncAll=()=>{ tAll.checked=[...document.querySelectorAll(".tplc")].every(c=>c.checked); };
-  ["fDomain","fAge","cCards","cPoster"].forEach(id=>document.getElementById(id).addEventListener("change",render));
+  ["fDomain","fAge","cCards","cPoster","copies"].forEach(id=>document.getElementById(id).addEventListener("change",render));
   document.querySelectorAll(".tplc").forEach(c=>c.addEventListener("change",()=>{ syncAll(); render(); }));
   tAll.addEventListener("change",()=>{ document.querySelectorAll(".tplc").forEach(c=>c.checked=tAll.checked); render(); });
   render();

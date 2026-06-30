@@ -25,32 +25,43 @@ export async function smartPrint(el, filename = "مِشكاة.pdf") {
     const { jsPDF } = await import("jspdf");
     const h2c = await import("html2canvas");
     const html2canvas = h2c.default || h2c;
-    const PRINT_W = 794; // عرضُ A4 عند 96dpi
-    let sections = Array.from(node.querySelectorAll(".tpl"));            // كلُّ لعبةٍ ورقيّةٍ في صفحتها
-    const cw = node.querySelector("#cardsWrap");
-    if (cw && cw.offsetParent !== null && cw.querySelector(".pcard")) sections.push(cw);
-    const pw = node.querySelector("#posterWrap > .poster"); if (pw) sections.push(pw);
-    if (!sections.length) sections = [node];
+    const PRINT_W = 794, SC = 2; // عرضُ A4 عند 96dpi + تكبيرٌ للوضوح
     const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
     const M = 8, PW = 210, PH = 297, contentW = PW - 2 * M, contentH = PH - 2 * M;
     let first = true;
-    for (const sec of sections) {
-      const pw0 = sec.style.width, mw0 = sec.style.maxWidth, mg0 = sec.style.margin;
-      sec.style.width = PRINT_W + "px"; sec.style.maxWidth = PRINT_W + "px"; sec.style.margin = "0";
-      const canvas = await html2canvas(sec, { scale: 2, useCORS: true, backgroundColor: "#ffffff", windowWidth: PRINT_W, width: PRINT_W });
-      sec.style.width = pw0; sec.style.maxWidth = mw0; sec.style.margin = mg0;
-      const pagePx = Math.floor(canvas.width * contentH / contentW); // ارتفاعُ شريحةٍ يملأُ صفحة
-      let sy = 0;
-      while (sy < canvas.height) {
-        const sliceH = Math.min(pagePx, canvas.height - sy);
-        const pc = document.createElement("canvas"); pc.width = canvas.width; pc.height = sliceH;
-        pc.getContext("2d").drawImage(canvas, 0, sy, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-        const img = pc.toDataURL("image/jpeg", 0.92);
-        if (!first) pdf.addPage(); first = false;
-        pdf.addImage(img, "JPEG", M, M, contentW, sliceH * contentW / canvas.width);
-        sy += sliceH;
+    const addSlice = (canvas, sy, h) => {
+      sy = Math.max(0, Math.floor(sy)); h = Math.min(Math.ceil(h), canvas.height - sy); if (h <= 0) return;
+      const pc = document.createElement("canvas"); pc.width = canvas.width; pc.height = h;
+      pc.getContext("2d").drawImage(canvas, 0, sy, canvas.width, h, 0, 0, canvas.width, h);
+      if (!first) pdf.addPage(); first = false;
+      pdf.addImage(pc.toDataURL("image/jpeg", 0.92), "JPEG", M, M, contentW, h * contentW / canvas.width);
+    };
+    // يُنقّطُ حاويًا بعرض A4 ثابت. مع blockSel: يَحشُّ كتلَه في الصفحات دون قطعِ كتلة (استغلالُ الورق)؛ بدونه: قطعٌ بالتساوي.
+    const printContainer = async (c, blockSel) => {
+      const w0 = c.style.width, m0 = c.style.maxWidth, g0 = c.style.margin;
+      c.style.width = PRINT_W + "px"; c.style.maxWidth = PRINT_W + "px"; c.style.margin = "0";
+      const blocks = blockSel ? Array.from(c.querySelectorAll(blockSel)) : [];
+      const cTop = c.getBoundingClientRect().top;
+      const offs = blocks.map(b => { const r = b.getBoundingClientRect(); return { top: r.top - cTop, bot: r.bottom - cTop }; });
+      const canvas = await html2canvas(c, { scale: SC, useCORS: true, backgroundColor: "#ffffff", windowWidth: PRINT_W, width: PRINT_W });
+      c.style.width = w0; c.style.maxWidth = m0; c.style.margin = g0;
+      const pageH = canvas.width * contentH / contentW;
+      if (!blocks.length) { let sy = 0; while (sy < canvas.height) { addSlice(canvas, sy, Math.min(pageH, canvas.height - sy)); sy += pageH; } return; }
+      let i = 0;
+      while (i < blocks.length) {
+        const start = offs[i].top * SC; let end = start;
+        while (i < blocks.length && (offs[i].bot * SC - start) <= pageH) { end = offs[i].bot * SC; i++; }
+        if (end === start) { end = offs[i].bot * SC; i++; } // كتلةٌ أكبرُ من صفحة
+        addSlice(canvas, start, end - start);
       }
-    }
+    };
+    const tw = node.querySelector("#templatesWrap");
+    if (tw && tw.querySelector(".tpl")) await printContainer(tw, ".tpl");
+    const cw = node.querySelector("#cardsWrap");
+    if (cw && cw.offsetParent !== null && cw.querySelector(".pcard")) await printContainer(cw, null);
+    const pw = node.querySelector("#posterWrap");
+    if (pw && pw.querySelector(".poster")) await printContainer(pw, null);
+    if (!tw && !cw && !pw) await printContainer(node, null); // شهادة/أنشطةٌ (لا حاويات معروفة)
     const base64 = pdf.output("datauristring").split(",")[1];
     const P = (window.Capacitor && window.Capacitor.Plugins) || {};
     const Filesystem = P.Filesystem, Share = P.Share;

@@ -177,6 +177,7 @@ import { logEvent } from "./src/progress.js";
 import { speak } from "./src/speak.js";              // للترجمة العربيّة (تُوجَّه للنموذج العصبيّ)
 import { attachReader } from "./src/reader-recorder.js"; // تسجيلُ نُطق الطفل (لكلّ حساب)
 import { robo } from "./src/robo-companion.js";       // الآليُّ الظاهرُ + فقاعةُ ردوده
+import { vsSetup, vsMakePlayers, vsReact, vsScoreHtml, VS, vP, GAME as GR, sfx } from "./src/versus.js"; // الإطارُ التنافسيّ المشترك (v1.4)
 
 const LANGS = { en: EN, fr: FR };
 const view = document.getElementById("view");
@@ -394,6 +395,56 @@ function renderListen(L, host){
   }
   ask();
 }
+// 🏁 سباقُ الترجمة (تنافسيّ · ضدّ الآليّ بثلاث صعوبات/الإخوة): تُنطَقُ الكلمةُ الأجنبيّةُ ← اختَرْ معناها العربيّ بسرعة.
+let tr_diff="easy", tr_ps=[], tr_turn=0, tr_lock=false, tr_q=null, tr_raf=null; const TR_TARGET=5;
+const TR_CFG={ easy:{opts:3,ms:7000,pr:0.55,d:1900}, medium:{opts:4,ms:5500,pr:0.72,d:1400}, hard:{opts:4,ms:4000,pr:0.88,d:1000} };
+let tr_L=null, tr_host=null;
+function startTransRace(L, host){ tr_L=L; tr_host=host; vsSetup(host, {
+  say:"🏁 سباقُ الترجمة — استمعْ للكلمة ثمّ اختَرْ معناها العربيّ قبلَ خصمك!",
+  diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
+  getDiff:()=>tr_diff, setDiff:v=>{tr_diff=v;}, start:()=>newTransRace() }); }
+function newTransRace(){ tr_ps=vsMakePlayers(true); tr_ps.forEach(p=>p.score=0); tr_turn=0; tr_lock=false; trNext(); }
+function trNext(){
+  if(tr_ps.some(p=>p.score>=TR_TARGET)){ trEnd(); return; }
+  const cfg=TR_CFG[tr_diff], pool=shuffle(allWords(tr_L));
+  const correct=pool[0], opts=shuffle([correct, ...pool.filter(w=>w.ar!==correct.ar).slice(0,cfg.opts-1)]);
+  tr_q={correct, opts}; tr_lock=false; renderTransRace();
+  if(tr_ps[tr_turn].cpu) trAI(); else { say(correct.w, tr_L); trTimer(cfg.ms, ()=>{ if(!tr_lock){ tr_lock=true; trResolve(false,null); } }); }
+}
+function renderTransRace(){
+  const cur=tr_ps[tr_turn];
+  tr_host.innerHTML = `<div class="clue" style="padding:10px"><div class="say">🏁 سباقُ الترجمة — أوّلُ من يبلغُ ${TR_TARGET} يفوز!</div></div>`
+    + vsScoreHtml(tr_ps)
+    + `<div class="vs-turn" style="color:${cur.color}">${cur.cpu?"🤖 دورُ الآليّ…":`${cur.avatar} دورُ ${cur.name}`}</div>`
+    + `<div class="qzprompt" style="text-align:center;margin:6px 0"><button class="secbtn on" id="trSay">🔊 <span class="ltr">${esc(tr_q.correct.w)}</span></button></div>`
+    + `<div class="hubar" style="height:9px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px;margin:6px auto 12px"><span id="trBar" style="display:block;height:100%;background:var(--primary);width:100%"></span></div>`
+    + `<div class="grid" id="trOpts">${tr_q.opts.map(o=>`<button class="gcard tropt" data-ar="${esc(o.ar)}">${esc(o.ar)}</button>`).join("")}</div>`
+    + `<div id="trFb"></div>`;
+  tr_host.querySelector("#trSay").onclick=()=>say(tr_q.correct.w, tr_L);
+  tr_host.querySelector("#trOpts").addEventListener("click",e=>{ const b=e.target.closest("[data-ar]"); if(!b) return; trTap(b.getAttribute("data-ar"), b); });
+}
+function trTimer(ms,onEnd){ const start=Date.now(), bar=document.getElementById("trBar"); cancelAnimationFrame(tr_raf);
+  const tick=()=>{ const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ onEnd&&onEnd(); return; } tr_raf=requestAnimationFrame(tick); }; tick(); }
+function trTap(ar,btn){ if(tr_lock||tr_ps[tr_turn].cpu) return; cancelAnimationFrame(tr_raf); tr_lock=true; sfx.tap(); trResolve(ar===tr_q.correct.ar, btn); }
+function trAI(){ tr_lock=true; const cfg=TR_CFG[tr_diff], ok=Math.random()<cfg.pr; say(tr_q.correct.w, tr_L); trTimer(cfg.d, ()=>trResolve(ok,null)); }
+function trResolve(ok,btn){
+  cancelAnimationFrame(tr_raf); const cur=tr_ps[tr_turn], human=!cur.cpu;
+  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); const won=cur.score>=TR_TARGET;
+    if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok)); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
+  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(vP(GR.no)); else sfx.nope();
+    tr_host.querySelectorAll("#trOpts [data-ar]").forEach(b=>{ if(b.getAttribute("data-ar")===tr_q.correct.ar) b.classList.add("ok"); }); }
+  const fb=tr_host.querySelector("#trFb"); if(fb) fb.innerHTML=`<div class="hint" style="text-align:center">${ok?"✅ صحيح!":`المعنى: <b>${esc(tr_q.correct.ar)}</b>`}</div>`;
+  setTimeout(()=>{ tr_turn=(tr_turn+1)%tr_ps.length; trNext(); }, 1150);
+}
+function trEnd(){
+  logEvent("lang_transrace_win");
+  const s=[...tr_ps].sort((a,b)=>b.score-a.score);
+  const res=(s[1]&&s[0].score===s[1].score)?"🤝 تعادُل!":`${s[0].cpu?"🤖":"🌟"} فاز ${s[0].avatar} ${s[0].name}!`;
+  const me=tr_ps.find(p=>!p.cpu), o=tr_ps.find(p=>p.cpu); if(o&&me) vsReact(me,o); else robo.read(vP(GR.kids));
+  tr_host.innerHTML = `<div class="clue" style="padding:10px"><div class="say">انتهتِ المباراة!</div></div>`+vsScoreHtml(tr_ps)+`<div class="qzdone">${res}<button class="secbtn on" id="trAgain">🔁 جديد</button></div>`;
+  tr_host.querySelector("#trAgain").onclick=()=>startTransRace(tr_L, tr_host);
+}
+
 // الأفعالُ والأزمنة: قائمةُ أفعالٍ ← تصريفُ الفعل في الماضي/المضارع/المستقبل (يُنطَق عند الضغط).
 function renderVerbs(L, host){
   const verbs = L.verbs || [];
@@ -508,7 +559,7 @@ function renderLang(k){
     const g = qp.get("g");
     if(!g){
       topnav = nav("↩ الأقسام","secs")+`<span class="cur">🎮 ألعاب</span>`;
-      const GAMES=[{g:"match",ic:"🃏",ar:"مطابقةُ الصور"},{g:"matchar",ic:"🔗",ar:"مطابقةُ المعنى"},{g:"spell",ic:"🔡",ar:"الإملاء"},{g:"listen",ic:"👂",ar:"استماعٌ واختيار"}];
+      const GAMES=[{g:"transrace",ic:"🏁",ar:"سباقُ الترجمة ⚔️"},{g:"match",ic:"🃏",ar:"مطابقةُ الصور"},{g:"matchar",ic:"🔗",ar:"مطابقةُ المعنى"},{g:"spell",ic:"🔡",ar:"الإملاء"},{g:"listen",ic:"👂",ar:"استماعٌ واختيار"}];
       body = `<div class="lgrid">${GAMES.map(x=>`<button class="lcard" data-g="${x.g}"><span class="ic">${iconHtml(x.ic)}</span><span class="lt">${x.ar}</span></button>`).join("")}</div>`;
     } else {
       const T={match:"🃏 مطابقةُ الصور",matchar:"🔗 مطابقةُ المعنى",spell:"🔡 الإملاء",listen:"👂 استماعٌ واختيار"};
@@ -562,7 +613,7 @@ function renderLang(k){
   if(sec==="verbs"){ const h=document.getElementById("vb"); if(h) renderVerbs(L, h); }
   if(sec==="quiz"){ const h=document.getElementById("qz"); if(h) renderQuiz(L, h); }
   if(sec==="games" && qp.get("g")){ const g=qp.get("g"), h=document.getElementById("gm");
-    if(h){ ({match:renderGame, matchar:renderMatchAr, spell:renderSpell, listen:renderListen}[g]||renderGame)(L, h); } }
+    if(h){ ({transrace:startTransRace, match:renderGame, matchar:renderMatchAr, spell:renderSpell, listen:renderListen}[g]||renderGame)(L, h); } }
   startTitleAlt();
   try{ logEvent("lang_open", {add:{}}); }catch(e){}
 }

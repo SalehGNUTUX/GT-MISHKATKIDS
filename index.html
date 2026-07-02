@@ -41,6 +41,31 @@
     box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;transition:transform .25s ease;
   }
   .themebtn:hover{transform:rotate(35deg)}
+  html{scroll-behavior:smooth;scroll-padding-top:66px}
+  /* شريطُ التنقّل الثابت العصريّ */
+  .topnav{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;justify-content:space-between;
+    padding:8px 16px;background:color-mix(in srgb,var(--cream) 85%,transparent);backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav-logo{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--green);font-weight:800;flex:none}
+  .nav-logo img{width:32px;height:32px;border-radius:9px;box-shadow:var(--shadow)}
+  .nav-logo b{font-size:16px}
+  .nav-links{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;flex:1}
+  .nav-links a{text-decoration:none;color:var(--ink);font-weight:700;font-size:14px;padding:7px 12px;border-radius:10px;transition:background .15s,color .15s;white-space:nowrap}
+  .nav-links a:hover{background:color-mix(in srgb,var(--green) 12%,transparent);color:var(--green)}
+  .nav-links a.active{background:var(--green);color:#fff}
+  .topnav .themebtn{position:static;width:38px;height:38px;font-size:18px;flex:none;box-shadow:none}
+  @media(max-width:600px){ .nav-logo b{display:none} .nav-links a{font-size:13px;padding:6px 9px} }
+  /* معرضُ اللقطات */
+  .shots{max-width:460px;margin:0 auto}
+  .shots-row{display:flex;align-items:center;gap:8px;justify-content:center}
+  .shots-view{flex:1;min-width:0;display:flex;justify-content:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px;box-shadow:var(--shadow)}
+  .shots-view img{max-width:100%;max-height:540px;border-radius:10px;display:block}
+  .shots-nav{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:22px;cursor:pointer;box-shadow:var(--shadow);transition:background .15s,color .15s}
+  .shots-nav:hover{background:var(--green);color:#fff}
+  .shots-cap{text-align:center;font-weight:800;color:var(--green);margin:12px 0 8px}
+  .shots-dots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+  .shots-dots button{width:9px;height:9px;border-radius:50%;border:none;background:var(--line);cursor:pointer;padding:0;transition:width .2s,background .2s}
+  .shots-dots button.on{background:var(--green);width:22px;border-radius:5px}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{
@@ -174,7 +199,19 @@
 </head>
 <body>
 
-<button class="themebtn" id="themeBtn" aria-label="تبديل الوضع الداكن/الفاتح" title="الوضع الداكن">🌙</button>
+<nav class="topnav" id="topnav">
+  <a class="nav-logo" href="index.html" title="مِشكاة — إلى الأعلى وتحديثُ الصفحة">
+    <img src="assets/logo-square.png" alt="" /><b>مِشكاة</b>
+  </a>
+  <div class="nav-links">
+    <a href="#download">التنزيل</a>
+    <a href="#whatsnew">جديد v1.3</a>
+    <a href="#shots">لقطات</a>
+    <a href="#features">المزايا</a>
+    <a href="#principles">لماذا مِشكاة؟</a>
+  </div>
+  <button class="themebtn" id="themeBtn" aria-label="تبديل الوضع الداكن/الفاتح" title="الوضع الداكن">🌙</button>
+</nav>
 
 <header class="hero">
   <div class="wrap">
@@ -194,7 +231,7 @@
 </header>
 
 <!-- خيارات الاستخدام -->
-<section>
+<section id="download">
   <div class="wrap">
     <h2>كيف تستعمله؟</h2>
     <p class="section-sub">يعملُ التطبيقُ محليّاً بالكامل — اختر ما يناسبك:</p>
@@ -258,7 +295,7 @@
 </section>
 
 <!-- جديدُ الإصدار -->
-<section>
+<section id="whatsnew">
   <div class="wrap">
     <h2>🆕 جديدُ v1.3.0</h2>
     <p class="section-sub">أحدثُ ما أُضيفَ في هذا الإصدار.</p>
@@ -273,9 +310,28 @@
   </div>
 </section>
 
+<!-- لقطات -->
+<div class="feat-bg">
+<section id="shots">
+  <div class="wrap">
+    <h2>📸 لقطاتٌ من التطبيق</h2>
+    <p class="section-sub">جولةٌ سريعةٌ في الأقسام — تتبدّلُ تلقائيًّا.</p>
+    <div class="shots" id="shots-c">
+      <div class="shots-row">
+        <button class="shots-nav prev" aria-label="السابق">‹</button>
+        <div class="shots-view"><img id="shot-img" src="" alt="" loading="lazy" /></div>
+        <button class="shots-nav next" aria-label="التالي">›</button>
+      </div>
+      <div class="shots-cap" id="shot-cap"></div>
+      <div class="shots-dots" id="shot-dots"></div>
+    </div>
+  </div>
+</section>
+</div>
+
 <!-- المزايا -->
 <div class="feat-bg">
-<section>
+<section id="features">
   <div class="wrap">
     <h2>ماذا يضمّ؟</h2>
     <p class="section-sub">محتوًى أصيلٌ بإطارٍ إسلاميٍّ عقديّ.</p>
@@ -295,7 +351,7 @@
 </div>
 
 <!-- المبادئ -->
-<section>
+<section id="principles">
   <div class="wrap">
     <h2>لماذا مِشكاة؟</h2>
     <p class="section-sub">مبادئ صارمةٌ لا نكسرها.</p>
@@ -374,5 +430,29 @@
 })();
 </script>
 
+<script>
+(function(){
+  var S=[{f:"الشاشة-الرئيسية.png",c:"الشاشة الرئيسيّة"},{f:"شاشة-الدخول.png",c:"شاشة الدخول"},{f:"علم-الآلي.png",c:"علّم الآليّ"},{f:"القرآن-الكريم.png",c:"القرآن الكريم"},{f:"سورة-الفاتحة.png",c:"سورة الفاتحة"},{f:"الأساسيات.png",c:"الأساسيّات"},{f:"سلم-القراءة.png",c:"سُلّم القراءة"},{f:"أرقام-وهندسة.png",c:"أرقام وهندسة"},{f:"ألعاب-وأنشطة.png",c:"ألعابٌ وأنشطة"},{f:"المطبوعات.png",c:"ألعاب/أنشطة للطباعة"},{f:"ألغاز-ذكية.png",c:"ألغازٌ ذكيّة"},{f:"اختبارات-تعليمية.png",c:"اختباراتٌ تعليميّة"},{f:"قصص-مصورة.png",c:"قصصٌ مصوّرة"},{f:"قصص-وعبر.png",c:"قصصٌ وعِبَر"},{f:"لغات-أجنبية.png",c:"لغاتٌ أجنبيّة"},{f:"الإنجليزية.png",c:"الإنجليزيّة"},{f:"الفرنسية.png",c:"الفرنسيّة"},{f:"تقدمي.png",c:"تقدّمي"},{f:"لوحة-التحكم.png",c:"لوحةُ التحكّم"},{f:"شاشة-أمان-لوحة-التحكم.png",c:"أمانُ لوحة التحكّم"},{f:"الشاشة-الرئيسية-الوضع-الفاتح.png",c:"الوضعُ الفاتح"}];
+  var img=document.getElementById('shot-img'),cap=document.getElementById('shot-cap'),dots=document.getElementById('shot-dots'),c=document.getElementById('shots-c');
+  if(!img)return; var i=0,t;
+  dots.innerHTML=S.map(function(s,k){return '<button data-k="'+k+'" aria-label="'+s.c+'"></button>';}).join('');
+  function show(n){ i=(n+S.length)%S.length; img.src='assets/screenshots/'+encodeURIComponent(S[i].f); img.alt=S[i].c; cap.textContent=S[i].c;
+    for(var k=0;k<dots.children.length;k++) dots.children[k].className=(k===i?'on':''); }
+  function nx(){show(i+1);} function pv(){show(i-1);}
+  function play(){stop();t=setInterval(nx,3500);} function stop(){if(t)clearInterval(t);}
+  c.querySelector('.next').onclick=function(){nx();play();};
+  c.querySelector('.prev').onclick=function(){pv();play();};
+  dots.onclick=function(e){var b=e.target.closest('[data-k]'); if(b){show(+b.getAttribute('data-k'));play();}};
+  c.addEventListener('mouseenter',stop); c.addEventListener('mouseleave',play);
+  show(0); play();
+})();
+(function(){
+  var links=[].slice.call(document.querySelectorAll('.nav-links a')), map={};
+  links.forEach(function(a){var el=document.getElementById(a.getAttribute('href').slice(1)); if(el)map[el.id]=a;});
+  if(!('IntersectionObserver' in window))return;
+  var obs=new IntersectionObserver(function(es){es.forEach(function(en){ if(en.isIntersecting){ links.forEach(function(a){a.classList.remove('active');}); if(map[en.target.id])map[en.target.id].classList.add('active'); } });},{rootMargin:"-45% 0px -50% 0px"});
+  Object.keys(map).forEach(function(id){obs.observe(document.getElementById(id));});
+})();
+</script>
 </body>
 </html>

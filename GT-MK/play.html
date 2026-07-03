@@ -584,18 +584,24 @@ function vsSetup(cfg){
 }
 
 /* ===================== ⭕✖ دائرةٌ وعلامة (ضدّ الآليّ بثلاث صعوبات · أو الحسابات) ===================== */
-let xo_diff="medium", xo_b=[], xo_ps=[], xo_turn=0, xo_lock=false, xo_done=false;
-const XO_LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+// حجمُ اللوحة (3/4/5) + صعوبةُ الآليّ (vs_ai). طولُ الفوز = min(N,4): 3×3→3، 4×4/5×5→4.
+let xo_size=3, xo_win=3, xo_lines=[], xo_b=[], xo_ps=[], xo_turn=0, xo_lock=false, xo_done=false;
 const XO_MK=["✖","◯"];
-function startXO(){ vsSetup({ say:"دائرةٌ وعلامة ⭕✖ — اصنعْ ثلاثةً في خطٍّ قبلَ خصمك!", diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>xo_diff, setDiff:v=>{xo_diff=v;}, start:newXO }); }
-function newXO(){ xo_b=Array(9).fill(null); xo_ps=vsMakePlayers(true); xo_turn=0; xo_lock=false; xo_done=false; renderXO(); if(xo_ps[0].cpu) xoAI(); }
-function xoWinner(b){ for(const L of XO_LINES){ const [a,c,d]=L; if(b[a]!=null && b[a]===b[c] && b[a]===b[d]) return {p:b[a],line:L}; } return b.every(x=>x!=null)?{p:-1,line:null}:null; }
+function xoBuildLines(N,W){ const L=[];
+  for(let r=0;r<N;r++)for(let c=0;c<=N-W;c++)L.push(Array.from({length:W},(_,k)=>r*N+c+k));       // أفقيّ
+  for(let c=0;c<N;c++)for(let r=0;r<=N-W;r++)L.push(Array.from({length:W},(_,k)=>(r+k)*N+c));       // رأسيّ
+  for(let r=0;r<=N-W;r++)for(let c=0;c<=N-W;c++)L.push(Array.from({length:W},(_,k)=>(r+k)*N+c+k));   // قُطريّ ↘
+  for(let r=0;r<=N-W;r++)for(let c=W-1;c<N;c++)L.push(Array.from({length:W},(_,k)=>(r+k)*N+c-k));     // قُطريّ ↙
+  return L; }
+function startXO(){ vsSetup({ say:"دائرةٌ وعلامة ⭕✖ — اصنعْ خطًّا كاملًا قبلَ خصمك!", diffLabel:"🔲 حجمُ اللوحة", diffs:[{v:3,label:"3×3"},{v:4,label:"4×4"},{v:5,label:"5×5"}], getDiff:()=>xo_size, setDiff:v=>{xo_size=+v;}, start:newXO }); }
+function newXO(){ const N=xo_size; xo_win=Math.min(N,4); xo_lines=xoBuildLines(N,xo_win); xo_b=Array(N*N).fill(null); xo_ps=vsMakePlayers(true); xo_turn=0; xo_lock=false; xo_done=false; renderXO(); if(xo_ps[0].cpu) xoAI(); }
+function xoWinner(b){ for(const L of xo_lines){ const p=b[L[0]]; if(p!=null && L.every(i=>b[i]===p)) return {p, line:L}; } return b.every(x=>x!=null)?{p:-1,line:null}:null; }
 function renderXO(){
-  const w=xoWinner(xo_b), cur=xo_ps[xo_turn];
+  const N=xo_size, w=xoWinner(xo_b), cur=xo_ps[xo_turn], cf=N===3?46:N===4?34:26;
   let turnHtml = xo_done ? "" : vsTurnHtml(cur);
-  const cells = xo_b.map((v,i)=>{ const mk=v==null?"":XO_MK[v]; const col=v==null?"":xo_ps[v].color; const wn=w&&w.line&&w.line.includes(i)?" wn":""; return `<div class="xoc${wn}" data-i="${i}" style="color:${col}">${mk}</div>`; }).join("");
-  view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">دائرةٌ وعلامة ⭕✖ — ثلاثةٌ في خطٍّ تفوز!</div></div>`
-    + vsScoreHtml(xo_ps) + turnHtml + `<div class="xob" id="xob">${cells}</div>`
+  const cells = xo_b.map((v,i)=>{ const mk=v==null?"":XO_MK[v]; const col=v==null?"":xo_ps[v].color; const wn=w&&w.line&&w.line.includes(i)?" wn":""; return `<div class="xoc${wn}" data-i="${i}" style="color:${col};font-size:${cf}px">${mk}</div>`; }).join("");
+  view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">دائرةٌ وعلامة ⭕✖ — ${xo_win} في خطٍّ تفوز!</div></div>`
+    + vsScoreHtml(xo_ps) + turnHtml + `<div class="xob" id="xob" style="grid-template-columns:repeat(${N},1fr);max-width:${N===3?300:N===4?340:360}px">${cells}</div>`
     + `<div id="xomsg"></div>`
     + `<div class="controls" style="margin-top:14px"><button class="go" id="xoagain">جولةٌ جديدة</button> <button id="xoreset">↻ إعدادات</button></div>`;
   wireBack();
@@ -619,16 +625,21 @@ function xoAI(){
   setTimeout(()=>{ const me=xo_turn, opp=(xo_turn+1)%2; const mv=xoChoose(xo_b,me,opp); xo_b[mv]=me; sfx.tap(); xo_lock=false; afterXOMove(); }, 620);
 }
 function xoChoose(b,me,opp){
-  const empty=[...b.keys()].filter(i=>b[i]==null);
-  if(xo_diff==="easy") return empty[Math.floor(Math.random()*empty.length)];
-  // متوسّط/صعب: اربحْ إن أمكن، وإلّا اسدُدْ خطرَ الخصم
-  for(const i of empty){ const t=[...b]; t[i]=me; if(xoWinner(t)&&xoWinner(t).p===me) return i; }
-  for(const i of empty){ const t=[...b]; t[i]=opp; if(xoWinner(t)&&xoWinner(t).p===opp) return i; }
-  if(xo_diff==="medium"){ if(Math.random()<0.5 && b[4]==null) return 4; return empty[Math.floor(Math.random()*empty.length)]; }
-  // صعب: مينيماكس مثاليّ
-  let best=-Infinity, bi=empty[0];
-  for(const i of empty){ const t=[...b]; t[i]=me; const s=xoMinimax(t,opp,me,opp,1); if(s>best){ best=s; bi=i; } }
-  return bi;
+  const empty=[...b.keys()].filter(i=>b[i]==null), N=xo_size;
+  if(vs_ai==="easy") return empty[Math.floor(Math.random()*empty.length)];
+  for(const i of empty){ const t=[...b]; t[i]=me; const w=xoWinner(t); if(w&&w.p===me) return i; }   // اربحْ فورًا
+  for(const i of empty){ const t=[...b]; t[i]=opp; const w=xoWinner(t); if(w&&w.p===opp) return i; }  // اسدُدْ فوزَ الخصم الفوريّ
+  if(vs_ai==="hard"){
+    if(N===3){ let best=-Infinity, bi=empty[0]; for(const i of empty){ const t=[...b]; t[i]=me; const s=xoMinimax(t,opp,me,opp,1); if(s>best){best=s;bi=i;} } return bi; } // مينيماكس مثاليّ للصغيرة
+    const threat=who=>{ for(const L of xo_lines){ const mine=L.filter(i=>b[i]===who).length, emp=L.filter(i=>b[i]==null); if(mine===xo_win-1 && emp.length===1) return emp[0]; } return -1; };
+    let t=threat(opp); if(t>=0) return t;   // احجُبْ تهديدَ الخصم القريب
+    t=threat(me); if(t>=0) return t;         // أكملْ خطَّك
+    let best=-1, bi=empty[0];               // خليّةٌ تُعظّمُ خطوطي المفتوحة
+    for(const i of empty){ let sc=0; for(const L of xo_lines){ if(L.includes(i) && !L.some(j=>b[j]===opp)) sc+=L.filter(j=>b[j]===me).length+1; } if(sc>best){best=sc;bi=i;} }
+    return bi;
+  }
+  const cen=Math.floor(N*N/2); if(Math.random()<0.5 && b[cen]==null) return cen;  // متوسّط
+  return empty[Math.floor(Math.random()*empty.length)];
 }
 function xoMinimax(b,turn,me,opp,depth){
   const w=xoWinner(b);

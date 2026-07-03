@@ -1,7 +1,7 @@
 {
   "name": "tilmithi",
   "private": true,
-  "version": "1.3.0",
+  "version": "1.4.0",
   "type": "module",
   "description": "تلميذي — الطفل يُعلّم الآليّ فيتذكّر ويتعافى (محليّ، بلا اتصال، بلا ذكاء اصطناعي)",
   "license": "GPL-3.0-or-later",

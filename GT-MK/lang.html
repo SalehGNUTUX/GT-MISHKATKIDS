@@ -64,6 +64,8 @@
   .lcard .lt{font-size:13.5px;font-weight:800;transition:opacity .26s ease;min-height:1.2em}
   .lcard .lt.fg{direction:ltr;unicode-bidi:isolate}
   .lcard.vs{border-color:color-mix(in srgb,var(--primary) 45%,var(--cb,var(--line)))}
+  .sgopt.ok{border-color:var(--good)!important;background:color-mix(in srgb,var(--good) 16%,var(--card))!important}
+  .sgopt.bad{border-color:#E0566B!important;background:color-mix(in srgb,#E0566B 14%,var(--card))!important}
   .vsbadge{position:absolute;top:6px;inset-inline-start:6px;z-index:2;background:var(--primary);color:#fff;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.18);white-space:nowrap}
   .lcard.vs{padding-top:24px}
   /* العبارات والجمل المركّبة */
@@ -448,6 +450,47 @@ function trEnd(){
   });
 }
 
+// 🗂️ صنّفِ الكلمات (تنافسيّ · versus): تُنطَقُ الكلمةُ الأجنبيّةُ ثمّ اختَرْ فئتَها الصحيحةَ بمؤقّت.
+let sg_diff="easy", sg_ps=[], sg_turn=0, sg_lock=false, sg_q=null, sg_raf=null, sg_L=null, sg_host=null; const SG_TARGET=5;
+const SG_CFG={ easy:{opts:3,ms:7000,pr:0.55,d:1900}, medium:{opts:4,ms:5500,pr:0.72,d:1400}, hard:{opts:4,ms:4000,pr:0.88,d:1000} };
+function startSortGame(L, host){ sg_L=L; sg_host=host; vsSetup(host, {
+  say:GI.sortwords, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
+  getDiff:()=>sg_diff, setDiff:v=>{sg_diff=v;}, start:()=>newSortGame() }); try{speak(GI.sortwords);}catch(e){} }
+function newSortGame(){ trRun=true; sg_ps=vsMakePlayers(true); sg_ps.forEach(p=>p.score=0); sg_turn=0; sg_lock=false; sgNext(); }
+function sgCats(L){ return (L.words||[]).filter(c=>(c.items||[]).length).map(c=>({id:c.id, ar:c.ar})); }
+function sgNext(){ if(!trRun) return;
+  if(sg_ps.some(p=>p.score>=SG_TARGET)){ sgEnd(); return; }
+  const cfg=SG_CFG[sg_diff], cats=sgCats(sg_L), w=shuffle(allWords(sg_L))[0], correct=cats.find(c=>c.id===w.cat);
+  const opts=shuffle([correct, ...shuffle(cats.filter(c=>c.id!==w.cat)).slice(0,cfg.opts-1)]);
+  sg_q={w, correct, opts}; sg_lock=false; renderSort();
+  if(sg_ps[sg_turn].cpu) sgAI(); else { say(w.w, sg_L); sgTimer(cfg.ms, ()=>{ if(!sg_lock){ sg_lock=true; sgResolve(false,null); } }); }
+}
+function renderSort(){
+  const cur=sg_ps[sg_turn];
+  sg_host.innerHTML = `<div class="clue" style="padding:10px"><div class="say">🗂️ صنّفِ الكلمات — أوّلُ من يبلغُ ${SG_TARGET} يفوز!</div></div>`
+    + vsScoreHtml(sg_ps) + vsTurnHtml(cur)
+    + `<div class="qzprompt" style="text-align:center;margin:6px 0"><button class="secbtn on" id="sgSay">🔊 <span class="ltr">${esc(sg_q.w.w)}</span> ${sg_q.w.emoji}</button></div>`
+    + `<div class="hubar" style="height:9px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px;margin:6px auto 12px"><span id="sgBar" style="display:block;height:100%;background:var(--primary);width:100%"></span></div>`
+    + `<div class="lgrid" id="sgOpts">${sg_q.opts.map(o=>`<button class="lcard sgopt" data-id="${esc(o.id)}"><span class="ic">${iconHtml(CAT_ICON[o.id]||"📝")}</span><span class="lt">${esc(o.ar)}</span></button>`).join("")}</div>`
+    + `<div id="sgFb"></div>`;
+  sg_host.querySelector("#sgSay").onclick=()=>say(sg_q.w.w, sg_L);
+  sg_host.querySelector("#sgOpts").addEventListener("click",e=>{ const b=e.target.closest("[data-id]"); if(!b) return; sgTap(b.getAttribute("data-id"), b); });
+}
+function sgTimer(ms,onEnd){ const start=Date.now(), bar=document.getElementById("sgBar"); cancelAnimationFrame(sg_raf);
+  const tick=()=>{ if(!trRun) return; const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ onEnd&&onEnd(); return; } sg_raf=requestAnimationFrame(tick); }; tick(); }
+function sgTap(id,btn){ if(sg_lock||sg_ps[sg_turn].cpu) return; cancelAnimationFrame(sg_raf); sg_lock=true; sfx.tap(); sgResolve(id===sg_q.correct.id, btn); }
+function sgAI(){ sg_lock=true; const cfg=SG_CFG[sg_diff], ok=Math.random()<cfg.pr; say(sg_q.w.w, sg_L); sgTimer(cfg.d, ()=>sgResolve(ok,null)); }
+function sgResolve(ok,btn){
+  cancelAnimationFrame(sg_raf); const cur=sg_ps[sg_turn], human=!cur.cpu;
+  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); const won=cur.score>=SG_TARGET;
+    if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok)); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
+  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(vP(GR.no)); else sfx.nope();
+    sg_host.querySelectorAll("#sgOpts [data-id]").forEach(b=>{ if(b.getAttribute("data-id")===sg_q.correct.id) b.classList.add("ok"); }); }
+  const fb=sg_host.querySelector("#sgFb"); if(fb) fb.innerHTML=`<div class="hint" style="text-align:center">${ok?"✅ صحيح!":`الفئةُ الصحيحة: <b>${esc(sg_q.correct.ar)}</b>`}</div>`;
+  setTimeout(()=>{ if(!trRun) return; sg_turn=(sg_turn+1)%sg_ps.length; sgNext(); }, 1150);
+}
+function sgEnd(){ logEvent("lang_sort_win"); vsEndRound(sg_ps, { onAgain:()=>newSortGame(), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
+
 // الأفعالُ والأزمنة: قائمةُ أفعالٍ ← تصريفُ الفعل في الماضي/المضارع/المستقبل (يُنطَق عند الضغط).
 function renderVerbs(L, host){
   const verbs = L.verbs || [];
@@ -564,6 +607,7 @@ function renderLang(k){
       topnav = nav("↩ الأقسام","secs")+`<span class="cur">🎮 ألعاب</span>`;
       const GAMES=[
         {g:"transrace",ic:"🏃",ar:"سباقُ الترجمة",en:"Translation Race",fr:"Course de traduction",vs:1},
+        {g:"sortwords",ic:"⚖️",ar:"صنّفِ الكلمات",en:"Sort the Words",fr:"Classe les mots",vs:1},
         {g:"match",ic:"🃏",ar:"مطابقةُ الصور",en:"Picture Match",fr:"Associe les images"},
         {g:"matchar",ic:"🔗",ar:"مطابقةُ المعنى",en:"Meaning Match",fr:"Associe le sens"},
         {g:"spell",ic:"🔡",ar:"الإملاء",en:"Spelling",fr:"Épellation"},
@@ -621,7 +665,7 @@ function renderLang(k){
   if(sec==="verbs"){ const h=document.getElementById("vb"); if(h) renderVerbs(L, h); }
   if(sec==="quiz"){ const h=document.getElementById("qz"); if(h) renderQuiz(L, h); }
   if(sec==="games" && qp.get("g")){ const g=qp.get("g"), h=document.getElementById("gm");
-    if(h){ ({transrace:startTransRace, match:renderGame, matchar:renderMatchAr, spell:renderSpell, listen:renderListen}[g]||renderGame)(L, h); } }
+    if(h){ ({transrace:startTransRace, sortwords:startSortGame, match:renderGame, matchar:renderMatchAr, spell:renderSpell, listen:renderListen}[g]||renderGame)(L, h); } }
   startTitleAlt();
   try{ logEvent("lang_open", {add:{}}); }catch(e){}
 }

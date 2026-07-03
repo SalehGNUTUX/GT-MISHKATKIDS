@@ -217,7 +217,7 @@ import { pickAdaptive } from "./src/adaptive.js";
 import { speak } from "./src/speak.js";
 import { robo } from "./src/robo-companion.js";
 import * as sfx from "./src/sfx.js"; // أصواتٌ تفاعليّة (لمسة/نجاح/خطأ) للألعاب
-import { GAME_REACTIONS as GR } from "./src/robo-phrases.js"; // تفاعلاتُ الألعاب (مُولَّدةٌ عبر Piper)
+import { GAME_REACTIONS as GR, GAME_INTROS as GI } from "./src/robo-phrases.js"; // تفاعلاتُ الألعاب (مُولَّدةٌ عبر Piper)
 import { vsEndRound, vsWinsOf, vsTurnHtml } from "./src/versus.js"; // نافذةُ نهاية الجولة + سجلُّ الانتصارات + حبّةُ الدور (v1.4)
 import { listProfiles, getProfile, getCurrentUser, getParentName, getParentAvatar } from "./src/accounts.js";
 import { attachReader } from "./src/reader-recorder.js"; // تسجيلُ نُطق الطفل للكلمة المُكوَّنة
@@ -281,7 +281,7 @@ function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:s
 let m_pairs=6, m_deck=[], m_flip=[], m_match=new Set(), m_moves=0, m_lock=false;
 let m_opp="solo", m_ai="medium", m_players=[], m_turn=0, m_seen=new Map();
 
-function startMemory(){ renderMemSetup(); }
+function startMemory(){ renderMemSetup(); try{speak(GI.memory);}catch(e){} }
 function meCard(){ const u=getCurrentUser(); return (u && u.name) ? { name:u.name, avatar:u.avatar||"🙂" } : { name:"أنت", avatar:"🧒" }; }
 function siblings(){ const u=getCurrentUser(); return listProfiles().filter(p=>!u||p.id!==u.id).map(p=>({ key:"p:"+p.id, name:p.name, avatar:p.avatar||"🙂" })); }
 
@@ -292,7 +292,7 @@ function renderMemSetup(){
     + sibs.map(s=>`<button data-opp="${s.key}" class="${m_opp===s.key?"on":""}">${s.avatar} ${s.name}</button>`).join("")
     + `<button data-opp="parent" class="${m_opp==="parent"?"on":""}">${getParentAvatar()} ${getParentName()}</button>`;
   view.innerHTML = backBar()+
-    `<div class="clue" style="padding:12px"><div class="say">لعبةُ الذاكرة 🧠 — اختَرِ الصعوبةَ والخصمَ ثمّ ابدأ!</div></div>
+    `<div class="clue" style="padding:12px"><div class="say">${GI.memory}</div></div>
      <div class="memset">
        <div class="setrow"><div class="setlbl">🎚️ الصعوبة</div><div class="lvl" id="mlvl"><button data-p="4" class="${m_pairs===4?"on":""}">سهل · 8</button><button data-p="6" class="${m_pairs===6?"on":""}">متوسّط · 12</button><button data-p="8" class="${m_pairs===8?"on":""}">صعب · 16</button><button data-p="10" class="${m_pairs===10?"on":""}">خبير · 20</button></div></div>
        <div class="setrow"><div class="setlbl">👥 اللعبُ مع</div><div class="lvl" id="mopp">${oppList}</div></div>
@@ -597,7 +597,7 @@ function xoBuildLines(N,W){ const L=[];
   for(let r=0;r<=N-W;r++)for(let c=0;c<=N-W;c++)L.push(Array.from({length:W},(_,k)=>(r+k)*N+c+k));   // قُطريّ ↘
   for(let r=0;r<=N-W;r++)for(let c=W-1;c<N;c++)L.push(Array.from({length:W},(_,k)=>(r+k)*N+c-k));     // قُطريّ ↙
   return L; }
-function startXO(){ vsSetup({ say:"دائرةٌ وعلامة ⭕✖ — اصنعْ خطًّا كاملًا قبلَ خصمك!", diffLabel:"🔲 حجمُ اللوحة", diffs:[{v:3,label:"3×3"},{v:4,label:"4×4"},{v:5,label:"5×5"}], getDiff:()=>xo_size, setDiff:v=>{xo_size=+v;}, start:newXO }); }
+function startXO(){ vsSetup({ say:GI.xo, diffLabel:"🔲 حجمُ اللوحة", diffs:[{v:3,label:"3×3"},{v:4,label:"4×4"},{v:5,label:"5×5"}], getDiff:()=>xo_size, setDiff:v=>{xo_size=+v;}, start:newXO }); try{speak(GI.xo);}catch(e){} }
 function newXO(){ vsRun=true; const N=xo_size; xo_win=Math.min(N,4); xo_lines=xoBuildLines(N,xo_win); xo_b=Array(N*N).fill(null); xo_ps=vsMakePlayers(true); xo_turn=0; xo_lock=false; xo_done=false; renderXO(); if(xo_ps[0].cpu) xoAI(); }
 function xoWinner(b){ for(const L of xo_lines){ const p=b[L[0]]; if(p!=null && L.every(i=>b[i]===p)) return {p, line:L}; } return b.every(x=>x!=null)?{p:-1,line:null}:null; }
 function renderXO(){
@@ -661,7 +661,7 @@ function xoEnd(w){
 
 /* ===================== 🔢 تحدّي الأعداد (تناوبٌ · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
 let nc_diff="easy", nc_ps=[], nc_turn=0, nc_q=null, nc_lock=false; const NC_TARGET=5;
-function startNC(){ vsSetup({ say:"تحدّي الأعداد 🔢 — أوّلُ من يبلغُ "+NC_TARGET+" نقاطٍ يفوز!", diffs:[{v:"easy",label:"جمع"},{v:"medium",label:"جمع وطرح"},{v:"hard",label:"ضرب"}], getDiff:()=>nc_diff, setDiff:v=>{nc_diff=v;}, start:newNC }); }
+function startNC(){ vsSetup({ say:GI.numrace, diffs:[{v:"easy",label:"جمع"},{v:"medium",label:"جمع وطرح"},{v:"hard",label:"ضرب"}], getDiff:()=>nc_diff, setDiff:v=>{nc_diff=v;}, start:newNC }); try{speak(GI.numrace);}catch(e){} }
 function newNC(){ vsRun=true; nc_ps=vsMakePlayers(true); nc_ps.forEach(p=>p.score=0); nc_turn=0; nc_lock=false; ncNext(); }
 function ncGen(){
   const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1)); let a,b,op,ans;
@@ -703,7 +703,7 @@ function ncEnd(){ logEvent("numrace_win"); vsEndRound(nc_ps, { onAgain:newNC, on
 let hu_diff="easy", hu_ps=[], hu_turn=0, hu_lock=false, hu_cells=[], hu_target="", hu_raf=null; const HU_TARGET=5;
 const HU_CFG={ easy:{n:12,ms:6000,pr:0.6,d:1800}, medium:{n:16,ms:4500,pr:0.78,d:1300}, hard:{n:20,ms:3200,pr:0.9,d:900} };
 const AR_LETTERS="ا ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ي".split(" ");
-function startHU(){ vsSetup({ say:"صيدُ الحرف/الرقم 🔎 — اعثرْ على المطلوبِ قبل نفادِ الوقت!", diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>hu_diff, setDiff:v=>{hu_diff=v;}, start:newHU }); }
+function startHU(){ vsSetup({ say:GI.hunt, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>hu_diff, setDiff:v=>{hu_diff=v;}, start:newHU }); try{speak(GI.hunt);}catch(e){} }
 function newHU(){ vsRun=true; hu_ps=vsMakePlayers(true); hu_ps.forEach(p=>p.score=0); hu_turn=0; hu_lock=false; huNext(); }
 function huNext(){ if(!vsRun) return;
   if(hu_ps.some(p=>p.score>=HU_TARGET)){ huEnd(); return; }
@@ -743,7 +743,7 @@ function huEnd(){ logEvent("hunt_win"); vsEndRound(hu_ps, { onAgain:newHU, onExi
 /* ===================== ⚡ سباقُ المطابقة (تناوبٌ بمؤقّت · صورٌ · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
 let sm_diff="easy", sm_ps=[], sm_turn=0, sm_lock=false, sm_target="", sm_opts=[], sm_raf=null; const SM_TARGET=5;
 const SM_CFG={ easy:{n:4,ms:6000,pr:0.6,d:1700}, medium:{n:6,ms:4500,pr:0.78,d:1200}, hard:{n:9,ms:3200,pr:0.9,d:850} };
-function startSM(){ vsSetup({ say:"سباقُ المطابقة ⚡ — جِدِ الصورةَ المطابقةَ بسرعة!", diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>sm_diff, setDiff:v=>{sm_diff=v;}, start:newSM }); }
+function startSM(){ vsSetup({ say:GI.smatch, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>sm_diff, setDiff:v=>{sm_diff=v;}, start:newSM }); try{speak(GI.smatch);}catch(e){} }
 function newSM(){ vsRun=true; sm_ps=vsMakePlayers(true); sm_ps.forEach(p=>p.score=0); sm_turn=0; sm_lock=false; smNext(); }
 function smNext(){ if(!vsRun) return;
   if(sm_ps.some(p=>p.score>=SM_TARGET)){ smEnd(); return; }
@@ -779,7 +779,7 @@ function smEnd(){ logEvent("smatch_win"); vsEndRound(sm_ps, { onAgain:newSM, onE
 /* ===================== 🔤 شبكةُ الكلمات (تناوبٌ · تكوينُ الكلمات بالترتيب · ألوانُ اللاعبين · ضدّ الآليّ/الحسابات) ===================== */
 let wg_diff="easy", wg_ps=[], wg_turn=0, wg_words=[], wg_found=0, wg_owner=[], wg_seq=[], wg_lock=false, wg_grid=[]; const WG_N=6;
 const WG_CFG={ easy:{count:4,len:[3,3],pr:0.5}, medium:{count:5,len:[3,4],pr:0.68}, hard:{count:6,len:[3,5],pr:0.82} };
-function startWG(){ vsSetup({ say:"شبكةُ الكلمات 🔤 — كوّنِ الكلماتِ بالترتيب! من يُكوّنُ أكثرَ يفوز.", diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>wg_diff, setDiff:v=>{wg_diff=v;}, start:newWG }); }
+function startWG(){ vsSetup({ say:GI.wgrid, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>wg_diff, setDiff:v=>{wg_diff=v;}, start:newWG }); try{speak(GI.wgrid);}catch(e){} }
 function wgGen(){
   const cfg=WG_CFG[wg_diff];
   const pool=[...EXTRA_WHEEL_WORDS].filter(w=>w.length>=cfg.len[0] && w.length<=cfg.len[1]);

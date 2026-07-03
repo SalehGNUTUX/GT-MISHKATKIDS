@@ -507,10 +507,10 @@ function renderLang(k){
       topnav = nav("↩ الفئات","cats")+`<span class="cur">${CAT_ICON[C.id]||""} ${esc(C.ar)}</span>`;
       body = `<div class="grid">${C.items.map((it,idx)=>
         `<div class="gcell"><button class="gcard" data-say="${esc(it.w)}"><span class="spk">🔊</span><span class="em">${it.emoji}</span>
-          <span class="big ltr" style="font-size:18px">${esc(it.w)}</span><span class="wd">${esc(it.ar)}</span></button>
+          <span class="big" data-ar="${esc(it.ar)}" data-fg="${esc(it.w)}" dir="ltr" style="font-size:18px;transition:opacity .26s ease;min-height:1.2em">${esc(it.w)}</span></button>
           <button class="lrec" data-rec="${esc(it.w)}" data-id="w${idx}">🎙️ سجّلْ نُطقك</button>
           <div class="rrHost" id="rr-w${idx}" hidden></div></div>`).join("")}</div>
-        <div class="hint">اضغطِ الكلمةَ لسماعها 🔊 · 🎙️ لتسجيل نُطقك (تحتها معناها بالعربيّة)</div>`;
+        <div class="hint">تتبدّلُ البطاقةُ بين اللغتين تلقائيًّا · اضغطِ الكلمةَ لسماعها 🔊 · 🎙️ لتسجيل نُطقك</div>`;
     }
   } else if(sec==="phrases"){
     const cats = L.phrases || [], C = cats.find(x=>x.id===qp.get("cat"));
@@ -622,14 +622,14 @@ let altTimer=null, altFg=false;
 function startTitleAlt(){
   if(altTimer){ clearInterval(altTimer); altTimer=null; }
   altFg=false;
-  const lts=()=>view.querySelectorAll(".lcard .lt[data-fg]");
+  const lts=()=>view.querySelectorAll("[data-fg]");   // عناوينُ الأقسام/الفئات + بطاقاتُ الكلمات
   if(!lts().length) return;
   altTimer=setInterval(()=>{
     const els=lts(); if(!els.length){ clearInterval(altTimer); altTimer=null; return; }
     altFg=!altFg;
     els.forEach(el=>{ el.style.opacity="0";
-      setTimeout(()=>{ el.textContent = altFg ? el.getAttribute("data-fg") : el.getAttribute("data-ar");
-        el.classList.toggle("fg", altFg); el.style.opacity="1"; }, 260);
+      setTimeout(()=>{ const fg=altFg; el.textContent = fg ? el.getAttribute("data-fg") : el.getAttribute("data-ar");
+        el.classList.toggle("fg", fg); el.dir = fg ? "ltr" : "rtl"; el.style.opacity="1"; }, 260);
     });
   }, 5000);
 }

@@ -58,7 +58,7 @@ export function vsReact(p0, p1) {
   else robo.read(vP(GR.kids));
 }
 export const GAME = GR; // ok/no/aiok/beatai/... للاستعمال المباشر
-export function vsScoreHtml(ps) { return `<div class="vs-score">` + ps.map(p => `<span class="vs-chip" style="border-color:${p.color};color:${p.color}">${p.avatar} ${p.name}: ${p.score}</span>`).join("") + `</div>`; }
+export function vsScoreHtml(ps) { return `<div class="vs-score">` + ps.map(p => { const w = vsWins[p.name] || 0; return `<span class="vs-chip" style="border-color:${p.color};color:${p.color}">${p.avatar} ${p.name}: ${p.score}${w ? ` <b style="opacity:.8">🏅${w}</b>` : ""}</span>`; }).join("") + `</div>`; }
 
 // شاشةُ الإعداد داخل host. cfg={ say, diffLabel?, diffs:[{v,label}], getDiff, setDiff, start, soloOk? }
 export function vsSetup(host, cfg) {

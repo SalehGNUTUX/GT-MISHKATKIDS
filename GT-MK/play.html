@@ -218,7 +218,7 @@ import { speak } from "./src/speak.js";
 import { robo } from "./src/robo-companion.js";
 import * as sfx from "./src/sfx.js"; // أصواتٌ تفاعليّة (لمسة/نجاح/خطأ) للألعاب
 import { GAME_REACTIONS as GR } from "./src/robo-phrases.js"; // تفاعلاتُ الألعاب (مُولَّدةٌ عبر Piper)
-import { vsEndRound } from "./src/versus.js"; // نافذةُ نهاية الجولة الموحّدة + سجلُّ الانتصارات (v1.4)
+import { vsEndRound, vsWinsOf } from "./src/versus.js"; // نافذةُ نهاية الجولة + سجلُّ الانتصارات (v1.4)
 import { listProfiles, getProfile, getCurrentUser, getParentName, getParentAvatar } from "./src/accounts.js";
 import { attachReader } from "./src/reader-recorder.js"; // تسجيلُ نُطق الطفل للكلمة المُكوَّنة
 import { smartPrint } from "./src/smart-print.js"; window.smartPrint = smartPrint; // طباعةٌ تعملُ على الهاتف أيضًا
@@ -557,7 +557,7 @@ function vsMakePlayers(forceTwo){
   return forceTwo ? [m,{name:"الآليّ",avatar:"🤖",score:0,cpu:true,color:VS_COLB}] : [m]; // وحدي (أو إجبارُ خصمٍ للألعاب الثنائيّة)
 }
 function vsReact(p0,p1){ if(!p1){ robo.cheer(); return; } if(p1.cpu){ if(p0.score>p1.score) robo.read(vP(VS_BEATAI)); else if(p1.score>p0.score) robo.read(vP(VS_AIWON)); else robo.read(vP(VS_TIE)); } else robo.read(vP(VS_KIDS)); }
-function vsScoreHtml(ps){ return `<div class="vsscore">`+ps.map((p,i)=>`<span class="vschip" style="border-color:${p.color};color:${p.color}">${p.avatar} ${p.name}: ${p.score}</span>`).join("")+`</div>`; }
+function vsScoreHtml(ps){ return `<div class="vsscore">`+ps.map((p,i)=>{ const w=vsWinsOf(p.name); return `<span class="vschip" style="border-color:${p.color};color:${p.color}">${p.avatar} ${p.name}: ${p.score}${w?` <b style="opacity:.8">🏅${w}</b>`:""}</span>`; }).join("")+`</div>`; }
 // شاشةُ إعدادٍ عامّة: cfg={ say, diffLabel?, diffs:[{v,label}], getDiff, setDiff, start, soloOk? }
 function vsSetup(cfg){
   const sibs=siblings();

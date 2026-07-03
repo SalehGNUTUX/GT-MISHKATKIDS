@@ -396,15 +396,15 @@ function renderListen(L, host){
   ask();
 }
 // 🏁 سباقُ الترجمة (تنافسيّ · ضدّ الآليّ بثلاث صعوبات/الإخوة): تُنطَقُ الكلمةُ الأجنبيّةُ ← اختَرْ معناها العربيّ بسرعة.
-let tr_diff="easy", tr_ps=[], tr_turn=0, tr_lock=false, tr_q=null, tr_raf=null; const TR_TARGET=5;
+let tr_diff="easy", tr_ps=[], tr_turn=0, tr_lock=false, tr_q=null, tr_raf=null; let trRun=false; const TR_TARGET=5;
 const TR_CFG={ easy:{opts:3,ms:7000,pr:0.55,d:1900}, medium:{opts:4,ms:5500,pr:0.72,d:1400}, hard:{opts:4,ms:4000,pr:0.88,d:1000} };
 let tr_L=null, tr_host=null;
 function startTransRace(L, host){ tr_L=L; tr_host=host; vsSetup(host, {
   say:"🏁 سباقُ الترجمة — استمعْ للكلمة ثمّ اختَرْ معناها العربيّ قبلَ خصمك!",
   diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
   getDiff:()=>tr_diff, setDiff:v=>{tr_diff=v;}, start:()=>newTransRace() }); }
-function newTransRace(){ tr_ps=vsMakePlayers(true); tr_ps.forEach(p=>p.score=0); tr_turn=0; tr_lock=false; trNext(); }
-function trNext(){
+function newTransRace(){ trRun=true; tr_ps=vsMakePlayers(true); tr_ps.forEach(p=>p.score=0); tr_turn=0; tr_lock=false; trNext(); }
+function trNext(){ if(!trRun) return;
   if(tr_ps.some(p=>p.score>=TR_TARGET)){ trEnd(); return; }
   const cfg=TR_CFG[tr_diff], pool=shuffle(allWords(tr_L));
   const correct=pool[0], opts=shuffle([correct, ...pool.filter(w=>w.ar!==correct.ar).slice(0,cfg.opts-1)]);
@@ -424,7 +424,7 @@ function renderTransRace(){
   tr_host.querySelector("#trOpts").addEventListener("click",e=>{ const b=e.target.closest("[data-ar]"); if(!b) return; trTap(b.getAttribute("data-ar"), b); });
 }
 function trTimer(ms,onEnd){ const start=Date.now(), bar=document.getElementById("trBar"); cancelAnimationFrame(tr_raf);
-  const tick=()=>{ const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ onEnd&&onEnd(); return; } tr_raf=requestAnimationFrame(tick); }; tick(); }
+  const tick=()=>{ if(!trRun) return; const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ onEnd&&onEnd(); return; } tr_raf=requestAnimationFrame(tick); }; tick(); }
 function trTap(ar,btn){ if(tr_lock||tr_ps[tr_turn].cpu) return; cancelAnimationFrame(tr_raf); tr_lock=true; sfx.tap(); trResolve(ar===tr_q.correct.ar, btn); }
 function trAI(){ tr_lock=true; const cfg=TR_CFG[tr_diff], ok=Math.random()<cfg.pr; say(tr_q.correct.w, tr_L); trTimer(cfg.d, ()=>trResolve(ok,null)); }
 function trResolve(ok,btn){
@@ -434,7 +434,7 @@ function trResolve(ok,btn){
   else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(vP(GR.no)); else sfx.nope();
     tr_host.querySelectorAll("#trOpts [data-ar]").forEach(b=>{ if(b.getAttribute("data-ar")===tr_q.correct.ar) b.classList.add("ok"); }); }
   const fb=tr_host.querySelector("#trFb"); if(fb) fb.innerHTML=`<div class="hint" style="text-align:center">${ok?"✅ صحيح!":`المعنى: <b>${esc(tr_q.correct.ar)}</b>`}</div>`;
-  setTimeout(()=>{ tr_turn=(tr_turn+1)%tr_ps.length; trNext(); }, 1150);
+  if(!trRun) return; setTimeout(()=>{ tr_turn=(tr_turn+1)%tr_ps.length; trNext(); }, 1150);
 }
 function trEnd(){
   logEvent("lang_transrace_win");
@@ -634,7 +634,7 @@ function startTitleAlt(){
   }, 5000);
 }
 
-function render(){
+function render(){ trRun=false;
   if(altTimer){ clearInterval(altTimer); altTimer=null; }
   const k = curLng();
   if(k && LANGS[k]) renderLang(k); else renderPick();

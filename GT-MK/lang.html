@@ -177,7 +177,7 @@ import { logEvent } from "./src/progress.js";
 import { speak } from "./src/speak.js";              // للترجمة العربيّة (تُوجَّه للنموذج العصبيّ)
 import { attachReader } from "./src/reader-recorder.js"; // تسجيلُ نُطق الطفل (لكلّ حساب)
 import { robo } from "./src/robo-companion.js";       // الآليُّ الظاهرُ + فقاعةُ ردوده
-import { vsSetup, vsMakePlayers, vsReact, vsScoreHtml, vsEndRound, VS, vP, GAME as GR, sfx } from "./src/versus.js"; // الإطارُ التنافسيّ المشترك (v1.4)
+import { vsSetup, vsMakePlayers, vsReact, vsScoreHtml, vsEndRound, vsTurnHtml, VS, vP, GAME as GR, sfx } from "./src/versus.js"; // الإطارُ التنافسيّ المشترك (v1.4)
 
 const LANGS = { en: EN, fr: FR };
 const view = document.getElementById("view");
@@ -415,7 +415,7 @@ function renderTransRace(){
   const cur=tr_ps[tr_turn];
   tr_host.innerHTML = `<div class="clue" style="padding:10px"><div class="say">🏁 سباقُ الترجمة — أوّلُ من يبلغُ ${TR_TARGET} يفوز!</div></div>`
     + vsScoreHtml(tr_ps)
-    + `<div class="vs-turn" style="color:${cur.color}">${cur.cpu?"🤖 دورُ الآليّ…":`${cur.avatar} دورُ ${cur.name}`}</div>`
+    + vsTurnHtml(cur)
     + `<div class="qzprompt" style="text-align:center;margin:6px 0"><button class="secbtn on" id="trSay">🔊 <span class="ltr">${esc(tr_q.correct.w)}</span></button></div>`
     + `<div class="hubar" style="height:9px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px;margin:6px auto 12px"><span id="trBar" style="display:block;height:100%;background:var(--primary);width:100%"></span></div>`
     + `<div class="grid" id="trOpts">${tr_q.opts.map(o=>`<button class="gcard tropt" data-ar="${esc(o.ar)}">${esc(o.ar)}</button>`).join("")}</div>`

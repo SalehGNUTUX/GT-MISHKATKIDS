@@ -21,7 +21,11 @@ function ensureStyle() {
   .vs-lvl button.on{background:var(--primary,#E07A5F);color:#fff;border-color:var(--primary,#E07A5F)}
   .vs-start{width:100%;margin-top:4px;padding:14px;border:none;border-radius:14px;font-weight:800;font-family:inherit;font-size:16px;cursor:pointer;background:var(--primary,#E07A5F);color:#fff;transition:transform .12s,background .12s}
   .vs-start:active{transform:scale(.98)}
-  .vs-turn{font-weight:800;font-size:16px;margin:8px 0 12px;text-align:center}
+  .vs-turn{display:flex;align-items:center;justify-content:center;gap:8px;width:fit-content;max-width:92%;margin:10px auto 14px;
+    font-weight:800;font-size:19px;padding:9px 22px;border-radius:999px;border:2px solid currentColor;
+    background:color-mix(in srgb,currentColor 14%,var(--card,#fff));box-shadow:0 4px 16px color-mix(in srgb,currentColor 30%,transparent);
+    animation:vsTurn .55s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes vsTurn{0%{transform:scale(.6) translateY(-10px);opacity:0}55%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
   .vs-score{display:flex;justify-content:center;gap:14px;margin:8px 0 4px;flex-wrap:wrap}
   .vs-chip{font-weight:800;font-size:15px;border-radius:999px;padding:5px 14px;border:2px solid}
   /* نافذةُ نهاية الجولة (مركزيّة، لكلّ الألعاب) */
@@ -58,6 +62,11 @@ export function vsReact(p0, p1) {
   else robo.read(vP(GR.kids));
 }
 export const GAME = GR; // ok/no/aiok/beatai/... للاستعمال المباشر
+// حبّةُ «دورُ اللاعب» المبهجةُ الموحّدة (تظهرُ بحركةٍ عند كلّ تبديل). تُستعمَلُ في كلّ الألعاب.
+export function vsTurnHtml(p) {
+  ensureStyle();
+  return `<div class="vs-turn" style="color:${p.color}">${p.cpu ? "🤖 دورُ الآليّ…" : `${p.avatar} دورُك يا ${p.name}! 🎉`}</div>`;
+}
 export function vsScoreHtml(ps) { return `<div class="vs-score">` + ps.map(p => { const w = vsWins[p.name] || 0; return `<span class="vs-chip" style="border-color:${p.color};color:${p.color}">${p.avatar} ${p.name}: ${p.score}${w ? ` <b style="opacity:.8">🏅${w}</b>` : ""}</span>`; }).join("") + `</div>`; }
 
 // شاشةُ الإعداد داخل host. cfg={ say, diffLabel?, diffs:[{v,label}], getDiff, setDiff, start, soloOk? }

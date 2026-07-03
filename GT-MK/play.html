@@ -218,7 +218,7 @@ import { speak } from "./src/speak.js";
 import { robo } from "./src/robo-companion.js";
 import * as sfx from "./src/sfx.js"; // أصواتٌ تفاعليّة (لمسة/نجاح/خطأ) للألعاب
 import { GAME_REACTIONS as GR } from "./src/robo-phrases.js"; // تفاعلاتُ الألعاب (مُولَّدةٌ عبر Piper)
-import { vsEndRound, vsWinsOf } from "./src/versus.js"; // نافذةُ نهاية الجولة + سجلُّ الانتصارات (v1.4)
+import { vsEndRound, vsWinsOf, vsTurnHtml } from "./src/versus.js"; // نافذةُ نهاية الجولة + سجلُّ الانتصارات + حبّةُ الدور (v1.4)
 import { listProfiles, getProfile, getCurrentUser, getParentName, getParentAvatar } from "./src/accounts.js";
 import { attachReader } from "./src/reader-recorder.js"; // تسجيلُ نُطق الطفل للكلمة المُكوَّنة
 import { smartPrint } from "./src/smart-print.js"; window.smartPrint = smartPrint; // طباعةٌ تعملُ على الهاتف أيضًا
@@ -322,7 +322,7 @@ function renderMemory(){
   const board = multi
     ? m_players.map((p,k)=>`<span class="pill ${k===m_turn?"turn":""}">${p.avatar} ${p.name}: <b>${p.score}</b></span>`).join("")
     : `<span class="pill">المحاولات: <b>${m_moves}</b></span><span class="pill">المطابقات: <b>${m_match.size/2}</b></span>`;
-  const turnNote = multi ? `<div class="hint">${m_players[m_turn].cpu?"دورُ الآليّ… 🤖":"دورُ "+m_players[m_turn].avatar+" "+m_players[m_turn].name}</div>` : "";
+  const turnNote = multi ? vsTurnHtml(m_players[m_turn]) : "";
   view.innerHTML = backBar()+`<div class="gbar">${board}</div>${turnNote}<div class="mgrid" id="grid"></div><div id="msg"></div>`;
   wireBack();
   const grid=document.getElementById("grid");
@@ -592,7 +592,7 @@ function newXO(){ xo_b=Array(9).fill(null); xo_ps=vsMakePlayers(true); xo_turn=0
 function xoWinner(b){ for(const L of XO_LINES){ const [a,c,d]=L; if(b[a]!=null && b[a]===b[c] && b[a]===b[d]) return {p:b[a],line:L}; } return b.every(x=>x!=null)?{p:-1,line:null}:null; }
 function renderXO(){
   const w=xoWinner(xo_b), cur=xo_ps[xo_turn];
-  let turnHtml = xo_done ? "" : `<div class="vsturn" style="color:${cur.color}">${cur.cpu?"🤖 دورُ الآليّ…":`${cur.avatar} دورُ ${cur.name}`}</div>`;
+  let turnHtml = xo_done ? "" : vsTurnHtml(cur);
   const cells = xo_b.map((v,i)=>{ const mk=v==null?"":XO_MK[v]; const col=v==null?"":xo_ps[v].color; const wn=w&&w.line&&w.line.includes(i)?" wn":""; return `<div class="xoc${wn}" data-i="${i}" style="color:${col}">${mk}</div>`; }).join("");
   view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">دائرةٌ وعلامة ⭕✖ — ثلاثةٌ في خطٍّ تفوز!</div></div>`
     + vsScoreHtml(xo_ps) + turnHtml + `<div class="xob" id="xob">${cells}</div>`
@@ -665,7 +665,7 @@ function renderNC(){
   const cur=nc_ps[nc_turn];
   view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">تحدّي الأعداد 🔢 — أوّلُ من يبلغُ ${NC_TARGET} يفوز!</div></div>`
     + vsScoreHtml(nc_ps)
-    + `<div class="vsturn" style="color:${cur.color}">${cur.cpu?"🤖 دورُ الآليّ…":`${cur.avatar} دورُ ${cur.name}`}</div>`
+    + vsTurnHtml(cur)
     + `<div class="ncq">${nc_q.a} ${nc_q.op} ${nc_q.b} = ؟</div>`
     + `<div class="ncopts" id="ncopts">`+nc_q.opts.map(o=>`<button class="ncopt" data-v="${o}">${o}</button>`).join("")+`</div>`
     + `<div id="ncfb"></div>`;
@@ -702,7 +702,7 @@ function renderHU(){
   const cur=hu_ps[hu_turn];
   view.innerHTML=backBar()+`<div class="clue" style="padding:10px"><div class="say">صيدُ الحرف/الرقم 🔎 — أوّلُ من يبلغُ ${HU_TARGET} يفوز!</div></div>`
     + vsScoreHtml(hu_ps)
-    + `<div class="vsturn" style="color:${cur.color}">${cur.cpu?"🤖 دورُ الآليّ…":`${cur.avatar} دورُ ${cur.name}`}</div>`
+    + vsTurnHtml(cur)
     + `<div class="hutarget">اعثرْ على: <b>${hu_target}</b></div>`
     + `<div class="hubar"><span id="hubar"></span></div>`
     + `<div class="hugrid" id="hugrid">`+hu_cells.map(c=>`<button class="hucell" data-c="${c}">${c}</button>`).join("")+`</div>`
@@ -740,7 +740,7 @@ function renderSM(){
   const cur=sm_ps[sm_turn];
   view.innerHTML=backBar()+`<div class="clue" style="padding:10px"><div class="say">سباقُ المطابقة ⚡ — أوّلُ من يبلغُ ${SM_TARGET} يفوز!</div></div>`
     + vsScoreHtml(sm_ps)
-    + `<div class="vsturn" style="color:${cur.color}">${cur.cpu?"🤖 دورُ الآليّ…":`${cur.avatar} دورُ ${cur.name}`}</div>`
+    + vsTurnHtml(cur)
     + `<div class="hint" style="text-align:center;margin:2px 0">جِدْ مثلَ هذه الصورة:</div><div class="smtarget">${MEMORY_ART[sm_target]}</div>`
     + `<div class="hubar"><span id="smbar"></span></div>`
     + `<div class="smgrid" id="smgrid">`+sm_opts.map(o=>`<button class="smcell" data-c="${o}">${MEMORY_ART[o]}</button>`).join("")+`</div>`
@@ -798,7 +798,7 @@ function renderWG(){
   const cells=wg_grid.map((ch,i)=>{ const own=wg_owner[i], sel=wg_seq.includes(i)?" sel":"", oc=own!=null?" own":"", st=own!=null?`style="background:${wg_ps[own].color}"`:""; return `<button class="wgc${sel}${oc}" data-i="${i}" ${st}>${ch}</button>`; }).join("");
   view.innerHTML=backBar()+`<div class="clue" style="padding:10px"><div class="say">شبكةُ الكلمات 🔤 — كوّنِ الكلمةَ المُحدَّدة: انقرْ حروفَها بالترتيب (أفقيًّا أو رأسيًّا).</div></div>`
     + vsScoreHtml(wg_ps)
-    + `<div class="vsturn" style="color:${cur.color}">${cur.cpu?"🤖 دورُ الآليّ…":`${cur.avatar} دورُ ${cur.name}`}</div>`
+    + vsTurnHtml(cur)
     + `<div class="wglist">${list}</div>`
     + `<div class="wggrid" id="wggrid">${cells}</div>`
     + `<div id="wgfb"></div>`;

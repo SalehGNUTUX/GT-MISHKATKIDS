@@ -23,7 +23,20 @@ function ensureStyle() {
   .vs-start:active{transform:scale(.98)}
   .vs-turn{font-weight:800;font-size:16px;margin:8px 0 12px;text-align:center}
   .vs-score{display:flex;justify-content:center;gap:14px;margin:8px 0 4px;flex-wrap:wrap}
-  .vs-chip{font-weight:800;font-size:15px;border-radius:999px;padding:5px 14px;border:2px solid}`;
+  .vs-chip{font-weight:800;font-size:15px;border-radius:999px;padding:5px 14px;border:2px solid}
+  /* نافذةُ نهاية الجولة (مركزيّة، لكلّ الألعاب) */
+  .vs-ov{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(20,20,25,.55);padding:20px;font-family:inherit;animation:vsIn .2s ease}
+  @keyframes vsIn{from{opacity:0}to{opacity:1}}
+  .vs-modal{background:var(--card,#fff);color:var(--ink,#2B2B2B);border-radius:24px;box-shadow:0 16px 48px rgba(0,0,0,.32);max-width:430px;width:100%;padding:26px 22px;text-align:center;animation:vsPop .3s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes vsPop{from{transform:scale(.82)}to{transform:scale(1)}}
+  .vs-win-t{font-size:27px;font-weight:800;margin-bottom:14px;line-height:1.3}
+  .vs-win-s{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+  .vs-win-r{background:color-mix(in srgb,var(--primary,#E07A5F) 10%,var(--card,#fff));border:1px solid var(--line,#ECE6DA);border-radius:14px;padding:11px 12px;font-size:15px;margin-bottom:18px;line-height:1.9}
+  .vs-win-b{display:flex;gap:10px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+  .vs-win-b button{border:none;border-radius:14px;padding:12px 22px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;transition:transform .1s}
+  .vs-win-b button:active{transform:scale(.96)}
+  .vs-again{background:var(--primary,#E07A5F);color:#fff} .vs-exit{background:var(--bg,#f4efe6);border:1px solid var(--line,#ECE6DA);color:var(--ink,#2B2B2B)}
+  .vs-reset{background:none;border:none;color:var(--muted,#6B6B6B);font-size:13px;cursor:pointer;font-family:inherit;text-decoration:underline}`;
   document.head.appendChild(st);
 }
 
@@ -69,6 +82,40 @@ export function vsSetup(host, cfg) {
   host.querySelector("#vsO").addEventListener("click", e => { const b = e.target.closest("[data-opp]"); if (!b) return; VS.opp = b.getAttribute("data-opp"); rr(); });
   host.querySelector("#vsA").addEventListener("click", e => { const b = e.target.closest("[data-ai]"); if (!b) return; VS.ai = b.getAttribute("data-ai"); rr(); });
   host.querySelector("#vsGo").onclick = cfg.start;
+}
+
+// سجلُّ الانتصارات (يتراكمُ عبر الجولات في الجلسة؛ يُصفَّرُ بزرّ). مفتاحُه اسمُ اللاعب.
+const vsWins = {};
+export function vsWinsOf(name) { return vsWins[name] || 0; }
+
+// نافذةُ نهاية الجولة الموحّدة لكلّ الألعاب: اسمُ الفائز + النقاط + سجلُّ الانتصارات + [جولةٌ جديدة/خروج/تصفير].
+// opts = { onAgain, onExit, subtitle? }.  يُحسَبُ الفائزُ من أعلى نقاطٍ، ويُسجَّلُ انتصارُه، ويُطلَقُ ردُّ الآليّ العصبيّ.
+export function vsEndRound(players, opts = {}) {
+  ensureStyle();
+  const sorted = [...players].sort((a, b) => b.score - a.score);
+  const tie = sorted[1] && sorted[0].score === sorted[1].score;
+  const winner = tie ? null : sorted[0];
+  if (winner) vsWins[winner.name] = (vsWins[winner.name] || 0) + 1;
+  const me = players.find(p => !p.cpu), o = players.find(p => p.cpu);
+  if (o && me) vsReact(me, o); else robo.read(vP(GR.kids)); // ردُّ فعلٍ عصبيٌّ منطوق
+  const ov = document.createElement("div"); ov.className = "vs-ov";
+  const title = tie ? "🤝 تعادُل!" : `🏆 فاز ${winner.avatar} ${winner.name}!`;
+  const rec = () => players.map(p => `${p.avatar} ${p.name}: <b>${vsWins[p.name] || 0}</b>`).join(" · ");
+  ov.innerHTML = `<div class="vs-modal">
+    <div class="vs-win-t">${title}</div>
+    ${opts.subtitle ? `<div class="hint" style="margin:-6px 0 12px">${opts.subtitle}</div>` : ""}
+    <div class="vs-win-s">${players.map(p => `<span class="vs-chip" style="border-color:${p.color};color:${p.color}">${p.avatar} ${p.name}: ${p.score}</span>`).join("")}</div>
+    <div class="vs-win-r">🏅 سجلُّ الجولات المكسوبة:<br><span id="vsRec">${rec()}</span></div>
+    <div class="vs-win-b"><button class="vs-again">🔁 جولةٌ جديدة</button><button class="vs-exit">🚪 خروج</button></div>
+    <button class="vs-reset">↺ صفّرِ السجلّ</button>
+  </div>`;
+  document.body.appendChild(ov);
+  sfx.success();
+  const close = () => { try { ov.remove(); } catch (e) {} };
+  ov.querySelector(".vs-again").onclick = () => { close(); opts.onAgain && opts.onAgain(); };
+  ov.querySelector(".vs-exit").onclick = () => { close(); opts.onExit && opts.onExit(); };
+  ov.querySelector(".vs-reset").onclick = () => { players.forEach(p => { vsWins[p.name] = 0; }); const el = ov.querySelector("#vsRec"); if (el) el.innerHTML = rec(); };
+  ov.addEventListener("click", e => { if (e.target === ov) { /* لا يُغلَق بالنقر خارجًا لئلّا يُفلَت الطفلُ الأزرار */ } });
 }
 
 export { sfx };

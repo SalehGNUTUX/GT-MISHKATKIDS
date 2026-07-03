@@ -177,7 +177,7 @@ import { logEvent } from "./src/progress.js";
 import { speak } from "./src/speak.js";              // للترجمة العربيّة (تُوجَّه للنموذج العصبيّ)
 import { attachReader } from "./src/reader-recorder.js"; // تسجيلُ نُطق الطفل (لكلّ حساب)
 import { robo } from "./src/robo-companion.js";       // الآليُّ الظاهرُ + فقاعةُ ردوده
-import { vsSetup, vsMakePlayers, vsReact, vsScoreHtml, VS, vP, GAME as GR, sfx } from "./src/versus.js"; // الإطارُ التنافسيّ المشترك (v1.4)
+import { vsSetup, vsMakePlayers, vsReact, vsScoreHtml, vsEndRound, VS, vP, GAME as GR, sfx } from "./src/versus.js"; // الإطارُ التنافسيّ المشترك (v1.4)
 
 const LANGS = { en: EN, fr: FR };
 const view = document.getElementById("view");
@@ -438,11 +438,10 @@ function trResolve(ok,btn){
 }
 function trEnd(){
   logEvent("lang_transrace_win");
-  const s=[...tr_ps].sort((a,b)=>b.score-a.score);
-  const res=(s[1]&&s[0].score===s[1].score)?"🤝 تعادُل!":`${s[0].cpu?"🤖":"🌟"} فاز ${s[0].avatar} ${s[0].name}!`;
-  const me=tr_ps.find(p=>!p.cpu), o=tr_ps.find(p=>p.cpu); if(o&&me) vsReact(me,o); else robo.read(vP(GR.kids));
-  tr_host.innerHTML = `<div class="clue" style="padding:10px"><div class="say">انتهتِ المباراة!</div></div>`+vsScoreHtml(tr_ps)+`<div class="qzdone">${res}<button class="secbtn on" id="trAgain">🔁 جديد</button></div>`;
-  tr_host.querySelector("#trAgain").onclick=()=>startTransRace(tr_L, tr_host);
+  vsEndRound(tr_ps, {
+    onAgain: () => newTransRace(),
+    onExit: () => { const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); }
+  });
 }
 
 // الأفعالُ والأزمنة: قائمةُ أفعالٍ ← تصريفُ الفعل في الماضي/المضارع/المستقبل (يُنطَق عند الضغط).

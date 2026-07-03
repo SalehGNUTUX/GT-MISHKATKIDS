@@ -406,10 +406,10 @@ let tr_diff="easy", tr_ps=[], tr_turn=0, tr_lock=false, tr_q=null, tr_raf=null; 
 const TR_CFG={ easy:{opts:3,ms:7000,pr:0.55,d:1900}, medium:{opts:4,ms:5500,pr:0.72,d:1400}, hard:{opts:4,ms:4000,pr:0.88,d:1000} };
 let tr_L=null, tr_host=null;
 function startTransRace(L, host){ tr_L=L; tr_host=host; vsSetup(host, {
-  say:GI.transrace,
+  say:GI.transrace, soloOk:true,
   diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
   getDiff:()=>tr_diff, setDiff:v=>{tr_diff=v;}, start:()=>newTransRace() }); try{speak(GI.transrace);}catch(e){} }
-function newTransRace(){ trRun=true; tr_ps=vsMakePlayers(true); tr_ps.forEach(p=>p.score=0); tr_turn=0; tr_lock=false; trNext(); }
+function newTransRace(){ trRun=true; tr_ps=vsMakePlayers(); tr_ps.forEach(p=>p.score=0); tr_turn=0; tr_lock=false; trNext(); }
 function trNext(){ if(!trRun) return;
   if(tr_ps.some(p=>p.score>=TR_TARGET)){ trEnd(); return; }
   const cfg=TR_CFG[tr_diff], pool=shuffle(allWords(tr_L));
@@ -454,9 +454,9 @@ function trEnd(){
 let sg_diff="easy", sg_ps=[], sg_turn=0, sg_lock=false, sg_q=null, sg_raf=null, sg_L=null, sg_host=null; const SG_TARGET=5;
 const SG_CFG={ easy:{opts:3,ms:7000,pr:0.55,d:1900}, medium:{opts:4,ms:5500,pr:0.72,d:1400}, hard:{opts:4,ms:4000,pr:0.88,d:1000} };
 function startSortGame(L, host){ sg_L=L; sg_host=host; vsSetup(host, {
-  say:GI.sortwords, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
+  say:GI.sortwords, soloOk:true, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
   getDiff:()=>sg_diff, setDiff:v=>{sg_diff=v;}, start:()=>newSortGame() }); try{speak(GI.sortwords);}catch(e){} }
-function newSortGame(){ trRun=true; sg_ps=vsMakePlayers(true); sg_ps.forEach(p=>p.score=0); sg_turn=0; sg_lock=false; sgNext(); }
+function newSortGame(){ trRun=true; sg_ps=vsMakePlayers(); sg_ps.forEach(p=>p.score=0); sg_turn=0; sg_lock=false; sgNext(); }
 function sgCats(L){ return (L.words||[]).filter(c=>(c.items||[]).length).map(c=>({id:c.id, ar:c.ar})); }
 function sgNext(){ if(!trRun) return;
   if(sg_ps.some(p=>p.score>=SG_TARGET)){ sgEnd(); return; }

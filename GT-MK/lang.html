@@ -378,11 +378,13 @@ function vsQuizResolve(ok,btn){ if(!qz) return;
   const mark=(val,cls)=>{ if(val==null) return; cfg.host.querySelectorAll("#qzOpts [data-opt]").forEach(b=>{ if(b.getAttribute("data-opt")===String(val)) b.classList.add(cls); }); };
   if(human){ if(btn) btn.classList.add(ok?"ok":"bad"); } else mark(qz.aiPick, ok?"ok":"bad"); // بطاقةُ مختارِ اللاعب/الآليّ: خضراءُ إن صحّ، حمراءُ إن خطأ
   if(!ok) mark(cv,"ok");                                                                    // وتُظهَرُ الإجابةُ الصحيحةُ خضراءَ عند الخطأ
+  // ردُّ فعلِ الآليّ ثنائيُّ اللغة للإنسان (أجنبيٌّ + عربيٌّ عبر react)، وقُويْمةٌ عربيّةٌ قصيرةٌ للآليّ.
   if(ok){ cur.score++; const won=cur.score>=target;
-    if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok)); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
-  else { if(human) robo.encourage(vP(GR.no)); else sfx.nope(); }
+    if(won) sfx.success(); else if(human) praise(cfg.L); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
+  else { if(human) encourageReact(cfg.L); else sfx.nope(); }
   const fb=cfg.host.querySelector("#qzFb"); if(fb) fb.innerHTML=`<div class="hint" style="text-align:center">${ok?"✅ صحيح!":cfg.correctLabel(qz.q)}</div>`;
-  setTimeout(()=>{ if(!trRun||!qz) return; qz.turn=(qz.turn+1)%qz.ps.length; vsQuizNext(); }, 1150);
+  // مهلةٌ أطولُ للإنسان لتكتملَ ردّةُ الفعلِ باللغتين قبلَ السؤالِ التالي.
+  setTimeout(()=>{ if(!trRun||!qz) return; qz.turn=(qz.turn+1)%qz.ps.length; vsQuizNext(); }, human ? 2600 : 1150);
 }
 function vsQuizEnd(){ const cfg=qz.cfg; try{ logEvent(cfg.logKey||"lang_game_win"); }catch(e){}
   vsEndRound(qz.ps, { onAgain:()=>vsQuizNew(cfg), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
@@ -458,11 +460,11 @@ function spNext(){ if(!trRun) return;
   const target=word.w, letters=shuffle(target.split("")); let built=[], done=false;
   cancelAnimationFrame(sp_raf);
   const finish=(solved)=>{ if(done) return; done=true; cancelAnimationFrame(sp_raf);
-    if(solved){ cur.score++; const won=cur.score>=SP_TARGET; if(won) sfx.success(); else robo.cheer(vP(GR.ok));
-      setTimeout(()=>{ if(!trRun) return; sp_turn=(sp_turn+1)%sp_ps.length; spNext(); }, won?700:1500); }
-    else { sfx.nope(); robo.encourage(vP(GR.no)); // نفادُ الوقت ⇒ يمرُّ الدور للخصم
+    if(solved){ cur.score++; const won=cur.score>=SP_TARGET; if(won) sfx.success(); else praise(sp_L); // ردٌّ ثنائيُّ اللغة
+      setTimeout(()=>{ if(!trRun) return; sp_turn=(sp_turn+1)%sp_ps.length; spNext(); }, won?700:2600); }
+    else { sfx.nope(); encourageReact(sp_L); // نفادُ الوقت ⇒ ردٌّ ثنائيُّ اللغة ثمّ يمرُّ الدور للخصم
       const fb=sp_host.querySelector("#spfb"); if(fb) fb.innerHTML=`<div class="hint">⌛ نفدَ الوقت — الكلمةُ: <b class="ltr">${esc(target)}</b></div>`;
-      setTimeout(()=>{ if(!trRun) return; sp_turn=(sp_turn+1)%sp_ps.length; spNext(); }, 1400); }
+      setTimeout(()=>{ if(!trRun) return; sp_turn=(sp_turn+1)%sp_ps.length; spNext(); }, 2400); }
   };
   function redraw(solved){
     sp_host.innerHTML = spHead(cur)

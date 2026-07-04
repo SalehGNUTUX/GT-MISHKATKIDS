@@ -514,6 +514,78 @@ function spRobot(word, cur){ const target=word.w, ok=Math.random()<SP_DIFF[sp_di
 }
 function spEnd(){ try{ logEvent("lang_spell_win"); }catch(e){} vsEndRound(sp_ps, { onAgain:()=>newSpell(), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
 
+// 🔤 رتّبِ الأبجديّة (تنافسيّ): في دورِك، رتّبِ الحروفَ المبعثرةَ حسبَ ترتيبِ الأبجديّةِ قبلَ خصمِك.
+let ao_diff="easy", ao_ps=[], ao_turn=0, ao_L=null, ao_host=null, ao_timed=true, ao_raf=null; const AO_TARGET=5;
+const AO_DIFF={ easy:{n:3, ai:0.55, ms:11000}, medium:{n:4, ai:0.72, ms:9000}, hard:{n:5, ai:0.9, ms:7000} };
+function startAlphaOrder(L, host){ ao_L=L; ao_host=host; const fg=(L.intros||{}).alphaorder;
+  vsSetup(host, { say:introHtml(GI.alphaorder, fg), soloOk:true,
+    diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
+    getDiff:()=>ao_diff, setDiff:v=>{ao_diff=v;},
+    toggle:{ label:"⏱️ اللعبُ ضدّ الوقت", get:()=>ao_timed, set:v=>{ao_timed=v;} },
+    start:()=>newAlphaOrder() });
+  wireIntroReplay(host, GI.alphaorder, fg, L);
+  sayIntro(GI.alphaorder, fg, L);
+}
+function newAlphaOrder(){ trRun=true; ao_ps=vsMakePlayers(); ao_ps.forEach(p=>p.score=0); ao_turn=0; aoNext(); }
+function aoHead(cur){ return `<div class="clue" style="padding:10px"><div class="say">🔤 رتّبِ الأبجديّة — أوّلُ من يبلغُ ${AO_TARGET} يفوز!</div></div>`+vsScoreHtml(ao_ps)+vsTurnHtml(cur); }
+// يختارُ n حروفٍ عشوائيّةً من أبجديّةِ القسمِ ويرتّبُها أبجديّاً (حسبَ ترتيبِها في المصفوفة) — هذا هو الهدف.
+function aoPick(){ const L=(ao_L.letters||[]), n=Math.min(AO_DIFF[ao_diff].n, L.length);
+  return shuffle(L.map((_,i)=>i)).slice(0,n).sort((a,b)=>a-b).map(i=>({ ch:L[i].ch, i })); }
+function aoNext(){ if(!trRun) return;
+  if(ao_ps.some(p=>p.score>=AO_TARGET)){ aoEnd(); return; }
+  const cur=ao_ps[ao_turn], target=aoPick(); if(target.length<2){ aoEnd(); return; }
+  if(cur.cpu){ aoRobot(target, cur); return; }
+  const chips=shuffle(target.slice()); let progress=0, done=false; const used=new Set();
+  cancelAnimationFrame(ao_raf);
+  const finish=(ok)=>{ if(done) return; done=true; cancelAnimationFrame(ao_raf);
+    if(ok){ cur.score++; const won=cur.score>=AO_TARGET; if(won) sfx.success(); else praise(ao_L); // ردٌّ ثنائيُّ اللغة
+      setTimeout(()=>{ if(!trRun) return; ao_turn=(ao_turn+1)%ao_ps.length; aoNext(); }, won?700:2600); }
+    else { sfx.nope(); encourageReact(ao_L);
+      const fb=ao_host.querySelector("#aofb"); if(fb) fb.innerHTML=`<div class="hint">⌛ الترتيبُ الصحيح: <b class="ltr">${esc(target.map(t=>t.ch).join(" "))}</b></div>`;
+      setTimeout(()=>{ if(!trRun) return; ao_turn=(ao_turn+1)%ao_ps.length; aoNext(); }, 2400); }
+  };
+  function redraw(solved){
+    ao_host.innerHTML = aoHead(cur)
+      + `<div class="hint" style="text-align:center;margin:6px 2px">رتّبِ الحروفَ حسبَ الأبجديّة — اضغطْها من <b class="ltr">${esc(target[0].ch)}</b> إلى <b class="ltr">${esc(target[target.length-1].ch)}</b></div>`
+      + (ao_timed && !solved ? `<div class="hubar" style="height:9px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px;margin:6px auto 12px"><span id="aobar" style="display:block;height:100%;background:var(--primary);width:100%"></span></div>` : "")
+      + `<div class="spslot ltr">${target.map((t,i)=>`<span class="${solved?'full ok':(i<progress?'full':'')}">${i<progress?esc(target[i].ch):''}</span>`).join("")}</div>`
+      + (solved ? `<div class="hint">🎉 أحسنت! (<span class="ltr">${esc(target.map(t=>t.ch).join(" "))}</span>)</div>`
+        : `<div class="splet">${chips.map((c,idx)=>`<button class="lchip ltr" data-idx="${idx}" ${used.has(idx)?'disabled':''}>${esc(c.ch)}</button>`).join("")}</div>`)
+      + `<div id="aofb"></div>`;
+    ao_host.querySelectorAll(".lchip").forEach(b=>b.onclick=()=>{ if(!trRun||done) return;
+      const idx=+b.getAttribute("data-idx"); if(used.has(idx)) return;
+      if(chips[idx].i===target[progress].i){ used.add(idx); progress++; sfx.tap();
+        if(progress>=target.length){ redraw(true); finish(true); } else redraw(false); }
+      else { sfx.nope(); b.classList.add("bad"); setTimeout(()=>b.classList.remove("bad"), 400); } // نقرةٌ خاطئةٌ: لا تُنهي الدورَ (يُتاحُ التصحيحُ حتى نفادِ الوقت)
+    });
+  }
+  redraw(false);
+  if(ao_timed){ const ms=AO_DIFF[ao_diff].ms, start=Date.now();
+    const tick=()=>{ if(!trRun||done) return; const left=ms-(Date.now()-start); const bar=document.getElementById("aobar"); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ finish(false); return; } ao_raf=requestAnimationFrame(tick); }; tick(); }
+}
+// دورُ الآليّ: يُرتّبُ الحروفَ حرفًا حرفًا أمامَ الطفلِ (يُصيبُ أو يُخطئ بقلبِ آخرِ حرفين حسبَ الصعوبة).
+function aoRobot(target, cur){ const ok=Math.random()<AO_DIFF[ao_diff].ai, chips=shuffle(target.slice());
+  let seq=target.map(t=>chips.findIndex(c=>c.i===t.i)); // مؤشّراتُ الرقائقِ بالترتيبِ الأبجديّ الصحيح
+  if(!ok && seq.length>=2){ const j=seq.length-1; [seq[j],seq[j-1]]=[seq[j-1],seq[j]]; } // خطأٌ متعمَّد
+  let placed=[]; const used=new Set();
+  function draw(finalOk){
+    ao_host.innerHTML = aoHead(cur)
+      + `<div class="hint" style="text-align:center;margin:6px 2px">🤖 يُرتّبُ الآليُّ الحروف…</div>`
+      + `<div class="spslot ltr">${target.map((_,i)=>`<span class="${finalOk?'full ok':(placed[i]!=null?'full':'')}">${placed[i]!=null?esc(placed[i]):''}</span>`).join("")}</div>`
+      + `<div class="splet">${chips.map((c,idx)=>`<button class="lchip ltr" disabled ${used.has(idx)?'style="opacity:.3"':''}>${esc(c.ch)}</button>`).join("")}</div>`;
+  }
+  draw(false);
+  let step=0;
+  function place(){ if(!trRun) return;
+    if(step>=seq.length){ setTimeout(()=>{ if(!trRun) return;
+        if(ok){ cur.score++; sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } else { sfx.nope(); robo.say(vP(GR.no),"sad"); }
+        ao_turn=(ao_turn+1)%ao_ps.length; aoNext(); }, 950); return; }
+    const idx=seq[step]; placed[step]=chips[idx].ch; used.add(idx); step++; sfx.tap(); draw(step>=seq.length && ok); setTimeout(place, 620);
+  }
+  setTimeout(place, 850);
+}
+function aoEnd(){ try{ logEvent("lang_alphaorder_win"); }catch(e){} vsEndRound(ao_ps, { onAgain:()=>newAlphaOrder(), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
+
 // الأفعالُ والأزمنة: قائمةُ أفعالٍ ← تصريفُ الفعل في الماضي/المضارع/المستقبل (يُنطَق عند الضغط).
 function renderVerbs(L, host){
   const verbs = L.verbs || [];
@@ -631,13 +703,14 @@ function renderLang(k){
       const GAMES=[
         {g:"transrace",ic:"🏃",ar:"سباقُ الترجمة",en:"Translation Race",fr:"Course de traduction",vs:1},
         {g:"sortwords",ic:"⚖️",ar:"صنّفِ الكلمات",en:"Sort the Words",fr:"Classe les mots",vs:1},
+        {g:"alphaorder",ic:"🔤",ar:"رتّبِ الأبجديّة",en:"Alphabetical Order",fr:"Ordre alphabétique",vs:1},
         {g:"match",ic:"🃏",ar:"مطابقةُ الصور",en:"Picture Match",fr:"Associe les images",vs:1},
         {g:"matchar",ic:"🔗",ar:"مطابقةُ المعنى",en:"Meaning Match",fr:"Associe le sens",vs:1},
         {g:"spell",ic:"🔡",ar:"الإملاء",en:"Spelling",fr:"Épellation",vs:1},
         {g:"listen",ic:"👂",ar:"استماعٌ واختيار",en:"Listen & Choose",fr:"Écoute et choisis",vs:1}];
       body = `<div class="lgrid">${GAMES.map(x=>`<button class="lcard${x.vs?" vs":""}" data-g="${x.g}">${x.vs?'<span class="vsbadge">⚔️ تنافسيّة</span>':''}<span class="ic">${iconHtml(x.ic)}</span><span class="lt" data-ar="${esc(x.ar)}" data-fg="${esc(x[k]||x.ar)}">${esc(x.ar)}</span></button>`).join("")}</div>`;
     } else {
-      const T={transrace:"🏃 سباقُ الترجمة",sortwords:"⚖️ صنّفِ الكلمات",match:"🃏 مطابقةُ الصور",matchar:"🔗 مطابقةُ المعنى",spell:"🔡 الإملاء",listen:"👂 استماعٌ واختيار"};
+      const T={transrace:"🏃 سباقُ الترجمة",sortwords:"⚖️ صنّفِ الكلمات",alphaorder:"🔤 رتّبِ الأبجديّة",match:"🃏 مطابقةُ الصور",matchar:"🔗 مطابقةُ المعنى",spell:"🔡 الإملاء",listen:"👂 استماعٌ واختيار"};
       topnav = nav("↩ الألعاب","games")+`<span class="cur">${T[g]||"🎮 ألعاب"}</span>`; body = `<div id="gm"></div>`;
     }
   }
@@ -688,7 +761,7 @@ function renderLang(k){
   if(sec==="verbs"){ const h=document.getElementById("vb"); if(h) renderVerbs(L, h); }
   if(sec==="quiz"){ const h=document.getElementById("qz"); if(h) renderQuiz(L, h); }
   if(sec==="games" && qp.get("g")){ const g=qp.get("g"), h=document.getElementById("gm");
-    if(h){ ({transrace:startTransRace, sortwords:startSortGame, match:startMatch, matchar:startMatchAr, spell:startSpell, listen:startListen}[g]||startTransRace)(L, h); } }
+    if(h){ ({transrace:startTransRace, sortwords:startSortGame, alphaorder:startAlphaOrder, match:startMatch, matchar:startMatchAr, spell:startSpell, listen:startListen}[g]||startTransRace)(L, h); } }
   startTitleAlt();
   try{ logEvent("lang_open", {add:{}}); }catch(e){}
 }

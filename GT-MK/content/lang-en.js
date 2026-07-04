@@ -296,5 +296,6 @@ export default {
     matchar:   "Meaning match! Look at the meaning, then choose the right word.",
     spell:     "Spelling! Listen to the word, then put its letters in order.",
     listen:    "Listen and choose! Listen carefully, then pick the right picture.",
+    alphaorder:"Alphabetical order! Put the letters in the right order before your opponent.",
   },
 };

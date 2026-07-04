@@ -295,5 +295,6 @@ export default {
     matchar:   "Associe le sens ! Regarde le sens, puis choisis le bon mot.",
     spell:     "Épellation ! Écoute le mot, puis remets ses lettres dans l'ordre.",
     listen:    "Écoute et choisis ! Écoute bien, puis choisis la bonne image.",
+    alphaorder:"Ordre alphabétique ! Range les lettres dans le bon ordre avant ton adversaire.",
   },
 };

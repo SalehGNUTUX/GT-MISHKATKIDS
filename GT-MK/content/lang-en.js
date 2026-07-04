@@ -287,4 +287,14 @@ export default {
     { t: "You can do it!", ar: "أَنْتَ تَسْتَطِيعُ ذَلِكَ بِإِذْنِ اللَّه!" },
     { t: "Nice try!",      ar: "مُحَاوَلَةٌ جَيِّدَةٌ جِدًّا!" },
   ],
+
+  // الجملُ الافتتاحيّةُ للألعاب التنافسيّة بالإنجليزيّة (يَنطِقُها الآليُّ بعد نظيرتها العربيّة). تُولَّدُ بـPiper (tts-alba).
+  intros: {
+    transrace: "Translation race! Listen to the word, then choose its meaning.",
+    sortwords: "Sort the words! Listen to the word, then choose its category.",
+    match:     "Picture match! Listen to the word, then choose the right picture.",
+    matchar:   "Meaning match! Look at the meaning, then choose the right word.",
+    spell:     "Spelling! Listen to the word, then put its letters in order.",
+    listen:    "Listen and choose! Listen carefully, then pick the right picture.",
+  },
 };

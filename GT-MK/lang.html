@@ -300,196 +300,163 @@ function renderQuiz(L, host){
   ask();
 }
 
-// لعبة: طابِقِ الكلمةَ بصورتها (انقرِ الكلمةَ تُنطَق ثمّ صورتَها).
-function renderGame(L, host){
-  const set = shuffle(allWords(L)).slice(0, 6);
-  const wordsCol = shuffle(set), emojiCol = shuffle(set);
-  const matched = new Set(); let selWord = null;
-  function draw(){
-    const done = matched.size === set.length;
-    host.innerHTML = `<div class="hint">انقرِ الكلمةَ (تُنطَق) ثمّ صورتَها المطابقة 🔊</div>
-      <div class="matchwrap">
-        <div class="mcol">${wordsCol.map(w=>`<button class="mcard mword ${matched.has(w.w)?'done':''}" data-w="${esc(w.w)}" ${matched.has(w.w)?'disabled':''}><span class="ltr">${esc(w.w)}</span></button>`).join("")}</div>
-        <div class="mcol">${emojiCol.map(e=>`<button class="mcard memoji ${matched.has(e.w)?'done':''}" data-w="${esc(e.w)}" ${matched.has(e.w)?'disabled':''}>${e.emoji}</button>`).join("")}</div>
-      </div>${done?`<div class="qzdone">🎉 أحسنت!<button class="secbtn on" id="gmAgain">🔁 جديد</button></div>`:""}`;
-    if(done){ host.querySelector("#gmAgain").onclick=()=>renderGame(L, host); return; }
-    host.querySelectorAll(".mword").forEach(b=>b.onclick=()=>{ selWord=b.getAttribute("data-w"); say(selWord, L); host.querySelectorAll(".mword").forEach(x=>x.classList.toggle("sel", x===b)); });
-    host.querySelectorAll(".memoji").forEach(b=>b.onclick=()=>{ const w=b.getAttribute("data-w"); if(!selWord) return;
-      if(w===selWord){ matched.add(w); selWord=null; praise(L); draw(); } else { b.classList.add("bad"); encourageReact(L); setTimeout(()=>b.classList.remove("bad"), 450); } });
-  }
-  draw();
-}
+/* ============================================================================
+   محرّكٌ تنافسيٌّ عامّ لألعاب اللغات (v1.4): دورٌ بدور · مؤقّت · ذكاءُ الآليّ · أوّلُ من يبلغ الهدف.
+   كلُّ لعبةٍ = إعدادٌ (cfg) يصف: كيف يُبنى السؤال، وكيف تُعرَضُ المطالبةُ والخيارات، وأيُّها صحيح.
+   • ثنائيّةُ اللغة: الجملةُ الافتتاحيّةُ تُعرَضُ وتُنطَقُ بالعربيّةِ ثمّ بلغةِ القسم (الآليُّ ينطقُ اللغتين).
+   • بطاقاتُ الأجوبةِ (حيثما كانت نصًّا) تتبدّلُ لغتُها كلَّ 5ث عبر startTitleAlt (كبطاقات الكلمات).
+   • كلُّها تنافسيّةٌ عبر versus.js (ضدّ الآليّ بثلاث صعوبات/الإخوة/الوالد + «وحدي»).
+============================================================================ */
+const QZ_DIFF = { easy:{opts:3,ms:7000,pr:0.55,d:1900}, medium:{opts:4,ms:5500,pr:0.72,d:1400}, hard:{opts:4,ms:4000,pr:0.88,d:1000} };
+let trRun=false;          // حارسٌ مشترك: يوقفُ أيَّ لعبةٍ عند الرجوع (يُصفَّرُ في render())
+let qz=null;              // حالةُ اللعبةِ الجاريةِ عبر المحرّك العامّ
 
-// لعبة: طابِقِ الكلمةَ الأجنبيّةَ بمعناها العربيّ (نصًّا لا صورة).
-function renderMatchAr(L, host){
-  const set = shuffle(allWords(L)).slice(0, 6);
-  const wordsCol = shuffle(set), arCol = shuffle(set);
-  const matched = new Set(); let sel = null;
-  function draw(){
-    const done = matched.size === set.length;
-    host.innerHTML = `<div class="hint">انقرِ الكلمةَ (تُنطَق) ثمّ معناها العربيّ 🔗</div>
-      <div class="matchwrap">
-        <div class="mcol">${wordsCol.map(w=>`<button class="mcard mword ${matched.has(w.w)?'done':''}" data-w="${esc(w.w)}" ${matched.has(w.w)?'disabled':''}><span class="ltr">${esc(w.w)}</span></button>`).join("")}</div>
-        <div class="mcol">${arCol.map(w=>`<button class="mcard mar ${matched.has(w.w)?'done':''}" data-w="${esc(w.w)}" ${matched.has(w.w)?'disabled':''}>${esc(w.ar)}</button>`).join("")}</div>
-      </div>${done?`<div class="qzdone">🎉 أحسنت!<button class="secbtn on" id="gmAgain">🔁 جديد</button></div>`:""}`;
-    if(done){ host.querySelector("#gmAgain").onclick=()=>renderMatchAr(L, host); return; }
-    host.querySelectorAll(".mword").forEach(b=>b.onclick=()=>{ sel=b.getAttribute("data-w"); say(sel, L); host.querySelectorAll(".mword").forEach(x=>x.classList.toggle("sel", x===b)); });
-    host.querySelectorAll(".mar").forEach(b=>b.onclick=()=>{ const w=b.getAttribute("data-w"); if(!sel) return;
-      if(w===sel){ matched.add(w); sel=null; praise(L); draw(); } else { b.classList.add("bad"); encourageReact(L); setTimeout(()=>b.classList.remove("bad"), 450); } });
-  }
-  draw();
-}
+// ينطقُ الآليُّ الجملةَ الافتتاحيّةَ بالعربيّةِ ثمّ بلغةِ القسم (تعزيزٌ ثنائيّ).
+function sayIntro(arText, fgText, L){ try{ speak(arText); }catch(e){}
+  if(fgText) setTimeout(()=>{ try{ say(fgText, L); }catch(e){} }, 2300); }
+// نصُّ الجملةِ الافتتاحيّةِ ثنائيّاً (يُعرَضُ في شاشةِ الإعداد): عربيٌّ فوق، وأجنبيٌّ تحته.
+function introHtml(arText, fgText){ return `${esc(arText)}${fgText?`<div class="ltr" style="margin-top:6px;font-size:14px;color:var(--muted)">${esc(fgText)}</div>`:""}`; }
 
-// لعبة إملاء/تهجئة: استمعْ للكلمة ثمّ رتّبْ حروفَها المبعثرة (كلماتُ القسم الأجنبيّة).
-function renderSpell(L, host){
-  const pool = shuffle(allWords(L)).filter(w => w.w && !w.w.includes(" ") && w.w.length>=2 && w.w.length<=8);
-  const N = Math.min(6, pool.length); let i = 0, score = 0;
-  function ask(){
-    if(i >= N){ host.innerHTML = `<div class="qzdone">🎉 <b>${score}/${N}</b><div class="hint">أحسنت!</div><button class="secbtn on" id="spAgain">🔁 أعد</button></div>`;
-      host.querySelector("#spAgain").onclick=()=>renderSpell(L, host); return; }
-    const word = pool[i], target = word.w, letters = shuffle(target.split(""));
-    let built = [], finished = false, solved = false;
-    function next(){ if(finished) return; finished = true; i++; ask(); } // حارسٌ يمنعُ التقدّمَ المزدوج
-    function redraw(){
-      host.innerHTML = `<div class="qzn">إملاء ${i+1}/${N} · ⭐ ${score}</div>
-        <div class="qzprompt"><span class="qzemoji">${word.emoji}</span><span class="qzar">${esc(word.ar)}</span>
-          <div><button class="secbtn" id="spSay">🔊 استمعْ</button></div></div>
-        <div class="spslot ltr">${target.split("").map((_,k)=>`<span class="${solved?'full ok':(built[k]?'full':'')}">${built[k]?esc(built[k].ch):''}</span>`).join("")}</div>
-        ${solved ? `<div class="hint">🎉 أحسنت! الكلمةُ: <b class="ltr">${esc(target)}</b></div>`
-          : `<div class="splet">${letters.map((ch,idx)=>`<button class="lchip ltr" data-idx="${idx}" ${built.find(b=>b.idx===idx)?'disabled':''}>${esc(ch)}</button>`).join("")}</div>`}
-        <div class="snav">
-          ${solved ? `<button class="secbtn on" id="spNext">الكلمة التالية ▶</button>`
-                   : `<button class="secbtn" id="spClear">↺ امسحْ</button><button class="secbtn" id="spSkip">⏭ كلمةٌ أخرى</button>`}
-        </div>`;
-      host.querySelector("#spSay").onclick=()=>say(target, L);
-      const next1=host.querySelector("#spNext"); if(next1) next1.onclick=next;
-      const skip1=host.querySelector("#spSkip"); if(skip1) skip1.onclick=next;
-      const clr=host.querySelector("#spClear"); if(clr) clr.onclick=()=>{ built=[]; redraw(); };
-      host.querySelectorAll(".lchip").forEach(b=>b.onclick=()=>{
-        const idx=+b.getAttribute("data-idx"); if(built.find(x=>x.idx===idx)) return;
-        built.push({idx, ch:letters[idx]}); // سجّلِ الحرف
-        if(built.length < target.length){ redraw(); return; }
-        if(built.map(x=>x.ch).join("")===target){
-          solved=true; score++; redraw(); try{ praise(L); }catch(e){} // ردُّ الآلي لا يُعيقُ التقدّم
-          setTimeout(next, 2800);                                       // تقدّمٌ تلقائيٌّ، وزرُّ «التالي» متاحٌ فورًا
-        } else { redraw(); try{ encourageReact(L); }catch(e){} setTimeout(()=>{ built=[]; redraw(); }, 900); }
-      });
-    }
-    redraw(); say(target, L); // ينطقُ الكلمةَ تلقائيًّا أوّلَ مرّة
-  }
-  ask();
+function vsQuizStart(cfg){ cfg.diff = cfg.diff || "easy"; qz=null;
+  const fg=(cfg.L.intros||{})[cfg.key];
+  vsSetup(cfg.host, { say:introHtml(cfg.intro, fg), soloOk:true,
+    diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
+    getDiff:()=>cfg.diff, setDiff:v=>{cfg.diff=v;}, start:()=>vsQuizNew(cfg) });
+  sayIntro(cfg.intro, fg, cfg.L);
 }
-
-// لعبة استماعٍ واختيار: تُنطَقُ الكلمةُ (تلقائيًّا + زرُّ إعادة) ← اختَرِ الصورةَ الصحيحة.
-function renderListen(L, host){
-  const pool = shuffle(allWords(L)); const N = Math.min(8, pool.length); const qs = pool.slice(0, N);
-  let i = 0, score = 0;
-  function ask(){
-    if(i >= N){ host.innerHTML = `<div class="qzdone">🎉 <b>${score}/${N}</b><div class="hint">أحسنت!</div><button class="secbtn on" id="lsAgain">🔁 أعد</button></div>`;
-      host.querySelector("#lsAgain").onclick=()=>renderListen(L, host); return; }
-    const correct = qs[i];
-    const opts = shuffle([correct, ...shuffle(allWords(L).filter(w => w.w !== correct.w)).slice(0,3)]);
-    host.innerHTML = `<div class="qzn">استماع ${i+1}/${N} · ⭐ ${score}</div>
-      <div class="qzprompt"><button class="secbtn on" id="lsSay">🔊 استمعْ ثمّ اختَرِ الصورة</button></div>
-      <div class="grid">${opts.map(o=>`<button class="gcard lsopt" data-w="${esc(o.w)}"><span style="font-size:40px">${o.emoji}</span></button>`).join("")}</div>`;
-    host.querySelector("#lsSay").onclick=()=>say(correct.w, L);
-    host.querySelectorAll(".lsopt").forEach(b=>b.onclick=()=>{ const w=b.getAttribute("data-w");
-      if(w===correct.w){ b.classList.add("ok"); score++; host.querySelectorAll(".lsopt").forEach(x=>x.disabled=true);
-        try{ praise(L); }catch(e){} setTimeout(()=>{ i++; ask(); }, 2800); } // ردُّ الآلي لا يُعيقُ التقدّم
-      else { b.classList.add("bad"); try{ encourageReact(L); }catch(e){} setTimeout(()=>b.classList.remove("bad"), 450); } });
-    say(correct.w, L); // نطقٌ تلقائيٌّ أوّلَ مرّة
-  }
-  ask();
+function vsQuizNew(cfg){ trRun=true; qz={cfg, ps:vsMakePlayers(), turn:0, lock:false, q:null, raf:null}; qz.ps.forEach(p=>p.score=0); vsQuizNext(); }
+function vsQuizNext(){ if(!trRun||!qz) return;
+  const cfg=qz.cfg, target=cfg.target||5;
+  if(qz.ps.some(p=>p.score>=target)){ vsQuizEnd(); return; }
+  const d=QZ_DIFF[cfg.diff]; qz.q=cfg.makeQ(cfg.L, d.opts); qz.lock=false; vsQuizRender();
+  const cur=qz.ps[qz.turn];
+  if(cur.cpu) vsQuizAI(); else { if(cfg.sayPrompt) cfg.sayPrompt(qz.q, cfg.L); vsQuizTimer(d.ms, ()=>{ if(!qz.lock){ qz.lock=true; vsQuizResolve(false,null); } }); }
 }
-// 🏁 سباقُ الترجمة (تنافسيّ · ضدّ الآليّ بثلاث صعوبات/الإخوة): تُنطَقُ الكلمةُ الأجنبيّةُ ← اختَرْ معناها العربيّ بسرعة.
-let tr_diff="easy", tr_ps=[], tr_turn=0, tr_lock=false, tr_q=null, tr_raf=null; let trRun=false; const TR_TARGET=5;
-const TR_CFG={ easy:{opts:3,ms:7000,pr:0.55,d:1900}, medium:{opts:4,ms:5500,pr:0.72,d:1400}, hard:{opts:4,ms:4000,pr:0.88,d:1000} };
-let tr_L=null, tr_host=null;
-function startTransRace(L, host){ tr_L=L; tr_host=host; vsSetup(host, {
-  say:GI.transrace, soloOk:true,
-  diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
-  getDiff:()=>tr_diff, setDiff:v=>{tr_diff=v;}, start:()=>newTransRace() }); try{speak(GI.transrace);}catch(e){} }
-function newTransRace(){ trRun=true; tr_ps=vsMakePlayers(); tr_ps.forEach(p=>p.score=0); tr_turn=0; tr_lock=false; trNext(); }
-function trNext(){ if(!trRun) return;
-  if(tr_ps.some(p=>p.score>=TR_TARGET)){ trEnd(); return; }
-  const cfg=TR_CFG[tr_diff], pool=shuffle(allWords(tr_L));
-  const correct=pool[0], opts=shuffle([correct, ...pool.filter(w=>w.ar!==correct.ar).slice(0,cfg.opts-1)]);
-  tr_q={correct, opts}; tr_lock=false; renderTransRace();
-  if(tr_ps[tr_turn].cpu) trAI(); else { say(correct.w, tr_L); trTimer(cfg.ms, ()=>{ if(!tr_lock){ tr_lock=true; trResolve(false,null); } }); }
+function vsQuizRender(){ const cfg=qz.cfg, q=qz.q, cur=qz.ps[qz.turn], k=curLng();
+  cfg.host.innerHTML = `<div class="clue" style="padding:10px"><div class="say">${cfg.icon} ${esc(cfg.title)} — أوّلُ من يبلغُ ${cfg.target||5} يفوز!</div></div>`
+    + vsScoreHtml(qz.ps) + vsTurnHtml(cur)
+    + cfg.promptHtml(q, cfg.L)
+    + `<div class="hubar" style="height:9px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px;margin:6px auto 12px"><span id="qzBar" style="display:block;height:100%;background:var(--primary);width:100%"></span></div>`
+    + `<div class="${cfg.optWrap||'grid'}" id="qzOpts">${cfg.optionsHtml(q, cfg.L, k)}</div>`
+    + `<div id="qzFb"></div>`;
+  const sb=cfg.host.querySelector("#qzSay"); if(sb&&cfg.sayPrompt) sb.onclick=()=>cfg.sayPrompt(q, cfg.L);
+  cfg.host.querySelector("#qzOpts").addEventListener("click",e=>{ const b=e.target.closest("[data-opt]"); if(!b) return; vsQuizTap(b); });
+  startTitleAlt(); // تبديلُ لغةِ بطاقاتِ الأجوبةِ كلَّ 5ث (تُلتَقَطُ عبر [data-fg])
 }
-function renderTransRace(){
-  const cur=tr_ps[tr_turn];
-  tr_host.innerHTML = `<div class="clue" style="padding:10px"><div class="say">🏁 سباقُ الترجمة — أوّلُ من يبلغُ ${TR_TARGET} يفوز!</div></div>`
-    + vsScoreHtml(tr_ps)
-    + vsTurnHtml(cur)
-    + `<div class="qzprompt" style="text-align:center;margin:6px 0"><button class="secbtn on" id="trSay">🔊 <span class="ltr">${esc(tr_q.correct.w)}</span></button></div>`
-    + `<div class="hubar" style="height:9px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px;margin:6px auto 12px"><span id="trBar" style="display:block;height:100%;background:var(--primary);width:100%"></span></div>`
-    + `<div class="grid" id="trOpts">${tr_q.opts.map(o=>`<button class="gcard tropt" data-ar="${esc(o.ar)}">${esc(o.ar)}</button>`).join("")}</div>`
-    + `<div id="trFb"></div>`;
-  tr_host.querySelector("#trSay").onclick=()=>say(tr_q.correct.w, tr_L);
-  tr_host.querySelector("#trOpts").addEventListener("click",e=>{ const b=e.target.closest("[data-ar]"); if(!b) return; trTap(b.getAttribute("data-ar"), b); });
-}
-function trTimer(ms,onEnd){ const start=Date.now(), bar=document.getElementById("trBar"); cancelAnimationFrame(tr_raf);
-  const tick=()=>{ if(!trRun) return; const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ onEnd&&onEnd(); return; } tr_raf=requestAnimationFrame(tick); }; tick(); }
-function trTap(ar,btn){ if(tr_lock||tr_ps[tr_turn].cpu) return; cancelAnimationFrame(tr_raf); tr_lock=true; sfx.tap(); trResolve(ar===tr_q.correct.ar, btn); }
-function trAI(){ tr_lock=true; const cfg=TR_CFG[tr_diff], ok=Math.random()<cfg.pr; say(tr_q.correct.w, tr_L); trTimer(cfg.d, ()=>trResolve(ok,null)); }
-function trResolve(ok,btn){
-  cancelAnimationFrame(tr_raf); const cur=tr_ps[tr_turn], human=!cur.cpu;
-  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); const won=cur.score>=TR_TARGET;
+function vsQuizTimer(ms,onEnd){ if(!qz) return; const start=Date.now(), bar=document.getElementById("qzBar"); cancelAnimationFrame(qz.raf);
+  const tick=()=>{ if(!trRun||!qz) return; const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ onEnd&&onEnd(); return; } qz.raf=requestAnimationFrame(tick); }; tick(); }
+function vsQuizTap(btn){ if(!qz||qz.lock||qz.ps[qz.turn].cpu) return; cancelAnimationFrame(qz.raf); qz.lock=true; sfx.tap(); vsQuizResolve(btn.getAttribute("data-opt")===qz.cfg.optVal(qz.q.correct), btn); }
+function vsQuizAI(){ if(!qz) return; qz.lock=true; const cfg=qz.cfg, d=QZ_DIFF[cfg.diff], ok=Math.random()<d.pr, cv=cfg.optVal(qz.q.correct);
+  qz.aiPick = ok ? cv : (shuffle(qz.q.opts.map(cfg.optVal).filter(v=>v!==cv))[0] ?? cv); // بطاقةُ اختيارِ الآليّ (تُلوَّنُ عند الحلّ)
+  if(cfg.sayPrompt) cfg.sayPrompt(qz.q, cfg.L); vsQuizTimer(d.d, ()=>vsQuizResolve(ok,null)); }
+function vsQuizResolve(ok,btn){ if(!qz) return;
+  cancelAnimationFrame(qz.raf); const cfg=qz.cfg, cur=qz.ps[qz.turn], human=!cur.cpu, target=cfg.target||5, cv=cfg.optVal(qz.q.correct);
+  const mark=(val,cls)=>{ if(val==null) return; cfg.host.querySelectorAll("#qzOpts [data-opt]").forEach(b=>{ if(b.getAttribute("data-opt")===String(val)) b.classList.add(cls); }); };
+  if(human){ if(btn) btn.classList.add(ok?"ok":"bad"); } else mark(qz.aiPick, ok?"ok":"bad"); // بطاقةُ مختارِ اللاعب/الآليّ: خضراءُ إن صحّ، حمراءُ إن خطأ
+  if(!ok) mark(cv,"ok");                                                                    // وتُظهَرُ الإجابةُ الصحيحةُ خضراءَ عند الخطأ
+  if(ok){ cur.score++; const won=cur.score>=target;
     if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok)); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
-  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(vP(GR.no)); else sfx.nope();
-    tr_host.querySelectorAll("#trOpts [data-ar]").forEach(b=>{ if(b.getAttribute("data-ar")===tr_q.correct.ar) b.classList.add("ok"); }); }
-  const fb=tr_host.querySelector("#trFb"); if(fb) fb.innerHTML=`<div class="hint" style="text-align:center">${ok?"✅ صحيح!":`المعنى: <b>${esc(tr_q.correct.ar)}</b>`}</div>`;
-  if(!trRun) return; setTimeout(()=>{ tr_turn=(tr_turn+1)%tr_ps.length; trNext(); }, 1150);
+  else { if(human) robo.encourage(vP(GR.no)); else sfx.nope(); }
+  const fb=cfg.host.querySelector("#qzFb"); if(fb) fb.innerHTML=`<div class="hint" style="text-align:center">${ok?"✅ صحيح!":cfg.correctLabel(qz.q)}</div>`;
+  setTimeout(()=>{ if(!trRun||!qz) return; qz.turn=(qz.turn+1)%qz.ps.length; vsQuizNext(); }, 1150);
 }
-function trEnd(){
-  logEvent("lang_transrace_win");
-  vsEndRound(tr_ps, {
-    onAgain: () => newTransRace(),
-    onExit: () => { const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); }
-  });
-}
+function vsQuizEnd(){ const cfg=qz.cfg; try{ logEvent(cfg.logKey||"lang_game_win"); }catch(e){}
+  vsEndRound(qz.ps, { onAgain:()=>vsQuizNew(cfg), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
 
-// 🗂️ صنّفِ الكلمات (تنافسيّ · versus): تُنطَقُ الكلمةُ الأجنبيّةُ ثمّ اختَرْ فئتَها الصحيحةَ بمؤقّت.
-let sg_diff="easy", sg_ps=[], sg_turn=0, sg_lock=false, sg_q=null, sg_raf=null, sg_L=null, sg_host=null; const SG_TARGET=5;
-const SG_CFG={ easy:{opts:3,ms:7000,pr:0.55,d:1900}, medium:{opts:4,ms:5500,pr:0.72,d:1400}, hard:{opts:4,ms:4000,pr:0.88,d:1000} };
-function startSortGame(L, host){ sg_L=L; sg_host=host; vsSetup(host, {
-  say:GI.sortwords, soloOk:true, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
-  getDiff:()=>sg_diff, setDiff:v=>{sg_diff=v;}, start:()=>newSortGame() }); try{speak(GI.sortwords);}catch(e){} }
-function newSortGame(){ trRun=true; sg_ps=vsMakePlayers(); sg_ps.forEach(p=>p.score=0); sg_turn=0; sg_lock=false; sgNext(); }
-function sgCats(L){ return (L.words||[]).filter(c=>(c.items||[]).length).map(c=>({id:c.id, ar:c.ar})); }
-function sgNext(){ if(!trRun) return;
-  if(sg_ps.some(p=>p.score>=SG_TARGET)){ sgEnd(); return; }
-  const cfg=SG_CFG[sg_diff], cats=sgCats(sg_L), w=shuffle(allWords(sg_L))[0], correct=cats.find(c=>c.id===w.cat);
-  const opts=shuffle([correct, ...shuffle(cats.filter(c=>c.id!==w.cat)).slice(0,cfg.opts-1)]);
-  sg_q={w, correct, opts}; sg_lock=false; renderSort();
-  if(sg_ps[sg_turn].cpu) sgAI(); else { say(w.w, sg_L); sgTimer(cfg.ms, ()=>{ if(!sg_lock){ sg_lock=true; sgResolve(false,null); } }); }
+// ---- إعداداتُ الألعابِ (كلٌّ منها إعدادٌ للمحرّك أعلاه) ----
+// 🏃 سباقُ الترجمة: كلمةٌ أجنبيّةٌ (تُنطَقُ وتُعرَض) ← اختَرْ معناها العربيّ (بطاقاتٌ تتبدّلُ عربيٌّ↔أجنبيّ).
+function cfgTransRace(L, host){ return { L, host, key:"transrace", logKey:"lang_transrace_win", icon:"🏃", title:"سباقُ الترجمة", intro:GI.transrace, optWrap:"grid",
+  makeQ:(L,n)=>{ const pool=shuffle(allWords(L)), correct=pool[0]; const opts=shuffle([correct, ...pool.filter(w=>w.ar!==correct.ar).slice(0,n-1)]); return {correct, opts}; },
+  promptHtml:q=>`<div class="qzprompt" style="text-align:center;margin:6px 0"><button class="secbtn on" id="qzSay">🔊 <span class="ltr">${esc(q.correct.w)}</span></button></div>`,
+  sayPrompt:(q,L)=>say(q.correct.w, L),
+  optionsHtml:q=>q.opts.map(o=>`<button class="gcard qzopt" data-opt="${esc(o.w)}"><span data-ar="${esc(o.ar)}" data-fg="${esc(o.w)}">${esc(o.ar)}</span></button>`).join(""),
+  optVal:o=>o.w, correctLabel:q=>`المعنى: <b>${esc(q.correct.ar)}</b>` }; }
+
+// ⚖️ صنّفِ الكلمات: كلمةٌ أجنبيّة ← اختَرْ فئتَها (بطاقاتُ الفئاتِ تتبدّلُ عربيٌّ↔أجنبيّ عبر CAT_I18N).
+function cfgSortWords(L, host){ return { L, host, key:"sortwords", logKey:"lang_sort_win", icon:"⚖️", title:"صنّفِ الكلمات", intro:GI.sortwords, optWrap:"lgrid",
+  makeQ:(L,n)=>{ const cats=(L.words||[]).filter(c=>(c.items||[]).length).map(c=>({id:c.id,ar:c.ar})); const w=shuffle(allWords(L))[0], correct=cats.find(c=>c.id===w.cat);
+    const opts=shuffle([correct, ...shuffle(cats.filter(c=>c.id!==w.cat)).slice(0,n-1)]); return {w, correct, opts}; },
+  promptHtml:q=>`<div class="qzprompt" style="text-align:center;margin:6px 0"><button class="secbtn on" id="qzSay">🔊 <span class="ltr">${esc(q.w.w)}</span> ${q.w.emoji}</button></div>`,
+  sayPrompt:(q,L)=>say(q.w.w, L),
+  optionsHtml:(q,L,k)=>q.opts.map(o=>`<button class="lcard sgopt qzopt" data-opt="${esc(o.id)}"><span class="ic">${iconHtml(CAT_ICON[o.id]||"📝")}</span><span class="lt" data-ar="${esc(o.ar)}" data-fg="${esc((CAT_I18N[o.id]||{})[k]||o.ar)}">${esc(o.ar)}</span></button>`).join(""),
+  optVal:o=>o.id, correctLabel:q=>`الفئةُ الصحيحة: <b>${esc(q.correct.ar)}</b>` }; }
+
+// 🃏 مطابقةُ الصور: كلمةٌ أجنبيّة (تُنطَقُ وتُعرَض) ← اختَرِ الصورةَ المطابقة (خياراتٌ مصوّرة).
+function cfgMatch(L, host){ return { L, host, key:"match", logKey:"lang_match_win", icon:"🃏", title:"مطابقةُ الصور", intro:GI.match, optWrap:"grid",
+  makeQ:(L,n)=>{ const pool=shuffle(allWords(L)), correct=pool[0]; const opts=shuffle([correct, ...pool.filter(w=>w.emoji!==correct.emoji).slice(0,n-1)]); return {correct, opts}; },
+  promptHtml:q=>`<div class="qzprompt" style="text-align:center;margin:6px 0"><button class="secbtn on" id="qzSay">🔊 <span class="ltr">${esc(q.correct.w)}</span></button></div>`,
+  sayPrompt:(q,L)=>say(q.correct.w, L),
+  optionsHtml:q=>q.opts.map(o=>`<button class="gcard qzopt" data-opt="${esc(o.w)}"><span style="font-size:40px">${o.emoji}</span></button>`).join(""),
+  optVal:o=>o.w, correctLabel:q=>`الصحيحة: ${q.correct.emoji} <b>${esc(q.correct.ar)}</b>` }; }
+
+// 🔗 مطابقةُ المعنى (عكسيّة): معنًى عربيٌّ + صورة ← اختَرِ الكلمةَ الأجنبيّةَ الصحيحة (بطاقاتٌ أجنبيٌّ↔عربيّ).
+function cfgMatchAr(L, host){ return { L, host, key:"matchar", logKey:"lang_matchar_win", icon:"🔗", title:"مطابقةُ المعنى", intro:GI.matchar, optWrap:"grid",
+  makeQ:(L,n)=>{ const pool=shuffle(allWords(L)), correct=pool[0]; const opts=shuffle([correct, ...pool.filter(w=>w.w!==correct.w).slice(0,n-1)]); return {correct, opts}; },
+  promptHtml:q=>`<div class="qzprompt" style="text-align:center;margin:6px 0"><span class="qzemoji">${q.correct.emoji}</span><span class="qzar">${esc(q.correct.ar)}</span></div>`,
+  sayPrompt:null, // لا نُنطِقُ الكلمةَ الأجنبيّةَ لئلّا نكشفَ الجواب (لعبةُ قراءةٍ)
+  optionsHtml:q=>q.opts.map(o=>`<button class="gcard qzopt" data-opt="${esc(o.w)}"><span dir="ltr" data-fgprimary data-ar="${esc(o.ar)}" data-fg="${esc(o.w)}">${esc(o.w)}</span></button>`).join(""),
+  optVal:o=>o.w, correctLabel:q=>`الكلمةُ الصحيحة: <b class="ltr">${esc(q.correct.w)}</b>` }; }
+
+// 👂 استماعٌ واختيار: تُنطَقُ الكلمةُ (صوتٌ فقط) ← اختَرِ الصورةَ الصحيحة (خياراتٌ مصوّرة).
+function cfgListen(L, host){ return { L, host, key:"listen", logKey:"lang_listen_win", icon:"👂", title:"استماعٌ واختيار", intro:GI.listen, optWrap:"grid",
+  makeQ:(L,n)=>{ const pool=shuffle(allWords(L)), correct=pool[0]; const opts=shuffle([correct, ...pool.filter(w=>w.emoji!==correct.emoji).slice(0,n-1)]); return {correct, opts}; },
+  promptHtml:()=>`<div class="qzprompt" style="text-align:center;margin:6px 0"><button class="secbtn on" id="qzSay">🔊 استمعْ ثمّ اختَرِ الصورة</button></div>`,
+  sayPrompt:(q,L)=>say(q.correct.w, L),
+  optionsHtml:q=>q.opts.map(o=>`<button class="gcard qzopt" data-opt="${esc(o.w)}"><span style="font-size:40px">${o.emoji}</span></button>`).join(""),
+  optVal:o=>o.w, correctLabel:q=>`الصحيحة: ${q.correct.emoji} <b>${esc(q.correct.ar)}</b>` }; }
+
+// أغلفةُ البدءِ (يستدعيها الموجّه): كلٌّ يُشغّلُ المحرّكَ العامّ بإعدادِ لعبته.
+function startTransRace(L,host){ vsQuizStart(cfgTransRace(L,host)); }
+function startSortGame(L,host){ vsQuizStart(cfgSortWords(L,host)); }
+function startMatch(L,host){ vsQuizStart(cfgMatch(L,host)); }
+function startMatchAr(L,host){ vsQuizStart(cfgMatchAr(L,host)); }
+function startListen(L,host){ vsQuizStart(cfgListen(L,host)); }
+
+// 🔡 الإملاء (تنافسيّ): في دورِك، استمعْ للكلمةِ ثمّ رتّبْ حروفَها المبعثرة؛ أوّلُ من يبلغُ الهدفَ يفوز.
+let sp_diff="easy", sp_ps=[], sp_turn=0, sp_L=null, sp_host=null; const SP_TARGET=5;
+const SP_DIFF={ easy:{max:5, ai:0.5}, medium:{max:7, ai:0.7}, hard:{max:9, ai:0.9} };
+function startSpell(L, host){ sp_L=L; sp_host=host; const fg=(L.intros||{}).spell;
+  vsSetup(host, { say:introHtml(GI.spell, fg), soloOk:true,
+    diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
+    getDiff:()=>sp_diff, setDiff:v=>{sp_diff=v;}, start:()=>newSpell() });
+  sayIntro(GI.spell, fg, L);
 }
-function renderSort(){
-  const cur=sg_ps[sg_turn];
-  sg_host.innerHTML = `<div class="clue" style="padding:10px"><div class="say">🗂️ صنّفِ الكلمات — أوّلُ من يبلغُ ${SG_TARGET} يفوز!</div></div>`
-    + vsScoreHtml(sg_ps) + vsTurnHtml(cur)
-    + `<div class="qzprompt" style="text-align:center;margin:6px 0"><button class="secbtn on" id="sgSay">🔊 <span class="ltr">${esc(sg_q.w.w)}</span> ${sg_q.w.emoji}</button></div>`
-    + `<div class="hubar" style="height:9px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px;margin:6px auto 12px"><span id="sgBar" style="display:block;height:100%;background:var(--primary);width:100%"></span></div>`
-    + `<div class="lgrid" id="sgOpts">${sg_q.opts.map(o=>`<button class="lcard sgopt" data-id="${esc(o.id)}"><span class="ic">${iconHtml(CAT_ICON[o.id]||"📝")}</span><span class="lt">${esc(o.ar)}</span></button>`).join("")}</div>`
-    + `<div id="sgFb"></div>`;
-  sg_host.querySelector("#sgSay").onclick=()=>say(sg_q.w.w, sg_L);
-  sg_host.querySelector("#sgOpts").addEventListener("click",e=>{ const b=e.target.closest("[data-id]"); if(!b) return; sgTap(b.getAttribute("data-id"), b); });
+function newSpell(){ trRun=true; sp_ps=vsMakePlayers(); sp_ps.forEach(p=>p.score=0); sp_turn=0; spNext(); }
+function spPool(){ const m=SP_DIFF[sp_diff].max; return shuffle(allWords(sp_L)).filter(w=>w.w && !w.w.includes(" ") && w.w.length>=2 && w.w.length<=m); }
+function spHead(cur){ return `<div class="clue" style="padding:10px"><div class="say">🔡 الإملاء — أوّلُ من يبلغُ ${SP_TARGET} يفوز!</div></div>`+vsScoreHtml(sp_ps)+vsTurnHtml(cur); }
+function spNext(){ if(!trRun) return;
+  if(sp_ps.some(p=>p.score>=SP_TARGET)){ spEnd(); return; }
+  const cur=sp_ps[sp_turn], word=spPool()[0]; if(!word){ spEnd(); return; }
+  if(cur.cpu){ spRobot(word, cur); return; }
+  const target=word.w, letters=shuffle(target.split("")); let built=[];
+  function redraw(solved){
+    sp_host.innerHTML = spHead(cur)
+      + `<div class="qzprompt"><span class="qzemoji">${word.emoji}</span><span class="qzar">${esc(word.ar)}</span><div><button class="secbtn" id="spSay">🔊 استمعْ</button></div></div>`
+      + `<div class="spslot ltr">${target.split("").map((_,i)=>`<span class="${solved?'full ok':(built[i]?'full':'')}">${built[i]?esc(built[i].ch):''}</span>`).join("")}</div>`
+      + (solved ? `<div class="hint">🎉 أحسنت! الكلمةُ: <b class="ltr">${esc(target)}</b></div>`
+        : `<div class="splet">${letters.map((ch,idx)=>`<button class="lchip ltr" data-idx="${idx}" ${built.find(b=>b.idx===idx)?'disabled':''}>${esc(ch)}</button>`).join("")}</div>
+           <div class="snav"><button class="secbtn" id="spClear">↺ امسحْ</button></div>`);
+    const sy=sp_host.querySelector("#spSay"); if(sy) sy.onclick=()=>say(target, sp_L);
+    const cl=sp_host.querySelector("#spClear"); if(cl) cl.onclick=()=>{ built=[]; redraw(false); };
+    sp_host.querySelectorAll(".lchip").forEach(b=>b.onclick=()=>{ if(!trRun) return;
+      const idx=+b.getAttribute("data-idx"); if(built.find(x=>x.idx===idx)) return;
+      built.push({idx, ch:letters[idx]});
+      if(built.length<target.length){ redraw(false); return; }
+      if(built.map(x=>x.ch).join("")===target){ cur.score++; redraw(true); const won=cur.score>=SP_TARGET;
+        if(won) sfx.success(); else robo.cheer(vP(GR.ok));
+        setTimeout(()=>{ if(!trRun) return; sp_turn=(sp_turn+1)%sp_ps.length; spNext(); }, won?700:1700); }
+      else { sfx.nope(); robo.encourage(vP(GR.no)); built=[]; redraw(false); }
+    });
+  }
+  redraw(false); say(target, sp_L);
 }
-function sgTimer(ms,onEnd){ const start=Date.now(), bar=document.getElementById("sgBar"); cancelAnimationFrame(sg_raf);
-  const tick=()=>{ if(!trRun) return; const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ onEnd&&onEnd(); return; } sg_raf=requestAnimationFrame(tick); }; tick(); }
-function sgTap(id,btn){ if(sg_lock||sg_ps[sg_turn].cpu) return; cancelAnimationFrame(sg_raf); sg_lock=true; sfx.tap(); sgResolve(id===sg_q.correct.id, btn); }
-function sgAI(){ sg_lock=true; const cfg=SG_CFG[sg_diff], ok=Math.random()<cfg.pr; say(sg_q.w.w, sg_L); sgTimer(cfg.d, ()=>sgResolve(ok,null)); }
-function sgResolve(ok,btn){
-  cancelAnimationFrame(sg_raf); const cur=sg_ps[sg_turn], human=!cur.cpu;
-  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); const won=cur.score>=SG_TARGET;
-    if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok)); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
-  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(vP(GR.no)); else sfx.nope();
-    sg_host.querySelectorAll("#sgOpts [data-id]").forEach(b=>{ if(b.getAttribute("data-id")===sg_q.correct.id) b.classList.add("ok"); }); }
-  const fb=sg_host.querySelector("#sgFb"); if(fb) fb.innerHTML=`<div class="hint" style="text-align:center">${ok?"✅ صحيح!":`الفئةُ الصحيحة: <b>${esc(sg_q.correct.ar)}</b>`}</div>`;
-  setTimeout(()=>{ if(!trRun) return; sg_turn=(sg_turn+1)%sg_ps.length; sgNext(); }, 1150);
+function spRobot(word, cur){ const ok=Math.random()<SP_DIFF[sp_diff].ai;
+  sp_host.innerHTML = spHead(cur)+`<div class="qzprompt"><span class="qzemoji">${word.emoji}</span><span class="qzar">${esc(word.ar)}</span><div class="hint">🤖 يُرتّبُ الآليُّ الحروف…</div></div>`;
+  say(word.w, sp_L);
+  setTimeout(()=>{ if(!trRun) return; if(ok){ cur.score++; sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } else sfx.nope();
+    sp_turn=(sp_turn+1)%sp_ps.length; spNext(); }, 2200);
 }
-function sgEnd(){ logEvent("lang_sort_win"); vsEndRound(sg_ps, { onAgain:()=>newSortGame(), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
+function spEnd(){ try{ logEvent("lang_spell_win"); }catch(e){} vsEndRound(sp_ps, { onAgain:()=>newSpell(), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
 
 // الأفعالُ والأزمنة: قائمةُ أفعالٍ ← تصريفُ الفعل في الماضي/المضارع/المستقبل (يُنطَق عند الضغط).
 function renderVerbs(L, host){
@@ -608,13 +575,13 @@ function renderLang(k){
       const GAMES=[
         {g:"transrace",ic:"🏃",ar:"سباقُ الترجمة",en:"Translation Race",fr:"Course de traduction",vs:1},
         {g:"sortwords",ic:"⚖️",ar:"صنّفِ الكلمات",en:"Sort the Words",fr:"Classe les mots",vs:1},
-        {g:"match",ic:"🃏",ar:"مطابقةُ الصور",en:"Picture Match",fr:"Associe les images"},
-        {g:"matchar",ic:"🔗",ar:"مطابقةُ المعنى",en:"Meaning Match",fr:"Associe le sens"},
-        {g:"spell",ic:"🔡",ar:"الإملاء",en:"Spelling",fr:"Épellation"},
-        {g:"listen",ic:"👂",ar:"استماعٌ واختيار",en:"Listen & Choose",fr:"Écoute et choisis"}];
+        {g:"match",ic:"🃏",ar:"مطابقةُ الصور",en:"Picture Match",fr:"Associe les images",vs:1},
+        {g:"matchar",ic:"🔗",ar:"مطابقةُ المعنى",en:"Meaning Match",fr:"Associe le sens",vs:1},
+        {g:"spell",ic:"🔡",ar:"الإملاء",en:"Spelling",fr:"Épellation",vs:1},
+        {g:"listen",ic:"👂",ar:"استماعٌ واختيار",en:"Listen & Choose",fr:"Écoute et choisis",vs:1}];
       body = `<div class="lgrid">${GAMES.map(x=>`<button class="lcard${x.vs?" vs":""}" data-g="${x.g}">${x.vs?'<span class="vsbadge">⚔️ تنافسيّة</span>':''}<span class="ic">${iconHtml(x.ic)}</span><span class="lt" data-ar="${esc(x.ar)}" data-fg="${esc(x[k]||x.ar)}">${esc(x.ar)}</span></button>`).join("")}</div>`;
     } else {
-      const T={match:"🃏 مطابقةُ الصور",matchar:"🔗 مطابقةُ المعنى",spell:"🔡 الإملاء",listen:"👂 استماعٌ واختيار"};
+      const T={transrace:"🏃 سباقُ الترجمة",sortwords:"⚖️ صنّفِ الكلمات",match:"🃏 مطابقةُ الصور",matchar:"🔗 مطابقةُ المعنى",spell:"🔡 الإملاء",listen:"👂 استماعٌ واختيار"};
       topnav = nav("↩ الألعاب","games")+`<span class="cur">${T[g]||"🎮 ألعاب"}</span>`; body = `<div id="gm"></div>`;
     }
   }
@@ -665,7 +632,7 @@ function renderLang(k){
   if(sec==="verbs"){ const h=document.getElementById("vb"); if(h) renderVerbs(L, h); }
   if(sec==="quiz"){ const h=document.getElementById("qz"); if(h) renderQuiz(L, h); }
   if(sec==="games" && qp.get("g")){ const g=qp.get("g"), h=document.getElementById("gm");
-    if(h){ ({transrace:startTransRace, sortwords:startSortGame, match:renderGame, matchar:renderMatchAr, spell:renderSpell, listen:renderListen}[g]||renderGame)(L, h); } }
+    if(h){ ({transrace:startTransRace, sortwords:startSortGame, match:startMatch, matchar:startMatchAr, spell:startSpell, listen:startListen}[g]||startTransRace)(L, h); } }
   startTitleAlt();
   try{ logEvent("lang_open", {add:{}}); }catch(e){}
 }
@@ -681,7 +648,7 @@ function startTitleAlt(){
     const els=lts(); if(!els.length){ clearInterval(altTimer); altTimer=null; return; }
     altFg=!altFg;
     els.forEach(el=>{ el.style.opacity="0";
-      setTimeout(()=>{ const fg=altFg; el.textContent = fg ? el.getAttribute("data-fg") : el.getAttribute("data-ar");
+      setTimeout(()=>{ const fg = el.hasAttribute("data-fgprimary") ? !altFg : altFg; el.textContent = fg ? el.getAttribute("data-fg") : el.getAttribute("data-ar");
         el.classList.toggle("fg", fg); el.dir = fg ? "ltr" : "rtl"; el.style.opacity="1"; }, 260);
     });
   }, 5000);

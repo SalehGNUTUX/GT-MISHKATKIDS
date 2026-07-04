@@ -663,7 +663,7 @@ function xoEnd(w){
 }
 
 /* ===================== 🔢 تحدّي الأعداد (تناوبٌ · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
-let nc_diff="easy", nc_ps=[], nc_turn=0, nc_q=null, nc_lock=false; const NC_TARGET=5;
+let nc_diff="easy", nc_ps=[], nc_turn=0, nc_q=null, nc_lock=false, nc_aiPick=null; const NC_TARGET=5;
 function startNC(){ vsSetup({ say:GI.numrace, soloOk:true, diffs:[{v:"easy",label:"جمع"},{v:"medium",label:"جمع وطرح"},{v:"hard",label:"ضرب"}], getDiff:()=>nc_diff, setDiff:v=>{nc_diff=v;}, start:newNC }); try{speak(GI.numrace);}catch(e){} }
 function newNC(){ vsRun=true; nc_ps=vsMakePlayers(); nc_ps.forEach(p=>p.score=0); nc_turn=0; nc_lock=false; ncNext(); }
 function ncGen(){
@@ -691,19 +691,24 @@ function renderNC(){
   document.getElementById("ncopts").addEventListener("click",e=>{ const b=e.target.closest("[data-v]"); if(!b) return; ncAnswer(+b.getAttribute("data-v"), b); });
 }
 function ncAnswer(v, btn){ if(nc_lock||nc_ps[nc_turn].cpu) return; nc_lock=true; sfx.tap(); ncResolve(v===nc_q.ans, btn); }
-function ncAI(){ nc_lock=true; const pr=nc_diff==="easy"?0.6:nc_diff==="medium"?0.78:0.9; setTimeout(()=>{ ncResolve(Math.random()<pr, null); }, 950); }
+function ncAI(){ nc_lock=true; const pr=nc_diff==="easy"?0.6:nc_diff==="medium"?0.78:0.9, ok=Math.random()<pr;
+  nc_aiPick = ok ? nc_q.ans : (shuffle(nc_q.opts.filter(o=>o!==nc_q.ans))[0] ?? nc_q.ans); // بطاقةُ اختيارِ الآليّ (تُلوَّن)
+  setTimeout(()=>{ ncResolve(ok, null); }, 950); }
 function ncResolve(correct, btn){
   const cur=nc_ps[nc_turn], human=!cur.cpu;
-  if(correct){ cur.score++; if(btn) btn.classList.add("ok"); const won=cur.score>=NC_TARGET;
+  const mark=(val,cls)=>{ if(val==null) return; document.querySelectorAll("#ncopts [data-v]").forEach(b=>{ if(+b.getAttribute("data-v")===val) b.classList.add(cls); }); };
+  if(human){ if(btn) btn.classList.add(correct?"ok":"bad"); } else mark(nc_aiPick, correct?"ok":"bad"); // بطاقةُ مختارِ اللاعب/الآليّ
+  if(!correct) mark(nc_q.ans,"ok");                                                                   // وتُظهَرُ الإجابةُ الصحيحة
+  if(correct){ cur.score++; const won=cur.score>=NC_TARGET;
     if(won) sfx.success(); else if(human) robo.cheer(vP(VS_OK)); else { sfx.success(); if(Math.random()<0.45) robo.say(vP(VS_AIOK),"happy"); } }
-  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(vP(VS_NO)); else sfx.nope(); }
+  else { if(human) robo.encourage(vP(VS_NO)); else sfx.nope(); }
   const fb=document.getElementById("ncfb"); if(fb) fb.innerHTML=`<div class="fb">${correct?`✅ صحيح! ${nc_q.a} ${nc_q.op} ${nc_q.b} = ${nc_q.ans}`:`❌ الصحيحُ هو ${nc_q.ans}`}</div>`;
   setTimeout(()=>{ nc_turn=(nc_turn+1)%nc_ps.length; ncNext(); }, 1150);
 }
 function ncEnd(){ logEvent("numrace_win"); vsEndRound(nc_ps, { onAgain:newNC, onExit:startNC }); }
 
 /* ===================== 🔎 صيدُ الحرف/الرقم (تناوبٌ بمؤقّت · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
-let hu_diff="easy", hu_ps=[], hu_turn=0, hu_lock=false, hu_cells=[], hu_target="", hu_raf=null; const HU_TARGET=5;
+let hu_diff="easy", hu_ps=[], hu_turn=0, hu_lock=false, hu_cells=[], hu_target="", hu_raf=null, hu_aiPick=null; const HU_TARGET=5;
 const HU_CFG={ easy:{n:12,ms:6000,pr:0.6,d:1800}, medium:{n:16,ms:4500,pr:0.78,d:1300}, hard:{n:20,ms:3200,pr:0.9,d:900} };
 const AR_LETTERS="ا ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ي".split(" ");
 function startHU(){ vsSetup({ say:GI.hunt, soloOk:true, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>hu_diff, setDiff:v=>{hu_diff=v;}, start:newHU }); try{speak(GI.hunt);}catch(e){} }
@@ -732,19 +737,24 @@ function huTimer(ms, onEnd){ const start=Date.now(), bar=document.getElementById
   const tick=()=>{ if(!vsRun){ cancelAnimationFrame(hu_raf); cancelAnimationFrame(sm_raf); return; } const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ onEnd&&onEnd(); return; } hu_raf=requestAnimationFrame(tick); }; tick();
 }
 function huTap(c,btn){ if(hu_lock||hu_ps[hu_turn].cpu) return; cancelAnimationFrame(hu_raf); hu_lock=true; sfx.tap(); huResolve(c===hu_target, btn); }
-function huAI(){ hu_lock=true; const cfg=HU_CFG[hu_diff], ok=Math.random()<cfg.pr; huTimer(cfg.d, ()=>huResolve(ok,null)); } // الشريطُ يَنزِفُ خلالَ تفكيرِ الآليّ أيضًا
+function huAI(){ hu_lock=true; const cfg=HU_CFG[hu_diff], ok=Math.random()<cfg.pr;
+  hu_aiPick = ok ? hu_target : (shuffle(hu_cells.filter(c=>c!==hu_target))[0] || hu_target); // خليّةُ اختيارِ الآليّ (تُلوَّن)
+  huTimer(cfg.d, ()=>huResolve(ok,null)); } // الشريطُ يَنزِفُ خلالَ تفكيرِ الآليّ أيضًا
 function huResolve(ok,btn){
   cancelAnimationFrame(hu_raf); const cur=hu_ps[hu_turn], human=!cur.cpu;
-  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); const won=cur.score>=HU_TARGET;
+  const mark=(val,cls)=>{ if(val==null) return; document.querySelectorAll("#hugrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===val) b.classList.add(cls); }); };
+  if(human){ if(btn) btn.classList.add(ok?"ok":"bad"); } else mark(hu_aiPick, ok?"ok":"bad"); // خليّةُ مختارِ اللاعب/الآليّ
+  if(!ok) mark(hu_target,"ok");                                                             // وتُظهَرُ الخليّةُ الصحيحة
+  if(ok){ cur.score++; const won=cur.score>=HU_TARGET;
     if(won) sfx.success(); else if(human) robo.cheer(vP(VS_OK)); else { sfx.success(); if(Math.random()<0.45) robo.say(vP(VS_AIOK),"happy"); } }
-  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(vP(VS_NO)); else sfx.nope(); document.querySelectorAll("#hugrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===hu_target) b.classList.add("ok"); }); }
+  else { if(human) robo.encourage(vP(VS_NO)); else sfx.nope(); }
   const fb=document.getElementById("hufb"); if(fb) fb.innerHTML=`<div class="fb">${ok?"✅ أحسنت! صيدٌ سريع":`⌛ المطلوبُ كان «${hu_target}»`}</div>`;
   setTimeout(()=>{ hu_turn=(hu_turn+1)%hu_ps.length; huNext(); }, 1150);
 }
 function huEnd(){ logEvent("hunt_win"); vsEndRound(hu_ps, { onAgain:newHU, onExit:startHU }); }
 
 /* ===================== ⚡ سباقُ المطابقة (تناوبٌ بمؤقّت · صورٌ · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
-let sm_diff="easy", sm_ps=[], sm_turn=0, sm_lock=false, sm_target="", sm_opts=[], sm_raf=null; const SM_TARGET=5;
+let sm_diff="easy", sm_ps=[], sm_turn=0, sm_lock=false, sm_target="", sm_opts=[], sm_raf=null, sm_aiPick=null; const SM_TARGET=5;
 const SM_CFG={ easy:{n:4,ms:6000,pr:0.6,d:1700}, medium:{n:6,ms:4500,pr:0.78,d:1200}, hard:{n:9,ms:3200,pr:0.9,d:850} };
 function startSM(){ vsSetup({ say:GI.smatch, soloOk:true, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>sm_diff, setDiff:v=>{sm_diff=v;}, start:newSM }); try{speak(GI.smatch);}catch(e){} }
 function newSM(){ vsRun=true; sm_ps=vsMakePlayers(); sm_ps.forEach(p=>p.score=0); sm_turn=0; sm_lock=false; smNext(); }
@@ -768,12 +778,17 @@ function renderSM(){
 }
 function smTimer(ms, onEnd){ const start=Date.now(),bar=document.getElementById("smbar"); cancelAnimationFrame(sm_raf); const tick=()=>{ if(!vsRun){ cancelAnimationFrame(hu_raf); cancelAnimationFrame(sm_raf); return; } const left=ms-(Date.now()-start); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ onEnd&&onEnd(); return; } sm_raf=requestAnimationFrame(tick); }; tick(); }
 function smTap(c,btn){ if(sm_lock||sm_ps[sm_turn].cpu) return; cancelAnimationFrame(sm_raf); sm_lock=true; sfx.tap(); smResolve(c===sm_target,btn); }
-function smAI(){ sm_lock=true; const cfg=SM_CFG[sm_diff], ok=Math.random()<cfg.pr; smTimer(cfg.d, ()=>smResolve(ok,null)); }
+function smAI(){ sm_lock=true; const cfg=SM_CFG[sm_diff], ok=Math.random()<cfg.pr;
+  sm_aiPick = ok ? sm_target : (shuffle(sm_opts.filter(o=>o!==sm_target))[0] || sm_target); // خليّةُ اختيارِ الآليّ (تُلوَّن)
+  smTimer(cfg.d, ()=>smResolve(ok,null)); }
 function smResolve(ok,btn){
   cancelAnimationFrame(sm_raf); const cur=sm_ps[sm_turn], human=!cur.cpu;
-  if(ok){ cur.score++; if(btn) btn.classList.add("ok"); const won=cur.score>=SM_TARGET;
+  const mark=(val,cls)=>{ if(val==null) return; document.querySelectorAll("#smgrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===val) b.classList.add(cls); }); };
+  if(human){ if(btn) btn.classList.add(ok?"ok":"bad"); } else mark(sm_aiPick, ok?"ok":"bad"); // خليّةُ مختارِ اللاعب/الآليّ
+  if(!ok) mark(sm_target,"ok");                                                             // وتُظهَرُ الصورةُ المطابِقة
+  if(ok){ cur.score++; const won=cur.score>=SM_TARGET;
     if(won) sfx.success(); else if(human) robo.cheer(vP(VS_OK)); else { sfx.success(); if(Math.random()<0.45) robo.say(vP(VS_AIOK),"happy"); } }
-  else { if(btn) btn.classList.add("bad"); if(human) robo.encourage(vP(VS_NO)); else sfx.nope(); document.querySelectorAll("#smgrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===sm_target) b.classList.add("ok"); }); }
+  else { if(human) robo.encourage(vP(VS_NO)); else sfx.nope(); }
   const fb=document.getElementById("smfb"); if(fb) fb.innerHTML=`<div class="fb">${ok?"✅ مطابقةٌ صحيحة!":"⌛ هذه هي المطابِقة"}</div>`;
   setTimeout(()=>{ sm_turn=(sm_turn+1)%sm_ps.length; smNext(); },1100);
 }

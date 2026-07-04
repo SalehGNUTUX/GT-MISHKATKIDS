@@ -36,7 +36,10 @@ const texts = uniq([
 const setHash = sha(SET.id);
 const setDir = join(OUTDIR, setHash);
 mkdirSync(setDir, { recursive: true });
-const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: forSynthesis(t), out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
+// تصحيحاتُ تركيبٍ لكلماتٍ يُقصّرُ العصبيُّ مدَّها (المفتاحُ/الملفُّ يبقى الأصلَ، والنصُّ المُركَّبُ بديلٌ ممدود):
+// «مُمْتَاز» كان يُنطَقُ قصيرًا (mumtaz)؛ مدُّ الألفِ صراحةً يُعطي المدَّ الصحيح (mumtaaz).
+const SYNTH_FIX = { "مُمْتَاز!": "مُمْتَااز!" };
+const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: forSynthesis(SYNTH_FIX[t] || t), out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
 
 console.log(`🔊 توليد ${tasks.length} مقطعًا بصوت Piper العصبيّ (${SET.id})…`);
 const tasksFile = join(ROOT, ".piper-tasks.json");

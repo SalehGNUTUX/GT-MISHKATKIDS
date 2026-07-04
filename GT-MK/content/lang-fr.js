@@ -286,4 +286,14 @@ export default {
     { t: "Tu peux le faire !",ar: "أَنْتَ تَسْتَطِيعُ ذَلِكَ بِإِذْنِ اللَّه!" },
     { t: "Bien essayé !",     ar: "مُحَاوَلَةٌ جَيِّدَةٌ جِدًّا!" },
   ],
+
+  // الجملُ الافتتاحيّةُ للألعاب التنافسيّة بالفرنسيّة (يَنطِقُها الآليُّ بعد نظيرتها العربيّة). تُولَّدُ بـPiper (tts-tom).
+  intros: {
+    transrace: "Course de traduction ! Écoute le mot, puis choisis son sens.",
+    sortwords: "Classe les mots ! Écoute le mot, puis choisis sa catégorie.",
+    match:     "Associe les images ! Écoute le mot, puis choisis la bonne image.",
+    matchar:   "Associe le sens ! Regarde le sens, puis choisis le bon mot.",
+    spell:     "Épellation ! Écoute le mot, puis remets ses lettres dans l'ordre.",
+    listen:    "Écoute et choisis ! Écoute bien, puis choisis la bonne image.",
+  },
 };

@@ -577,6 +577,7 @@ function vsSetup(cfg){
         <div class="setrow"><div class="setlbl">${cfg.diffLabel||"🎚️ الصعوبة"}</div><div class="lvl" id="vdiff">${dh}</div></div>
         <div class="setrow"><div class="setlbl">👥 اللعبُ مع</div><div class="lvl" id="vopp">${opp}</div></div>
         <div class="setrow" id="vairow" style="${vs_opp==="ai"?"":"display:none"}"><div class="setlbl">🤖 مستوى الآليّ</div><div class="lvl" id="vai"><button data-ai="easy" class="${vs_ai==="easy"?"on":""}">سهل</button><button data-ai="medium" class="${vs_ai==="medium"?"on":""}">متوسّط</button><button data-ai="hard" class="${vs_ai==="hard"?"on":""}">صعب</button></div></div>
+        ${cfg.toggle?`<div class="setrow"><div class="setlbl">${cfg.toggle.label}</div><div class="lvl" id="vtg"><button data-tg="1" class="${cfg.toggle.get()?"on":""}">مُفعَّل</button><button data-tg="0" class="${!cfg.toggle.get()?"on":""}">مُعطَّل</button></div></div>`:""}
         <button id="vStart">▶ ابدأ اللعب</button>
       </div>`;
   wireBack();
@@ -584,6 +585,7 @@ function vsSetup(cfg){
   document.getElementById("vdiff").addEventListener("click",e=>{ const b=e.target.closest("[data-d]"); if(!b)return; cfg.setDiff(b.getAttribute("data-d")); rr(); });
   document.getElementById("vopp").addEventListener("click",e=>{ const b=e.target.closest("[data-opp]"); if(!b)return; vs_opp=b.getAttribute("data-opp"); rr(); });
   document.getElementById("vai").addEventListener("click",e=>{ const b=e.target.closest("[data-ai]"); if(!b)return; vs_ai=b.getAttribute("data-ai"); rr(); });
+  const vtg=document.getElementById("vtg"); if(vtg) vtg.addEventListener("click",e=>{ const b=e.target.closest("[data-tg]"); if(!b)return; cfg.toggle.set(b.getAttribute("data-tg")==="1"); rr(); });
   document.getElementById("vStart").onclick=cfg.start;
 }
 
@@ -708,10 +710,10 @@ function ncResolve(correct, btn){
 function ncEnd(){ logEvent("numrace_win"); vsEndRound(nc_ps, { onAgain:newNC, onExit:startNC }); }
 
 /* ===================== 🔎 صيدُ الحرف/الرقم (تناوبٌ بمؤقّت · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
-let hu_diff="easy", hu_ps=[], hu_turn=0, hu_lock=false, hu_cells=[], hu_target="", hu_raf=null, hu_aiPick=null; const HU_TARGET=5;
+let hu_diff="easy", hu_ps=[], hu_turn=0, hu_lock=false, hu_cells=[], hu_target="", hu_raf=null, hu_aiPick=null, hu_timed=true; const HU_TARGET=5;
 const HU_CFG={ easy:{n:12,ms:6000,pr:0.6,d:1800}, medium:{n:16,ms:4500,pr:0.78,d:1300}, hard:{n:20,ms:3200,pr:0.9,d:900} };
 const AR_LETTERS="ا ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ي".split(" ");
-function startHU(){ vsSetup({ say:GI.hunt, soloOk:true, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>hu_diff, setDiff:v=>{hu_diff=v;}, start:newHU }); try{speak(GI.hunt);}catch(e){} }
+function startHU(){ vsSetup({ say:GI.hunt, soloOk:true, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>hu_diff, setDiff:v=>{hu_diff=v;}, toggle:{ label:"⏱️ اللعبُ ضدّ الوقت", get:()=>hu_timed, set:v=>{hu_timed=v;} }, start:newHU }); try{speak(GI.hunt);}catch(e){} }
 function newHU(){ vsRun=true; hu_ps=vsMakePlayers(); hu_ps.forEach(p=>p.score=0); hu_turn=0; hu_lock=false; huNext(); }
 function huNext(){ if(!vsRun) return;
   if(hu_ps.some(p=>p.score>=HU_TARGET)){ huEnd(); return; }
@@ -719,7 +721,7 @@ function huNext(){ if(!vsRun) return;
   const pool=useNum ? shuffle(Array.from({length:40},(_,i)=>String(i+1))) : shuffle([...AR_LETTERS]);
   hu_cells=pool.slice(0,cfg.n); hu_target=hu_cells[Math.floor(Math.random()*hu_cells.length)]; hu_lock=false;
   renderHU();
-  if(hu_ps[hu_turn].cpu) huAI(); else huTimer(cfg.ms, ()=>{ if(!hu_lock){ hu_lock=true; huResolve(false,null); } });
+  if(hu_ps[hu_turn].cpu) huAI(); else if(hu_timed) huTimer(cfg.ms, ()=>{ if(!hu_lock){ hu_lock=true; huResolve(false,null); } });
 }
 function renderHU(){
   const cur=hu_ps[hu_turn];
@@ -727,7 +729,7 @@ function renderHU(){
     + vsScoreHtml(hu_ps)
     + vsTurnHtml(cur)
     + `<div class="hutarget">اعثرْ على: <b>${hu_target}</b></div>`
-    + `<div class="hubar"><span id="hubar"></span></div>`
+    + (hu_timed?`<div class="hubar"><span id="hubar"></span></div>`:"")
     + `<div class="hugrid" id="hugrid">`+hu_cells.map(c=>`<button class="hucell" data-c="${c}">${c}</button>`).join("")+`</div>`
     + `<div id="hufb"></div>`;
   wireBack();
@@ -739,7 +741,7 @@ function huTimer(ms, onEnd){ const start=Date.now(), bar=document.getElementById
 function huTap(c,btn){ if(hu_lock||hu_ps[hu_turn].cpu) return; cancelAnimationFrame(hu_raf); hu_lock=true; sfx.tap(); huResolve(c===hu_target, btn); }
 function huAI(){ hu_lock=true; const cfg=HU_CFG[hu_diff], ok=Math.random()<cfg.pr;
   hu_aiPick = ok ? hu_target : (shuffle(hu_cells.filter(c=>c!==hu_target))[0] || hu_target); // خليّةُ اختيارِ الآليّ (تُلوَّن)
-  huTimer(cfg.d, ()=>huResolve(ok,null)); } // الشريطُ يَنزِفُ خلالَ تفكيرِ الآليّ أيضًا
+  if(hu_timed) huTimer(cfg.d, ()=>huResolve(ok,null)); else setTimeout(()=>huResolve(ok,null), cfg.d); } // الشريطُ يَنزِفُ خلالَ تفكيرِ الآليّ أيضًا
 function huResolve(ok,btn){
   cancelAnimationFrame(hu_raf); const cur=hu_ps[hu_turn], human=!cur.cpu;
   const mark=(val,cls)=>{ if(val==null) return; document.querySelectorAll("#hugrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===val) b.classList.add(cls); }); };
@@ -754,15 +756,15 @@ function huResolve(ok,btn){
 function huEnd(){ logEvent("hunt_win"); vsEndRound(hu_ps, { onAgain:newHU, onExit:startHU }); }
 
 /* ===================== ⚡ سباقُ المطابقة (تناوبٌ بمؤقّت · صورٌ · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
-let sm_diff="easy", sm_ps=[], sm_turn=0, sm_lock=false, sm_target="", sm_opts=[], sm_raf=null, sm_aiPick=null; const SM_TARGET=5;
+let sm_diff="easy", sm_ps=[], sm_turn=0, sm_lock=false, sm_target="", sm_opts=[], sm_raf=null, sm_aiPick=null, sm_timed=true; const SM_TARGET=5;
 const SM_CFG={ easy:{n:4,ms:6000,pr:0.6,d:1700}, medium:{n:6,ms:4500,pr:0.78,d:1200}, hard:{n:9,ms:3200,pr:0.9,d:850} };
-function startSM(){ vsSetup({ say:GI.smatch, soloOk:true, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>sm_diff, setDiff:v=>{sm_diff=v;}, start:newSM }); try{speak(GI.smatch);}catch(e){} }
+function startSM(){ vsSetup({ say:GI.smatch, soloOk:true, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>sm_diff, setDiff:v=>{sm_diff=v;}, toggle:{ label:"⏱️ اللعبُ ضدّ الوقت", get:()=>sm_timed, set:v=>{sm_timed=v;} }, start:newSM }); try{speak(GI.smatch);}catch(e){} }
 function newSM(){ vsRun=true; sm_ps=vsMakePlayers(); sm_ps.forEach(p=>p.score=0); sm_turn=0; sm_lock=false; smNext(); }
 function smNext(){ if(!vsRun) return;
   if(sm_ps.some(p=>p.score>=SM_TARGET)){ smEnd(); return; }
   const cfg=SM_CFG[sm_diff], icons=shuffle(Object.keys(MEMORY_ART));
   sm_target=icons[0]; sm_opts=shuffle([sm_target,...icons.slice(1,cfg.n)]); sm_lock=false;
-  renderSM(); if(sm_ps[sm_turn].cpu) smAI(); else smTimer(cfg.ms, ()=>{ if(!sm_lock){ sm_lock=true; smResolve(false,null); } });
+  renderSM(); if(sm_ps[sm_turn].cpu) smAI(); else if(sm_timed) smTimer(cfg.ms, ()=>{ if(!sm_lock){ sm_lock=true; smResolve(false,null); } });
 }
 function renderSM(){
   const cur=sm_ps[sm_turn];
@@ -770,7 +772,7 @@ function renderSM(){
     + vsScoreHtml(sm_ps)
     + vsTurnHtml(cur)
     + `<div class="hint" style="text-align:center;margin:2px 0">جِدْ مثلَ هذه الصورة:</div><div class="smtarget">${MEMORY_ART[sm_target]}</div>`
-    + `<div class="hubar"><span id="smbar"></span></div>`
+    + (sm_timed?`<div class="hubar"><span id="smbar"></span></div>`:"")
     + `<div class="smgrid" id="smgrid">`+sm_opts.map(o=>`<button class="smcell" data-c="${o}">${MEMORY_ART[o]}</button>`).join("")+`</div>`
     + `<div id="smfb"></div>`;
   wireBack();
@@ -780,7 +782,7 @@ function smTimer(ms, onEnd){ const start=Date.now(),bar=document.getElementById(
 function smTap(c,btn){ if(sm_lock||sm_ps[sm_turn].cpu) return; cancelAnimationFrame(sm_raf); sm_lock=true; sfx.tap(); smResolve(c===sm_target,btn); }
 function smAI(){ sm_lock=true; const cfg=SM_CFG[sm_diff], ok=Math.random()<cfg.pr;
   sm_aiPick = ok ? sm_target : (shuffle(sm_opts.filter(o=>o!==sm_target))[0] || sm_target); // خليّةُ اختيارِ الآليّ (تُلوَّن)
-  smTimer(cfg.d, ()=>smResolve(ok,null)); }
+  if(sm_timed) smTimer(cfg.d, ()=>smResolve(ok,null)); else setTimeout(()=>smResolve(ok,null), cfg.d); }
 function smResolve(ok,btn){
   cancelAnimationFrame(sm_raf); const cur=sm_ps[sm_turn], human=!cur.cpu;
   const mark=(val,cls)=>{ if(val==null) return; document.querySelectorAll("#smgrid [data-c]").forEach(b=>{ if(b.getAttribute("data-c")===val) b.classList.add(cls); }); };

@@ -312,6 +312,7 @@ function renderQuiz(L, host){
 const QZ_DIFF = { easy:{opts:3,ms:7000,pr:0.55,d:1900}, medium:{opts:4,ms:5500,pr:0.72,d:1400}, hard:{opts:4,ms:4000,pr:0.88,d:1000} };
 let trRun=false;          // حارسٌ مشترك: يوقفُ أيَّ لعبةٍ عند الرجوع (يُصفَّرُ في render())
 let qz=null;              // حالةُ اللعبةِ الجاريةِ عبر المحرّك العامّ
+let qzTimed=true;         // اللعبُ ضدّ الوقت (يُفعَّل/يُعطَّل من شاشةِ الإعداد)
 
 // ينطقُ الآليُّ الجملةَ الافتتاحيّةَ بالعربيّةِ ثمّ بلغةِ القسم (تعزيزٌ ثنائيّ).
 function sayIntro(arText, fgText, L){
@@ -340,7 +341,9 @@ function vsQuizStart(cfg){ cfg.diff = cfg.diff || "easy"; qz=null;
   const fg=(cfg.L.intros||{})[cfg.key];
   vsSetup(cfg.host, { say:introHtml(cfg.intro, fg), soloOk:true,
     diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
-    getDiff:()=>cfg.diff, setDiff:v=>{cfg.diff=v;}, start:()=>vsQuizNew(cfg) });
+    getDiff:()=>cfg.diff, setDiff:v=>{cfg.diff=v;},
+    toggle:{ label:"⏱️ اللعبُ ضدّ الوقت", get:()=>qzTimed, set:v=>{qzTimed=v;} },
+    start:()=>vsQuizNew(cfg) });
   wireIntroReplay(cfg.host, cfg.intro, fg, cfg.L);
   sayIntro(cfg.intro, fg, cfg.L);
 }
@@ -350,13 +353,13 @@ function vsQuizNext(){ if(!trRun||!qz) return;
   if(qz.ps.some(p=>p.score>=target)){ vsQuizEnd(); return; }
   const d=QZ_DIFF[cfg.diff]; qz.q=cfg.makeQ(cfg.L, d.opts); qz.lock=false; vsQuizRender();
   const cur=qz.ps[qz.turn];
-  if(cur.cpu) vsQuizAI(); else { if(cfg.sayPrompt) cfg.sayPrompt(qz.q, cfg.L); vsQuizTimer(d.ms, ()=>{ if(!qz.lock){ qz.lock=true; vsQuizResolve(false,null); } }); }
+  if(cur.cpu) vsQuizAI(); else { if(cfg.sayPrompt) cfg.sayPrompt(qz.q, cfg.L); if(qzTimed) vsQuizTimer(d.ms, ()=>{ if(!qz.lock){ qz.lock=true; vsQuizResolve(false,null); } }); }
 }
 function vsQuizRender(){ const cfg=qz.cfg, q=qz.q, cur=qz.ps[qz.turn], k=curLng();
   cfg.host.innerHTML = `<div class="clue" style="padding:10px"><div class="say">${cfg.icon} ${esc(cfg.title)} — أوّلُ من يبلغُ ${cfg.target||5} يفوز!</div></div>`
     + vsScoreHtml(qz.ps) + vsTurnHtml(cur)
     + cfg.promptHtml(q, cfg.L)
-    + `<div class="hubar" style="height:9px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px;margin:6px auto 12px"><span id="qzBar" style="display:block;height:100%;background:var(--primary);width:100%"></span></div>`
+    + (qzTimed?`<div class="hubar" style="height:9px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px;margin:6px auto 12px"><span id="qzBar" style="display:block;height:100%;background:var(--primary);width:100%"></span></div>`:"")
     + `<div class="${cfg.optWrap||'grid'}" id="qzOpts">${cfg.optionsHtml(q, cfg.L, k)}</div>`
     + `<div id="qzFb"></div>`;
   const sb=cfg.host.querySelector("#qzSay"); if(sb&&cfg.sayPrompt) sb.onclick=()=>cfg.sayPrompt(q, cfg.L);
@@ -368,7 +371,8 @@ function vsQuizTimer(ms,onEnd){ if(!qz) return; const start=Date.now(), bar=docu
 function vsQuizTap(btn){ if(!qz||qz.lock||qz.ps[qz.turn].cpu) return; cancelAnimationFrame(qz.raf); qz.lock=true; sfx.tap(); vsQuizResolve(btn.getAttribute("data-opt")===qz.cfg.optVal(qz.q.correct), btn); }
 function vsQuizAI(){ if(!qz) return; qz.lock=true; const cfg=qz.cfg, d=QZ_DIFF[cfg.diff], ok=Math.random()<d.pr, cv=cfg.optVal(qz.q.correct);
   qz.aiPick = ok ? cv : (shuffle(qz.q.opts.map(cfg.optVal).filter(v=>v!==cv))[0] ?? cv); // بطاقةُ اختيارِ الآليّ (تُلوَّنُ عند الحلّ)
-  if(cfg.sayPrompt) cfg.sayPrompt(qz.q, cfg.L); vsQuizTimer(d.d, ()=>vsQuizResolve(ok,null)); }
+  if(cfg.sayPrompt) cfg.sayPrompt(qz.q, cfg.L);
+  if(qzTimed) vsQuizTimer(d.d, ()=>vsQuizResolve(ok,null)); else setTimeout(()=>vsQuizResolve(ok,null), d.d); }
 function vsQuizResolve(ok,btn){ if(!qz) return;
   cancelAnimationFrame(qz.raf); const cfg=qz.cfg, cur=qz.ps[qz.turn], human=!cur.cpu, target=cfg.target||5, cv=cfg.optVal(qz.q.correct);
   const mark=(val,cls)=>{ if(val==null) return; cfg.host.querySelectorAll("#qzOpts [data-opt]").forEach(b=>{ if(b.getAttribute("data-opt")===String(val)) b.classList.add(cls); }); };
@@ -471,11 +475,28 @@ function spNext(){ if(!trRun) return;
   }
   redraw(false); say(target, sp_L);
 }
-function spRobot(word, cur){ const ok=Math.random()<SP_DIFF[sp_diff].ai;
-  sp_host.innerHTML = spHead(cur)+`<div class="qzprompt"><span class="qzemoji">${word.emoji}</span><span class="qzar">${esc(word.ar)}</span><div class="hint">🤖 يُرتّبُ الآليُّ الحروف…</div></div>`;
-  say(word.w, sp_L);
-  setTimeout(()=>{ if(!trRun) return; if(ok){ cur.score++; sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } else sfx.nope();
-    sp_turn=(sp_turn+1)%sp_ps.length; spNext(); }, 2200);
+// دورُ الآليّ في الإملاء: تظهرُ الحروفُ المبعثرةُ والخاناتُ، ويرتّبُها الآليُّ حرفًا حرفًا أمامَ الطفلِ (يُصيبُ أو يُخطئ حسبَ الصعوبة).
+function spRobot(word, cur){ const target=word.w, ok=Math.random()<SP_DIFF[sp_diff].ai, letters=shuffle(target.split(""));
+  const used=new Set(), order=[];
+  for(const ch of target){ let idx=letters.findIndex((c,i)=>c===ch && !used.has(i)); if(idx<0) idx=letters.findIndex((_,i)=>!used.has(i)); used.add(idx); order.push(idx); }
+  if(!ok && order.length>=2){ const j=order.length-1; [order[j],order[j-1]]=[order[j-1],order[j]]; } // خطأٌ متعمَّد: قلبُ آخرِ حرفين
+  let built=[];
+  function draw(done){
+    sp_host.innerHTML = spHead(cur)
+      + `<div class="qzprompt"><span class="qzemoji">${word.emoji}</span><span class="qzar">${esc(word.ar)}</span><div class="hint">🤖 يُرتّبُ الآليُّ الحروف…</div></div>`
+      + `<div class="spslot ltr">${target.split("").map((_,i)=>`<span class="${done&&ok?'full ok':(built[i]?'full':'')}">${built[i]?esc(built[i].ch):''}</span>`).join("")}</div>`
+      + `<div class="splet">${letters.map((ch,idx)=>`<button class="lchip ltr" disabled ${built.find(b=>b.idx===idx)?'style="opacity:.3"':''}>${esc(ch)}</button>`).join("")}</div>`;
+  }
+  draw(false); say(target, sp_L);
+  let step=0;
+  function place(){ if(!trRun) return;
+    if(step>=order.length){ setTimeout(()=>{ if(!trRun) return;
+        if(ok){ cur.score++; sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } else { sfx.nope(); robo.say(vP(GR.no),"sad"); }
+        sp_turn=(sp_turn+1)%sp_ps.length; spNext(); }, 950);
+      return; }
+    const idx=order[step++]; built.push({idx, ch:letters[idx]}); sfx.tap(); draw(step>=order.length); setTimeout(place, 620);
+  }
+  setTimeout(place, 850);
 }
 function spEnd(){ try{ logEvent("lang_spell_win"); }catch(e){} vsEndRound(sp_ps, { onAgain:()=>newSpell(), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
 

@@ -84,12 +84,14 @@ export function vsSetup(host, cfg) {
       <div class="vs-row"><div class="vs-lbl">${cfg.diffLabel || "🎚️ الصعوبة"}</div><div class="vs-lvl" id="vsD">${dh}</div></div>
       <div class="vs-row"><div class="vs-lbl">👥 اللعبُ مع</div><div class="vs-lvl" id="vsO">${opp}</div></div>
       <div class="vs-row" id="vsAR" style="${VS.opp === "ai" ? "" : "display:none"}"><div class="vs-lbl">🤖 مستوى الآليّ</div><div class="vs-lvl" id="vsA"><button data-ai="easy" class="${VS.ai === "easy" ? "on" : ""}">سهل</button><button data-ai="medium" class="${VS.ai === "medium" ? "on" : ""}">متوسّط</button><button data-ai="hard" class="${VS.ai === "hard" ? "on" : ""}">صعب</button></div></div>
+      ${cfg.toggle ? `<div class="vs-row"><div class="vs-lbl">${cfg.toggle.label}</div><div class="vs-lvl" id="vsTG"><button data-tg="1" class="${cfg.toggle.get() ? "on" : ""}">مُفعَّل</button><button data-tg="0" class="${!cfg.toggle.get() ? "on" : ""}">مُعطَّل</button></div></div>` : ""}
       <button class="vs-start" id="vsGo">▶ ابدأ اللعب</button>
     </div>`;
   const rr = () => vsSetup(host, cfg);
   host.querySelector("#vsD").addEventListener("click", e => { const b = e.target.closest("[data-d]"); if (!b) return; cfg.setDiff(b.getAttribute("data-d")); rr(); });
   host.querySelector("#vsO").addEventListener("click", e => { const b = e.target.closest("[data-opp]"); if (!b) return; VS.opp = b.getAttribute("data-opp"); rr(); });
   host.querySelector("#vsA").addEventListener("click", e => { const b = e.target.closest("[data-ai]"); if (!b) return; VS.ai = b.getAttribute("data-ai"); rr(); });
+  const tg = host.querySelector("#vsTG"); if (tg) tg.addEventListener("click", e => { const b = e.target.closest("[data-tg]"); if (!b) return; cfg.toggle.set(b.getAttribute("data-tg") === "1"); rr(); });
   host.querySelector("#vsGo").onclick = cfg.start;
 }
 

@@ -312,8 +312,12 @@ let trRun=false;          // حارسٌ مشترك: يوقفُ أيَّ لعبة
 let qz=null;              // حالةُ اللعبةِ الجاريةِ عبر المحرّك العامّ
 
 // ينطقُ الآليُّ الجملةَ الافتتاحيّةَ بالعربيّةِ ثمّ بلغةِ القسم (تعزيزٌ ثنائيّ).
-function sayIntro(arText, fgText, L){ try{ speak(arText); }catch(e){}
-  if(fgText) setTimeout(()=>{ try{ say(fgText, L); }catch(e){} }, 2300); }
+function sayIntro(arText, fgText, L){
+  if(!fgText){ try{ speak(arText); }catch(e){} return; }
+  // ننتظرُ انتهاءَ العربيّةِ (onend) ثمّ ننطقُ الأجنبيّةَ — فلا تُقطَعُ العربيّةُ قبلَ تمامها.
+  try{ speak(arText, { onend:()=>{ try{ say(fgText, L); }catch(e){} } }); }
+  catch(e){ try{ say(fgText, L); }catch(e2){} }
+}
 // نصُّ الجملةِ الافتتاحيّةِ ثنائيّاً (يُعرَضُ في شاشةِ الإعداد): عربيٌّ فوق، وأجنبيٌّ تحته.
 function introHtml(arText, fgText){ return `${esc(arText)}${fgText?`<div class="ltr" style="margin-top:6px;font-size:14px;color:var(--muted)">${esc(fgText)}</div>`:""}`; }
 

@@ -32,8 +32,13 @@
   .back{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:7px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink)}
 
   .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:8px}
-  .gcard{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
+  .gcard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
   .gcard:hover{transform:translateY(-3px);border-color:var(--primary)}
+  .gcard.hasnew{border-color:color-mix(in srgb,#E8912D 55%,var(--line))}
+  .nbadge{position:absolute;top:6px;inset-inline-end:6px;z-index:2;background:#E8912D;color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:999px;box-shadow:0 2px 8px rgba(232,145,45,.5);animation:newpulse 1.5s ease-in-out infinite}
+  .vbadge{position:absolute;top:6px;inset-inline-start:6px;z-index:2;background:var(--primary);color:#fff;font-size:11px;font-weight:800;padding:1px 6px;border-radius:999px}
+  @keyframes newpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+  @media(prefers-reduced-motion:reduce){ .nbadge{animation:none} }
   .gcard .ic{font-size:42px}
   .gcard .t{font-size:16px;font-weight:800;margin-top:4px}
   .gcard .d{font-size:12px;color:var(--muted)}
@@ -189,7 +194,8 @@ import { logEvent, recordMastery } from "./src/progress.js";
 import { pickAdaptive } from "./src/adaptive.js";
 import { speak } from "./src/speak.js";
 import { robo } from "./src/robo-companion.js";
-import { NOTICES } from "./src/robo-phrases.js";
+import { NOTICES, GAME_INTROS as GI } from "./src/robo-phrases.js";
+import { vsSetup, vsMakePlayers, vsScoreHtml, vsTurnHtml, vsEndRound, vP, GAME as GR, sfx } from "./src/versus.js"; // الإطارُ التنافسيّ المشترك (v1.4)
 import { downloadSvgAsPdf } from "./src/pdf-utils.js";
 import { numberName as numAr } from "./src/numbers-ar.js";
 import { autoToggleHtml, wireAuto, onCorrect, onWrong } from "./src/quiz-flow.js";
@@ -225,21 +231,23 @@ const GAMES = [
   { id:"find",    ic:"🔍", t:"اعثر على الشكل", d:"اسمعِ اسمَ الشكلِ واضغطْه" },
   { id:"compare", ic:"⚖️", t:"عُدّ وقارن",     d:"أيُّ مجموعةٍ أكثر؟" },
   { id:"pattern", ic:"🔁", t:"أكمل النمط",     d:"ما العنصرُ التالي؟" },
+  { id:"patternvs", ic:"🧩", t:"تحدّي النمط",  d:"تنافسْ: ما العنصرُ التالي؟", vs:1, nw:1 },
   { id:"size",    ic:"📏", t:"الأكبر والأصغر", d:"قارن الأحجام" },
   { id:"basic",   ic:"🔵", t:"أشكالٌ بسيطة",   d:"دائرة · مربّع · مثلّث · مستطيل" },
   { id:"adv",     ic:"🔷", t:"أشكالٌ متقدّمة", d:"2D و3D — أمثلةٌ في خلق الله" },
   { id:"crafts",  ic:"✂️", t:"ورشة الورق",    d:"اصنع الأشكالَ بنفسك بالمقاسات" },
 ];
 function renderMenu(){
+  pvRun=false; // مغادرةُ أيِّ لعبةٍ تنافسيّةٍ ⇒ أوقِفْ مؤقّتاتِها/ذكاءَها
   view.innerHTML = `<div class="menu">` +
-    GAMES.map(g=>`<div class="gcard" data-g="${g.id}"><div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
+    GAMES.map(g=>`<div class="gcard${g.nw?" hasnew":""}" data-g="${g.id}">${g.nw?'<span class="nbadge">🆕 جديد</span>':''}${g.vs?'<span class="vbadge">⚔️</span>':''}<div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
     `</div>
     <div class="tadabbur">📐 الأشكالُ والأعدادُ من حولنا… ما أدقَّ نظامَ اللهِ في خلقه! تأمّلْ معي.</div>
     <div class="hint">الشاشةُ محفِّز، والعمل الحقيقيّ بيدك — هيّا لنصنعَ ونتعلّم 🌟</div>`;
   view.querySelector(".menu").addEventListener("click", e=>{
     const c=e.target.closest("[data-g]"); if(!c) return;
     ({numbers:startNumbers,numerals:startNumerals,add:()=>startArith("+"),sub:()=>startArith("-"),mul:()=>startArith("×"),div:()=>startArith("÷"),
-      find:startFind,compare:startCompare,pattern:startPattern,size:startSize,
+      find:startFind,compare:startCompare,pattern:startPattern,patternvs:startPatternVs,size:startSize,
       basic:startBasicShapes,adv:startAdvShapes,crafts:startCrafts})[c.getAttribute("data-g")]();
   });
 }
@@ -486,6 +494,66 @@ function nextPattern(){
     if(b.getAttribute("data-v")===answer){ b.classList.add("ok"); pScore++; logEvent("math_correct"); view.querySelectorAll(".opt").forEach(x=>x.disabled=true); onCorrect(robo, view, nextPattern); }
     else { b.classList.add("bad"); setTimeout(()=>b.classList.remove("bad"),450); onWrong(robo, view, nextPattern); } });
 }
+
+/* ===== 🧩 تحدّي النمط (تنافسيّ · versus) — أنماطُ أشكالٍ + تسلسلاتُ أعداد ===== */
+let pv_diff="easy", pv_ps=[], pv_turn=0, pv_lock=false, pv_q=null, pv_raf=null, pv_timed=true, pv_aiPick=null, pvRun=false; const PV_TARGET=5;
+const PV_DIFF={ easy:{opts:3,ms:9000,pr:0.6,d:1500}, medium:{opts:4,ms:7000,pr:0.75,d:1200}, hard:{opts:4,ms:5500,pr:0.9,d:900} };
+function startPatternVs(){ pvRun=false; view.innerHTML=backBar()+`<div id="pvhost"></div>`; wireBack();
+  vsSetup(document.getElementById("pvhost"), { say:GI.pattern, soloOk:true,
+    diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
+    getDiff:()=>pv_diff, setDiff:v=>{pv_diff=v;},
+    toggle:{ label:"⏱️ اللعبُ ضدّ الوقت", get:()=>pv_timed, set:v=>{pv_timed=v;} },
+    start:newPatternVs });
+  try{speak(GI.pattern);}catch(e){} }
+function newPatternVs(){ pvRun=true; pv_ps=vsMakePlayers(); pv_ps.forEach(p=>p.score=0); pv_turn=0; pv_lock=false; pvNext(); }
+// يولّدُ سؤالًا: تسلسلٌ عدديّ (جمعٌ ثابتٌ أو مضاعفة) أو نمطُ أشكالٍ متكرّر.
+function pvGen(){ const cfg=PV_DIFF[pv_diff], useNum = pv_diff==="easy" ? Math.random()<0.5 : Math.random()<0.62;
+  if(useNum){ let seq, answer;
+    if(pv_diff==="hard" && Math.random()<0.5){ const s=1+rand(3), r=2+rand(2); seq=[s]; for(let i=0;i<3;i++) seq.push(seq[seq.length-1]*r); answer=seq[seq.length-1]*r; } // هندسيّ ×2/×3
+    else { const start=1+rand(pv_diff==="easy"?5:9), step=(pv_diff==="easy"?1+rand(2):2+rand(4)); seq=[]; for(let i=0;i<4;i++) seq.push(start+i*step); answer=start+4*step; } // حسابيّ +ثابت
+    const set=new Set([answer]); let guard=0; while(set.size<cfg.opts && guard++<40){ const off=(1+rand(4))*(Math.random()<0.5?1:-1)*(pv_diff==="hard"?2:1); const v=answer+off; if(v>0) set.add(v); }
+    return { kind:"num", seq, answer:String(answer), opts:shuffle([...set].map(String)) };
+  }
+  const pool=shuffle(PATTERN_POOLS[rand(PATTERN_POOLS.length)].slice()), type=PATTERN_TYPES[rand(PATTERN_TYPES.length)];
+  const base = type==="AB"?[pool[0],pool[1]]:type==="ABC"?[pool[0],pool[1],pool[2]]:type==="AAB"?[pool[0],pool[0],pool[1]]:[pool[0],pool[1],pool[0]];
+  const show=5+rand(2), seq=[]; for(let i=0;i<show;i++) seq.push(base[i%base.length]);
+  const answer=base[show%base.length], others=shuffle(pool.filter(x=>x!==answer)).slice(0,cfg.opts-1);
+  return { kind:"shape", seq, answer:String(answer), opts:shuffle([answer,...others].map(String)) };
+}
+function pvNext(){ if(!pvRun) return;
+  if(pv_ps.some(p=>p.score>=PV_TARGET)){ pvEnd(); return; }
+  pv_q=pvGen(); pv_lock=false; pvRender();
+  const cur=pv_ps[pv_turn];
+  if(cur.cpu) pvAI(); else if(pv_timed) pvTimer(PV_DIFF[pv_diff].ms, ()=>{ if(!pv_lock){ pv_lock=true; pvResolve(false,null); } });
+}
+function pvRender(){ const cur=pv_ps[pv_turn], host=document.getElementById("pvhost"); if(!host) return;
+  host.innerHTML = `<div class="prompt">🧩 تحدّي النمط — أوّلُ من يبلغُ ${PV_TARGET} يفوز!</div>`
+    + vsScoreHtml(pv_ps) + vsTurnHtml(cur)
+    + `<div class="seq" style="${pv_q.kind==="num"?"font-size:30px":""}">${pv_q.seq.map(x=>`<span>${x}</span>`).join("")}<span class="q">؟</span></div>`
+    + (pv_timed?`<div style="height:9px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px;margin:6px auto 12px"><span id="pvbar" style="display:block;height:100%;background:var(--primary);width:100%"></span></div>`:"")
+    + `<div class="opts" id="pvopts">${pv_q.opts.map(o=>`<button class="opt" data-v="${o}">${o}</button>`).join("")}</div>`
+    + `<div id="pvfb"></div>`;
+  host.querySelector("#pvopts").addEventListener("click",e=>{ const b=e.target.closest("[data-v]"); if(!b||b.disabled) return; pvTap(b.getAttribute("data-v"), b); });
+}
+function pvTimer(ms,onEnd){ const start=Date.now(); cancelAnimationFrame(pv_raf);
+  const tick=()=>{ if(!pvRun){ cancelAnimationFrame(pv_raf); return; } const left=ms-(Date.now()-start); const bar=document.getElementById("pvbar"); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ onEnd&&onEnd(); return; } pv_raf=requestAnimationFrame(tick); }; tick(); }
+function pvTap(v,btn){ if(pv_lock||pv_ps[pv_turn].cpu) return; cancelAnimationFrame(pv_raf); pv_lock=true; sfx.tap(); pvResolve(v===pv_q.answer, btn); }
+function pvAI(){ pv_lock=true; const cfg=PV_DIFF[pv_diff], ok=Math.random()<cfg.pr;
+  pv_aiPick = ok ? pv_q.answer : (shuffle(pv_q.opts.filter(v=>v!==pv_q.answer))[0] || pv_q.answer); // بطاقةُ اختيارِ الآليّ (تُلوَّن)
+  if(pv_timed) pvTimer(cfg.d, ()=>pvResolve(ok,null)); else setTimeout(()=>pvResolve(ok,null), cfg.d); }
+function pvResolve(ok,btn){ if(!pvRun) return;
+  cancelAnimationFrame(pv_raf); const cur=pv_ps[pv_turn], human=!cur.cpu, cv=pv_q.answer;
+  const mark=(val,cls)=>{ if(val==null) return; document.querySelectorAll("#pvopts [data-v]").forEach(b=>{ if(b.getAttribute("data-v")===val) b.classList.add(cls); }); };
+  if(human){ if(btn) btn.classList.add(ok?"ok":"bad"); } else mark(pv_aiPick, ok?"ok":"bad"); // بطاقةُ مختارِ اللاعب/الآليّ
+  if(!ok) mark(cv,"ok");                                                                   // وتُظهَرُ الصحيحة
+  document.querySelectorAll("#pvopts .opt").forEach(x=>x.disabled=true);
+  if(ok){ cur.score++; const won=cur.score>=PV_TARGET;
+    if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok)); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
+  else { if(human) robo.encourage(vP(GR.no)); else sfx.nope(); }
+  const fb=document.getElementById("pvfb"); if(fb) fb.innerHTML=`<div class="hint">${ok?"✅ صحيح!":`الصحيحُ: <b>${cv}</b>`}</div>`;
+  setTimeout(()=>{ if(!pvRun) return; pv_turn=(pv_turn+1)%pv_ps.length; pvNext(); }, 1200);
+}
+function pvEnd(){ logEvent("math_pattern_win"); vsEndRound(pv_ps, { onAgain:newPatternVs, onExit:startPatternVs }); }
 
 /* ===== 📏 الأكبر والأصغر ===== */
 let zScore=0;

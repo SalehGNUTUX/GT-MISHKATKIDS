@@ -278,28 +278,58 @@ const CAT_I18N = {
 const shuffle = a => { const r=a.slice(); for(let k=r.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [r[k],r[j]]=[r[j],r[k]]; } return r; };
 const allWords = L => (L.words||[]).flatMap(c => (c.items||[]).map(it => ({ ...it, cat:c.id })));
 
-// اختبار: صورة+معنى عربيّ ← اختر الكلمةَ الصحيحة بلغةِ القسم (تُنطَق عند الاختيار).
+// اختبارُ اللغة (موسَّع v1.4): أسئلةٌ متنوّعةٌ — مفرداتٌ (صورة→كلمة، كلمة→معنى، سماع)، تصريفُ الأفعال، فهمُ العبارات.
+// تقييمٌ فرديّ: أوّلُ إجابةٍ تُحتسَب، تُكشَفُ الصحيحةُ (خضراء) ثمّ ينتقل، وردُّ الفعلِ ثنائيُّ اللغة.
+function quizPick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function quizDistinct(pool, keyOf, exclude, count){ const seen=new Set([exclude]); const out=[];
+  for(const x of shuffle(pool)){ const k=keyOf(x); if(seen.has(k)) continue; seen.add(k); out.push(x); if(out.length>=count) break; } return out; }
+function makeQuizQ(type, L, words){
+  if(type==="verbtense"){ const v=quizPick(L.verbs), [tl,tk]=quizPick([["الماضي","past"],["المضارع","present"],["المستقبل","future"]]), c=v.tenses[tk];
+    const pool=[]; (L.verbs||[]).forEach(vv=>["past","present","future"].forEach(k=>{ const t=vv.tenses&&vv.tenses[k]; if(t&&t.w&&t.w!==c.w) pool.push(t); }));
+    const opts=shuffle([c,...quizDistinct(pool,x=>x.w,c.w,3)]);
+    return { badge:"🕰️ تصريف", prompt:`<span class="qzemoji">${v.emoji}</span><span class="qzar">${esc(v.ar)} — <b>${tl}</b> <span style="color:var(--muted)">(أنا)</span></span><div class="hint">اختَرِ التصريفَ الصحيح (${esc(L.nameAr)})</div>`,
+      opts:opts.map(o=>({v:o.w, fg:1, html:`<span class="ltr" style="font-size:16px">${esc(o.w)}</span>`})), answer:c.w, reveal:`<b class="ltr">${esc(c.w)}</b> — ${esc(c.ar)}`, kind:"grid" }; }
+  if(type==="phrase"){ const items=(L.phrases||[]).flatMap(c=>(c.items||[])), c=quizPick(items);
+    const opts=shuffle([c,...quizDistinct(items,x=>x.t,c.t,3)]);
+    return { badge:"💬 فهم", prompt:`<span class="qzar" style="font-size:18px">${esc(c.ar)}</span><div class="hint">اختَرِ العبارةَ الصحيحة (${esc(L.nameAr)})</div>`,
+      opts:opts.map(o=>({v:o.t, fg:1, html:`<span class="ltr" style="font-size:14px">${esc(o.t)}</span>`})), answer:c.t, reveal:`<b class="ltr">${esc(c.t)}</b>`, kind:"list" }; }
+  if(type==="word2ar"){ const c=quizPick(words), opts=shuffle([c,...quizDistinct(words,x=>x.ar,c.ar,3)]);
+    return { badge:"🔤 مفردات", prompt:`<div style="margin-bottom:4px"><button class="secbtn on" data-qsay="${esc(c.w)}">🔊 <span class="ltr">${esc(c.w)}</span></button></div><div class="hint">ما معناها بالعربيّة؟</div>`, autosay:c.w,
+      opts:opts.map(o=>({v:o.ar, html:esc(o.ar)})), answer:c.ar, reveal:`<b>${esc(c.ar)}</b>`, kind:"grid" }; }
+  if(type==="listen"){ const c=quizPick(words), opts=shuffle([c,...quizDistinct(words,x=>x.emoji,c.emoji,3)]);
+    return { badge:"👂 سماع", prompt:`<button class="secbtn on" data-qsay="${esc(c.w)}">🔊 استمعْ ثمّ اختَرِ الصورة</button>`, autosay:c.w,
+      opts:opts.map(o=>({v:o.w, html:`<span style="font-size:40px">${o.emoji}</span>`})), answer:c.w, reveal:`${c.emoji} <b>${esc(c.ar)}</b>`, kind:"grid" }; }
+  const c=quizPick(words), opts=shuffle([c,...quizDistinct(words,x=>x.w,c.w,3)]); // pic2word (افتراضيّ)
+  return { badge:"🖼️ مفردات", prompt:`<span class="qzemoji">${c.emoji}</span><span class="qzar">${esc(c.ar)}</span><div class="hint">اختَرِ الكلمةَ الصحيحة (${esc(L.nameAr)})</div>`,
+    opts:opts.map(o=>({v:o.w, fg:1, html:`<span class="ltr" style="font-size:17px">${esc(o.w)}</span>`})), answer:c.w, reveal:`<b class="ltr">${esc(c.w)}</b>`, kind:"grid" };
+}
 function renderQuiz(L, host){
-  const pool = shuffle(allWords(L)); const N = Math.min(8, pool.length); const qs = pool.slice(0, N);
-  let i = 0, score = 0;
+  const words=allWords(L), N=10; let i=0, score=0;
+  const types=["pic2word","word2ar","listen"];
+  if((L.verbs||[]).length>=4) types.push("verbtense");
+  if((L.phrases||[]).some(c=>(c.items||[]).length)) types.push("phrase");
+  const qs=Array.from({length:N},()=>makeQuizQ(quizPick(types), L, words));
   function ask(){
-    if(i >= N){ host.innerHTML = `<div class="qzdone">🎉 <b>${score}/${N}</b><div class="hint">أحسنت!</div><button class="secbtn on" id="qzAgain">🔁 أعد الاختبار</button></div>`;
+    if(i>=N){ const pct=Math.round(score/N*100), msg=pct>=80?"ممتازٌ، ما شاء الله!":pct>=50?"جيّدٌ، واصِلْ!":"لا بأس، حاوِلْ ثانيةً!";
+      host.innerHTML=`<div class="qzdone">🎉 <b>${score}/${N}</b><div class="hint">${msg}</div><button class="secbtn on" id="qzAgain">🔁 أعِدِ الاختبار</button></div>`;
       host.querySelector("#qzAgain").onclick=()=>renderQuiz(L, host); return; }
-    const correct = qs[i];
-    const opts = shuffle([correct, ...shuffle(allWords(L).filter(w => w.w !== correct.w)).slice(0,3)]);
-    host.innerHTML = `<div class="qzn">سؤال ${i+1}/${N} · ⭐ ${score}</div>
-      <div class="qzprompt"><span class="qzemoji">${correct.emoji}</span><span class="qzar">${esc(correct.ar)}</span>
-        <div class="hint">اختَرِ الكلمةَ الصحيحة (${esc(L.nameAr)})</div></div>
-      <button class="reveal" id="lqReveal">🤔 فكّرْ… ثمّ أظهِرِ الخيارات</button>
-      <div class="grid qzgrid hidden">${opts.map(o=>`<button class="gcard qzopt" data-w="${esc(o.w)}"><span class="big ltr" style="font-size:17px">${esc(o.w)}</span></button>`).join("")}</div>`;
-    const lr = host.querySelector("#lqReveal");
-    lr.onclick = ()=>{ host.querySelector(".qzgrid").classList.remove("hidden"); lr.style.display="none"; };
+    const q=qs[i]; let locked=false;
+    const optWrap = q.kind==="list" ? `id="qzopts" style="display:flex;flex-direction:column;gap:10px;max-width:440px;margin:8px auto 0"` : `id="qzopts" class="grid"`;
+    host.innerHTML=`<div class="qzn">سؤال ${i+1}/${N} · ⭐ ${score} · <span style="color:var(--primary-d);font-weight:800">${q.badge}</span></div>
+      <div class="qzprompt">${q.prompt}</div>
+      <div ${optWrap}>${q.opts.map(o=>`<button class="gcard qzopt" data-v="${esc(o.v)}" data-fg="${o.fg?1:0}">${o.html}</button>`).join("")}</div>
+      <div id="qzfb"></div>`;
+    const sb=host.querySelector("[data-qsay]"); if(sb) sb.onclick=()=>say(sb.getAttribute("data-qsay"), L);
+    if(q.autosay) say(q.autosay, L);
     host.querySelectorAll(".qzopt").forEach(b=>b.onclick=()=>{
-      const w=b.getAttribute("data-w"); say(w, L);
-      if(w===correct.w){ b.classList.add("ok"); score++; host.querySelectorAll(".qzopt").forEach(x=>x.disabled=true);
-        setTimeout(()=>praise(L), 850);                 // ردُّ فعلٍ ثنائيُّ اللغة بعد نطق الكلمة
-        setTimeout(()=>{ i++; ask(); }, 2400); }
-      else { b.classList.add("bad"); encourageReact(L); setTimeout(()=>b.classList.remove("bad"), 450); }
+      const v=b.getAttribute("data-v"); if(b.getAttribute("data-fg")==="1") say(v, L); // نطقُ الخيارِ الأجنبيّ عند الضغط
+      if(locked) return; locked=true;
+      const ok=v===q.answer;
+      host.querySelectorAll(".qzopt").forEach(x=>{ x.disabled=true; if(x.getAttribute("data-v")===q.answer) x.classList.add("ok"); }); // كشفُ الصحيحة
+      if(ok) score++; else b.classList.add("bad");
+      const fb=host.querySelector("#qzfb"); if(fb) fb.innerHTML=`<div class="hint">${ok?"✅ صحيح!":`الصحيح: ${q.reveal}`}</div>`;
+      if(ok) praise(L); else encourageReact(L); // ردُّ فعلٍ ثنائيُّ اللغة
+      setTimeout(()=>{ i++; ask(); }, ok?2200:2800);
     });
   }
   ask();
@@ -629,8 +659,9 @@ function renderLang(k){
   if(!sec){
     // شبكةُ بطاقاتِ الأقسام
     topnav = nav("↩ اللغات","langs");
-    const newW = k==="fr"?"Nouveau":"New";  // «ألعاب» فيها ألعابُ v1.4 الجديدة ⇒ وسمٌ يلفتُ الانتباه
-    body = `<div class="lgrid">${SECTIONS.map(s=>`<button class="lcard${s.key==="games"?" hasnew":""}" data-sec="${s.key}">${s.key==="games"?`<span class="newbadge" data-ar="🆕 جديد" data-fg="🆕 ${newW}">🆕 جديد</span>`:''}<span class="ic">${iconHtml(s.icon)}</span><span class="lt" data-ar="${esc(s.ar)}" data-fg="${esc(s[k]||s.ar)}">${esc(s.ar)}</span></button>`).join("")}</div>`;
+    const newW = k==="fr"?"Nouveau":"New";  // «ألعاب» و«اختبار» فيهما جديدُ v1.4 ⇒ وسمٌ يلفتُ الانتباه
+    const isNew = key => key==="games" || key==="quiz";
+    body = `<div class="lgrid">${SECTIONS.map(s=>`<button class="lcard${isNew(s.key)?" hasnew":""}" data-sec="${s.key}">${isNew(s.key)?`<span class="newbadge" data-ar="🆕 جديد" data-fg="🆕 ${newW}">🆕 جديد</span>`:''}<span class="ic">${iconHtml(s.icon)}</span><span class="lt" data-ar="${esc(s.ar)}" data-fg="${esc(s[k]||s.ar)}">${esc(s.ar)}</span></button>`).join("")}</div>`;
   } else if(sec==="letters"){
     topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔤 الأحرف</span>`;
     body = `<div class="grid">${L.letters.map(x=>

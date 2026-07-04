@@ -68,8 +68,11 @@
   .sgopt.bad{border-color:#E0566B!important;background:color-mix(in srgb,#E0566B 14%,var(--card))!important}
   .introrep{background:var(--card);border:1.5px solid var(--line);border-radius:999px;padding:1px 9px;font-size:13px;line-height:1.5;cursor:pointer;font-family:inherit;color:var(--ink);vertical-align:middle;margin-inline-start:4px}
   .introrep:hover{border-color:var(--primary)} .introrep:active{transform:scale(.92)}
-  .vsbadge{position:absolute;top:6px;inset-inline-start:6px;z-index:2;background:var(--primary);color:#fff;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.18);white-space:nowrap}
-  .lcard.vs{padding-top:24px}
+  .vsbadge{position:absolute;top:5px;inset-inline-start:5px;z-index:2;background:var(--primary);color:#fff;font-size:8.5px;font-weight:800;padding:2px 5px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.18);white-space:nowrap}
+  .newbadge{position:absolute;top:5px;inset-inline-end:5px;z-index:3;background:#E8912D;color:#fff;font-size:8.5px;font-weight:800;padding:2px 5px;border-radius:999px;box-shadow:0 2px 8px rgba(232,145,45,.5);white-space:nowrap;animation:newpulse 1.5s ease-in-out infinite}
+  @keyframes newpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+  @media(prefers-reduced-motion:reduce){ .newbadge{animation:none} }
+  .lcard.vs,.lcard.hasnew{padding-top:24px}
   /* العبارات والجمل المركّبة */
   .plist{display:flex;flex-direction:column;gap:10px;max-width:580px;margin:0 auto}
   .pcard{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:16px;background:var(--card);
@@ -626,7 +629,8 @@ function renderLang(k){
   if(!sec){
     // شبكةُ بطاقاتِ الأقسام
     topnav = nav("↩ اللغات","langs");
-    body = `<div class="lgrid">${SECTIONS.map(s=>`<button class="lcard" data-sec="${s.key}"><span class="ic">${iconHtml(s.icon)}</span><span class="lt" data-ar="${esc(s.ar)}" data-fg="${esc(s[k]||s.ar)}">${esc(s.ar)}</span></button>`).join("")}</div>`;
+    const newW = k==="fr"?"Nouveau":"New";  // «ألعاب» فيها ألعابُ v1.4 الجديدة ⇒ وسمٌ يلفتُ الانتباه
+    body = `<div class="lgrid">${SECTIONS.map(s=>`<button class="lcard${s.key==="games"?" hasnew":""}" data-sec="${s.key}">${s.key==="games"?`<span class="newbadge" data-ar="🆕 جديد" data-fg="🆕 ${newW}">🆕 جديد</span>`:''}<span class="ic">${iconHtml(s.icon)}</span><span class="lt" data-ar="${esc(s.ar)}" data-fg="${esc(s[k]||s.ar)}">${esc(s.ar)}</span></button>`).join("")}</div>`;
   } else if(sec==="letters"){
     topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔤 الأحرف</span>`;
     body = `<div class="grid">${L.letters.map(x=>
@@ -701,14 +705,15 @@ function renderLang(k){
     if(!g){
       topnav = nav("↩ الأقسام","secs")+`<span class="cur">🎮 ألعاب</span>`;
       const GAMES=[
-        {g:"transrace",ic:"🏃",ar:"سباقُ الترجمة",en:"Translation Race",fr:"Course de traduction",vs:1},
-        {g:"sortwords",ic:"⚖️",ar:"صنّفِ الكلمات",en:"Sort the Words",fr:"Classe les mots",vs:1},
-        {g:"alphaorder",ic:"🔤",ar:"رتّبِ الأبجديّة",en:"Alphabetical Order",fr:"Ordre alphabétique",vs:1},
+        {g:"transrace",ic:"🏃",ar:"سباقُ الترجمة",en:"Translation Race",fr:"Course de traduction",vs:1,nw:1},
+        {g:"sortwords",ic:"⚖️",ar:"صنّفِ الكلمات",en:"Sort the Words",fr:"Classe les mots",vs:1,nw:1},
+        {g:"alphaorder",ic:"🔤",ar:"رتّبِ الأبجديّة",en:"Alphabetical Order",fr:"Ordre alphabétique",vs:1,nw:1},
         {g:"match",ic:"🃏",ar:"مطابقةُ الصور",en:"Picture Match",fr:"Associe les images",vs:1},
         {g:"matchar",ic:"🔗",ar:"مطابقةُ المعنى",en:"Meaning Match",fr:"Associe le sens",vs:1},
         {g:"spell",ic:"🔡",ar:"الإملاء",en:"Spelling",fr:"Épellation",vs:1},
         {g:"listen",ic:"👂",ar:"استماعٌ واختيار",en:"Listen & Choose",fr:"Écoute et choisis",vs:1}];
-      body = `<div class="lgrid">${GAMES.map(x=>`<button class="lcard${x.vs?" vs":""}" data-g="${x.g}">${x.vs?'<span class="vsbadge">⚔️ تنافسيّة</span>':''}<span class="ic">${iconHtml(x.ic)}</span><span class="lt" data-ar="${esc(x.ar)}" data-fg="${esc(x[k]||x.ar)}">${esc(x.ar)}</span></button>`).join("")}</div>`;
+      const newWord = k==="fr"?"Nouveau":"New";
+      body = `<div class="lgrid">${GAMES.map(x=>`<button class="lcard${x.vs?" vs":""}" data-g="${x.g}">${x.vs?'<span class="vsbadge">⚔️ تنافسيّة</span>':''}${x.nw?`<span class="newbadge" data-ar="🆕 جديد" data-fg="🆕 ${newWord}">🆕 جديد</span>`:''}<span class="ic">${iconHtml(x.ic)}</span><span class="lt" data-ar="${esc(x.ar)}" data-fg="${esc(x[k]||x.ar)}">${esc(x.ar)}</span></button>`).join("")}</div>`;
     } else {
       const T={transrace:"🏃 سباقُ الترجمة",sortwords:"⚖️ صنّفِ الكلمات",alphaorder:"🔤 رتّبِ الأبجديّة",match:"🃏 مطابقةُ الصور",matchar:"🔗 مطابقةُ المعنى",spell:"🔡 الإملاء",listen:"👂 استماعٌ واختيار"};
       topnav = nav("↩ الألعاب","games")+`<span class="cur">${T[g]||"🎮 ألعاب"}</span>`; body = `<div id="gm"></div>`;

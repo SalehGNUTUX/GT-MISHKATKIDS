@@ -437,12 +437,14 @@ function startMatchAr(L,host){ vsQuizStart(cfgMatchAr(L,host)); }
 function startListen(L,host){ vsQuizStart(cfgListen(L,host)); }
 
 // 🔡 الإملاء (تنافسيّ): في دورِك، استمعْ للكلمةِ ثمّ رتّبْ حروفَها المبعثرة؛ أوّلُ من يبلغُ الهدفَ يفوز.
-let sp_diff="easy", sp_ps=[], sp_turn=0, sp_L=null, sp_host=null; const SP_TARGET=5;
-const SP_DIFF={ easy:{max:5, ai:0.5}, medium:{max:7, ai:0.7}, hard:{max:9, ai:0.9} };
+let sp_diff="easy", sp_ps=[], sp_turn=0, sp_L=null, sp_host=null, sp_timed=true, sp_raf=null; const SP_TARGET=5;
+const SP_DIFF={ easy:{max:5, ai:0.5, ms:13000}, medium:{max:7, ai:0.7, ms:10000}, hard:{max:9, ai:0.9, ms:8000} };
 function startSpell(L, host){ sp_L=L; sp_host=host; const fg=(L.intros||{}).spell;
   vsSetup(host, { say:introHtml(GI.spell, fg), soloOk:true,
     diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
-    getDiff:()=>sp_diff, setDiff:v=>{sp_diff=v;}, start:()=>newSpell() });
+    getDiff:()=>sp_diff, setDiff:v=>{sp_diff=v;},
+    toggle:{ label:"⏱️ اللعبُ ضدّ الوقت", get:()=>sp_timed, set:v=>{sp_timed=v;} },
+    start:()=>newSpell() });
   wireIntroReplay(host, GI.spell, fg, L);
   sayIntro(GI.spell, fg, L);
 }
@@ -453,27 +455,37 @@ function spNext(){ if(!trRun) return;
   if(sp_ps.some(p=>p.score>=SP_TARGET)){ spEnd(); return; }
   const cur=sp_ps[sp_turn], word=spPool()[0]; if(!word){ spEnd(); return; }
   if(cur.cpu){ spRobot(word, cur); return; }
-  const target=word.w, letters=shuffle(target.split("")); let built=[];
+  const target=word.w, letters=shuffle(target.split("")); let built=[], done=false;
+  cancelAnimationFrame(sp_raf);
+  const finish=(solved)=>{ if(done) return; done=true; cancelAnimationFrame(sp_raf);
+    if(solved){ cur.score++; const won=cur.score>=SP_TARGET; if(won) sfx.success(); else robo.cheer(vP(GR.ok));
+      setTimeout(()=>{ if(!trRun) return; sp_turn=(sp_turn+1)%sp_ps.length; spNext(); }, won?700:1500); }
+    else { sfx.nope(); robo.encourage(vP(GR.no)); // نفادُ الوقت ⇒ يمرُّ الدور للخصم
+      const fb=sp_host.querySelector("#spfb"); if(fb) fb.innerHTML=`<div class="hint">⌛ نفدَ الوقت — الكلمةُ: <b class="ltr">${esc(target)}</b></div>`;
+      setTimeout(()=>{ if(!trRun) return; sp_turn=(sp_turn+1)%sp_ps.length; spNext(); }, 1400); }
+  };
   function redraw(solved){
     sp_host.innerHTML = spHead(cur)
       + `<div class="qzprompt"><span class="qzemoji">${word.emoji}</span><span class="qzar">${esc(word.ar)}</span><div><button class="secbtn" id="spSay">🔊 استمعْ</button></div></div>`
+      + (sp_timed && !solved ? `<div class="hubar" style="height:9px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px;margin:6px auto 12px"><span id="spbar" style="display:block;height:100%;background:var(--primary);width:100%"></span></div>` : "")
       + `<div class="spslot ltr">${target.split("").map((_,i)=>`<span class="${solved?'full ok':(built[i]?'full':'')}">${built[i]?esc(built[i].ch):''}</span>`).join("")}</div>`
       + (solved ? `<div class="hint">🎉 أحسنت! الكلمةُ: <b class="ltr">${esc(target)}</b></div>`
         : `<div class="splet">${letters.map((ch,idx)=>`<button class="lchip ltr" data-idx="${idx}" ${built.find(b=>b.idx===idx)?'disabled':''}>${esc(ch)}</button>`).join("")}</div>
-           <div class="snav"><button class="secbtn" id="spClear">↺ امسحْ</button></div>`);
+           <div class="snav"><button class="secbtn" id="spClear">↺ امسحْ</button></div>`)
+      + `<div id="spfb"></div>`;
     const sy=sp_host.querySelector("#spSay"); if(sy) sy.onclick=()=>say(target, sp_L);
     const cl=sp_host.querySelector("#spClear"); if(cl) cl.onclick=()=>{ built=[]; redraw(false); };
-    sp_host.querySelectorAll(".lchip").forEach(b=>b.onclick=()=>{ if(!trRun) return;
+    sp_host.querySelectorAll(".lchip").forEach(b=>b.onclick=()=>{ if(!trRun||done) return;
       const idx=+b.getAttribute("data-idx"); if(built.find(x=>x.idx===idx)) return;
       built.push({idx, ch:letters[idx]});
       if(built.length<target.length){ redraw(false); return; }
-      if(built.map(x=>x.ch).join("")===target){ cur.score++; redraw(true); const won=cur.score>=SP_TARGET;
-        if(won) sfx.success(); else robo.cheer(vP(GR.ok));
-        setTimeout(()=>{ if(!trRun) return; sp_turn=(sp_turn+1)%sp_ps.length; spNext(); }, won?700:1700); }
+      if(built.map(x=>x.ch).join("")===target){ redraw(true); finish(true); }
       else { sfx.nope(); robo.encourage(vP(GR.no)); built=[]; redraw(false); }
     });
   }
   redraw(false); say(target, sp_L);
+  if(sp_timed){ const ms=SP_DIFF[sp_diff].ms, start=Date.now();               // مؤقّتُ الدور: نفادُه ⇒ خسارةُ الدور
+    const tick=()=>{ if(!trRun||done) return; const left=ms-(Date.now()-start); const bar=document.getElementById("spbar"); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ finish(false); return; } sp_raf=requestAnimationFrame(tick); }; tick(); }
 }
 // دورُ الآليّ في الإملاء: تظهرُ الحروفُ المبعثرةُ والخاناتُ، ويرتّبُها الآليُّ حرفًا حرفًا أمامَ الطفلِ (يُصيبُ أو يُخطئ حسبَ الصعوبة).
 function spRobot(word, cur){ const target=word.w, ok=Math.random()<SP_DIFF[sp_diff].ai, letters=shuffle(target.split(""));

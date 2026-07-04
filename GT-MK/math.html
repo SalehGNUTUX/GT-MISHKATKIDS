@@ -228,6 +228,7 @@ const GAMES = [
   { id:"sub",     ic:"➖", t:"الطرح",          d:"تدرَّبْ على الطرح" },
   { id:"mul",     ic:"✖️", t:"الضرب",          d:"جدول الضرب البسيط" },
   { id:"div",     ic:"➗", t:"القسمة",         d:"تدرَّبْ على القسمة (نتائجُ صحيحة)" },
+  { id:"arithvs", ic:"🧮", t:"تحدّي الحساب",  d:"تنافسْ في العمليّاتِ المختلطة", vs:1, nw:1 },
   { id:"find",    ic:"🔍", t:"اعثر على الشكل", d:"اسمعِ اسمَ الشكلِ واضغطْه" },
   { id:"compare", ic:"⚖️", t:"عُدّ وقارن",     d:"أيُّ مجموعةٍ أكثر؟" },
   { id:"pattern", ic:"🔁", t:"أكمل النمط",     d:"ما العنصرُ التالي؟" },
@@ -247,7 +248,7 @@ function renderMenu(){
   view.querySelector(".menu").addEventListener("click", e=>{
     const c=e.target.closest("[data-g]"); if(!c) return;
     ({numbers:startNumbers,numerals:startNumerals,add:()=>startArith("+"),sub:()=>startArith("-"),mul:()=>startArith("×"),div:()=>startArith("÷"),
-      find:startFind,compare:startCompare,pattern:startPattern,patternvs:startPatternVs,size:startSize,
+      find:startFind,compare:startCompare,pattern:startPattern,patternvs:startPatternVs,arithvs:startArithVs,size:startSize,
       basic:startBasicShapes,adv:startAdvShapes,crafts:startCrafts})[c.getAttribute("data-g")]();
   });
 }
@@ -554,6 +555,64 @@ function pvResolve(ok,btn){ if(!pvRun) return;
   setTimeout(()=>{ if(!pvRun) return; pv_turn=(pv_turn+1)%pv_ps.length; pvNext(); }, 1200);
 }
 function pvEnd(){ logEvent("math_pattern_win"); vsEndRound(pv_ps, { onAgain:newPatternVs, onExit:startPatternVs }); }
+
+/* ===== 🧮 تحدّي الحساب (تنافسيّ · versus) — عمليّاتٌ مختلطة (يشاركُ الحارسَ pvRun) ===== */
+let ca_diff="easy", ca_ps=[], ca_turn=0, ca_lock=false, ca_q=null, ca_raf=null, ca_timed=true, ca_aiPick=null; const CA_TARGET=5;
+const CA_MS={easy:9000,medium:7000,hard:5500}, CA_PR={easy:0.6,medium:0.75,hard:0.9}, CA_D={easy:1500,medium:1200,hard:900};
+function startArithVs(){ pvRun=false; view.innerHTML=backBar()+`<div id="cahost"></div>`; wireBack();
+  vsSetup(document.getElementById("cahost"), { say:GI.numrace, soloOk:true,
+    diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
+    getDiff:()=>ca_diff, setDiff:v=>{ca_diff=v;},
+    toggle:{ label:"⏱️ اللعبُ ضدّ الوقت", get:()=>ca_timed, set:v=>{ca_timed=v;} },
+    start:newArithVs });
+  try{speak(GI.numrace);}catch(e){} }
+function newArithVs(){ pvRun=true; ca_ps=vsMakePlayers(); ca_ps.forEach(p=>p.score=0); ca_turn=0; ca_lock=false; caNext(); }
+// يولّدُ مسألةً بعمليّةٍ عشوائيّةٍ حسبَ الصعوبة (سهل: جمع/طرح · متوسّط: +ضرب · صعب: +قسمةٌ صحيحة).
+function caGen(){ const level=ca_diff==="easy"?1:ca_diff==="medium"?2:3;
+  const ops=ca_diff==="easy"?["+","-"]:ca_diff==="medium"?["+","-","×"]:["+","-","×","÷"], op=ops[rand(ops.length)];
+  const max=level===1?5:level===2?10:20; let a,b,ans,q;
+  if(op==="+"){ a=1+rand(max); b=1+rand(max); ans=a+b; q=`${a} + ${b}`; }
+  else if(op==="-"){ a=1+rand(max); b=rand(a+1); ans=a-b; q=`${a} − ${b}`; }
+  else if(op==="×"){ const m=level===1?5:level===2?7:10; a=1+rand(m); b=1+rand(m); ans=a*b; q=`${a} × ${b}`; }
+  else { const m=level===1?5:level===2?7:10; b=1+rand(m); ans=1+rand(m); a=b*ans; q=`${a} ÷ ${b}`; } // نتائجُ صحيحةٌ دائمًا
+  const nopts=ca_diff==="easy"?3:4, set=new Set([ans]); let g=0;
+  while(set.size<nopts && g++<40){ const d=ans+(rand(7)-3); if(d>=0 && d!==ans) set.add(d); }
+  return { q:`${q} = ؟`, ans:String(ans), opts:shuffle([...set].map(String)) };
+}
+function caNext(){ if(!pvRun) return;
+  if(ca_ps.some(p=>p.score>=CA_TARGET)){ caEnd(); return; }
+  ca_q=caGen(); ca_lock=false; caRender();
+  const cur=ca_ps[ca_turn];
+  if(cur.cpu) caAI(); else if(ca_timed) caTimer(CA_MS[ca_diff], ()=>{ if(!ca_lock){ ca_lock=true; caResolve(false,null); } });
+}
+function caRender(){ const cur=ca_ps[ca_turn], host=document.getElementById("cahost"); if(!host) return;
+  host.innerHTML = `<div class="prompt">🧮 تحدّي الحساب — أوّلُ من يبلغُ ${CA_TARGET} يفوز!</div>`
+    + vsScoreHtml(ca_ps) + vsTurnHtml(cur)
+    + `<div class="opvis" style="text-align:center;font-size:28px;font-weight:800;margin:14px 2px">${ca_q.q}</div>`
+    + (ca_timed?`<div style="height:9px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px;margin:6px auto 12px"><span id="cabar" style="display:block;height:100%;background:var(--primary);width:100%"></span></div>`:"")
+    + `<div class="opts" id="caopts">${ca_q.opts.map(o=>`<button class="opt" data-v="${o}">${o}</button>`).join("")}</div>`
+    + `<div id="cafb"></div>`;
+  host.querySelector("#caopts").addEventListener("click",e=>{ const b=e.target.closest("[data-v]"); if(!b||b.disabled) return; caTap(b.getAttribute("data-v"), b); });
+}
+function caTimer(ms,onEnd){ const start=Date.now(); cancelAnimationFrame(ca_raf);
+  const tick=()=>{ if(!pvRun){ cancelAnimationFrame(ca_raf); return; } const left=ms-(Date.now()-start); const bar=document.getElementById("cabar"); if(bar) bar.style.width=Math.max(0,left/ms*100)+"%"; if(left<=0){ onEnd&&onEnd(); return; } ca_raf=requestAnimationFrame(tick); }; tick(); }
+function caTap(v,btn){ if(ca_lock||ca_ps[ca_turn].cpu) return; cancelAnimationFrame(ca_raf); ca_lock=true; sfx.tap(); caResolve(v===ca_q.ans, btn); }
+function caAI(){ ca_lock=true; const ok=Math.random()<CA_PR[ca_diff];
+  ca_aiPick = ok ? ca_q.ans : (shuffle(ca_q.opts.filter(v=>v!==ca_q.ans))[0] || ca_q.ans);
+  if(ca_timed) caTimer(CA_D[ca_diff], ()=>caResolve(ok,null)); else setTimeout(()=>caResolve(ok,null), CA_D[ca_diff]); }
+function caResolve(ok,btn){ if(!pvRun) return;
+  cancelAnimationFrame(ca_raf); const cur=ca_ps[ca_turn], human=!cur.cpu, cv=ca_q.ans;
+  const mark=(val,cls)=>{ if(val==null) return; document.querySelectorAll("#caopts [data-v]").forEach(b=>{ if(b.getAttribute("data-v")===val) b.classList.add(cls); }); };
+  if(human){ if(btn) btn.classList.add(ok?"ok":"bad"); } else mark(ca_aiPick, ok?"ok":"bad"); // بطاقةُ مختارِ اللاعب/الآليّ
+  if(!ok) mark(cv,"ok");                                                                   // وتُظهَرُ الصحيحة
+  document.querySelectorAll("#caopts .opt").forEach(x=>x.disabled=true);
+  if(ok){ cur.score++; const won=cur.score>=CA_TARGET;
+    if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok)); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
+  else { if(human) robo.encourage(vP(GR.no)); else sfx.nope(); }
+  const fb=document.getElementById("cafb"); if(fb) fb.innerHTML=`<div class="hint">${ok?"✅ صحيح!":`الصحيحُ: <b>${cv}</b>`}</div>`;
+  setTimeout(()=>{ if(!pvRun) return; ca_turn=(ca_turn+1)%ca_ps.length; caNext(); }, 1200);
+}
+function caEnd(){ logEvent("math_arith_win"); vsEndRound(ca_ps, { onAgain:newArithVs, onExit:startArithVs }); }
 
 /* ===== 📏 الأكبر والأصغر ===== */
 let zScore=0;

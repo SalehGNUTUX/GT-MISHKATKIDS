@@ -66,6 +66,8 @@
   .lcard.vs{border-color:color-mix(in srgb,var(--primary) 45%,var(--cb,var(--line)))}
   .sgopt.ok{border-color:var(--good)!important;background:color-mix(in srgb,var(--good) 16%,var(--card))!important}
   .sgopt.bad{border-color:#E0566B!important;background:color-mix(in srgb,#E0566B 14%,var(--card))!important}
+  .introrep{background:var(--card);border:1.5px solid var(--line);border-radius:999px;padding:1px 9px;font-size:13px;line-height:1.5;cursor:pointer;font-family:inherit;color:var(--ink);vertical-align:middle;margin-inline-start:4px}
+  .introrep:hover{border-color:var(--primary)} .introrep:active{transform:scale(.92)}
   .vsbadge{position:absolute;top:6px;inset-inline-start:6px;z-index:2;background:var(--primary);color:#fff;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.18);white-space:nowrap}
   .lcard.vs{padding-top:24px}
   /* العبارات والجمل المركّبة */
@@ -319,13 +321,27 @@ function sayIntro(arText, fgText, L){
   catch(e){ try{ say(fgText, L); }catch(e2){} }
 }
 // نصُّ الجملةِ الافتتاحيّةِ ثنائيّاً (يُعرَضُ في شاشةِ الإعداد): عربيٌّ فوق، وأجنبيٌّ تحته.
-function introHtml(arText, fgText){ return `${esc(arText)}${fgText?`<div class="ltr" style="margin-top:6px;font-size:14px;color:var(--muted)">${esc(fgText)}</div>`:""}`; }
-
+// نصُّ الجملةِ الافتتاحيّةِ + زرُّ إعادةِ سماعٍ لكلِّ لغةٍ على حدة (عربيٌّ فوق، وأجنبيٌّ تحته).
+const introRep = (k,title)=>`<button type="button" class="introrep" data-replay="${k}" title="${esc(title)}" aria-label="${esc(title)}">🔊</button>`;
+function introHtml(arText, fgText){
+  return `<span>${esc(arText)}</span> ${introRep("ar","إعادةُ سماعِ العربيّة")}`
+    + (fgText?`<div class="ltr" style="margin-top:6px;font-size:14px;color:var(--muted)">${esc(fgText)} ${introRep("fg","إعادةُ سماعِ الأجنبيّة")}</div>`:"");
+}
+// زرُّ الإعادةِ داخلَ شاشةِ الإعداد: تفويضٌ على host الثابتِ (يبقى رغمَ إعادةِ رسمِ vsSetup لمحتواه).
+function wireIntroReplay(host, arText, fgText, L){
+  if(host._introWired) return; host._introWired = true;
+  host.addEventListener("click", e=>{ const b=e.target.closest("[data-replay]"); if(!b) return;
+    e.stopPropagation();
+    if(b.getAttribute("data-replay")==="ar"){ try{ speak(arText); }catch(err){} }
+    else { try{ say(fgText, L); }catch(err){} }
+  });
+}
 function vsQuizStart(cfg){ cfg.diff = cfg.diff || "easy"; qz=null;
   const fg=(cfg.L.intros||{})[cfg.key];
   vsSetup(cfg.host, { say:introHtml(cfg.intro, fg), soloOk:true,
     diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
     getDiff:()=>cfg.diff, setDiff:v=>{cfg.diff=v;}, start:()=>vsQuizNew(cfg) });
+  wireIntroReplay(cfg.host, cfg.intro, fg, cfg.L);
   sayIntro(cfg.intro, fg, cfg.L);
 }
 function vsQuizNew(cfg){ trRun=true; qz={cfg, ps:vsMakePlayers(), turn:0, lock:false, q:null, raf:null}; qz.ps.forEach(p=>p.score=0); vsQuizNext(); }
@@ -423,6 +439,7 @@ function startSpell(L, host){ sp_L=L; sp_host=host; const fg=(L.intros||{}).spel
   vsSetup(host, { say:introHtml(GI.spell, fg), soloOk:true,
     diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}],
     getDiff:()=>sp_diff, setDiff:v=>{sp_diff=v;}, start:()=>newSpell() });
+  wireIntroReplay(host, GI.spell, fg, L);
   sayIntro(GI.spell, fg, L);
 }
 function newSpell(){ trRun=true; sp_ps=vsMakePlayers(); sp_ps.forEach(p=>p.score=0); sp_turn=0; spNext(); }

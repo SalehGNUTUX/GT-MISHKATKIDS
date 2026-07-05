@@ -37,6 +37,8 @@ const SVG = `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" role="i
   <rect class="rc-mouth" x="31" y="45" width="18" height="5" rx="2.5" fill="#3a4250"/>
   <circle cx="22" cy="62" r="5" fill="#7BB661"/><circle cx="58" cy="62" r="5" fill="#6FB3D6"/>
 </svg>`;
+// شكلُ الآليّ الرسميّ (نفسُ المرافق) — لإعادة استعماله حيثما لزم (ظهرُ بطاقات الذاكرة… إلخ).
+export const ROBO_SVG = SVG;
 
 function ensureMounted() {
   if (mounted) return;

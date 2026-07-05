@@ -154,6 +154,7 @@
   .mgrid{display:grid;gap:10px;grid-template-columns:repeat(4,1fr);margin-top:10px}
   .mcard{aspect-ratio:1/1;border-radius:16px;cursor:pointer;position:relative;border:2px solid var(--line);background:var(--card);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;overflow:hidden}
   .mcard .fback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#E07A5F,#E8A07F);color:#fff;font-size:30px;transition:opacity .15s}
+  .mcard .fback svg{width:56%;height:56%;filter:drop-shadow(0 2px 5px rgba(0,0,0,.25))}
   .mcard .ffront{width:74%;height:74%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
   .mcard .ffront svg{width:100%;height:100%}
   .mcard .ffront .memoji{font-size:min(13vw,46px);line-height:1}
@@ -220,7 +221,7 @@ import { WORLD_ART, MEMORY_ART } from "./src/art.js";
 import { logEvent, recordMastery, getChildAge } from "./src/progress.js";
 import { pickAdaptive } from "./src/adaptive.js";
 import { speak } from "./src/speak.js";
-import { robo } from "./src/robo-companion.js";
+import { robo, ROBO_SVG } from "./src/robo-companion.js";
 import * as sfx from "./src/sfx.js"; // أصواتٌ تفاعليّة (لمسة/نجاح/خطأ) للألعاب
 import { GAME_REACTIONS as GR, GAME_INTROS as GI } from "./src/robo-phrases.js"; // تفاعلاتُ الألعاب (مُولَّدةٌ عبر Piper)
 import { vsEndRound, vsWinsOf, vsTurnHtml } from "./src/versus.js"; // نافذةُ نهاية الجولة + سجلُّ الانتصارات + حبّةُ الدور (v1.4)
@@ -347,7 +348,7 @@ function renderMemory(){
   wireBack();
   const grid=document.getElementById("grid");
   const art=m_art||MEMORY_THEMES[0].art;
-  grid.innerHTML=m_deck.map((k,i)=>{ const up=m_flip.includes(i)||m_match.has(i); return `<div class="mcard ${up?"up":""} ${m_match.has(i)?"matched":""}" data-i="${i}"><div class="fback">🤖</div><div class="ffront">${art(k)}</div></div>`; }).join("");
+  grid.innerHTML=m_deck.map((k,i)=>{ const up=m_flip.includes(i)||m_match.has(i); return `<div class="mcard ${up?"up":""} ${m_match.has(i)?"matched":""}" data-i="${i}"><div class="fback">${ROBO_SVG}</div><div class="ffront">${art(k)}</div></div>`; }).join("");
   grid.querySelectorAll(".mcard").forEach(c=>c.addEventListener("click",()=>onMemCard(+c.getAttribute("data-i"))));
 }
 function onMemCard(i){

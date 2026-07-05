@@ -775,7 +775,7 @@ function renderLang(k){
     } else if(!C){
       const nw = k==="fr"?"Nouveau":"New";
       topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔡 خرائطُ المقاطع</span>`;
-      body = `<div class="lgrid"><button class="lcard hasnew" data-chart="quiz"><span class="newbadge" data-ar="🆕 جديد" data-fg="🆕 ${nw}">🆕 جديد</span><span class="ic">${iconHtml("🎯")}</span><span class="lt" data-ar="اختبارُ المقاطع" data-fg="Quiz syllabes">اختبارُ المقاطع</span></button>${charts.map(c=>`<button class="lcard" data-chart="${c.id}"><span class="ic">${iconHtml("🔡")}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc(c.fr)}">${esc(c.ar)}</span></button>`).join("")}</div>
+      body = `<div class="lgrid"><button class="lcard hasnew" data-chart="quiz"><span class="newbadge" data-ar="🆕 جديد" data-fg="🆕 ${nw}">🆕 جديد</span><span class="ic">${iconHtml("🎯")}</span><span class="lt" data-ar="اختبارُ المقاطع" data-fg="Quiz syllabes">اختبارُ المقاطع</span></button>${charts.map(c=>`<button class="lcard" data-chart="${c.id}"><span class="ic">${iconHtml("🔡")}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc(c[k]||c.fr||c.ar)}">${esc(c.ar)}</span></button>`).join("")}</div>
         <div class="hint">اختَرْ خريطةً لتسمعَ مقاطعَها (décodage)، أو ابدأِ اختبارَ المقاطع 🎯</div>`;
     } else {
       topnav = nav("↩ الخرائط","charts")+`<span class="cur">🔡 ${esc(C.ar)}</span>`;

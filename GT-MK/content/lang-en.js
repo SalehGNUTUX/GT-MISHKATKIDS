@@ -298,4 +298,65 @@ export default {
     listen:    "Listen and choose! Listen carefully, then pick the right picture.",
     alphaorder:"Alphabetical order! Put the letters in the right order before your opponent.",
   },
+
+  // 🔊 الأصوات (Phonics): رسمُ الصوت s + كلمةٌ مثالٌ w تحويه + معناها ar + رمز e. باحترامِ قواعدِ الإنجليزيّة:
+  // الحروفُ المزدوجة (digraphs) والفرقُ الصوتيّ (vowel teams) والأصواتُ المُتحكَّمُ فيها بالراء (r-controlled).
+  sounds: [
+    { s:"sh",  w:"ship",  ar:"سفينة",  e:"🚢" },
+    { s:"ch",  w:"chair", ar:"كرسيّ",  e:"🪑" },
+    { s:"th",  w:"thumb", ar:"إبهام",  e:"👍" },
+    { s:"wh",  w:"whale", ar:"حوت",    e:"🐋" },
+    { s:"ph",  w:"phone", ar:"هاتف",   e:"📱" },
+    { s:"ck",  w:"duck",  ar:"بطّة",   e:"🦆" },
+    { s:"ng",  w:"king",  ar:"ملك",    e:"👑" },
+    { s:"ee",  w:"tree",  ar:"شجرة",   e:"🌳" },
+    { s:"ea",  w:"leaf",  ar:"ورقة",   e:"🍃" },
+    { s:"ai",  w:"rain",  ar:"مطر",    e:"🌧️" },
+    { s:"ay",  w:"day",   ar:"نهار",   e:"🌅" },
+    { s:"oa",  w:"boat",  ar:"قارب",   e:"⛵" },
+    { s:"ow",  w:"snow",  ar:"ثلج",    e:"❄️" },
+    { s:"oo",  w:"moon",  ar:"قمر",    e:"🌙" },
+    { s:"oo",  w:"book",  ar:"كتاب",   e:"📖", say:"book" }, // oo قصيرة (تختلفُ عن moon)
+    { s:"ou",  w:"cloud", ar:"سحابة",  e:"☁️" },
+    { s:"oi",  w:"coin",  ar:"عملة",   e:"🪙" },
+    { s:"oy",  w:"boy",   ar:"ولد",    e:"👦" },
+    { s:"igh", w:"light", ar:"ضوء",    e:"💡" },
+    { s:"ar",  w:"star",  ar:"نجمة",   e:"⭐" },
+    { s:"or",  w:"fork",  ar:"شوكة",   e:"🍴" },
+    { s:"ir",  w:"bird",  ar:"طائر",   e:"🐦" },
+    { s:"ur",  w:"nurse", ar:"ممرّضة", e:"👩‍⚕️" },
+    { s:"air", w:"hair",  ar:"شعر",    e:"💇" },
+    { s:"aw",  w:"saw",   ar:"منشار",  e:"🪚" },
+  ],
+
+  // 🔡 العائلاتُ الصوتيّة (Word Families): مكافئُ «خرائط المقاطع» بقواعدِ الإنجليزيّة (onset + rime = كلمةٌ CVC).
+  // كلُّ خريطةٍ = حركةٌ قصيرة، وكلُّ صفٍّ = نهايةٌ (rime) مع كلماتِها. تُنطَقُ كلُّ كلمةٍ عند الضغط (blending).
+  syllabaries: [
+    { id:"a", ar:"عائلةُ a", en:"a family", groups:[
+      { lab:"-at", syl:["cat","bat","hat","mat","rat","sat","fat","pat"] },
+      { lab:"-an", syl:["can","fan","man","pan","ran","van","tan"] },
+      { lab:"-ap", syl:["cap","map","nap","tap","lap","gap"] },
+      { lab:"-ad", syl:["bad","dad","had","mad","sad","pad"] },
+      { lab:"-ag", syl:["bag","tag","rag","wag","nag"] } ] },
+    { id:"e", ar:"عائلةُ e", en:"e family", groups:[
+      { lab:"-ed", syl:["bed","fed","led","red","wed"] },
+      { lab:"-en", syl:["den","hen","men","pen","ten"] },
+      { lab:"-et", syl:["bet","get","jet","let","met","net","pet","wet"] },
+      { lab:"-eg", syl:["beg","leg","peg"] } ] },
+    { id:"i", ar:"عائلةُ i", en:"i family", groups:[
+      { lab:"-it", syl:["bit","fit","hit","kit","pit","sit"] },
+      { lab:"-in", syl:["bin","fin","pin","tin","win"] },
+      { lab:"-ig", syl:["big","dig","fig","pig","wig"] },
+      { lab:"-ip", syl:["dip","hip","lip","rip","tip","zip"] } ] },
+    { id:"o", ar:"عائلةُ o", en:"o family", groups:[
+      { lab:"-og", syl:["dog","fog","hog","jog","log"] },
+      { lab:"-ot", syl:["cot","dot","got","hot","lot","not","pot"] },
+      { lab:"-op", syl:["cop","hop","mop","pop","top"] },
+      { lab:"-ox", syl:["box","fox"] } ] },
+    { id:"u", ar:"عائلةُ u", en:"u family", groups:[
+      { lab:"-ug", syl:["bug","dug","hug","jug","mug","rug","tug"] },
+      { lab:"-un", syl:["bun","fun","gun","run","sun"] },
+      { lab:"-ut", syl:["but","cut","gut","hut","nut"] },
+      { lab:"-up", syl:["cup","pup"] } ] },
+  ],
 };

@@ -1,5 +1,25 @@
 // content/lang-fr.js — محتوى اللغة الفرنسيّة (قسم اللغات الأجنبيّة). بيانات ES module.
 // النطق: مجموعة Piper «tts-tom» (fr_FR-tom) عند توفّرها، وإلّا Web Speech (fr-FR).
+// ── خرائطُ المقاطع (Charte des syllabes): تُبنى برمجيّاً «ساكن + صوت» فلا خطأَ نسخٍ من الصور. ──
+// السواكنُ المنتظمةُ النطقِ (ثابتةٌ عبر كلّ الأصوات)، مع صفوفٍ خاصّةٍ لـ qu/k/c/g في الحركات البسيطة.
+const _CR = ["l","f","j","v","m","n","r","z","s","ch","b","d","p","t"];
+const _row = (lab, cols) => ({ lab, syl: cols.map(v => lab + v) });
+const _rows = cols => _CR.map(c => _row(c, cols));
+const SYLLABARIES = [
+  { id:"vowels", ar:"الحركاتُ البسيطة", fr:"Voyelles", cols:["a","o","i","e","é","u","ou"], groups:[
+      ..._rows(["a","o","i","e","é","u","ou"]),
+      { lab:"qu", syl:["qua","quo","qui","que","qué"] },
+      { lab:"k", syl:["ka","ko","ki","ke","ké","ku","kou"] },
+      { lab:"c → ك", syl:["ca","co","cu","cou"] },
+      { lab:"c → س", syl:["ce","ci"] },
+      { lab:"g → g", syl:["ga","go","gu","gou"] },
+      { lab:"g → ج", syl:["ge","gi"] },
+  ] },
+  { id:"esons", ar:"أصواتُ الحرف e", fr:"Sons de « e »", cols:["et","ez","er","è","ê","ai","ei","ette","esse","elle"], groups:_rows(["et","ez","er","è","ê","ai","ei","ette","esse","elle"]) },
+  { id:"nasal", ar:"الأصواتُ الأنفيّة", fr:"Sons nasaux", cols:["an","am","en","em","on","om","ian"], groups:_rows(["an","am","en","em","on","om","ian"]) },
+  { id:"complex", ar:"الأصواتُ المركّبة", fr:"Sons complexes", cols:["ill","ail","aille","eil","eille","euil","euille","ouille"], groups:["l","f","v","m","n","r","s","b","d","p","t"].map(c=>_row(c,["ill","ail","aille","eil","eille","euil","euille","ouille"])) },
+];
+
 export default {
   code: "fr-FR",
   name: "Français",
@@ -335,4 +355,6 @@ export default {
     { s:"gn",     w:"montagne",   ar:"جبل",      e:"🏔️" },
     { s:"ph",     w:"téléphone",  ar:"هاتف",     e:"📱" },
   ],
+
+  syllabaries: SYLLABARIES, // خرائطُ المقاطع (مبنيّةٌ أعلاه)
 };

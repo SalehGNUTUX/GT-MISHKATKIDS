@@ -59,6 +59,20 @@
   .sqwheel{position:relative;width:240px;height:240px}
   .sqptr{position:absolute;top:-4px;left:50%;transform:translateX(-50%);font-size:26px;line-height:1;color:#E0566B;z-index:2;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
   .sqwheel #sqG{transform-box:fill-box;transform-origin:center}
+  /* زرُّ «أدِرِ العجلة» — عصريٌّ جذّاب */
+  .sqbtn{position:relative;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;font-size:18px;font-weight:800;color:#fff;
+    padding:13px 30px;border-radius:999px;background:linear-gradient(135deg,#E0566B,#E8912D);
+    box-shadow:0 6px 18px rgba(224,86,107,.45),inset 0 1px 0 rgba(255,255,255,.35);
+    transition:transform .14s cubic-bezier(.34,1.56,.64,1),box-shadow .14s,filter .14s;animation:sqPulse 1.8s ease-in-out infinite}
+  .sqbtn::before{content:"🎡";font-size:20px;animation:sqSpin 2.2s linear infinite;animation-play-state:paused}
+  .sqbtn:hover{filter:brightness(1.06);box-shadow:0 10px 26px rgba(224,86,107,.55),inset 0 1px 0 rgba(255,255,255,.35)}
+  .sqbtn:active{transform:scale(.95)}
+  .sqbtn:disabled{opacity:.85;cursor:default;animation:none}
+  .sqbtn.spinning::before{animation-play-state:running}
+  .sqbtn.spinning{animation:none}
+  @keyframes sqSpin{to{transform:rotate(360deg)}}
+  @keyframes sqPulse{0%,100%{box-shadow:0 6px 18px rgba(224,86,107,.45),inset 0 1px 0 rgba(255,255,255,.35)}50%{box-shadow:0 6px 24px rgba(232,145,45,.6),inset 0 1px 0 rgba(255,255,255,.35)}}
+  @media(prefers-reduced-motion:reduce){ .sqbtn,.sqbtn::before{animation:none} }
   .sqq{text-align:center;margin-top:6px}
   .sqcat{font-weight:800;font-size:15px;margin-bottom:2px}
   .sqp{font-size:19px;font-weight:800;margin:6px 2px}
@@ -282,7 +296,7 @@ const GAMES = [
   { id:"hunt",   ic:"🔎", t:"صيدُ الحرف/الرقم", d:"اعثرْ على المطلوبِ بسرعة", vs:1 },
   { id:"smatch", ic:"⚡", t:"سباقُ المطابقة", d:"جِدِ الصورةَ المطابقةَ أسرع", vs:1 },
   { id:"wgrid",  ic:"🔤", t:"شبكةُ الكلمات", d:"كوّنِ الكلماتِ وتنافسْ بالألوان", vs:1 },
-  { id:"spinq",  ic:"🎡", t:"عجلة أدرْ وأجب", d:"أدِرِ العجلةَ ثمّ أجِبْ عن سؤالِ القطاع", nw:1 },
+  { id:"spinq",  ic:"🎡", t:"عجلة أدرْ وأجب", d:"أدِرِ العجلةَ ثمّ أجِبْ عن سؤالِ القطاع", vs:1, nw:1 },
   { id:"print",  ic:"🖨️", t:"ألعاب/أنشطة للطباعة", d:"ألعابٌ تُلعَبُ على الورق + أنشطةٌ حسّيّة" },
 ];
 function renderMenu(){
@@ -831,41 +845,73 @@ function smResolve(ok,btn){
 function smEnd(){ logEvent("smatch_win"); vsEndRound(sm_ps, { onAgain:newSM, onExit:startSM }); }
 
 /* ===================== 🎡 عجلةُ «أدرْ وأجبْ» (فرديّ · أدِرِ العجلةَ ← أجِبْ عن سؤالِ القطاع) — مستقلّةٌ عن «عجلة الحروف» ===================== */
-let sq_rot=0, sq_score=0, sq_streak=0;
+let sq_diff="easy", sq_ps=[], sq_turn=0, sq_rot=0; const SQ_TARGET=5; const SQ_PR={easy:0.55,medium:0.72,hard:0.9};
+// ملاحظةٌ ثابتة: كلُّ الأرقامِ عربيّةٌ غربيّةٌ (0-9) لا هنديّةٌ مشرقيّة. أسئلةُ الحساب مولَّدةٌ بأرقامِ JS (غربيّة).
 const SQ_CATS = [
-  { id:"math", ic:"🔢", label:"حساب", color:"#6FB3D6", gen:()=>{ const op=["+","−","×"][rand(3)]; let a,b,ans,q;
-      if(op==="+"){ a=1+rand(9); b=1+rand(9); ans=a+b; q=`${a} + ${b} = ؟`; }
-      else if(op==="−"){ a=3+rand(9); b=rand(a); ans=a-b; q=`${a} − ${b} = ؟`; }
-      else { a=1+rand(5); b=1+rand(5); ans=a*b; q=`${a} × ${b} = ؟`; }
-      const set=new Set([ans]); while(set.size<3){ const d=ans+(rand(5)-2); if(d>=0&&d!==ans) set.add(d); } return { q, opts:[...set], ans }; } },
+  { id:"math", ic:"🔢", label:"حساب", color:"#6FB3D6", gen:()=>{ const t=rand(4);
+      if(t<2){ const op=["+","−","×"][rand(3)]; let a,b,ans,q;
+        if(op==="+"){ a=1+rand(9); b=1+rand(9); ans=a+b; q=`${a} + ${b} = ؟`; }
+        else if(op==="−"){ a=3+rand(9); b=rand(a); ans=a-b; q=`${a} − ${b} = ؟`; }
+        else { a=1+rand(5); b=1+rand(5); ans=a*b; q=`${a} × ${b} = ؟`; }
+        const set=new Set([ans]); while(set.size<3){ const d=ans+(rand(5)-2); if(d>=0&&d!==ans) set.add(d); } return { q, opts:[...set], ans }; }
+      if(t===2){ let a=2+rand(18), b=2+rand(18); while(b===a) b=2+rand(18); return { q:"أيُّ العددينِ أكبر؟", opts:[a,b], ans:Math.max(a,b) }; }
+      const s=1+rand(4), d=1+rand(3), seq=[s,s+d,s+2*d]; const ans=s+3*d; return { q:`ما العددُ التالي؟ ${seq.join("، ")}، ؟`, opts:[...new Set([ans, ans+d, ans-d].filter(x=>x>0))], ans }; } },
   { id:"color", ic:"🎨", label:"ألوان", color:"#E0566B", bank:[
       {q:"ما لونُ السماءِ صحوًا؟",opts:["أزرق","أحمر","أخضر"],ans:"أزرق"},
       {q:"ما لونُ العُشبِ؟",opts:["أخضر","أصفر","أزرق"],ans:"أخضر"},
       {q:"ما لونُ الشمسِ؟",opts:["أصفر","أسود","أزرق"],ans:"أصفر"},
       {q:"ما لونُ الثلجِ؟",opts:["أبيض","أحمر","بنّي"],ans:"أبيض"},
-      {q:"ما لونُ التفّاحةِ الحمراءِ؟",opts:["أحمر","أخضر","أزرق"],ans:"أحمر"} ] },
+      {q:"ما لونُ التفّاحةِ الحمراءِ؟",opts:["أحمر","أخضر","أزرق"],ans:"أحمر"},
+      {q:"ما لونُ الموزِ الناضجِ؟",opts:["أصفر","أخضر","أحمر"],ans:"أصفر"},
+      {q:"ما لونُ الفحمِ؟",opts:["أسود","أبيض","أصفر"],ans:"أسود"},
+      {q:"ما لونُ الحليبِ؟",opts:["أبيض","أزرق","أخضر"],ans:"أبيض"},
+      {q:"ما لونُ ورقِ الشجرِ؟",opts:["أخضر","أحمر","أزرق"],ans:"أخضر"},
+      {q:"ما لونُ الليمونِ؟",opts:["أصفر","أحمر","أسود"],ans:"أصفر"} ] },
   { id:"shape", ic:"🔷", label:"أشكال", color:"#7BB661", bank:[
-      {q:"كم ضلعًا للمثلّثِ؟",opts:["٣","٤","٥"],ans:"٣"},
-      {q:"كم ضلعًا للمربّعِ؟",opts:["٤","٣","٦"],ans:"٤"},
+      {q:"كم ضلعًا للمثلّثِ؟",opts:["3","4","5"],ans:"3"},
+      {q:"كم ضلعًا للمربّعِ؟",opts:["4","3","6"],ans:"4"},
+      {q:"كم ضلعًا للمستطيلِ؟",opts:["4","3","5"],ans:"4"},
+      {q:"كم ضلعًا للخماسيِّ؟",opts:["5","4","6"],ans:"5"},
       {q:"ما الشكلُ المستديرُ؟",opts:["دائرة","مربّع","مثلّث"],ans:"دائرة"},
-      {q:"الكرةُ تُشبِهُ شكلَ؟",opts:["دائرة","مربّع","مثلّث"],ans:"دائرة"} ] },
+      {q:"الكرةُ تُشبِهُ شكلَ؟",opts:["دائرة","مربّع","مثلّث"],ans:"دائرة"},
+      {q:"عجلةُ السيّارةِ شكلُها؟",opts:["دائرة","مثلّث","مربّع"],ans:"دائرة"},
+      {q:"كم زاويةً للمربّعِ؟",opts:["4","3","5"],ans:"4"},
+      {q:"شكلُ قطعةِ البيتزا غالبًا؟",opts:["مثلّث","مربّع","دائرة"],ans:"مثلّث"} ] },
   { id:"animal", ic:"🐾", label:"حيوانات", color:"#F4B740", bank:[
       {q:"ماذا يقولُ القطُّ؟",opts:["مواء","نُباح","صهيل"],ans:"مواء"},
+      {q:"ماذا يقولُ الكلبُ؟",opts:["نُباح","مواء","خُوار"],ans:"نُباح"},
       {q:"أينَ تعيشُ السمكةُ؟",opts:["الماء","الشجرة","الرمل"],ans:"الماء"},
       {q:"ماذا يأكلُ الأرنبُ؟",opts:["جزر","لحم","حجر"],ans:"جزر"},
       {q:"أيُّها يطيرُ؟",opts:["العصفور","السمكة","الحصان"],ans:"العصفور"},
-      {q:"أكبرُ حيوانٍ برّيّ؟",opts:["الفيل","القطّ","الأرنب"],ans:"الفيل"} ] },
+      {q:"أكبرُ حيوانٍ برّيّ؟",opts:["الفيل","القطّ","الأرنب"],ans:"الفيل"},
+      {q:"مَن يُلقّبُ ملكَ الغابةِ؟",opts:["الأسد","الأرنب","الغزال"],ans:"الأسد"},
+      {q:"أينَ يعيشُ الجملُ؟",opts:["الصحراء","البحر","الثلج"],ans:"الصحراء"},
+      {q:"ماذا يُعطينا النحلُ؟",opts:["عسل","حليب","صوف"],ans:"عسل"},
+      {q:"مَن يُعطينا الصوفَ؟",opts:["الخروف","الدجاجة","السمكة"],ans:"الخروف"},
+      {q:"مَن يَنقُّ؟",opts:["الضفدع","القطّ","الحصان"],ans:"الضفدع"} ] },
   { id:"general", ic:"🌍", label:"عامّ", color:"#C9A0DC", bank:[
-      {q:"كم يومًا في الأسبوعِ؟",opts:["٧","٥","١٠"],ans:"٧"},
-      {q:"كم إصبعًا في اليدِ الواحدةِ؟",opts:["٥","٤","٦"],ans:"٥"},
+      {q:"كم يومًا في الأسبوعِ؟",opts:["7","5","10"],ans:"7"},
+      {q:"كم إصبعًا في اليدِ الواحدةِ؟",opts:["5","4","6"],ans:"5"},
+      {q:"كم فصلًا في السنةِ؟",opts:["4","3","5"],ans:"4"},
+      {q:"كم صلاةً مفروضةً في اليومِ؟",opts:["5","3","4"],ans:"5"},
       {q:"ماذا نقولُ قبلَ الأكلِ؟",opts:["بسم الله","شكرًا","مرحبًا"],ans:"بسم الله"},
+      {q:"ماذا نقولُ بعدَ العطاسِ؟",opts:["الحمد لله","بسم الله","آسف"],ans:"الحمد لله"},
       {q:"في أيِّ شهرٍ نصومُ؟",opts:["رمضان","شعبان","رجب"],ans:"رمضان"},
-      {q:"من أيِّ جهةٍ تشرقُ الشمسُ؟",opts:["الشرق","الغرب","الشمال"],ans:"الشرق"} ] },
+      {q:"ما قبلةُ المسلمينَ؟",opts:["الكعبة","المسجد","المنارة"],ans:"الكعبة"},
+      {q:"من أيِّ جهةٍ تشرقُ الشمسُ؟",opts:["الشرق","الغرب","الشمال"],ans:"الشرق"},
+      {q:"من أيِّ جهةٍ تغربُ الشمسُ؟",opts:["الغرب","الشرق","الجنوب"],ans:"الغرب"},
+      {q:"أوّلُ ما نتوضّأُ نغسلُ؟",opts:["اليدين","القدمين","الرأس"],ans:"اليدين"} ] },
   { id:"lang", ic:"🔤", label:"لغة", color:"#E08E45", bank:[
       {q:"أوّلُ حرفٍ في الأبجديّةِ؟",opts:["أ","ب","ت"],ans:"أ"},
+      {q:"آخِرُ حرفٍ في الأبجديّةِ؟",opts:["ي","و","ن"],ans:"ي"},
       {q:"ضدُّ «كبير»؟",opts:["صغير","طويل","كثير"],ans:"صغير"},
       {q:"ضدُّ «ليل»؟",opts:["نهار","صباح","مساء"],ans:"نهار"},
-      {q:"جمعُ «كتاب»؟",opts:["كتب","بيوت","أقلام"],ans:"كتب"} ] },
+      {q:"ضدُّ «فوق»؟",opts:["تحت","جنب","أمام"],ans:"تحت"},
+      {q:"ضدُّ «حارّ»؟",opts:["بارد","دافئ","رطب"],ans:"بارد"},
+      {q:"ضدُّ «فرِح»؟",opts:["حزين","نائم","جائع"],ans:"حزين"},
+      {q:"جمعُ «كتاب»؟",opts:["كتب","بيوت","أقلام"],ans:"كتب"},
+      {q:"جمعُ «قلم»؟",opts:["أقلام","كتب","أبواب"],ans:"أقلام"},
+      {q:"جمعُ «بيت»؟",opts:["بيوت","أبواب","نجوم"],ans:"بيوت"} ] },
 ];
 function sqGen(cat){ return cat.gen ? cat.gen() : cat.bank[rand(cat.bank.length)]; }
 function sqSvg(cats){ const N=cats.length, R=104, cx=110, cy=110;
@@ -875,40 +921,47 @@ function sqSvg(cats){ const N=cats.length, R=104, cx=110, cy=110;
     return `<path d="M${cx} ${cy} L${x0} ${y0} A${R} ${R} 0 0 1 ${x1} ${y1} Z" fill="${cats[i].color}" stroke="#fff" stroke-width="2.5"/><text x="${lx}" y="${ly}" font-size="24" text-anchor="middle" dy=".35em">${cats[i].ic}</text>`; };
   return `<div class="sqwheel"><div class="sqptr">▼</div><svg viewBox="0 0 220 220" width="240" height="240"><g id="sqG">${cats.map((_,i)=>sec(i)).join("")}</g><circle cx="110" cy="110" r="15" fill="#fff" stroke="#d8d8d8" stroke-width="2"/></svg></div>`;
 }
-function startSpinQ(){ sq_score=0; sq_streak=0; sq_rot=0; renderSpinQ(); try{speak(GI.wheel);}catch(e){} }
-function renderSpinQ(){
-  view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">🎡 أدِرِ العجلةَ ثمّ أجِبْ عنِ السؤال!</div></div>`
-    + `<div class="gbar"><span class="pill">⭐ <b id="sqScore">${sq_score}</b></span>${sq_streak>1?`<span class="pill">🔥 ${sq_streak}</span>`:""}</div>`
+function startSpinQ(){ vsSetup({ say:GI.wheel, soloOk:true, diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>sq_diff, setDiff:v=>{sq_diff=v;}, start:newSpinQ }); try{speak(GI.wheel);}catch(e){} }
+function newSpinQ(){ vsRun=true; sq_ps=vsMakePlayers(); sq_ps.forEach(p=>p.score=0); sq_turn=0; sq_rot=0; renderSpinQ(); }
+function renderSpinQ(){ if(!vsRun) return; const cur=sq_ps[sq_turn];
+  view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">🎡 تحدّي «أدرْ وأجبْ» — أوّلُ من يبلغُ ${SQ_TARGET} يفوز!</div></div>`
+    + vsScoreHtml(sq_ps) + vsTurnHtml(cur)
     + `<div class="sqwrap">${sqSvg(SQ_CATS)}</div>`
-    + `<div style="text-align:center;margin:8px 0"><button class="secbtn on" id="sqBtn">🎡 أدِرْ العجلة</button></div>`
+    + `<div style="text-align:center;margin:10px 0"><button class="sqbtn" id="sqBtn">أدِرِ العجلة</button></div>`
     + `<div id="sqBox"></div>`;
   wireBack();
   const g=document.getElementById("sqG"); if(g) g.style.transform=`rotate(${sq_rot}deg)`;
-  document.getElementById("sqBtn").onclick=sqSpin;
+  const btn=document.getElementById("sqBtn");
+  if(cur.cpu){ btn.disabled=true; btn.innerHTML="🤖 يُديرُ الآليُّ…"; setTimeout(()=>sqSpin(), 950); }
+  else btn.onclick=sqSpin;
 }
-function sqSpin(){ const btn=document.getElementById("sqBtn"), g=document.getElementById("sqG"); if(!g) return;
-  btn.disabled=true; const box=document.getElementById("sqBox"); if(box) box.innerHTML="";
+function sqSpin(){ if(!vsRun) return; const g=document.getElementById("sqG"), btn=document.getElementById("sqBtn"); if(!g) return;
+  if(btn){ btn.disabled=true; btn.classList.add("spinning"); } const box=document.getElementById("sqBox"); if(box) box.innerHTML="";
   const N=SQ_CATS.length, i=rand(N), want=(360 - (i+0.5)*(360/N)) % 360;
   sq_rot = sq_rot - (sq_rot % 360) + want + 360*5;   // خمسُ دوراتٍ ثمّ يقفُ القطاعُ i أعلى المؤشّر
   g.style.transition="transform 3.4s cubic-bezier(.15,.68,.2,1)"; g.style.transform=`rotate(${sq_rot}deg)`;
   sfx.tap();
-  setTimeout(()=>sqAsk(SQ_CATS[i]), 3500);
+  setTimeout(()=>{ if(!vsRun) return; const b=document.getElementById("sqBtn"); if(b) b.classList.remove("spinning"); sqAsk(SQ_CATS[i]); }, 3500);
 }
-function sqAsk(cat){ const Q=sqGen(cat), box=document.getElementById("sqBox"); if(!box) return;
+function sqAsk(cat){ if(!vsRun) return; const Q=sqGen(cat), box=document.getElementById("sqBox"), cur=sq_ps[sq_turn]; if(!box) return;
+  const opts=shuffle([...Q.opts]);
   box.innerHTML = `<div class="sqq"><div class="sqcat" style="color:${cat.color}">${cat.ic} ${cat.label}</div><div class="sqp">${Q.q}</div>`
-    + `<div class="sqopts" id="sqOpts">${shuffle([...Q.opts]).map(o=>`<button class="sqopt" data-v="${o}">${o}</button>`).join("")}</div></div>`;
-  box.querySelector("#sqOpts").addEventListener("click",e=>{ const b=e.target.closest(".sqopt"); if(!b||b.disabled) return;
-    const ok=String(b.getAttribute("data-v"))===String(Q.ans);
-    box.querySelectorAll(".sqopt").forEach(x=>{ x.disabled=true; if(String(x.getAttribute("data-v"))===String(Q.ans)) x.classList.add("ok"); });
-    if(!ok) b.classList.add("bad");
-    if(ok){ sq_score++; sq_streak++; sfx.success(); robo.cheer(vP(GR.ok)); logEvent("wheel_correct"); }
-    else { sq_streak=0; sfx.nope(); robo.encourage(vP(GR.no)); }
-    const sc=document.getElementById("sqScore"); if(sc) sc.textContent=sq_score;
-    const sp=document.getElementById("sqBtn"); if(sp) sp.disabled=false;
-    const fb=document.createElement("div"); fb.className="hint"; fb.style.textAlign="center"; fb.style.marginTop="8px";
-    fb.innerHTML = ok?"✅ أحسنت! أدِرْ ثانيةً 🎡":`الصحيحُ: <b>${Q.ans}</b> — أدِرْ ثانيةً 🎡`; box.appendChild(fb);
-  });
+    + `<div class="sqopts" id="sqOpts">${opts.map(o=>`<button class="sqopt" data-v="${o}">${o}</button>`).join("")}</div></div>`;
+  if(cur.cpu){ const ok=Math.random()<SQ_PR[sq_diff], pick = ok ? String(Q.ans) : (shuffle(opts.map(String).filter(v=>v!==String(Q.ans)))[0] || String(Q.ans));
+    setTimeout(()=>{ if(!vsRun) return; let b=null; box.querySelectorAll(".sqopt").forEach(x=>{ if(String(x.getAttribute("data-v"))===pick) b=x; }); sqResolve(ok, b, Q); }, 1300); return; }
+  box.querySelector("#sqOpts").addEventListener("click",e=>{ const b=e.target.closest(".sqopt"); if(!b||b.disabled) return; sqResolve(String(b.getAttribute("data-v"))===String(Q.ans), b, Q); });
 }
+function sqResolve(ok, btn, Q){ if(!vsRun) return; const box=document.getElementById("sqBox"), cur=sq_ps[sq_turn], human=!cur.cpu; if(!box) return;
+  box.querySelectorAll(".sqopt").forEach(x=>{ x.disabled=true; if(String(x.getAttribute("data-v"))===String(Q.ans)) x.classList.add("ok"); }); // كشفُ الصحيحة
+  if(btn && !ok) btn.classList.add("bad");   // بطاقةُ مختارِ اللاعب/الآليّ حمراءُ إن أخطأ
+  if(ok){ cur.score++; const won=cur.score>=SQ_TARGET;
+    if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok)); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
+  else { if(human) robo.encourage(vP(GR.no)); else sfx.nope(); }
+  const fb=document.createElement("div"); fb.className="hint"; fb.style.textAlign="center"; fb.style.marginTop="8px";
+  fb.innerHTML = ok?"✅ صحيح!":`الصحيحُ: <b>${Q.ans}</b>`; box.appendChild(fb);
+  setTimeout(()=>{ if(!vsRun) return; if(sq_ps.some(p=>p.score>=SQ_TARGET)){ sqEnd(); return; } sq_turn=(sq_turn+1)%sq_ps.length; renderSpinQ(); }, 1350);
+}
+function sqEnd(){ logEvent("wheel_win"); vsEndRound(sq_ps, { onAgain:newSpinQ, onExit:startSpinQ }); }
 
 /* ===================== 🔤 شبكةُ الكلمات (تناوبٌ · تكوينُ الكلمات بالترتيب · ألوانُ اللاعبين · ضدّ الآليّ/الحسابات) ===================== */
 let wg_diff="easy", wg_ps=[], wg_turn=0, wg_words=[], wg_found=0, wg_owner=[], wg_seq=[], wg_lock=false, wg_grid=[]; const WG_N=6;

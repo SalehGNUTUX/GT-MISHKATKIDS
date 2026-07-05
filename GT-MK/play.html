@@ -247,6 +247,7 @@ const WL = DATA.wheel_letters || [];
 const view = document.getElementById("view");
 
 const shuffle = a => { for(let k=a.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [a[k],a[j]]=[a[j],a[k]]; } return a; };
+const rand = n => Math.floor(Math.random()*n);
 let age=getChildAge(), score=0, streak=0, last=null, cur=null;
 const filtered = () => WORDS.filter(w => age==="all" || w.age_band===age);
 function pickWord(){ const p=filtered().filter(w=>w.id!==last); const a=p.length?p:filtered(); const w=pickAdaptive(a, x=>"W:"+x.word); last=w.id; return w; }

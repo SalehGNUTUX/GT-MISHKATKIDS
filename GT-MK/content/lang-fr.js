@@ -301,16 +301,16 @@ export default {
   // 🔊 الأصوات (Les sons): بطاقةٌ لكلّ صوتٍ (الرسمُ s + كلمةُ مثالٍ w تحوي الصوتَ + معناها ar + رمز e).
   // مأخوذةٌ من بطاقات الطفل (الصورتان)، مع توسيعٍ بأصواتٍ أساسيّةٍ شائعةٍ (ou/on/oi/eau/eu/ch/gn/ph).
   sounds: [
-    { s:"em",     w:"tempête",    ar:"عاصفة",   e:"⛈️" },
+    { s:"em",     w:"tempête",    ar:"عاصفة",   e:"⛈️", say:"an" },
     { s:"an",     w:"orange",     ar:"برتقالة",  e:"🍊" },
-    { s:"am",     w:"jambe",      ar:"ساق",     e:"🦵" },
+    { s:"am",     w:"jambe",      ar:"ساق",     e:"🦵", say:"an" },
     { s:"ion",    w:"avion",      ar:"طائرة",    e:"✈️" },
     { s:"an",     w:"viande",     ar:"لحم",      e:"🥩" },
     { s:"in",     w:"singe",      ar:"قرد",      e:"🐒" },
-    { s:"ein",    w:"peinture",   ar:"دهان",     e:"🎨" },
-    { s:"ain",    w:"pain",       ar:"خبز",      e:"🥖" },
+    { s:"ein",    w:"peinture",   ar:"دهان",     e:"🎨", say:"in" },
+    { s:"ain",    w:"pain",       ar:"خبز",      e:"🥖", say:"in" },
     { s:"un",     w:"lundi",      ar:"الاثنين",  e:"📅" },
-    { s:"aim",    w:"faim",       ar:"جوع",      e:"🍽️" },
+    { s:"aim",    w:"faim",       ar:"جوع",      e:"🍽️", say:"in" },
     { s:"ien",    w:"chien",      ar:"كلب",      e:"🐕" },
     { s:"oin",    w:"points",     ar:"نقاط",     e:"⚫" },
     { s:"iel",    w:"ciel",       ar:"سماء",     e:"🌤️" },

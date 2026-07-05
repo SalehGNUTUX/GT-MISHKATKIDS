@@ -68,9 +68,11 @@
   .sgopt.bad{border-color:#E0566B!important;background:color-mix(in srgb,#E0566B 14%,var(--card))!important}
   /* بطاقاتُ الأصوات (Les sons) */
   .sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:14px;margin-top:8px}
-  .scard{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:24px 10px 12px;background:var(--card);border:1.5px solid var(--line);border-radius:20px;box-shadow:var(--shadow);cursor:pointer;font-family:inherit;color:var(--ink);transition:transform .16s cubic-bezier(.34,1.56,.64,1),box-shadow .16s}
-  .scard:hover{transform:translateY(-5px);box-shadow:0 12px 26px rgba(0,0,0,.16)} .scard:active{transform:scale(.97)}
-  .ssnd{position:absolute;top:0;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:14px;font-weight:800;padding:2px 15px;border-radius:0 0 13px 13px;letter-spacing:.5px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+  .scard{position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+  .ssnd{position:absolute;top:0;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:14px;font-weight:800;padding:3px 16px;border:none;border-radius:0 0 13px 13px;letter-spacing:.5px;box-shadow:0 2px 6px rgba(0,0,0,.15);cursor:pointer;font-family:inherit;z-index:2;transition:transform .12s}
+  .ssnd:hover{background:var(--primary-d)} .ssnd:active{transform:translateX(-50%) scale(.9)}
+  .sbody{width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;padding:26px 10px 12px;background:none;border:none;border-radius:20px;cursor:pointer;font-family:inherit;color:var(--ink);transition:transform .16s cubic-bezier(.34,1.56,.64,1)}
+  .sbody:hover{transform:translateY(-4px)} .sbody:active{transform:scale(.97)}
   .sem{font-size:44px;line-height:1;margin-top:6px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.12))}
   .swd{font-size:18px;font-weight:800;direction:ltr;unicode-bidi:isolate}
   .swd .shi{color:var(--primary-d);background:color-mix(in srgb,var(--primary) 20%,transparent);border-radius:5px;padding:0 3px}
@@ -318,6 +320,9 @@ function makeQuizQ(type, L, words){
   if(type==="listen"){ const c=quizPick(words), opts=shuffle([c,...quizDistinct(words,x=>x.emoji,c.emoji,3)]);
     return { badge:"👂 سماع", prompt:`<button class="secbtn on" data-qsay="${esc(c.w)}">🔊 استمعْ ثمّ اختَرِ الصورة</button>`, autosay:c.w,
       opts:opts.map(o=>({v:o.w, html:`<span style="font-size:40px">${o.emoji}</span>`})), answer:c.w, reveal:`${c.emoji} <b>${esc(c.ar)}</b>`, kind:"grid" }; }
+  if(type==="sound"){ const c=quizPick(L.sounds), opts=shuffle([c,...quizDistinct(L.sounds,x=>x.s,c.s,3)]);
+    return { badge:"🔊 صوت", prompt:`<div style="margin-bottom:4px"><button class="secbtn on" data-qsay="${esc(c.say||c.s)}">🔊 <b class="ltr">${esc(c.s)}</b></button></div><div class="hint">اختَرِ الكلمةَ التي فيها هذا الصوت</div>`, autosay:c.say||c.s,
+      opts:opts.map(o=>({v:o.w, fg:1, html:`<span class="ltr">${o.e} ${esc(o.w)}</span>`})), answer:c.w, reveal:`${c.e} <b class="ltr">${esc(c.w)}</b>`, kind:"grid" }; }
   const c=quizPick(words), opts=shuffle([c,...quizDistinct(words,x=>x.w,c.w,3)]); // pic2word (افتراضيّ)
   return { badge:"🖼️ مفردات", prompt:`<span class="qzemoji">${c.emoji}</span><span class="qzar">${esc(c.ar)}</span><div class="hint">اختَرِ الكلمةَ الصحيحة (${esc(L.nameAr)})</div>`,
     opts:opts.map(o=>({v:o.w, fg:1, html:`<span class="ltr" style="font-size:17px">${esc(o.w)}</span>`})), answer:c.w, reveal:`<b class="ltr">${esc(c.w)}</b>`, kind:"grid" };
@@ -327,6 +332,7 @@ function renderQuiz(L, host){
   const types=["pic2word","word2ar","listen"];
   if((L.verbs||[]).length>=4) types.push("verbtense");
   if((L.phrases||[]).some(c=>(c.items||[]).length)) types.push("phrase");
+  if((L.sounds||[]).length) types.push("sound"); // أسئلةُ الصوتيّات (للغاتٍ فيها sounds)
   const qs=Array.from({length:N},()=>makeQuizQ(quizPick(types), L, words));
   function ask(){
     if(i>=N){ const pct=Math.round(score/N*100), msg=pct>=80?"ممتازٌ، ما شاء الله!":pct>=50?"جيّدٌ، واصِلْ!":"لا بأس، حاوِلْ ثانيةً!";
@@ -696,9 +702,10 @@ function renderLang(k){
   } else if(sec==="sounds"){
     topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔊 الأصوات (Les sons)</span>`;
     body = `<div class="sgrid">${(L.sounds||[]).map(x=>
-      `<button class="scard" data-say="${esc(x.w)}"><span class="ssnd ltr">${esc(x.s)}</span><span class="sem">${x.e}</span>
-        <span class="swd ltr">${soundHi(x.w, x.s)}</span><span class="sar">${esc(x.ar)}</span></button>`).join("")}</div>
-      <div class="hint">لكلِّ صوتٍ بطاقةٌ: الرسمُ فوق، وكلمةٌ مثالٌ يظهرُ فيها الصوتُ ملوّنًا. اضغطْها لسماعِ الكلمة 🔊</div>`;
+      `<div class="scard"><button class="ssnd ltr" data-snd="${esc(x.say||x.s)}" title="اسمعِ الصوتَ وحده">${esc(x.s)}</button>
+        <button class="sbody" data-say="${esc(x.w)}"><span class="sem">${x.e}</span><span class="swd ltr">${soundHi(x.w, x.s)}</span><span class="sar">${esc(x.ar)}</span></button>
+       </div>`).join("")}</div>
+      <div class="hint">اضغطِ الشارةَ العلويّةَ (الوردية) لسماعِ الصوتِ وحده، والبطاقةَ لسماعِ الكلمة 🔊</div>`;
   } else if(sec==="words"){
     const cats = L.words || [], C = cats.find(x=>x.id===qp.get("cat"));
     if(!C){
@@ -795,8 +802,9 @@ function renderLang(k){
   });
   // العبارات: انطق العبارة عند الضغط
   view.querySelectorAll(".pcard").forEach(b=>b.onclick=()=>say(b.getAttribute("data-say"), L));
-  // بطاقاتُ الأصوات: نطقُ الكلمةِ المثال عند الضغط
-  view.querySelectorAll(".scard").forEach(b=>b.onclick=()=>say(b.getAttribute("data-say"), L));
+  // بطاقاتُ الأصوات: الشارةُ تنطقُ الصوتَ وحده، والبطاقةُ تنطقُ الكلمةَ المثال
+  view.querySelectorAll(".ssnd[data-snd]").forEach(b=>b.onclick=()=>say(b.getAttribute("data-snd"), L));
+  view.querySelectorAll(".sbody").forEach(b=>b.onclick=()=>say(b.getAttribute("data-say"), L));
   // تسجيلُ نُطق الطفل (لكلّ حساب) للكلمة/العبارة، مع زرّ استماعٍ للنطق المرجعيّ.
   view.querySelectorAll(".lrec").forEach(b=>b.onclick=async()=>{
     const host=document.getElementById("rr-"+b.getAttribute("data-id")); if(!host) return;

@@ -41,7 +41,7 @@ const texts = uniq([
   ...(L.reactions || []).map(r => r.t),    // ردودُ أفعال الآلي (مدح) بلغة القسم
   ...(L.encourage || []).map(r => r.t),    // ردودُ التشجيع عند الخطأ بلغة القسم
   ...Object.values(L.intros || {}),        // الجملُ الافتتاحيّةُ للألعاب التنافسيّة بلغة القسم
-  ...(L.sounds || []).map(s => s.w),       // كلماتُ أمثلةِ الأصوات (Les sons)
+  ...(L.sounds || []).flatMap(s => [s.w, s.say || s.s]), // كلماتُ أمثلةِ الأصوات + الصوتُ مجرّدًا (say|s)
   ...(L.syllabaries || []).flatMap(ch => (ch.rows || []).flatMap(r => (r.cells || []).filter(Boolean))), // خرائطُ المقاطع (لاحقًا)
   ...(L.stories || []).flatMap(s => [s.title, ...(s.pages || []).map(p => p.text), s.lesson]),
   ...(L.verbs || []).flatMap(v => [v.v,                                   // المصدرُ/الفعل
@@ -56,7 +56,7 @@ mkdirSync(setDir, { recursive: true });
 // (خاتمةٌ جُمليّةٌ تُحسّنُ نطقَ العصبيّ للوحدة المنفردة وتُقلّل تشويهَ الحوافّ).
 // تصحيحُ نطقٍ لكلماتٍ يُضعِّفُ النموذجُ حروفَها: المفتاحُ/الملفُّ يبقى الأصلَ، ونصُّ التركيبِ بديلٌ
 // أوضحُ بنفس النطق (مثلاً «Père» /pɛʁ/ ضعيفةُ الـp في tom ← «paire» نظيرتُها بنفس اللفظ).
-const SYNTH_FIX = { "Père": "paire" };
+const SYNTH_FIX = { "Père": "paire", "points": "point" }; // «points» جمعٌ يُنطَقُ /pwa/؛ المفردُ «point» يُعطي الغنّةَ /pwɛ̃/
 const synthText = t => SYNTH_FIX[t] || (LETTER_NAMES.has(t) ? t + " ." : t);
 const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: synthText(t), out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
 

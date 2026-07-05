@@ -157,6 +157,7 @@
   /* خياراتُ اختبارِ اللغة الموسَّع (صنفٌ مستقلٌّ لا مربّعٌ، لا يتداخلُ مع خيارات الألعاب) */
   .qopt{display:flex;align-items:center;justify-content:center;text-align:center;min-height:58px;padding:12px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;font-size:16px;font-weight:800;color:var(--ink);cursor:pointer;font-family:inherit;box-shadow:var(--shadow);transition:transform .14s cubic-bezier(.34,1.56,.64,1),border-color .14s}
   .qopt:hover{transform:translateY(-3px);border-color:var(--primary)} .qopt:active{transform:scale(.97)} .qopt:disabled{cursor:default}
+  .qopt.sel{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary) inset}
   .qopt.ok{background:#EEF6E9;border-color:var(--good);color:#2f5a1f} .qopt.bad{background:#FCEBEE;border-color:#E0566B;animation:shk .4s}
   html[data-theme="dark"] .qopt{background:#23232c;border-color:#3a3a45}
   html[data-theme="dark"] .qopt.ok{background:color-mix(in srgb,var(--good) 22%,#23232c);color:var(--ink)} html[data-theme="dark"] .qopt.bad{background:color-mix(in srgb,#E0566B 22%,#23232c)}
@@ -366,6 +367,57 @@ function renderQuiz(L, host){
       if(ok) praise(L); else encourageReact(L); // ردُّ فعلٍ ثنائيُّ اللغة
       setTimeout(()=>{ i++; ask(); }, ok?2200:2800);
     });
+  }
+  ask();
+}
+
+// 🎯 اختبارُ المقاطع (داخلَ خرائط المقاطع): أنماطٌ مختلطة —
+//   مقطعٌ منطوقٌ←خياراتٌ مكتوبة · مكتوبٌ←خياراتٌ صوتيّة (تُسمَعُ ثمّ تُؤكَّد) · صوتٌ داخلَ كلمةٍ منطوقة (والعكس).
+const sylSimilar = (syls, c) => syls.filter(s => s!==c && (s[0]===c[0] || s.slice(-1)===c.slice(-1)));
+function makeSylQ(type, syls, sounds){
+  if(type==="s_r2l"){ const c=quizPick(syls), pool=sylSimilar(syls,c), ds=quizDistinct(pool.length>=3?pool:syls,x=>x,c,3), opts=shuffle([c,...ds]);
+    return { badge:"👀→🔊", audioOpts:1, prompt:`<div class="qzprompt"><span class="qzar ltr" style="font-size:38px">${esc(c)}</span><div class="hint">اضغطِ الخياراتِ لسماعِها، ثمّ أكّدِ المقطعَ المطابقَ للمكتوب</div></div>`,
+      opts:opts.map((o,idx)=>({v:o, html:`🔊 <b>${idx+1}</b>`})), answer:c, reveal:`المقطعُ المكتوبُ: <b class="ltr">${esc(c)}</b>` }; }
+  if(type==="w_l2r"){ const c=quizPick(sounds), opts=shuffle([c,...quizDistinct(sounds,x=>x.s,c.s,3)]);
+    return { badge:"🔊→👀", prompt:`<div style="margin-bottom:4px"><button class="secbtn on" data-qsay="${esc(c.w)}">🔊 استمعْ للكلمة</button></div><div class="hint">أيُّ مقطعٍ (صوت) فيها؟</div>`, autosay:c.w,
+      opts:opts.map(o=>({v:o.s, html:`<span class="ltr">${esc(o.s)}</span>`})), answer:c.s, reveal:`<b class="ltr">${esc(c.s)}</b> — ${esc(c.w)}` }; }
+  if(type==="w_r2l"){ const c=quizPick(sounds), opts=shuffle([c,...quizDistinct(sounds,x=>x.w,c.w,3)]);
+    return { badge:"👀→🔊", audioOpts:1, prompt:`<div class="qzprompt"><span class="qzar ltr" style="font-size:32px">${esc(c.s)}</span><div class="hint">اضغطِ الكلماتِ لسماعِها، ثمّ أكّدِ التي فيها هذا الصوت</div></div>`,
+      opts:opts.map(o=>({v:o.w, html:`🔊 ${o.e}`})), answer:c.w, reveal:`${c.e} <b class="ltr">${esc(c.w)}</b>` }; }
+  const c=quizPick(syls), pool=sylSimilar(syls,c), ds=quizDistinct(pool.length>=3?pool:syls,x=>x,c,3), opts=shuffle([c,...ds]); // s_l2r
+  return { badge:"🔊→👀", prompt:`<div style="margin-bottom:4px"><button class="secbtn on" data-qsay="${esc(c)}">🔊 استمعْ للمقطع</button></div><div class="hint">اختَرِ المقطعَ الذي سمعتَه</div>`, autosay:c,
+    opts:opts.map(o=>({v:o, html:`<span class="ltr" style="font-size:19px">${esc(o)}</span>`})), answer:c, reveal:`<b class="ltr">${esc(c)}</b>` };
+}
+function renderSylQuiz(L, host){
+  const syls=[...new Set((L.syllabaries||[]).flatMap(ch=>ch.groups.flatMap(g=>g.syl)))], sounds=L.sounds||[], N=10; let i=0, score=0;
+  const types=["s_l2r","s_r2l"]; if(sounds.length) types.push("w_l2r","w_r2l");
+  const qs=Array.from({length:N},()=>makeSylQ(quizPick(types), syls, sounds));
+  function ask(){
+    if(i>=N){ const pct=Math.round(score/N*100), msg=pct>=80?"ممتازٌ، ما شاء الله!":pct>=50?"جيّدٌ، واصِلْ!":"لا بأس، حاوِلْ ثانيةً!";
+      host.innerHTML=`<div class="qzdone">🎉 <b>${score}/${N}</b><div class="hint">${msg}</div><button class="secbtn on" id="sqAgain">🔁 أعِدِ الاختبار</button></div>`;
+      host.querySelector("#sqAgain").onclick=()=>renderSylQuiz(L, host); return; }
+    const q=qs[i]; let locked=false, sel=null;
+    const commit=(v, btn)=>{ if(locked) return; locked=true; const ok=v===q.answer;
+      host.querySelectorAll(".qopt").forEach(x=>{ x.disabled=true; x.classList.remove("sel"); if(x.getAttribute("data-v")===q.answer) x.classList.add("ok"); });
+      if(!ok && btn) btn.classList.add("bad"); if(ok) score++;
+      const cf=host.querySelector("#sqConfirm"); if(cf) cf.disabled=true;
+      const fb=host.querySelector("#sqfb"); if(fb) fb.innerHTML=`<div class="hint">${ok?"✅ صحيح!":`الصحيح: ${q.reveal}`}</div>`;
+      if(ok) praise(L); else encourageReact(L);
+      setTimeout(()=>{ i++; ask(); }, ok?1900:2600);
+    };
+    host.innerHTML=`<div class="qzn">سؤال ${i+1}/${N} · ⭐ ${score} · <span style="color:var(--primary-d);font-weight:800">${q.badge}</span></div>
+      <div class="qzprompt">${q.prompt}</div>
+      <div id="sqopts" class="grid">${q.opts.map(o=>`<button class="qopt" data-v="${esc(o.v)}">${o.html}</button>`).join("")}</div>
+      ${q.audioOpts?`<div style="text-align:center;margin-top:10px"><button class="secbtn on" id="sqConfirm" disabled>✅ أكّدِ الاختيار</button></div>`:""}
+      <div id="sqfb"></div>`;
+    const sb=host.querySelector("[data-qsay]"); if(sb) sb.onclick=()=>say(sb.getAttribute("data-qsay"), L);
+    if(q.autosay) say(q.autosay, L);
+    if(q.audioOpts){
+      host.querySelectorAll(".qopt").forEach(b=>b.onclick=()=>{ if(locked) return; say(b.getAttribute("data-v"), L);
+        host.querySelectorAll(".qopt").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); sel=b;
+        const cf=host.querySelector("#sqConfirm"); if(cf) cf.disabled=false; });
+      const cf=host.querySelector("#sqConfirm"); if(cf) cf.onclick=()=>{ if(sel) commit(sel.getAttribute("data-v"), sel); };
+    } else host.querySelectorAll(".qopt").forEach(b=>b.onclick=()=>commit(b.getAttribute("data-v"), b));
   }
   ask();
 }
@@ -717,11 +769,14 @@ function renderLang(k){
        </div>`).join("")}</div>
       <div class="hint">اضغطِ الشارةَ العلويّةَ (الوردية) لسماعِ الصوتِ وحده، والبطاقةَ لسماعِ الكلمة 🔊</div>`;
   } else if(sec==="syllables"){
-    const charts = L.syllabaries||[], C = charts.find(x=>x.id===qp.get("chart"));
-    if(!C){
+    const charts = L.syllabaries||[], cid = qp.get("chart"), C = charts.find(x=>x.id===cid);
+    if(cid==="quiz"){
+      topnav = nav("↩ الخرائط","charts")+`<span class="cur">🎯 اختبارُ المقاطع</span>`; body = `<div id="sq"></div>`;
+    } else if(!C){
+      const nw = k==="fr"?"Nouveau":"New";
       topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔡 خرائطُ المقاطع</span>`;
-      body = `<div class="lgrid">${charts.map(c=>`<button class="lcard" data-chart="${c.id}"><span class="ic">${iconHtml("🔡")}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc(c.fr)}">${esc(c.ar)}</span></button>`).join("")}</div>
-        <div class="hint">اختَرْ خريطةً، ثمّ اضغطْ أيَّ مقطعٍ لتسمعَه (décodage) 🔊</div>`;
+      body = `<div class="lgrid"><button class="lcard hasnew" data-chart="quiz"><span class="newbadge" data-ar="🆕 جديد" data-fg="🆕 ${nw}">🆕 جديد</span><span class="ic">${iconHtml("🎯")}</span><span class="lt" data-ar="اختبارُ المقاطع" data-fg="Quiz syllabes">اختبارُ المقاطع</span></button>${charts.map(c=>`<button class="lcard" data-chart="${c.id}"><span class="ic">${iconHtml("🔡")}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc(c.fr)}">${esc(c.ar)}</span></button>`).join("")}</div>
+        <div class="hint">اختَرْ خريطةً لتسمعَ مقاطعَها (décodage)، أو ابدأِ اختبارَ المقاطع 🎯</div>`;
     } else {
       topnav = nav("↩ الخرائط","charts")+`<span class="cur">🔡 ${esc(C.ar)}</span>`;
       body = `<div class="sylwrap">${C.groups.map(g=>
@@ -856,6 +911,7 @@ function renderLang(k){
   }
   if(sec==="verbs"){ const h=document.getElementById("vb"); if(h) renderVerbs(L, h); }
   if(sec==="quiz"){ const h=document.getElementById("qz"); if(h) renderQuiz(L, h); }
+  if(sec==="syllables" && qp.get("chart")==="quiz"){ const h=document.getElementById("sq"); if(h) renderSylQuiz(L, h); }
   if(sec==="games" && qp.get("g")){ const g=qp.get("g"), h=document.getElementById("gm");
     if(h){ ({transrace:startTransRace, sortwords:startSortGame, alphaorder:startAlphaOrder, match:startMatch, matchar:startMatchAr, spell:startSpell, listen:startListen}[g]||startTransRace)(L, h); } }
   startTitleAlt();

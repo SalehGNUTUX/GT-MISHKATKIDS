@@ -133,6 +133,12 @@
   .qzar{font-size:20px;font-weight:800}
   .qzopt.ok{background:#EEF6E9;border-color:var(--good)}
   .qzopt.bad,.mcard.bad{background:#FCEBEE;border-color:#E0566B;animation:shk .4s}
+  /* خياراتُ اختبارِ اللغة الموسَّع (صنفٌ مستقلٌّ لا مربّعٌ، لا يتداخلُ مع خيارات الألعاب) */
+  .qopt{display:flex;align-items:center;justify-content:center;text-align:center;min-height:58px;padding:12px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;font-size:16px;font-weight:800;color:var(--ink);cursor:pointer;font-family:inherit;box-shadow:var(--shadow);transition:transform .14s cubic-bezier(.34,1.56,.64,1),border-color .14s}
+  .qopt:hover{transform:translateY(-3px);border-color:var(--primary)} .qopt:active{transform:scale(.97)} .qopt:disabled{cursor:default}
+  .qopt.ok{background:#EEF6E9;border-color:var(--good);color:#2f5a1f} .qopt.bad{background:#FCEBEE;border-color:#E0566B;animation:shk .4s}
+  html[data-theme="dark"] .qopt{background:#23232c;border-color:#3a3a45}
+  html[data-theme="dark"] .qopt.ok{background:color-mix(in srgb,var(--good) 22%,#23232c);color:var(--ink)} html[data-theme="dark"] .qopt.bad{background:color-mix(in srgb,#E0566B 22%,#23232c)}
   @keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
   .qzdone{text-align:center;font-size:22px;font-weight:800;margin:16px 2px}
   .qzdone .secbtn{display:inline-block;margin-top:10px;font-size:15px}
@@ -317,15 +323,15 @@ function renderQuiz(L, host){
     const optWrap = q.kind==="list" ? `id="qzopts" style="display:flex;flex-direction:column;gap:10px;max-width:440px;margin:8px auto 0"` : `id="qzopts" class="grid"`;
     host.innerHTML=`<div class="qzn">سؤال ${i+1}/${N} · ⭐ ${score} · <span style="color:var(--primary-d);font-weight:800">${q.badge}</span></div>
       <div class="qzprompt">${q.prompt}</div>
-      <div ${optWrap}>${q.opts.map(o=>`<button class="gcard qzopt" data-v="${esc(o.v)}" data-fg="${o.fg?1:0}">${o.html}</button>`).join("")}</div>
+      <div ${optWrap}>${q.opts.map(o=>`<button class="qopt" data-v="${esc(o.v)}" data-spk="${o.fg?1:0}">${o.html}</button>`).join("")}</div>
       <div id="qzfb"></div>`;
     const sb=host.querySelector("[data-qsay]"); if(sb) sb.onclick=()=>say(sb.getAttribute("data-qsay"), L);
     if(q.autosay) say(q.autosay, L);
-    host.querySelectorAll(".qzopt").forEach(b=>b.onclick=()=>{
-      const v=b.getAttribute("data-v"); if(b.getAttribute("data-fg")==="1") say(v, L); // نطقُ الخيارِ الأجنبيّ عند الضغط
+    host.querySelectorAll(".qopt").forEach(b=>b.onclick=()=>{
+      const v=b.getAttribute("data-v"); if(b.getAttribute("data-spk")==="1") say(v, L); // نطقُ الخيارِ الأجنبيّ عند الضغط
       if(locked) return; locked=true;
       const ok=v===q.answer;
-      host.querySelectorAll(".qzopt").forEach(x=>{ x.disabled=true; if(x.getAttribute("data-v")===q.answer) x.classList.add("ok"); }); // كشفُ الصحيحة
+      host.querySelectorAll(".qopt").forEach(x=>{ x.disabled=true; if(x.getAttribute("data-v")===q.answer) x.classList.add("ok"); }); // كشفُ الصحيحة
       if(ok) score++; else b.classList.add("bad");
       const fb=host.querySelector("#qzfb"); if(fb) fb.innerHTML=`<div class="hint">${ok?"✅ صحيح!":`الصحيح: ${q.reveal}`}</div>`;
       if(ok) praise(L); else encourageReact(L); // ردُّ فعلٍ ثنائيُّ اللغة

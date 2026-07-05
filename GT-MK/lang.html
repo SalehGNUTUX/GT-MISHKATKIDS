@@ -66,6 +66,16 @@
   .lcard.vs{border-color:color-mix(in srgb,var(--primary) 45%,var(--cb,var(--line)))}
   .sgopt.ok{border-color:var(--good)!important;background:color-mix(in srgb,var(--good) 16%,var(--card))!important}
   .sgopt.bad{border-color:#E0566B!important;background:color-mix(in srgb,#E0566B 14%,var(--card))!important}
+  /* بطاقاتُ الأصوات (Les sons) */
+  .sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:14px;margin-top:8px}
+  .scard{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:24px 10px 12px;background:var(--card);border:1.5px solid var(--line);border-radius:20px;box-shadow:var(--shadow);cursor:pointer;font-family:inherit;color:var(--ink);transition:transform .16s cubic-bezier(.34,1.56,.64,1),box-shadow .16s}
+  .scard:hover{transform:translateY(-5px);box-shadow:0 12px 26px rgba(0,0,0,.16)} .scard:active{transform:scale(.97)}
+  .ssnd{position:absolute;top:0;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:14px;font-weight:800;padding:2px 15px;border-radius:0 0 13px 13px;letter-spacing:.5px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+  .sem{font-size:44px;line-height:1;margin-top:6px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.12))}
+  .swd{font-size:18px;font-weight:800;direction:ltr;unicode-bidi:isolate}
+  .swd .shi{color:var(--primary-d);background:color-mix(in srgb,var(--primary) 20%,transparent);border-radius:5px;padding:0 3px}
+  .sar{font-size:13px;color:var(--muted)}
+  html[data-theme="dark"] .scard{background:#23232c;border-color:#3a3a45}
   .introrep{background:var(--card);border:1.5px solid var(--line);border-radius:999px;padding:1px 9px;font-size:13px;line-height:1.5;cursor:pointer;font-family:inherit;color:var(--ink);vertical-align:middle;margin-inline-start:4px}
   .introrep:hover{border-color:var(--primary)} .introrep:active{transform:scale(.92)}
   .vsbadge{position:absolute;top:5px;inset-inline-start:5px;z-index:2;background:var(--primary);color:#fff;font-size:8.5px;font-weight:800;padding:2px 5px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.18);white-space:nowrap}
@@ -259,6 +269,7 @@ function renderPick(){
 const SECTIONS = [
   { key:"letters", icon:"🔤", ar:"الأحرف",     en:"Letters",  fr:"Lettres" },
   { key:"numbers", icon:"🔢", ar:"الأرقام",     en:"Numbers",  fr:"Nombres" },
+  { key:"sounds",  icon:"🔊", ar:"الأصوات",     en:"Sounds",   fr:"Les sons", need:"sounds" },
   { key:"words",   icon:"📝", ar:"الكلمات",     en:"Words",    fr:"Mots" },
   { key:"phrases", icon:"💬", ar:"عبارات وجمل", en:"Phrases",  fr:"Phrases" },
   { key:"stories", icon:"📚", ar:"قصص مصوّرة",  en:"Stories",  fr:"Histoires" },
@@ -283,6 +294,8 @@ const CAT_I18N = {
 };
 const shuffle = a => { const r=a.slice(); for(let k=r.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [r[k],r[j]]=[r[j],r[k]]; } return r; };
 const allWords = L => (L.words||[]).flatMap(c => (c.items||[]).map(it => ({ ...it, cat:c.id })));
+// يُبرِزُ الصوتَ (الرسمَ s) داخلَ الكلمةِ w بلونٍ لافت (أوّلُ ظهورٍ له).
+const soundHi = (w,s) => { const i=w.indexOf(s); return i<0 ? esc(w) : esc(w.slice(0,i))+`<b class="shi">${esc(s)}</b>`+esc(w.slice(i+s.length)); };
 
 // اختبارُ اللغة (موسَّع v1.4): أسئلةٌ متنوّعةٌ — مفرداتٌ (صورة→كلمة، كلمة→معنى، سماع)، تصريفُ الأفعال، فهمُ العبارات.
 // تقييمٌ فرديّ: أوّلُ إجابةٍ تُحتسَب، تُكشَفُ الصحيحةُ (خضراء) ثمّ ينتقل، وردُّ الفعلِ ثنائيُّ اللغة.
@@ -665,9 +678,9 @@ function renderLang(k){
   if(!sec){
     // شبكةُ بطاقاتِ الأقسام
     topnav = nav("↩ اللغات","langs");
-    const newW = k==="fr"?"Nouveau":"New";  // «ألعاب» و«اختبار» فيهما جديدُ v1.4 ⇒ وسمٌ يلفتُ الانتباه
-    const isNew = key => key==="games" || key==="quiz";
-    body = `<div class="lgrid">${SECTIONS.map(s=>`<button class="lcard${isNew(s.key)?" hasnew":""}" data-sec="${s.key}">${isNew(s.key)?`<span class="newbadge" data-ar="🆕 جديد" data-fg="🆕 ${newW}">🆕 جديد</span>`:''}<span class="ic">${iconHtml(s.icon)}</span><span class="lt" data-ar="${esc(s.ar)}" data-fg="${esc(s[k]||s.ar)}">${esc(s.ar)}</span></button>`).join("")}</div>`;
+    const newW = k==="fr"?"Nouveau":"New";  // «الأصوات» و«ألعاب» و«اختبار» فيها جديدُ v1.4 ⇒ وسمٌ يلفتُ الانتباه
+    const isNew = key => key==="sounds" || key==="games" || key==="quiz";
+    body = `<div class="lgrid">${SECTIONS.filter(s=>!s.need||(L[s.need]||[]).length).map(s=>`<button class="lcard${isNew(s.key)?" hasnew":""}" data-sec="${s.key}">${isNew(s.key)?`<span class="newbadge" data-ar="🆕 جديد" data-fg="🆕 ${newW}">🆕 جديد</span>`:''}<span class="ic">${iconHtml(s.icon)}</span><span class="lt" data-ar="${esc(s.ar)}" data-fg="${esc(s[k]||s.ar)}">${esc(s.ar)}</span></button>`).join("")}</div>`;
   } else if(sec==="letters"){
     topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔤 الأحرف</span>`;
     body = `<div class="grid">${L.letters.map(x=>
@@ -680,6 +693,12 @@ function renderLang(k){
       `<button class="gcard" data-say="${esc(x.word)}"><span class="spk">🔊</span>
         <span class="big ltr">${x.n}</span><span class="wd ltr">${esc(x.word)}</span></button>`).join("")}</div>
       <div class="hint">اضغطِ العددَ لسماع اسمه 🔊</div>`;
+  } else if(sec==="sounds"){
+    topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔊 الأصوات (Les sons)</span>`;
+    body = `<div class="sgrid">${(L.sounds||[]).map(x=>
+      `<button class="scard" data-say="${esc(x.w)}"><span class="ssnd ltr">${esc(x.s)}</span><span class="sem">${x.e}</span>
+        <span class="swd ltr">${soundHi(x.w, x.s)}</span><span class="sar">${esc(x.ar)}</span></button>`).join("")}</div>
+      <div class="hint">لكلِّ صوتٍ بطاقةٌ: الرسمُ فوق، وكلمةٌ مثالٌ يظهرُ فيها الصوتُ ملوّنًا. اضغطْها لسماعِ الكلمة 🔊</div>`;
   } else if(sec==="words"){
     const cats = L.words || [], C = cats.find(x=>x.id===qp.get("cat"));
     if(!C){
@@ -776,6 +795,8 @@ function renderLang(k){
   });
   // العبارات: انطق العبارة عند الضغط
   view.querySelectorAll(".pcard").forEach(b=>b.onclick=()=>say(b.getAttribute("data-say"), L));
+  // بطاقاتُ الأصوات: نطقُ الكلمةِ المثال عند الضغط
+  view.querySelectorAll(".scard").forEach(b=>b.onclick=()=>say(b.getAttribute("data-say"), L));
   // تسجيلُ نُطق الطفل (لكلّ حساب) للكلمة/العبارة، مع زرّ استماعٍ للنطق المرجعيّ.
   view.querySelectorAll(".lrec").forEach(b=>b.onclick=async()=>{
     const host=document.getElementById("rr-"+b.getAttribute("data-id")); if(!host) return;

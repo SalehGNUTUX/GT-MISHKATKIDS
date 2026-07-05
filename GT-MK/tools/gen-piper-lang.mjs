@@ -41,6 +41,8 @@ const texts = uniq([
   ...(L.reactions || []).map(r => r.t),    // ردودُ أفعال الآلي (مدح) بلغة القسم
   ...(L.encourage || []).map(r => r.t),    // ردودُ التشجيع عند الخطأ بلغة القسم
   ...Object.values(L.intros || {}),        // الجملُ الافتتاحيّةُ للألعاب التنافسيّة بلغة القسم
+  ...(L.sounds || []).map(s => s.w),       // كلماتُ أمثلةِ الأصوات (Les sons)
+  ...(L.syllabaries || []).flatMap(ch => (ch.rows || []).flatMap(r => (r.cells || []).filter(Boolean))), // خرائطُ المقاطع (لاحقًا)
   ...(L.stories || []).flatMap(s => [s.title, ...(s.pages || []).map(p => p.text), s.lesson]),
   ...(L.verbs || []).flatMap(v => [v.v,                                   // المصدرُ/الفعل
     ...(v.conj || []).map(c => c.w),                                       // تصريفُ الضمائر (المضارع)

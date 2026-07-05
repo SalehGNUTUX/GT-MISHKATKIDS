@@ -44,6 +44,10 @@
   .gcard:hover{transform:translateY(-3px);border-color:var(--primary)}
   .gcard.vs{border-color:color-mix(in srgb,var(--primary) 45%,var(--line))}
   .vsbadge{position:absolute;top:8px;inset-inline-start:8px;background:var(--primary);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+  .gcard{position:relative}
+  .newbadge{position:absolute;top:8px;inset-inline-end:8px;background:#E8912D;color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;box-shadow:0 2px 8px rgba(232,145,45,.5);animation:newpulse 1.5s ease-in-out infinite}
+  @keyframes newpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+  @media(prefers-reduced-motion:reduce){ .newbadge{animation:none} }
   .gcard .ic{font-size:40px}
   .gcard .t{font-size:16px;font-weight:800;margin-top:4px}
   .gcard .d{font-size:12px;color:var(--muted)}
@@ -152,6 +156,7 @@
   .mcard .fback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#E07A5F,#E8A07F);color:#fff;font-size:30px;transition:opacity .15s}
   .mcard .ffront{width:74%;height:74%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
   .mcard .ffront svg{width:100%;height:100%}
+  .mcard .ffront .memoji{font-size:min(13vw,46px);line-height:1}
   .mcard.up .fback{opacity:0} .mcard.up .ffront{opacity:1}
   .mcard.matched{border-color:var(--good);background:#F1F8EC} .mcard.matched .ffront{opacity:1}
 
@@ -251,7 +256,7 @@ function celebrate(){ score++; streak++; logEvent("word_win"); if(cur) recordMas
 
 /* ===================== MENU ===================== */
 const GAMES = [
-  { id:"memory", ic:"🧠", t:"لعبة الذاكرة", d:"جِد الصورتين المتطابقتين", vs:1 },
+  { id:"memory", ic:"🧠", t:"لعبة الذاكرة", d:"جِد الصورتين المتطابقتين — بمظاهرَ متعدّدة", vs:1, nw:1 },
   { id:"train",  ic:"🚂", t:"قطار الكلمات", d:"رتّب الحروف من الأوّل" },
   { id:"pins",   ic:"🧺", t:"مشابك الغسيل", d:"بدّل حرفين لتصحّح الترتيب" },
   { id:"blocks", ic:"🧱", t:"بناء المكعّبات", d:"أكمِل الحرف الناقص" },
@@ -269,7 +274,7 @@ const GAMES = [
 function renderMenu(){
   vsRun=false; // مغادرةُ اللعبة إلى قائمة الألعاب ⇒ أوقِفِ المؤقّتات
   view.innerHTML = ageChips() + `<div class="menu">` +
-    GAMES.map(g=>`<div class="gcard${g.vs?" vs":""}" data-g="${g.id}">${g.vs?'<span class="vsbadge">⚔️ تنافسيّة</span>':''}<div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
+    GAMES.map(g=>`<div class="gcard${g.vs?" vs":""}${g.nw?" hasnew":""}" data-g="${g.id}">${g.vs?'<span class="vsbadge">⚔️ تنافسيّة</span>':''}${g.nw?'<span class="newbadge">🆕 جديد</span>':''}<div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
     `</div><div class="hint">🎮 <b>ألعابٌ تنافسيّة</b> ضدّ الآليّ (بثلاث صعوبات) أو الإخوة: الذاكرة · دائرةٌ وعلامة · تحدّي الأعداد · صيدُ الحرف/الرقم · سباقُ المطابقة · شبكةُ الكلمات — مع ألعابِ دمجِ الحروف وأنشطةِ الطباعة 🌱</div>`;
   wireAge(renderMenu);
   view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
@@ -280,6 +285,18 @@ function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:s
 // الصعوبة: 4 أزواج=8 بطاقات · 6=12 · 8=16. الخصم: solo | ai | parent | p:<id>. مستوى الآليّ: easy/medium/hard.
 let m_pairs=6, m_deck=[], m_flip=[], m_match=new Set(), m_moves=0, m_lock=false;
 let m_opp="solo", m_ai="medium", m_players=[], m_turn=0, m_seen=new Map();
+// مظاهرُ لعبة الذاكرة (v1.4): مجموعاتُ أيقوناتٍ مختلفةٌ يختارُها اللاعب — الأصلُ (رسومُ SVG) + مظاهرُ رموزٍ تعبيريّة.
+const MEMORY_THEMES = [
+  { id:"nature",    name:"مِشكاة",   ic:"🌿", pool:Object.keys(MEMORY_ART), art:k=>MEMORY_ART[k] },
+  { id:"animals",   name:"حيوانات", ic:"🐶", pool:["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐸","🐵","🦉","🐷"], art:emojiArt },
+  { id:"fruits",    name:"فواكه",   ic:"🍎", pool:["🍎","🍌","🍇","🍓","🍊","🥝","🍒","🍑","🍍","🥥","🍉","🍐","🍋","🥭","🫐"], art:emojiArt },
+  { id:"shapes",    name:"أشكال",   ic:"🔷", pool:["🔴","🔵","🟢","🟡","🟣","🟠","🔺","🔷","🟥","🟦","🟩","🟨","🟪","🟧","⬛"], art:emojiArt },
+  { id:"transport", name:"مركبات",  ic:"🚗", pool:["🚗","🚌","🚂","✈️","⛵","🚲","🚁","🚀","🚕","🚚","🏍️","🚑","🚒","🚜","🛵"], art:emojiArt },
+  { id:"food",      name:"طعام",    ic:"🍕", pool:["🍕","🍔","🍟","🌭","🍩","🍪","🎂","🍰","🧁","🍫","🍿","🥨","🥐","🧀","🍦"], art:emojiArt },
+  { id:"faces",     name:"وجوه",    ic:"😀", pool:["😀","😂","😍","🥰","😎","🤩","😐","😴","😡","🤔","😱","🥳","😇","🤗","😢"], art:emojiArt },
+];
+function emojiArt(k){ return `<span class="memoji">${k}</span>`; }
+let m_theme="nature", m_art=null;
 
 function startMemory(){ renderMemSetup(); try{speak(GI.memory);}catch(e){} }
 function meCard(){ const u=getCurrentUser(); return (u && u.name) ? { name:u.name, avatar:u.avatar||"🙂" } : { name:"أنت", avatar:"🧒" }; }
@@ -295,20 +312,22 @@ function renderMemSetup(){
     `<div class="clue" style="padding:12px"><div class="say">${GI.memory}</div></div>
      <div class="memset">
        <div class="setrow"><div class="setlbl">🎚️ الصعوبة</div><div class="lvl" id="mlvl"><button data-p="4" class="${m_pairs===4?"on":""}">سهل · 8</button><button data-p="6" class="${m_pairs===6?"on":""}">متوسّط · 12</button><button data-p="8" class="${m_pairs===8?"on":""}">صعب · 16</button><button data-p="10" class="${m_pairs===10?"on":""}">خبير · 20</button></div></div>
+       <div class="setrow"><div class="setlbl">🎨 المظهر</div><div class="lvl" id="mtheme">${MEMORY_THEMES.map(t=>`<button data-t="${t.id}" class="${m_theme===t.id?"on":""}">${t.ic} ${t.name}</button>`).join("")}</div></div>
        <div class="setrow"><div class="setlbl">👥 اللعبُ مع</div><div class="lvl" id="mopp">${oppList}</div></div>
        <div class="setrow" id="airow" style="${m_opp==="ai"?"":"display:none"}"><div class="setlbl">🤖 مستوى الآليّ</div><div class="lvl" id="maint"><button data-ai="easy" class="${m_ai==="easy"?"on":""}">سهل</button><button data-ai="medium" class="${m_ai==="medium"?"on":""}">متوسّط</button><button data-ai="hard" class="${m_ai==="hard"?"on":""}">صعب</button></div></div>
        <button id="memStart">▶ ابدأ اللعب</button>
      </div>`;
   wireBack();
   document.getElementById("mlvl").addEventListener("click",e=>{ const b=e.target.closest("[data-p]"); if(!b)return; m_pairs=+b.getAttribute("data-p"); renderMemSetup(); });
+  document.getElementById("mtheme").addEventListener("click",e=>{ const b=e.target.closest("[data-t]"); if(!b)return; m_theme=b.getAttribute("data-t"); renderMemSetup(); });
   document.getElementById("mopp").addEventListener("click",e=>{ const b=e.target.closest("[data-opp]"); if(!b)return; m_opp=b.getAttribute("data-opp"); renderMemSetup(); });
   document.getElementById("maint").addEventListener("click",e=>{ const b=e.target.closest("[data-ai]"); if(!b)return; m_ai=b.getAttribute("data-ai"); renderMemSetup(); });
   document.getElementById("memStart").onclick=newMemGame;
 }
 
 function newMemGame(){ vsRun=true;
-  const ICONS=Object.keys(MEMORY_ART);
-  const chosen=shuffle([...ICONS]).slice(0,m_pairs);
+  const T=MEMORY_THEMES.find(t=>t.id===m_theme)||MEMORY_THEMES[0]; m_art=T.art;
+  const chosen=shuffle([...T.pool]).slice(0,m_pairs);
   m_deck=shuffle([...chosen,...chosen]); m_flip=[]; m_match=new Set(); m_moves=0; m_lock=false; m_seen=new Map(); m_turn=0;
   const me=meCard();
   if(m_opp==="ai") m_players=[{...me,score:0,cpu:false},{name:"الآليّ",avatar:"🤖",score:0,cpu:true}];
@@ -327,7 +346,8 @@ function renderMemory(){
   view.innerHTML = backBar()+`<div class="gbar">${board}</div>${turnNote}<div class="mgrid" id="grid"></div><div id="msg"></div>`;
   wireBack();
   const grid=document.getElementById("grid");
-  grid.innerHTML=m_deck.map((k,i)=>{ const up=m_flip.includes(i)||m_match.has(i); return `<div class="mcard ${up?"up":""} ${m_match.has(i)?"matched":""}" data-i="${i}"><div class="fback">🤖</div><div class="ffront">${MEMORY_ART[k]}</div></div>`; }).join("");
+  const art=m_art||MEMORY_THEMES[0].art;
+  grid.innerHTML=m_deck.map((k,i)=>{ const up=m_flip.includes(i)||m_match.has(i); return `<div class="mcard ${up?"up":""} ${m_match.has(i)?"matched":""}" data-i="${i}"><div class="fback">🤖</div><div class="ffront">${art(k)}</div></div>`; }).join("");
   grid.querySelectorAll(".mcard").forEach(c=>c.addEventListener("click",()=>onMemCard(+c.getAttribute("data-i"))));
 }
 function onMemCard(i){

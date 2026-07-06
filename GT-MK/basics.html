@@ -48,11 +48,13 @@
   .name{font-size:22px;font-weight:800;margin-top:2px}
   .sayb{background:var(--primary);color:#fff;border:none;border-radius:12px;padding:8px 16px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px}
   .sayb:hover{background:var(--primary-d)}
-  .forms{display:flex;gap:10px;justify-content:center;margin:14px 0 6px}
-  .forms > div{background:#F6F3EC;border-radius:12px;padding:8px 16px;min-width:74px}
-  .forms .lbl{font-size:11px;color:var(--muted);display:block}
-  .forms b{font-size:38px;color:var(--ink)}
-  .exline{display:flex;align-items:center;justify-content:center;gap:10px;font-size:24px;font-weight:700;margin-top:10px;border-top:1px dashed var(--line);padding-top:12px}
+  /* بطاقاتُ أشكال الحرف: ثلاثُ خاناتٍ مرنةٍ متساويةٍ لا تفيضُ على الشاشات الضيّقة */
+  .forms{display:flex;gap:8px;justify-content:center;margin:14px 0 6px}
+  .forms > div{flex:1 1 0;min-width:0;max-width:112px;background:#F6F3EC;border-radius:12px;padding:9px 4px}
+  .forms .lbl{font-size:11px;color:var(--muted);display:block;white-space:nowrap}
+  .forms b{font-size:34px;color:var(--ink);line-height:1.1}
+  html[data-theme="dark"] .forms > div{background:#2b2b34}
+  .exline{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;font-size:24px;font-weight:700;margin-top:10px;border-top:1px dashed var(--line);padding-top:12px}
   .exline .em{font-size:44px}
   .saysm{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:5px 10px;font-size:14px;cursor:pointer;font-family:inherit}
   .dots{font-size:30px;line-height:1.6;margin:8px 4px;min-height:40px}

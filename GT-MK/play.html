@@ -30,6 +30,12 @@
   header .sub{color:var(--muted);font-size:13px}
   .topbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink)}
   .acts{display:flex;gap:8px;flex-wrap:wrap;margin:0 2px 10px}
+  /* أثناءَ اللعب: شاشةٌ مخصّصةٌ للّعبة — يُطوى العنوانُ والوصفُ وشريطُ التنقّل بين الأقسام */
+  body.ingame .wrap{padding-top:8px}
+  body.ingame header{padding:2px 2px 4px}
+  body.ingame header h1{font-size:15px}
+  body.ingame header .sub{display:none}
+  body.ingame .acts{display:none}
 
   .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:4px 2px 10px}
   .chips .lbl{font-size:12px;color:var(--muted)}
@@ -313,13 +319,15 @@ const GAMES = [
 ];
 function renderMenu(){
   vsRun=false; // مغادرةُ اللعبة إلى قائمة الألعاب ⇒ أوقِفِ المؤقّتات
+  document.body.classList.remove("ingame"); // إعادةُ الرأسِ الكامل في القائمة
   view.innerHTML = ageChips() + `<div class="menu">` +
     GAMES.map(g=>`<div class="gcard${g.vs?" vs":""}${g.nw?" hasnew":""}" data-g="${g.id}">${g.vs?'<span class="vsbadge">⚔️ تنافسيّة</span>':''}${g.nw?'<span class="newbadge">🆕 جديد</span>':''}<div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
     `</div><div class="hint">🎮 <b>ألعابٌ تنافسيّة</b> ضدّ الآليّ (بثلاث صعوبات) أو الإخوة: الذاكرة · دائرةٌ وعلامة · تحدّي الأعداد · صيدُ الحرف/الرقم · سباقُ المطابقة · شبكةُ الكلمات — مع ألعابِ دمجِ الحروف وأنشطةِ الطباعة 🌱</div>`;
   wireAge(renderMenu);
   view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
 }
-function open(id){ ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,print:()=>location.assign("print.html")})[id](); }
+function open(id){ if(id!=="print") document.body.classList.add("ingame"); // شاشةٌ مخصّصةٌ للّعبة: يُطوى رأسُ الصفحةِ وشريطُ التنقّل
+  ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,print:()=>location.assign("print.html")})[id](); }
 
 /* ===================== 🧠 MEMORY MATCH (وحدي · الإخوة · الوالد · الآليّ) ===================== */
 // الصعوبة: 4 أزواج=8 بطاقات · 6=12 · 8=16. الخصم: solo | ai | parent | p:<id>. مستوى الآليّ: easy/medium/hard.
@@ -600,6 +608,7 @@ function lwLearn(ch){ const box=document.getElementById("lwBox"); if(!box) retur
       ${ex?`<div class="lwex"><span>مثالٌ فيه الحرف:</span><button class="lwword" data-say="${ex.word}">${ex.emoji} <b>${ex.word}</b> 🔊</button></div>`:""}
     </div>`;
   box.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>robo.read(b.getAttribute("data-say")));
+  try{ box.scrollIntoView({behavior:"smooth", block:"center"}); }catch(e){} // انتقالٌ تلقائيٌّ إلى لوحةِ تعلُّمِ الحرف
   robo.read(ch); sfx.success();
 }
 
@@ -969,6 +978,7 @@ function sqAsk(cat){ if(!vsRun) return; const Q=sqGen(cat), box=document.getElem
   const opts=shuffle([...Q.opts]);
   box.innerHTML = `<div class="sqq"><div class="sqcat" style="color:${cat.color}">${cat.ic} ${cat.label}</div><div class="sqp">${Q.q}</div>`
     + `<div class="sqopts" id="sqOpts">${opts.map(o=>`<button class="sqopt" data-v="${o}">${o}</button>`).join("")}</div></div>`;
+  try{ box.scrollIntoView({behavior:"smooth", block:"center"}); }catch(e){} // انتقالٌ تلقائيٌّ إلى السؤالِ والأجوبةِ بعد الوقوف
   if(cur.cpu){ const ok=Math.random()<SQ_PR[sq_diff], pick = ok ? String(Q.ans) : (shuffle(opts.map(String).filter(v=>v!==String(Q.ans)))[0] || String(Q.ans));
     setTimeout(()=>{ if(!vsRun) return; let b=null; box.querySelectorAll(".sqopt").forEach(x=>{ if(String(x.getAttribute("data-v"))===pick) b=x; }); sqResolve(ok, b, Q); }, 1300); return; }
   box.querySelector("#sqOpts").addEventListener("click",e=>{ const b=e.target.closest(".sqopt"); if(!b||b.disabled) return; sqResolve(String(b.getAttribute("data-v"))===String(Q.ans), b, Q); });

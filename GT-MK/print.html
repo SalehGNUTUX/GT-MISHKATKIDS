@@ -251,19 +251,42 @@ function tplHunt(){
     <p class="tpl-h">يُنادي الأهلُ حرفًا أو رقمًا؛ أوّلُ من يجدُه ويُحوّطُه يكسبُ نقطة. مَن يجمعُ نقاطًا أكثرَ يفوز!</p>
     <div class="hs-g">${items.map(c=>`<div class="hs-c">${c}</div>`).join("")}</div></section>`;
 }
-function tplMath(){
-  const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
-  const probs=Array.from({length:10},()=>{ const a=R(2,9),b=R(1,9); return `${a} + ${b} = ____`; });
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+// ورقةُ حسابٍ عامّة: عمليّةٌ واحدة (+ − × ÷)، عمودان متطابقان للتنافس. القسمةُ بنتائجَ صحيحةٍ دائمًا.
+function tplArith(op, sym, title){
+  const probs=Array.from({length:10},()=>{ let a,b;
+    if(op==="+"){ a=R(2,9); b=R(1,9); }
+    else if(op==="-"){ a=R(6,18); b=R(1,a); }          // لا نتائجَ سالبة
+    else if(op==="×"){ a=R(2,9); b=R(2,9); }
+    else { b=R(2,9); a=b*R(2,9); }                      // ÷ : المقسومُ = القاسم × ناتجٍ صحيح
+    return `${a} ${sym} ${b} = ____`; });
   const col=ttl=>`<div class="ms-col"><h3>${ttl}</h3>${probs.map(p=>`<div class="ms-p">${p}</div>`).join("")}</div>`;
-  return `<section class="tpl"><h2>🔢 تحدّي الأعداد</h2>${nameStrip()}
+  return `<section class="tpl"><h2>${title}</h2>${nameStrip()}
     <p class="tpl-h">لاعبان، كلٌّ في عموده (والمسائلُ نفسُها). عند «ابدأ» يَحلّان معًا؛ أوّلُ من يُنهي بصحّةٍ يفوز!</p>
+    <div class="ms-wrap">${col("اللاعب 1")}${col("اللاعب 2")}</div></section>`;
+}
+function tplMath(){ return tplArith("+","+","➕ تحدّي الجمع"); }
+function tplSub(){ return tplArith("-","−","➖ تحدّي الطرح"); }
+function tplMul(){ return tplArith("×","×","✖️ تحدّي الضرب"); }
+function tplDiv(){ return tplArith("÷","÷","➗ تحدّي القسمة"); }
+// أكملِ الناقص: يُخفى أحدُ الحدَّينِ في مسألةٍ صحيحة (٣ + __ = ٧). تنمية التفكير العكسيّ.
+function tplMissing(){
+  const probs=Array.from({length:10},()=>{ const a=R(2,9), b=R(1,9), c=a+b;
+    return Math.random()<0.5 ? `${a} + ____ = ${c}` : `____ + ${b} = ${c}`; });
+  const col=ttl=>`<div class="ms-col"><h3>${ttl}</h3>${probs.map(p=>`<div class="ms-p">${p}</div>`).join("")}</div>`;
+  return `<section class="tpl"><h2>❓ أكملِ الناقص</h2>${nameStrip()}
+    <p class="tpl-h">اكتبِ العددَ الناقصَ ليصحَّ الجمعُ. لاعبان بالمسائلِ نفسِها؛ أوّلُ من يُكمِلُ بصحّةٍ يفوز!</p>
     <div class="ms-wrap">${col("اللاعب 1")}${col("اللاعب 2")}</div></section>`;
 }
 const TEMPLATES=[
   {id:"t_xo",label:"⭕ دائرة وعلامة",fn:tplXO},
   {id:"t_ws",label:"🔤 شبكة الكلمات",fn:tplWordSearch},
   {id:"t_hunt",label:"🔎 صيد الحرف/الرقم",fn:tplHunt},
-  {id:"t_math",label:"🔢 تحدّي الأعداد",fn:tplMath},
+  {id:"t_math",label:"➕ تحدّي الجمع",fn:tplMath},
+  {id:"t_sub",label:"➖ تحدّي الطرح",fn:tplSub},
+  {id:"t_mul",label:"✖️ تحدّي الضرب",fn:tplMul},
+  {id:"t_div",label:"➗ تحدّي القسمة",fn:tplDiv},
+  {id:"t_missing",label:"❓ أكملِ الناقص",fn:tplMissing},
   {id:"t_connect",label:"⚡ وصِّل بخطّ",fn:tplConnect},
   {id:"t_mem",label:"🧠 بطاقات الذاكرة",fn:tplMemory},
   {id:"t_bingo",label:"🎱 بنغو الأعداد",fn:tplBingo},

@@ -79,6 +79,18 @@
   .sqopts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:360px;margin:8px auto}
   .sqopt{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:13px;font-size:18px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--ink)}
   .sqopt:hover{border-color:var(--primary)} .sqopt.ok{background:#EEF6E9;border-color:var(--good);color:#2f5a1f} .sqopt.bad{background:#FCEBEE;border-color:var(--bad)}
+  /* لوحةُ تعلُّمِ الحرف (عجلة الحروف) */
+  .lwlearn{max-width:420px;margin:6px auto 0;text-align:center;background:var(--card);border:1.5px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:16px 12px}
+  .lwbig{display:flex;align-items:center;justify-content:center;gap:12px;font-size:72px;font-weight:800;color:var(--primary-d);line-height:1}
+  .lwbig .saysm{font-size:15px;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:6px 10px;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .lwsub{font-size:13px;color:var(--muted);margin:10px 0 6px}
+  .lwsyl{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .lwchip{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:64px;background:color-mix(in srgb,var(--primary) 10%,var(--card));border:1.5px solid color-mix(in srgb,var(--primary) 35%,var(--line));border-radius:14px;padding:10px 8px;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .lwchip:hover{border-color:var(--primary);transform:translateY(-2px);transition:.12s} .lwchip:active{transform:scale(.94)}
+  .lwchip b{font-size:34px;line-height:1} .lwchip span{font-size:11px;color:var(--muted)}
+  .lwex{margin-top:14px;font-size:14px;color:var(--muted)}
+  .lwword{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:8px 14px;font-size:20px;font-weight:800;color:var(--ink);cursor:pointer;font-family:inherit;margin-top:6px}
+  .lwword:hover{border-color:var(--primary)} .lwword:active{transform:scale(.96)}
 
   .clue{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:16px;text-align:center;margin-top:6px}
   .clue .emoji{font-size:66px;line-height:1.1}
@@ -290,7 +302,7 @@ const GAMES = [
   { id:"fish",   ic:"🎣", t:"صيد الحروف", d:"اصطَد الصحيح وتجنّب الدخيل" },
   { id:"cards",  ic:"🧩", t:"بطاقات الصور", d:"اختر الكتابة الصحيحة" },
   { id:"maze",   ic:"🌀", t:"متاهة الحروف", d:"امشِ على الحروف بالترتيب" },
-  { id:"wheel",  ic:"🎡", t:"عجلة الحروف", d:"أدِر وادمج الأصوات" },
+  { id:"wheel",  ic:"🎡", t:"عجلة الحروف", d:"أدِرِ العجلةَ ← تعلّمِ الحرفَ ومقاطعَه", nw:1 },
   { id:"xo",     ic:"⭕", t:"دائرةٌ وعلامة", d:"ثلاثةٌ في خطٍّ ضدّ الآليّ", vs:1 },
   { id:"numrace",ic:"🔢", t:"تحدّي الأعداد", d:"سابِقِ الآليَّ في الحساب", vs:1 },
   { id:"hunt",   ic:"🔎", t:"صيدُ الحرف/الرقم", d:"اعثرْ على المطلوبِ بسرعة", vs:1 },
@@ -555,30 +567,40 @@ function renderMaze(){
 }
 
 /* ===================== 🎡 WHEEL ===================== */
-let reels=[0,0,0], found=0, seen=new Set(), wheelN=3; // عددُ الأحرف قابلٌ للاختيار (2–5)
-const rnd=()=>Math.floor(Math.random()*WL.length), joined=()=>reels.map(i=>WL[i]).join("");
-const spinReels=()=>{ reels=Array.from({length:wheelN},rnd); };
-function startWheel(){ spinReels(); renderWheel(false); }
-function renderWheel(an){
-  const j=joined(), isW=WORDS.some(w=>w.word===j) || EXTRA_WHEEL_WORDS.has(j);
-  const reelsHtml = reels.map((ri,idx)=>`<div class="reel ${an?"spin":""}" data-r="${idx}">${WL[ri]}</div>`).join("");
-  const nSel = [2,3,4,5].map(n=>`<button data-n="${n}" style="min-width:42px;border:2px solid var(--line);border-radius:10px;padding:7px 12px;font-weight:800;font-family:inherit;cursor:pointer;background:${n===wheelN?"var(--primary)":"var(--card)"};color:${n===wheelN?"#fff":"var(--ink)"}">${n}</button>`).join("");
-  view.innerHTML = backBar()+`<div class="clue" style="padding:12px"><div class="say">اختَرْ عددَ الأحرف، أدِرِ العجلةَ أو اضغطْ حرفًا لتغييره، ثمّ انطقِ الكلمة!</div></div>`+
-    `<div class="nrow" style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin:8px 0"><span class="pill">عددُ الأحرف:</span>${nSel}</div>`+
-    `<div class="reels" id="reels">${reelsHtml}<span class="eq">=</span><div class="blend" dir="rtl">${j}</div></div>`+
-    `<div class="wstatus ${isW?"real":"fake"}">${isW?"🎉 كلمة حقيقية!":"كلمة من خيالك 🛸 — جرّب نطقها"}</div>`+
-    `<div class="controls"><button class="go" data-w="spin">🎡 أدِر</button><button data-w="say">🔊 انطق</button><button data-w="rec">🎙️ سجّلْ نطقك</button><span class="pill" style="align-self:center">كلمات حقيقية: <b id="found">${found}</b></span></div>`+
-    `<div id="wheelRec" hidden style="margin-top:10px"></div>`+
-    `<div class="hint">كلّ حرفٍ له صوت — ادمجِ الأصوات معًا. اضغطْ 🔊 لسماعِ أيّ كلمةٍ تُكوّنُها، و🎙️ لتسجيلِ نطقك. كلَّما زادتِ الأحرفُ زادَ احتمالُ كلمةٍ ذاتِ معنًى!</div>`;
+// عجلةٌ دوّارةٌ بأسلوب «أدرْ وأجب» (تُعيدُ استخدامَ sqSvg): تقفُ على حرفٍ فيتعلّمُ الطفلُ صوتَه ودمجَه بالحركات ومثالًا عليه.
+const LW_COLORS=["#6FB3D6","#E0566B","#7BB661","#F4B740","#C9A0DC","#E08E45","#4C8BF5","#E8912D"];
+let lw_letters=[], lw_rot=0;
+function startWheel(){ lw_letters = shuffle([...WL]).slice(0, 8); lw_rot=0; renderLetterWheel(); }
+function renderLetterWheel(){
+  const cats = lw_letters.map((ch,i)=>({ic:ch, color:LW_COLORS[i%LW_COLORS.length]}));
+  view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">🎡 أدِرِ العجلةَ لتقفَ على حرفٍ، ثمّ تعلّمْ صوتَه ومقاطعَه!</div></div>`
+    + `<div class="sqwrap">${sqSvg(cats)}</div>`
+    + `<div style="text-align:center;margin:10px 0"><button class="sqbtn" id="sqBtn">أدِرِ العجلة</button> <button class="secbtn" id="lwNew" style="margin-inline-start:8px">🔤 حروفٌ جديدة</button></div>`
+    + `<div id="lwBox"></div>`;
   wireBack();
-  if(isW&&!seen.has(j)){ seen.add(j); found++; const f=document.getElementById("found"); if(f)f.textContent=found; robo.read(j); }
-  view.querySelector(".nrow").addEventListener("click",e=>{ const b=e.target.closest("[data-n]"); if(!b)return; wheelN=+b.getAttribute("data-n"); startWheel(); });
-  view.querySelector("#reels").addEventListener("click",e=>{ const d=e.target.closest(".reel"); if(!d)return; const r=+d.getAttribute("data-r"); reels[r]=(reels[r]+1)%WL.length; renderWheel(false); });
-  view.querySelector(".controls").addEventListener("click",async e=>{ const b=e.target.closest("[data-w]"); if(!b)return; const a=b.getAttribute("data-w");
-    if(a==="spin"){ spinReels(); renderWheel(true); }
-    else if(a==="say"){ robo.read(joined()); }
-    else if(a==="rec"){ const host=document.getElementById("wheelRec"); host.hidden=false; host.innerHTML=""; await attachReader(host, joined(), { label:"نُطقك", helpLabel:"🔊 استمعْ", onHelp:()=>robo.read(joined()) }); }
-  });
+  const g=document.getElementById("sqG"); if(g) g.style.transform=`rotate(${lw_rot}deg)`;
+  document.getElementById("sqBtn").onclick=lwSpin;
+  document.getElementById("lwNew").onclick=startWheel;
+}
+function lwSpin(){ const g=document.getElementById("sqG"), btn=document.getElementById("sqBtn"); if(!g) return;
+  btn.disabled=true; btn.classList.add("spinning"); const box=document.getElementById("lwBox"); if(box) box.innerHTML="";
+  const N=lw_letters.length, i=rand(N), want=(360-(i+0.5)*(360/N))%360;
+  lw_rot = lw_rot - (lw_rot%360) + want + 360*5;
+  g.style.transition="transform 3.4s cubic-bezier(.15,.68,.2,1)"; g.style.transform=`rotate(${lw_rot}deg)`;
+  sfx.tap();
+  setTimeout(()=>{ const b=document.getElementById("sqBtn"); if(b){ b.disabled=false; b.classList.remove("spinning"); } lwLearn(lw_letters[i]); }, 3500);
+}
+function lwLearn(ch){ const box=document.getElementById("lwBox"); if(!box) return;
+  const H=[["فتحة","َ"],["ضمّة","ُ"],["كسرة","ِ"]];   // حرف + حركة = مقطع (أساسُ القراءة)
+  const ex = shuffle(WORDS.filter(w=>[...w.word].includes(ch)))[0];
+  box.innerHTML = `<div class="lwlearn">
+      <div class="lwbig">${ch}<button class="saysm" data-say="${ch}" title="اسمع الحرف">🔊</button></div>
+      <div class="lwsub">ادمجِ الحرفَ بالحركات — اضغطْ لتسمعَ المقطع:</div>
+      <div class="lwsyl">${H.map(([nm,hk])=>`<button class="lwchip" data-say="${ch+hk}"><b>${ch+hk}</b><span>${nm}</span></button>`).join("")}</div>
+      ${ex?`<div class="lwex"><span>مثالٌ فيه الحرف:</span><button class="lwword" data-say="${ex.word}">${ex.emoji} <b>${ex.word}</b> 🔊</button></div>`:""}
+    </div>`;
+  box.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>robo.read(b.getAttribute("data-say")));
+  robo.read(ch); sfx.success();
 }
 
 /* ===================== 🖨️ PRINT ===================== */

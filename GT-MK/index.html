@@ -274,6 +274,7 @@ import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, g
 import { listSets, primeVoices } from "./src/voices.js";
 import { practiceByAccount, clearAccount as clearPracticeAccount } from "./src/practice.js";
 import { verifyParentPassword, markParentAuthed, isParentAuthed, isParent, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser, addProfile, updateProfile, AVATARS } from "./src/accounts.js";
+import { backupExport, backupImport } from "./src/backup.js"; // نسخةٌ احتياطيّة (مصدرٌ واحدٌ مشترَك)
 import { confirmWithPassword, undoable } from "./src/confirm-action.js";
 import voicesBundled from "./src/voices-bundled.json";
 const STATE_TAG = {spark:"1) الشرارة", task:"2) المهمة", teach:"3) التلقين", heal:"4) الشفاء"};
@@ -701,43 +702,8 @@ function openRecover(){
   else document.getElementById("recReset").onclick=()=>{ resetParentPasswordToDefault(); openGate(); };
 }
 
-/* ===== نسخةٌ احتياطيّة: تصدير/استيراد كلِّ بيانات الحسابات (مفاتيح tilmithi_*) كـJSON ===== */
+// رسالةُ حالةِ النسخةِ الاحتياطيّة داخلَ اللوحة (تُمرَّرُ لدوالِّ backup.js المشترَكة).
 function bkMsg(t, ok){ const el=document.getElementById("bkMsg"); if(el){ el.textContent=t; el.style.color=ok?"#2f7d32":"#c0392b"; } }
-function collectTilmithi(){ const o={}; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.indexOf("tilmithi_")===0) o[k]=localStorage.getItem(k); } return o; }
-async function backupExport(){
-  const payload={ app:"GT-MISHKATKIDS", type:"backup", schema:1, exportedAt:new Date().toISOString(), keys:collectTilmithi() };
-  const json=JSON.stringify(payload,null,2);
-  const filename=`GT-MISHKATKIDS-backup-${new Date().toISOString().split("T")[0]}.json`;
-  // (1) أندرويد/iOS: حفظٌ مباشرٌ في مجلّد التنزيلات عبر Capacitor Filesystem
-  try{ const { Capacitor }=await import("@capacitor/core");
-    if(Capacitor.isNativePlatform()){ const { Filesystem, Directory, Encoding }=await import("@capacitor/filesystem");
-      const r=await Filesystem.writeFile({ path:`Download/${filename}`, data:json, directory:Directory.ExternalStorage, encoding:Encoding.UTF8, recursive:true })
-        .catch(()=>Filesystem.writeFile({ path:filename, data:json, directory:Directory.Documents, encoding:Encoding.UTF8 }));
-      bkMsg(`✓ حُفِظت النسخةُ: ${((r&&r.uri)||filename).split("/").pop()}`, true); return; }
-  }catch(e){}
-  // (2) مشاركةُ الملفّ (ويب الهاتف)
-  try{ if(navigator.share){ const file=new File([json],filename,{type:"application/json"});
-    if(!navigator.canShare||navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:filename}); bkMsg("✓ تمّت المشاركة.",true); return; } } }
-  catch(e){ if(e&&e.name==="AbortError") return; }
-  // (3) تنزيلٌ مباشر (سطح المكتب)
-  const blob=new Blob([json],{type:"application/json"}), url=URL.createObjectURL(blob), a=document.createElement("a");
-  a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000);
-  bkMsg("✓ نُزِّل ملفُّ النسخةِ الاحتياطيّة.", true);
-}
-function backupImport(file){
-  const reader=new FileReader();
-  reader.onload=()=>{ let payload; try{ payload=JSON.parse(reader.result); }catch(e){ bkMsg("تعذّر قراءةُ الملفّ (JSON غير صالح).", false); return; }
-    const keys=(payload&&payload.keys&&typeof payload.keys==="object")?payload.keys:payload;
-    if(!keys||typeof keys!=="object"||!Object.keys(keys).some(k=>k.indexOf("tilmithi_")===0)){ bkMsg("ملفٌّ غير صالح — لا يحوي بياناتِ «مِشكاة».", false); return; }
-    const n=Object.keys(keys).filter(k=>k.indexOf("tilmithi_")===0).length;
-    if(!confirm(`سيَستبدلُ الاستيرادُ كلَّ الحساباتِ والتقدّمِ والإعداداتِ الحاليّةَ على هذا الجهازِ بـ${n} عنصرًا من الملفّ. متابعة؟`)) return;
-    Object.keys(collectTilmithi()).forEach(k=>localStorage.removeItem(k));           // امحُ القديمَ
-    Object.keys(keys).forEach(k=>{ if(k.indexOf("tilmithi_")===0) localStorage.setItem(k, keys[k]); }); // استعِدْ
-    bkMsg("✓ استُعيدت البيانات — يُعادُ التحميلُ الآن…", true);
-    setTimeout(()=>location.reload(), 1000);
-  };
-  reader.readAsText(file);
-}
 
 async function openDashboard(){
   panel.style.maxWidth=""; // إعادةُ عرض الحاوية للوحة الكاملة (كانت 380 لنافذة كلمة المرور)
@@ -974,9 +940,9 @@ async function openDashboard(){
     const show=d.style.display==="none"; d.style.display=show?"block":"none"; b.textContent=show?"تفاصيل ▴":"تفاصيل ▾";
   }));
   const srt=document.getElementById("storyReadToggle"); if(srt) srt.addEventListener("click",()=>{ const on=!isStoryReadOn(); setStoryReadOn(on); srt.classList.toggle("on",on); });
-  const bkE=document.getElementById("bkExport"); if(bkE) bkE.addEventListener("click",backupExport);
+  const bkE=document.getElementById("bkExport"); if(bkE) bkE.addEventListener("click",()=>backupExport(bkMsg));
   const bkI=document.getElementById("bkImport"), bkF=document.getElementById("bkFile");
-  if(bkI&&bkF){ bkI.addEventListener("click",()=>bkF.click()); bkF.addEventListener("change",()=>{ if(bkF.files&&bkF.files[0]) backupImport(bkF.files[0]); bkF.value=""; }); }
+  if(bkI&&bkF){ bkI.addEventListener("click",()=>bkF.click()); bkF.addEventListener("change",()=>{ if(bkF.files&&bkF.files[0]) backupImport(bkF.files[0], bkMsg); bkF.value=""; }); }
   const savePw=document.getElementById("savePw");
   if(savePw) savePw.addEventListener("click",()=>{
     const oldv=document.getElementById("oldPw").value, nv=document.getElementById("newPw").value.trim(), nv2=document.getElementById("newPw2").value.trim();

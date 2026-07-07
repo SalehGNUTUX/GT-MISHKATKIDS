@@ -199,6 +199,7 @@ import { wireThemeToggle } from "./src/theme.js";
 wireThemeToggle(document.getElementById("themeBtn"));
 wireThemeToggle(document.getElementById("loginThemeBtn")); // زرُّ تبديل الوضع في شاشة الدخول
 import { injectIcons } from "./src/icons.js";
+import { openBackupModal } from "./src/backup.js"; // نافذةُ النسخةِ الاحتياطيّة (تصدير/استيراد)
 import { ROBO_SVG } from "./src/robo-companion.js"; // شكلُ الآليّ الرسميّ (بطاقةُ الدخول = نفسُ المرافق)
 try{ const lr=document.getElementById("loginRobo"); if(lr) lr.innerHTML = ROBO_SVG; }catch(e){}
 injectIcons(); // أيقوناتُ SVG لبطاقات الفهرس (تستبدل الإيموجي الاحتياطيّة)
@@ -227,12 +228,14 @@ function setupView(){
       <div class="navcard" id="hubComp" role="button" tabindex="0" style="cursor:pointer"><div class="ic" data-icon="components">📦</div><div class="t">المكوّنات</div><div class="d">استعرض مزايا البرنامج كلَّها (الأنشطة والقصص والقرآن…)</div></div>
       <a class="navcard" href="index.html?parent=1#sec-reports"><div class="ic" data-icon="reports">📊</div><div class="t">البيانات والإحصائيات</div><div class="d">تقاريرُ تقدّمِ الأبناء وأوسمتهم وإنجازاتهم</div></a>
       <a class="navcard" href="index.html?parent=1#sec-accounts"><div class="ic" data-icon="accounts">👥</div><div class="t">الحسابات</div><div class="d">إضافة وتعديل وحذف حسابات الأبناء وكلماتها</div></a>
-      <a class="navcard" href="index.html?parent=1#sec-backup"><div class="ic">💾</div><div class="t">نسخةٌ احتياطيّة</div><div class="d">تصدير/استيراد الحسابات والتقدّم (JSON) لئلّا تفقدَ بياناتك</div></a>
+      <div class="navcard" id="bkCard" role="button" tabindex="0" style="cursor:pointer"><div class="ic" data-icon="backup">💾</div><div class="t">نسخةٌ احتياطيّة</div><div class="d">تصدير/استيراد الحسابات والتقدّم (JSON) لئلّا تفقدَ بياناتك</div></div>
       <a class="navcard" href="index.html?parent=1"><div class="ic" data-icon="shield">🛡️</div><div class="t">لوحة التحكّم</div><div class="d">الإعدادات والأصوات وكلمة المرور والتوثيق</div></a>`;
     injectIcons(hub);
     const hc=document.getElementById("hubComp");
     const toggle=()=>{ const show=comp.style.display==="none"; comp.style.display=show?"":"none"; if(show) comp.scrollIntoView({behavior:"smooth",block:"start"}); };
     if(hc){ hc.onclick=toggle; hc.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); } }; }
+    const bk=document.getElementById("bkCard");
+    if(bk){ bk.onclick=openBackupModal; bk.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openBackupModal(); } }; }
   } else {
     hub.style.display="none"; hub.innerHTML="";
     comp.style.display="";

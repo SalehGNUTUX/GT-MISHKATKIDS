@@ -15,6 +15,7 @@ import { REACTIONS, NOTICES, GAME_REACTIONS, GAME_INTROS } from "./robo-phrases.
 import { PRAISE } from "./islamic.js";
 import langEn from "../content/lang-en.js";
 import langFr from "../content/lang-fr.js";
+import { allOrientWords } from "../content/orient.js";
 
 const uniq = a => [...new Set(a.filter(Boolean).map(s => String(s).trim()).filter(Boolean))];
 
@@ -26,6 +27,7 @@ export const WORD_UNITS = [
   { key: "num",  label: "الأرقام", items: uniq((letters.numbers || []).map(n => n.name)) },
   { key: "num100", label: "الأعداد 0–100", items: uniq(numberNames(100)) },
   { key: "shapes", label: "أسماء الأشكال", items: uniq([].concat(math.shapes_basic || [], math.shapes_advanced || []).map(s => s.name)) },
+  { key: "orient", label: "الزمان والمكان (اتجاهات/فصول/فترات)", items: uniq(allOrientWords("ar")) },
   // مفردات «اقرأ بصوتك» (compose-vocab) — وحدةٌ لكلِّ فئة، تُعرَض في الاستوديو وتُولَّد لها مقاطع احتياطية.
   ...(compose.categories || []).map(c => ({ key: "cmp_" + c.id, label: "اقرأ: " + c.title, items: uniq((c.items || []).map(it => it.t)) })),
 ];

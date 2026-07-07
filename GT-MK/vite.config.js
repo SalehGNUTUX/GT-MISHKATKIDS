@@ -25,6 +25,7 @@ export default defineConfig({
         progress: "progress.html",
         quran: "quran.html",
         lang: "lang.html",
+        clock: "clock.html",
       },
     },
   },

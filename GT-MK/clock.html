@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<script>(function(){try{var t=localStorage.getItem('tilmithi_theme');if(t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<style id="theme-crit">html[data-theme="dark"]{--bg:#15151b;--card:#23232c;--ink:#ECE7DD;--muted:#A39E94;--line:#34343f;--primary-d:#E8987E;--shadow:0 6px 20px rgba(0,0,0,.45)}html[data-theme="dark"] body{background:var(--bg);color:var(--ink)}</style>
+<link rel="icon" type="image/png" href="icon-192.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="مِشكاة" />
+<meta name="theme-color" content="#E07A5F" />
+<title>مِشكاة — الزمان والمكان</title>
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B;
+    --line:#ECE6DA; --primary:#E07A5F; --primary-d:#C7613F; --good:#7BB661; --bad:#E0566B;
+    --sky:#6FB3D6; --gold:#F4C95D; --violet:#C9A0DC; --shadow:0 6px 20px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans Arabic",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:760px;margin:0 auto;padding:14px 14px 40px}
+  header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+  h1{font-size:23px;margin:0} .sub{color:var(--muted);font-size:13px}
+  .topbtns{display:flex;gap:6px;align-items:center;flex-shrink:0}
+  .iconbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;width:40px;height:40px;font-size:18px;cursor:pointer}
+  .topbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px;font-size:14px;text-decoration:none;color:var(--ink);white-space:nowrap}
+  body.ingame header .sub{display:none} body.ingame h1{font-size:19px}
+  .backstep{background:var(--card);border:2px solid var(--primary);color:var(--primary-d);border-radius:999px;padding:9px 18px 9px 34px;position:relative;font:inherit;font-weight:800;cursor:pointer;margin-bottom:10px}
+  .backstep::before{content:"↩";position:absolute;inset-inline-start:12px;top:50%;transform:translateY(-50%);font-weight:900}
+  .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:10px}
+  .mcard{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 16px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:transform .12s;position:relative}
+  .mcard:active{transform:scale(.97)} .mcard .mi{font-size:44px;margin-bottom:8px} .mcard .mt{font-weight:800;font-size:18px} .mcard .md{color:var(--muted);font-size:13px;margin-top:4px}
+  .nb{position:absolute;top:10px;inset-inline-end:10px;background:var(--bad);color:#fff;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;animation:nb 1.4s ease-in-out infinite}
+  @keyframes nb{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+  .clue{background:color-mix(in srgb,var(--gold) 16%,var(--card));border:1px solid var(--line);border-radius:16px;padding:14px;margin:8px auto;max-width:560px}
+  .clue .say{font-weight:700}
+  .hint{color:var(--muted);font-size:13px}
+  /* أوقات الصلاة */
+  .pr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;max-width:620px;margin:14px auto}
+  .pr-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 12px;text-align:center;box-shadow:var(--shadow)}
+  .pr-e{font-size:40px} .pr-n{font-weight:800;font-size:20px;margin-top:4px} .pr-t{color:var(--muted);font-size:13px;margin-top:2px}
+  .pr-when{display:inline-block;margin-top:8px;background:color-mix(in srgb,var(--sky) 18%,var(--card));border-radius:999px;padding:3px 12px;font-size:12.5px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>الزمانُ والمكان ⏰🧭</h1>
+      <div class="sub">الساعة · أوقاتُ الصلاة · فتراتُ اليوم · الاتجاهاتُ والفصول</div>
+    </div>
+    <span class="topbtns"><button class="iconbtn" id="themeBtn" title="الوضع الداكن" aria-label="الوضع الداكن">🌙</button><a class="topbtn" href="home.html">🏠 الفهرس</a></span>
+  </header>
+  <div id="view"></div>
+</div>
+
+<script type="module">
+import "./src/dark.css";
+import { wireThemeToggle } from "./src/theme.js";
+import { robo } from "./src/robo-companion.js";
+import { logEvent } from "./src/progress.js";
+import { playClipAsync, playClipForSet } from "./src/tts-clips.js";
+import { speak } from "./src/speak.js";
+import { attachClockLearn, clockGame, AR_L } from "./src/clock-widget.js";
+import { attachDirections, attachSeasons, attachDayparts, orientQuiz, AR_L as OR_L } from "./src/orient-widget.js";
+import { DIRECTIONS, SEASONS, DAYPARTS } from "./content/orient.js";
+wireThemeToggle(document.getElementById("themeBtn"));
+robo.mount();
+
+const view = document.getElementById("view");
+const backBar = () => `<button class="backstep" id="back">الفهرسُ الفرعيّ</button>`;
+function wireBack(){ const b=document.getElementById("back"); if(b) b.onclick=renderMenu; }
+
+// نطقُ الوقتِ بجملةٍ عربيّةٍ كاملة (مقطعُ Piper العصبيّ، مُولَّدٌ بـgen:piper).
+const speakPhrase = text => playClipAsync(text);
+// نطقُ مفرداتِ الاتجاهات/الفصول/الفترات: العصبيُّ (Piper kareem) أوّلًا، وإلّا espeak احتياطًا.
+const speakWord = text => { try{ if(!playClipForSet(text, "tts-kareem")) speak(text); }catch(e){ try{ speak(text); }catch(_){} } };
+
+function renderMenu(){
+  document.body.classList.remove("ingame");
+  view.innerHTML = `<div class="menu">
+    <div class="mcard" data-go="learn"><span class="nb">🆕 جديد</span><div class="mi">🕐</div><div class="mt">تعلَّمِ الساعة</div><div class="md">عقاربُ تُسحَب + رقميٌّ صباح/مساء و24 ساعة + نطقُ الوقت</div></div>
+    <div class="mcard" data-go="game"><span class="nb">🆕 جديد</span><div class="mi">🏆</div><div class="mt">تحدّي الساعة</div><div class="md">لعبةٌ تنافسيّةٌ متنوّعة ضدّ الآليّ/الإخوة/الوالد/وحدي</div></div>
+    <div class="mcard" data-go="dayparts"><span class="nb">🆕 جديد</span><div class="mi">🌅</div><div class="mt">فتراتُ اليوم</div><div class="md">الفجر · الصباح · الظهيرة · العصر · الغروب · المساء · الليل + اختبار</div></div>
+    <div class="mcard" data-go="directions"><span class="nb">🆕 جديد</span><div class="mi">🧭</div><div class="mt">الاتجاهات</div><div class="md">بوصلةٌ وكرةٌ أرضيّة — شمال/جنوب/شرق/غرب + القِبلة + اختبار</div></div>
+    <div class="mcard" data-go="seasons"><span class="nb">🆕 جديد</span><div class="mi">🍂</div><div class="mt">الفصول</div><div class="md">الربيع · الصيف · الخريف · الشتاء وصفاتُها + اختبار</div></div>
+    <div class="mcard" data-go="prayer"><span class="nb">🆕 جديد</span><div class="mi">🕌</div><div class="mt">أوقاتُ الصلاة</div><div class="md">الصلواتُ الخمسُ ووقتُها من اليوم</div></div>
+  </div>`;
+  view.querySelectorAll("[data-go]").forEach(c=>c.onclick=()=>({learn:openLearn,game:openGame,dayparts:()=>openTopic("dayparts"),directions:()=>openTopic("directions"),seasons:()=>openTopic("seasons"),prayer:openPrayer}[c.getAttribute("data-go")])());
+}
+
+// أقسامُ الاتجاهات/الفصول/الفترات: بطاقةٌ تعليميّةٌ + زرُّ «اختبار» يفتحُ الاختبارَ التنافسيّ.
+const TOPIC = {
+  dayparts:   { title:"🌅 فتراتُ اليوم", learn:attachDayparts,   items:()=>DAYPARTS,   ev:"clock_dayparts" },
+  directions: { title:"🧭 الاتجاهات",   learn:attachDirections, items:()=>DIRECTIONS, ev:"clock_directions" },
+  seasons:    { title:"🍂 الفصول",      learn:attachSeasons,    items:()=>SEASONS,    ev:"clock_seasons" },
+};
+function openTopic(key){
+  document.body.classList.add("ingame");
+  const T=TOPIC[key]; logEvent(T.ev);
+  view.innerHTML = backBar()+`<h2 style="text-align:center;font-size:20px;margin:6px 0">${T.title}</h2><div id="orhost"></div><div style="text-align:center;margin-top:8px"><button class="mcard" id="orQuiz" style="display:inline-block;min-width:200px;padding:14px"><span class="mt">🎯 ابدأِ الاختبار</span></button></div>`;
+  wireBack();
+  T.learn(document.getElementById("orhost"), { lang:"ar", speak:speakWord, L:OR_L });
+  document.getElementById("orQuiz").onclick = ()=>openTopicQuiz(key);
+}
+function openTopicQuiz(key){
+  const T=TOPIC[key];
+  view.innerHTML = backBar()+`<div id="orhost"></div>`; wireBack();
+  orientQuiz(document.getElementById("orhost"), { items:T.items(), lang:"ar", speak:speakWord, L:OR_L, title:T.title, onExit:()=>openTopicQuiz(key), onWin:()=>logEvent("clock_orientquiz") });
+}
+
+function openLearn(){
+  document.body.classList.add("ingame");
+  view.innerHTML = backBar()+`<div id="clkhost"></div>`; wireBack();
+  logEvent("clock_learn");
+  attachClockLearn(document.getElementById("clkhost"), { L:AR_L, lang:"ar", speakPhrase });
+}
+
+function openGame(){
+  document.body.classList.add("ingame");
+  view.innerHTML = backBar()+`<div id="clkhost"></div>`; wireBack();
+  clockGame(document.getElementById("clkhost"), { L:AR_L, lang:"ar", speakPhrase, onExit:openGame, onWin:()=>logEvent("clock_win") });
+}
+
+const PRAYERS = [
+  { e:"🌅", n:"الفجر", t:"قبل شروقِ الشمس", when:"الصباحُ الباكر" },
+  { e:"☀️", n:"الظهر", t:"بعد زوالِ الشمس", when:"منتصفُ النهار" },
+  { e:"🌤️", n:"العصر", t:"حين يطولُ ظلُّ الأشياء", when:"بعد الظهر" },
+  { e:"🌇", n:"المغرب", t:"عند غروبِ الشمس", when:"أوّلُ المساء" },
+  { e:"🌙", n:"العشاء", t:"بعد مغيبِ الشفق", when:"الليل" },
+];
+function openPrayer(){
+  document.body.classList.add("ingame");
+  logEvent("clock_prayer");
+  view.innerHTML = backBar()+`
+    <div class="clue"><div class="say">🕌 الصلواتُ الخمسُ في اليوم — تعرّفْ متى تكونُ كلُّ صلاةٍ من اليوم.</div></div>
+    <div class="pr-grid">${PRAYERS.map(p=>`<div class="pr-card"><div class="pr-e">${p.e}</div><div class="pr-n">${p.n}</div><div class="pr-t">${p.t}</div><div class="pr-when">${p.when}</div></div>`).join("")}</div>
+    <div class="hint" style="text-align:center;max-width:560px;margin:6px auto">أوقاتُ الصلاةِ تتغيّرُ قليلًا كلَّ يومٍ وبحسبِ المكان — اسألْ والدَيك عن وقتِها في مدينتِكم.</div>`;
+  wireBack();
+}
+
+window.appBack = () => { if(document.getElementById("back")){ renderMenu(); return true; } return false; };
+renderMenu();
+</script>
+</body>
+</html>

@@ -27,6 +27,8 @@ const SEP = " ";
 const sha = s => createHash("sha1").update(s).digest("hex").slice(0, 12);
 
 const L = (await import(CFG.content)).default;
+const { allClockPhrases } = await import("../content/clock-time.js"); // جُمَلُ الوقت (v1.5)
+const { allOrientWords } = await import("../content/orient.js");      // اتجاهات/فصول/فترات (v1.5)
 const SET = CFG.set;
 const uniq = a => [...new Set(a.filter(Boolean).map(s => String(s).trim()).filter(Boolean))];
 // أسماءُ الأحرف صوتيّاً (name) — يُنطِقُها العصبيُّ كبقيّة المحتوى. مفتاحُها = name، لكنّ نصَّ
@@ -47,6 +49,8 @@ const texts = uniq([
   ...(L.verbs || []).flatMap(v => [v.v,                                   // المصدرُ/الفعل
     ...(v.conj || []).map(c => c.w),                                       // تصريفُ الضمائر (المضارع)
     ...["past", "present", "future"].map(t => v.tenses && v.tenses[t] && v.tenses[t].w)]), // الأزمنة (أنا)
+  ...allClockPhrases(code),                                                // نطقُ الوقتِ بلغةِ القسم (144 جملة)
+  ...allOrientWords(code),                                                  // الاتجاهاتُ والفصولُ وفتراتُ اليوم (20 كلمة)
 ]);
 
 const setHash = sha(SET.id);

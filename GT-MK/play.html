@@ -268,6 +268,8 @@ import { robo, ROBO_SVG } from "./src/robo-companion.js";
 import * as sfx from "./src/sfx.js"; // أصواتٌ تفاعليّة (لمسة/نجاح/خطأ) للألعاب
 import { GAME_REACTIONS as GR, GAME_INTROS as GI } from "./src/robo-phrases.js"; // تفاعلاتُ الألعاب (مُولَّدةٌ عبر Piper)
 import { vsEndRound, vsWinsOf, vsTurnHtml } from "./src/versus.js"; // نافذةُ نهاية الجولة + سجلُّ الانتصارات + حبّةُ الدور (v1.4)
+import { clockGame, AR_L } from "./src/clock-widget.js"; // تحدّي الساعة (v1.5)
+import { playClipAsync } from "./src/tts-clips.js";      // نطقُ جُمَلِ الوقت (Piper العصبيّ)
 import { listProfiles, getProfile, getCurrentUser, getParentName, getParentAvatar } from "./src/accounts.js";
 import { attachReader } from "./src/reader-recorder.js"; // تسجيلُ نُطق الطفل للكلمة المُكوَّنة
 import { smartPrint } from "./src/smart-print.js"; window.smartPrint = smartPrint; // طباعةٌ تعملُ على الهاتف أيضًا
@@ -315,6 +317,7 @@ const GAMES = [
   { id:"smatch", ic:"⚡", t:"سباقُ المطابقة", d:"جِدِ الصورةَ المطابقةَ أسرع", vs:1 },
   { id:"wgrid",  ic:"🔤", t:"شبكةُ الكلمات", d:"كوّنِ الكلماتِ وتنافسْ بالألوان", vs:1 },
   { id:"spinq",  ic:"🎡", t:"عجلة أدرْ وأجب", d:"أدِرِ العجلةَ ثمّ أجِبْ عن سؤالِ القطاع", vs:1, nw:1 },
+  { id:"clock",  ic:"🕐", t:"تحدّي الساعة", d:"اقرأِ الساعةَ (عقارب ورقميّ) وتنافسْ — أنماطٌ متنوّعة", vs:1, nw:1 },
   { id:"print",  ic:"🖨️", t:"ألعاب/أنشطة للطباعة", d:"ألعابٌ تُلعَبُ على الورق + أنشطةٌ حسّيّة" },
 ];
 function renderMenu(){
@@ -327,7 +330,13 @@ function renderMenu(){
   view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
 }
 function open(id){ if(id!=="print") document.body.classList.add("ingame"); // شاشةٌ مخصّصةٌ للّعبة: يُطوى رأسُ الصفحةِ وشريطُ التنقّل
-  ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,print:()=>location.assign("print.html")})[id](); }
+  ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,clock:startClock,print:()=>location.assign("print.html")})[id](); }
+
+/* ===================== 🕐 تحدّي الساعة (v1.5 · versus مشترَك) ===================== */
+function startClock(){
+  view.innerHTML = backBar()+`<div id="clockhost"></div>`; wireBack();
+  clockGame(document.getElementById("clockhost"), { L:AR_L, lang:"ar", speakPhrase:t=>playClipAsync(t), onExit:startClock, onWin:()=>logEvent("clock_win") });
+}
 
 /* ===================== 🧠 MEMORY MATCH (وحدي · الإخوة · الوالد · الآليّ) ===================== */
 // الصعوبة: 4 أزواج=8 بطاقات · 6=12 · 8=16. الخصم: solo | ai | parent | p:<id>. مستوى الآليّ: easy/medium/hard.

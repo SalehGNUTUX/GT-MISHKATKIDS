@@ -11,6 +11,8 @@ import { SENTENCE_UNITS } from "../src/vocab.js";
 import { forSynthesis } from "../src/arabic-normalize.js";
 import stories from "../content/stories.js";
 import sararim from "../content/sararim-stories.js";
+import { allClockPhrases } from "../content/clock-time.js"; // جُمَلُ الوقت (v1.5) — نطقُ الساعةِ العربيّ
+import { allOrientWords } from "../content/orient.js";      // اتجاهات/فصول/فترات (v1.5) — نطقٌ عصبيٌّ عربيّ
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PYTHON = process.env.PIPER_PYTHON || join(ROOT, ".piper-venv", "bin", "python");
@@ -31,7 +33,11 @@ const texts = uniq([
   ...SENTENCE_UNITS.flatMap(u => u.items),   // جُمَل القراءة + ردود الآلي + الإشعارات + نصوص قصّة الأرقام + القصص
   ...(stories.stories || []).flatMap(s => [s.title, s.lesson, ...(s.pages || []).map(p => p.text)]),
   ...(sararim.stories || []).flatMap(s => [s.title, s.text]),
+  ...allClockPhrases("ar"),                  // نطقُ الوقتِ العربيُّ (144 جملة + لصيقتا ص/م)
+  ...allOrientWords("ar"),                   // الاتجاهاتُ والفصولُ وفتراتُ اليوم (20 كلمة، عصبيّ)
 ]);
+// الكلماتُ القصيرةُ (اتجاهات/فصول/فترات) يُذيَّلُ نصُّ تركيبِها بنقطةٍ لتثبيتِ نطقِ العصبيّ للوحدةِ المنفردة.
+const ORIENT_AR = new Set(allOrientWords("ar"));
 
 const setHash = sha(SET.id);
 const setDir = join(OUTDIR, setHash);
@@ -39,7 +45,7 @@ mkdirSync(setDir, { recursive: true });
 // تصحيحاتُ تركيبٍ لكلماتٍ يُقصّرُ العصبيُّ مدَّها (المفتاحُ/الملفُّ يبقى الأصلَ، والنصُّ المُركَّبُ بديلٌ ممدود):
 // «مُمْتَاز» كان يُنطَقُ قصيرًا (mumtaz)؛ مدُّ الألفِ صراحةً يُعطي المدَّ الصحيح (mumtaaz).
 const SYNTH_FIX = { "مُمْتَاز!": "مُمْتَااز!" };
-const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: forSynthesis(SYNTH_FIX[t] || t), out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
+const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: forSynthesis(SYNTH_FIX[t] || (ORIENT_AR.has(t) ? t + " ." : t)), out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
 
 console.log(`🔊 توليد ${tasks.length} مقطعًا بصوت Piper العصبيّ (${SET.id})…`);
 const tasksFile = join(ROOT, ".piper-tasks.json");

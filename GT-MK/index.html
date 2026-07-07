@@ -1040,8 +1040,11 @@ async function openDashboard(){
   });
   overlay.classList.add("show");
   armIdle(); // بدءُ عدّاد الخمول (30ث)
-  // تمريرٌ تلقائيٌّ للقسم المقصود عند القدوم برابطٍ مرسىً (#sec-reports / #sec-accounts) من لوحة الوالد.
-  if(hash){ const t=panel.querySelector(hash); if(t) setTimeout(()=>t.scrollIntoView({behavior:"smooth",block:"start"}),80); }
+  // تمريرٌ تلقائيٌّ للقسم المقصود (#sec-reports / #sec-accounts / #sec-backup). نُعيدُه مرّاتٍ لأنّ
+  // محتوًى يُحمَّلُ لاحقًا (تسجيلاتُ الأصوات) يُزيحُ الموضعَ بعدَ التمريرِ الأوّل. توسيطٌ ليَظهرَ الهدفُ كاملًا.
+  if(hash){ const block = hash==="#sec-backup" ? "center" : "start";
+    const scrollTo=()=>{ const t=panel.querySelector(hash); if(t) t.scrollIntoView({behavior:"smooth",block}); };
+    [120,500,1000].forEach(ms=>setTimeout(scrollTo,ms)); }
 }
 
 /* إدارةُ تسجيلات تمرّنِ الأطفال من لوحة الأهل: عددُ تسجيلاتِ كلِّ حسابٍ + حذفٌ بكلمة مرورٍ ومهلةِ تراجع. */

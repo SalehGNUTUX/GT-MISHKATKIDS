@@ -10,16 +10,19 @@ export async function backupExport(msg = () => {}) {
   const payload = { app: "GT-MISHKATKIDS", type: "backup", schema: 1, exportedAt: new Date().toISOString(), keys: collect() };
   const json = JSON.stringify(payload, null, 2);
   const filename = `GT-MISHKATKIDS-backup-${new Date().toISOString().split("T")[0]}.json`;
-  // (1) أندرويد/iOS: حفظٌ مباشرٌ في مجلّد التنزيلات عبر Capacitor Filesystem
+  // (1) أندرويد/iOS: نكتبُ في الذاكرةِ المؤقّتة (CACHE) — لا تحتاجُ أيَّ صلاحيّةِ تخزينٍ —
+  //     ثمّ نفتحُ صحيفةَ المشاركة (Share) ليحفظَه الأهلُ حيثُ شاؤوا. نفسُ نهجِ الطباعةِ المُثبَتِ على الهاتف.
   try {
-    const { Capacitor } = await import("@capacitor/core");
-    if (Capacitor.isNativePlatform()) {
-      const { Filesystem, Directory, Encoding } = await import("@capacitor/filesystem");
-      const r = await Filesystem.writeFile({ path: `Download/${filename}`, data: json, directory: Directory.ExternalStorage, encoding: Encoding.UTF8, recursive: true })
-        .catch(() => Filesystem.writeFile({ path: filename, data: json, directory: Directory.Documents, encoding: Encoding.UTF8 }));
-      msg(`✓ حُفِظت النسخةُ: ${((r && r.uri) || filename).split("/").pop()}`, true); return;
+    const P = (window.Capacitor && window.Capacitor.Plugins) || {};
+    const Filesystem = P.Filesystem, Share = P.Share;
+    const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+    if (isNative && Filesystem && Share) {
+      await Filesystem.writeFile({ path: filename, data: json, directory: "CACHE", encoding: "utf8" });
+      const { uri } = await Filesystem.getUri({ path: filename, directory: "CACHE" });
+      await Share.share({ title: filename, text: "نسخةُ «مِشكاة» الاحتياطيّة 💾", files: [uri] });
+      msg("✓ جاهزةٌ — احفظْها في مكانٍ آمنٍ من صحيفةِ المشاركة.", true); return;
     }
-  } catch (e) {}
+  } catch (e) { const m = String((e && e.message) || e).toLowerCase(); if ((e && e.name === "AbortError") || m.includes("cancel")) return; }
   // (2) مشاركةُ الملفّ (ويب الهاتف)
   try {
     if (navigator.share) {

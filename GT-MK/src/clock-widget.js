@@ -45,7 +45,7 @@ function ensureStyle() {
   .clk-ctl button.on{background:var(--primary,#E07A5F);color:#fff;border-color:var(--primary,#E07A5F)}
   .clk-speak{background:var(--sky,#6FB3D6);color:#fff;border:none;border-radius:14px;padding:11px 22px;font:inherit;font-weight:800;font-size:16px;cursor:pointer;margin-top:6px}
   .clk-opts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0}
-  .clk-opt{background:var(--card,#fff);border:2px solid var(--line,#ECE6DA);border-radius:14px;padding:14px 20px;font:800 22px system-ui,monospace;cursor:pointer;direction:ltr;min-width:96px;transition:transform .1s}
+  .clk-opt{background:var(--card,#fff);color:var(--ink,#2B2B2B);border:2px solid var(--line,#ECE6DA);border-radius:14px;padding:14px 20px;font:800 22px system-ui,monospace;cursor:pointer;direction:ltr;min-width:96px;transition:transform .1s}
   .clk-opt:active{transform:scale(.96)} .clk-opt.ok{background:var(--good,#7BB661);color:#fff;border-color:var(--good,#7BB661)} .clk-opt.no{background:var(--bad,#E0566B);color:#fff;border-color:var(--bad,#E0566B)}
   .clk-facebtn{background:var(--card,#fff);border:3px solid var(--line,#ECE6DA);border-radius:16px;padding:8px;cursor:pointer;transition:transform .1s;line-height:0}
   .clk-facebtn:active{transform:scale(.96)} .clk-facebtn.ok{border-color:var(--good,#7BB661)} .clk-facebtn.no{border-color:var(--bad,#E0566B)}

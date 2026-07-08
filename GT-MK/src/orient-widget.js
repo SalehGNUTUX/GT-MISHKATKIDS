@@ -16,19 +16,36 @@ function ensureStyle() {
   .or-svg{width:min(66vw,240px);height:min(66vw,240px);touch-action:none;user-select:none}
   .or-dir{cursor:pointer}
   .or-tiles{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:12px 0}
-  .or-tile{background:var(--card,#fff);border:2px solid var(--line,#ECE6DA);border-radius:18px;padding:16px 14px;min-width:120px;cursor:pointer;transition:transform .1s,border-color .15s}
+  .or-tile{background:var(--card,#fff);color:var(--ink,#2B2B2B);border:2px solid var(--line,#ECE6DA);border-radius:18px;padding:16px 14px;min-width:120px;cursor:pointer;transition:transform .1s,border-color .15s}
   .or-tile:active{transform:scale(.96)} .or-tile.on{border-color:var(--primary,#E07A5F)}
   .or-tile .e{font-size:44px} .or-tile .n{font-weight:800;font-size:19px;margin-top:4px} .or-tile .t{color:var(--muted,#6B6B6B);font-size:12.5px;margin-top:4px;min-height:16px}
   .or-timeline{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0}
-  .or-per{background:var(--card,#fff);border:1px solid var(--line,#ECE6DA);border-radius:14px;padding:10px;min-width:82px;cursor:pointer;transition:transform .1s}
+  .or-per{background:var(--card,#fff);color:var(--ink,#2B2B2B);border:1px solid var(--line,#ECE6DA);border-radius:14px;padding:10px;min-width:82px;cursor:pointer;transition:transform .1s}
   .or-per:active{transform:scale(.95)} .or-per.night{background:color-mix(in srgb,#3a3a6a 14%,var(--card,#fff))}
   .or-per .e{font-size:30px} .or-per .n{font-weight:800;font-size:14px;margin-top:2px}
   .or-opts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0}
-  .or-opt{background:var(--card,#fff);border:2px solid var(--line,#ECE6DA);border-radius:14px;padding:14px 20px;font-weight:800;font-size:18px;cursor:pointer;min-width:110px;transition:transform .1s}
+  .or-opt{background:var(--card,#fff);color:var(--ink,#2B2B2B);border:2px solid var(--line,#ECE6DA);border-radius:14px;padding:14px 20px;font-weight:800;font-size:18px;cursor:pointer;min-width:110px;transition:transform .1s}
   .or-opt.big{font-size:40px;padding:12px 18px} .or-opt:active{transform:scale(.96)}
   .or-opt.ok{background:var(--good,#7BB661);color:#fff;border-color:var(--good,#7BB661)} .or-opt.no{background:var(--bad,#E0566B);color:#fff;border-color:var(--bad,#E0566B)}
-  .or-q{font-weight:800;font-size:20px;margin:6px 0}`;
+  .or-q{font-weight:800;font-size:20px;margin:6px 0}
+  .or-float{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(10px);z-index:9999;max-width:min(92vw,440px);
+    background:var(--card,#fff);color:var(--ink,#2B2B2B);border:1px solid var(--line,#ECE6DA);border-radius:16px;
+    box-shadow:0 12px 34px rgba(0,0,0,.3);padding:14px 16px;text-align:center;font-size:15px;line-height:1.8;opacity:0;transition:opacity .2s,transform .2s}
+  .or-float.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .or-float .ft{font-weight:800;font-size:17px;margin-bottom:4px}`;
   document.head.appendChild(st);
+}
+// بطاقةٌ عائمةٌ مقتضبةٌ (تُغلَقُ تلقائيًّا أو بالنقر) — لمعلوماتِ الصلاةِ المرتبطةِ بالفترة.
+let _floatEl = null, _floatTmr = null;
+export function floatCard(title, body) {
+  ensureStyle();
+  if (_floatEl) { try { _floatEl.remove(); } catch (e) {} clearTimeout(_floatTmr); }
+  const el = document.createElement("div"); el.className = "or-float";
+  el.innerHTML = `<div class="ft">${title}</div><div>${body}</div>`;
+  document.body.appendChild(el); _floatEl = el;
+  requestAnimationFrame(() => el.classList.add("on"));
+  const close = () => { el.classList.remove("on"); setTimeout(() => { try { el.remove(); } catch (e) {} }, 220); if (_floatEl === el) _floatEl = null; };
+  el.onclick = close; _floatTmr = setTimeout(close, 5000);
 }
 
 const NS = "http://www.w3.org/2000/svg";
@@ -96,7 +113,10 @@ export function attachSeasons(host, opts = {}) {
     <div class="or-tiles">${SEASONS.map(s => `<div class="or-tile" data-k="${s.k}"><div class="e">${s.emoji}</div><div class="n">${nameOf(s, lang)}</div><div class="t">${s[traitK] || ""}</div></div>`).join("")}</div></div>`;
   host.querySelectorAll(".or-tile").forEach(el => el.onclick = () => {
     host.querySelectorAll(".or-tile").forEach(x => x.classList.remove("on")); el.classList.add("on");
-    const s = SEASONS.find(x => x.k === el.dataset.k); try { speak(nameOf(s, lang)); } catch (e) {}
+    const s = SEASONS.find(x => x.k === el.dataset.k); if (!s) return;
+    try { speak(nameOf(s, lang)); } catch (e) {}
+    // بطاقةٌ عائمةٌ بمعلومةٍ عن الفصل (بلغةِ القسم).
+    const tr = s[traitK]; if (tr) floatCard(`${s.emoji} ${nameOf(s, lang)}`, tr);
   });
 }
 
@@ -107,7 +127,10 @@ export function attachDayparts(host, opts = {}) {
   host.innerHTML = `<div class="or-wrap"><div class="or-bubble">${L.daypartsIntro}</div>
     <div class="or-timeline">${DAYPARTS.map(p => `<div class="or-per${p.night ? " night" : ""}" data-k="${p.k}"><div class="e">${p.emoji}</div><div class="n">${nameOf(p, lang)}</div></div>`).join("")}</div></div>`;
   host.querySelectorAll(".or-per").forEach(el => el.onclick = () => {
-    const p = DAYPARTS.find(x => x.k === el.dataset.k); try { speak(nameOf(p, lang)); } catch (e) {}
+    const p = DAYPARTS.find(x => x.k === el.dataset.k); if (!p) return;
+    try { speak(nameOf(p, lang)); } catch (e) {}
+    // بطاقةٌ عائمةٌ بمعلومةِ الصلاةِ المرتبطةِ بالفترة (في القسمِ العربيّ).
+    if (lang === "ar" && p.prayerAr) floatCard(`${p.emoji} ${nameOf(p, lang)}`, p.prayerAr);
   });
 }
 

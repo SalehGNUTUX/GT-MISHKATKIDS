@@ -12,7 +12,7 @@ import { forSynthesis } from "../src/arabic-normalize.js";
 import stories from "../content/stories.js";
 import sararim from "../content/sararim-stories.js";
 import { allClockPhrases } from "../content/clock-time.js"; // جُمَلُ الوقت (v1.5) — نطقُ الساعةِ العربيّ
-import { allOrientWords } from "../content/orient.js";      // اتجاهات/فصول/فترات (v1.5) — نطقٌ عصبيٌّ عربيّ
+import { allOrientWords, allPrayerWords } from "../content/orient.js"; // اتجاهات/فصول/فترات + أسماءُ الصلوات (نطقٌ عصبيٌّ عربيّ)
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PYTHON = process.env.PIPER_PYTHON || join(ROOT, ".piper-venv", "bin", "python");
@@ -35,9 +35,10 @@ const texts = uniq([
   ...(sararim.stories || []).flatMap(s => [s.title, s.text]),
   ...allClockPhrases("ar"),                  // نطقُ الوقتِ العربيُّ (144 جملة + لصيقتا ص/م)
   ...allOrientWords("ar"),                   // الاتجاهاتُ والفصولُ وفتراتُ اليوم (20 كلمة، عصبيّ)
+  ...allPrayerWords(),                        // أسماءُ الصلواتِ الخمس (عصبيّ)
 ]);
-// الكلماتُ القصيرةُ (اتجاهات/فصول/فترات) يُذيَّلُ نصُّ تركيبِها بنقطةٍ لتثبيتِ نطقِ العصبيّ للوحدةِ المنفردة.
-const ORIENT_AR = new Set(allOrientWords("ar"));
+// الكلماتُ القصيرةُ (اتجاهات/فصول/فترات/صلوات) يُذيَّلُ نصُّ تركيبِها بنقطةٍ لتثبيتِ نطقِ العصبيّ للوحدةِ المنفردة.
+const ORIENT_AR = new Set([...allOrientWords("ar"), ...allPrayerWords()]);
 
 const setHash = sha(SET.id);
 const setDir = join(OUTDIR, setHash);

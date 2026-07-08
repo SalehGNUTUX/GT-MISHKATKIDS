@@ -158,7 +158,7 @@
     <a class="navcard" href="read.html"><div class="ic" data-icon="read">📖</div><div class="t">سُلّم القراءة</div><div class="d">المقاطع ← الكلمات ← الجُمل (حرف + حركة فأكثر)</div></a>
     <a class="navcard" href="math.html"><div class="ic" data-icon="math">📐</div><div class="t">أرقام وهندسة</div><div class="d">أشكال · عُدّ وقارن · أنماط · أحجام — بتدبّر</div></a>
     <a class="navcard" href="lang.html"><div class="ic" data-icon="lang">🌍</div><div class="t">لغات أجنبيّة</div><div class="d">الإنجليزيّة والفرنسيّة — أحرف وأرقام وكلمات وقصص بالنطق</div></a>
-    <a class="navcard" href="clock.html"><div class="ic" data-icon="clock">🕐</div><div class="t">الساعة والصلاة <span style="background:#E0566B;color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:1px 6px">🆕</span></div><div class="d">تعلَّمِ الوقتَ بالعقارب والرقميّ (صباح/مساء و24 ساعة) + لعبةٌ تنافسيّة + أوقاتُ الصلاة</div></a>
+    <a class="navcard" href="clock.html"><div class="ic" data-icon="clock">🕐</div><div class="t">الزمانُ والمكان <span style="background:#E0566B;color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:1px 6px">🆕</span></div><div class="d">الساعة (عقارب/رقميّ 12⇄24) + الاتجاهاتُ (بوصلةٌ وكرة) + الفصولُ + فتراتُ اليوم + أوقاتُ الصلاة</div></a>
     <a class="navcard" href="stories.html"><div class="ic" data-icon="stories">📚</div><div class="t">قصص مصوّرة</div><div class="d">قصصٌ أصيلة بصورٍ كرتونيّة كبيرة</div></a>
     <a class="navcard" href="tales.html"><div class="ic" data-icon="tales">📜</div><div class="t">قصص وعِبَر</div><div class="d">قصصٌ قصيرة + أسئلة فهم (أخلاق · أنبياء · علماء · صحابة)</div></a>
     <a class="navcard" href="play.html"><div class="ic" data-icon="play">🎮</div><div class="t">ألعاب وأنشطة</div><div class="d">لعبة الذاكرة + 7 ألعاب لدمج الحروف + أنشطة للطباعة</div></a>
@@ -185,6 +185,7 @@
     <h2 style="text-align:center;margin:4px 0 2px;color:var(--ink)">مَن يتعلّم اليوم؟</h2>
     <p style="text-align:center;color:var(--muted);font-size:13px;margin:0 0 16px">اختر ملفّك لنتابع تقدّمك وصوتك</p>
     <div id="loginBody"></div>
+    <div style="text-align:center;margin:16px 0 2px"><button id="shareProjBtn" type="button" style="background:var(--sky,#6FB3D6);color:#fff;border:none;border-radius:13px;padding:11px 22px;font:inherit;font-weight:800;font-size:15px;cursor:pointer">📤 شارك المشروع</button><span id="shareMsg" style="display:block;font-size:12px;color:var(--good,#2f7d32);min-height:15px;margin-top:6px"></span></div>
     <footer class="loginfoot">
       مِشكاةُ الطفلِ والآليّ 🪔 — الطفلُ يُعلّم، والآليُّ يَستنير.<br/>
       محليٌّ بالكامل · يعمل دون اتصال · بلا ذكاء اصطناعيّ · بياناتُ طفلِك لا تغادر جهازك.<br/>
@@ -209,6 +210,24 @@ import { confirmChoice } from "./src/confirm-action.js";
 
 const ov=document.getElementById("loginOverlay"), body=document.getElementById("loginBody"), chip=document.getElementById("userChip");
 const esc=s=>String(s).replace(/"/g,"&quot;");
+
+// مشاركةُ المشروع: نصٌّ + روابطُ التذييل. الهاتف ⇒ صحيفةُ المشاركة (تطبيقات/نسخ)، الحاسوب ⇒ نسخٌ للحافظة.
+const SHARE_TEXT = "مِشكاةُ الطفلِ والآليّ 🪔 — الطفلُ يُعلّم، والآليُّ يَستنير.\nتطبيقٌ تعليميٌّ إسلاميٌّ للأطفال (4–10): محلّيٌّ بالكامل · يعمل دون اتصال · بلا ذكاءٍ اصطناعيٍّ وقتَ التشغيل · بياناتُ طفلِك لا تغادر جهازك.\n🌐 الموقعُ الرسميّ: https://salehgnutux.github.io/GT-MISHKATKIDS/\n✨ مشاريع GNUTUX: https://salehgnutux.github.io/gnutux/";
+function shareMsg(t){ const el=document.getElementById("shareMsg"); if(el){ el.textContent=t||""; } }
+async function shareProject(){
+  shareMsg("");
+  // (1) أندرويد/iOS: صحيفةُ المشاركة (تطبيقاتٌ + خيارُ نسخ)
+  try{
+    const C=window.Capacitor, P=(C&&C.Plugins)||{};
+    if(C&&C.isNativePlatform&&C.isNativePlatform()&&P.Share){ await P.Share.share({ title:"مِشكاةُ الطفلِ والآليّ", text:SHARE_TEXT, dialogTitle:"مشاركةُ المشروع" }); return; }
+  }catch(e){ const m=String((e&&e.message)||e).toLowerCase(); if(e&&(e.name==="AbortError"||m.includes("cancel"))) return; }
+  // (2) متصفّحُ الهاتف: Web Share
+  try{ if(navigator.share){ await navigator.share({ title:"مِشكاةُ الطفلِ والآليّ", text:SHARE_TEXT }); return; } }catch(e){ if(e&&e.name==="AbortError") return; }
+  // (3) الحاسوب: نسخٌ للحافظة
+  try{ await navigator.clipboard.writeText(SHARE_TEXT); shareMsg("✓ نُسِخ نصُّ المشاركةِ إلى الحافظة"); return; }catch(e){}
+  try{ window.prompt("انسخْ نصَّ المشاركة:", SHARE_TEXT); }catch(e){}
+}
+{ const sb=document.getElementById("shareProjBtn"); if(sb) sb.onclick=shareProject; }
 function showChip(){ const u=getCurrentUser(); if(u){ chip.style.display="block"; chip.textContent=`${u.avatar||"🙂"} ${u.name} · تبديل`;
     chip.onclick=async ()=>{ if(await confirmChoice(`أنتَ مُسجَّلٌ باسم «${u.name}». هل تريد تسجيل الخروج وتبديل الحساب؟`, "🚪 خروج وتبديل", "البقاء")){ clearCurrentUser(); chip.style.display="none"; ov.style.display="flex"; renderLogin(); } }; }
   else chip.style.display="none"; }

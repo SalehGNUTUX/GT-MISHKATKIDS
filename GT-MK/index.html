@@ -102,6 +102,11 @@
   .filters button{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 16px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
   .filters button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
   .heal-reward{font-size:15px;font-weight:700;color:var(--good-d);margin-top:8px}
+  .works{display:flex;flex-direction:column;gap:10px;margin-top:10px;max-height:56vh;overflow:auto}
+  .workitem{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+  .workhd{font-weight:800;margin-bottom:6px}
+  .workitem audio{width:100%;margin-top:4px} .workimg{max-width:120px;border-radius:10px;margin-top:4px;cursor:pointer}
+  .worknote{background:color-mix(in srgb,var(--gold,#F4C95D) 16%,var(--card));border-radius:10px;padding:6px 10px;font-size:13px;margin-top:4px}
   .err{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:16px}
   .err code{background:#F3EEE3;padding:2px 7px;border-radius:6px;font-size:13px}
   .center{text-align:center}.muted{color:var(--muted)}
@@ -378,7 +383,28 @@ function renderIdle(){
     <div class="btns" style="justify-content:center"><button class="act" onclick="spark()">✨ شرارة ذكرى</button>
     ${coopMode
       ? '<button class="ghost" onclick="toggleCoop()">↩ خروج من وضع الإخوة</button>'
-      : '<button class="ghost" onclick="surprise()">🎲 فاجئني</button><button class="ghost" onclick="toggleCoop()">👯 وضع الإخوة</button>'}</div></div>`;
+      : `<button class="ghost" onclick="surprise()">🎲 فاجئني</button><button class="ghost" onclick="toggleCoop()">👯 وضع الإخوة</button>${progress.completed.length?`<button class="ghost" onclick="viewMyWorks()">📂 أعمالي (${AR(progress.completed.length)})</button>`:""}`}</div></div>`;
+}
+
+// معرضُ «أعمالي»: الذكرياتُ التي أنجزها الطفلُ + ما سجّله فيها (صوت/صورة/ملاحظة) — متاحٌ للطفلِ نفسِه.
+async function viewMyWorks(){
+  const host=document.getElementById("cardHost"); setMood("happy");
+  host.innerHTML=`<div class="card center"><div class="robo-says">أُحضِرُ أعمالَك… 📂</div></div>`;
+  const caps=await allCaptures(); const capByTs={}; caps.forEach(c=>{ (capByTs[c.ts]=capByTs[c.ts]||[]).push(c); });
+  const esc=s=>String(s||"").replace(/[<>&]/g,x=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[x]));
+  const log=[...progress.log].sort((x,y)=>y.ts-x.ts);
+  const items = log.length ? log.map(e=>{
+    const cs=capByTs[e.ts]||[];
+    const media=cs.map(c=>{
+      if(c.type==="note") return `<div class="worknote">📝 ${esc(c.text)}</div>`;
+      try{ const url=URL.createObjectURL(c.blob); return c.type==="audio"?`<audio controls src="${url}"></audio>`:`<img class="workimg" src="${url}" onclick="window.open('${url}')" />`; }catch(_){ return ""; }
+    }).join("");
+    return `<div class="workitem"><div class="workhd">✅ ${esc(e.title)} <span class="muted" style="font-size:12px">· ${esc(e.domain)}</span></div>${media||'<span class="muted" style="font-size:12px">أُنجِزت</span>'}</div>`;
+  }).join("") : `<p class="muted" style="text-align:center">لم تُنجِزْ أعمالًا بعد — علّمِ الآليَّ ذكرى لتظهرَ هنا!</p>`;
+  host.innerHTML=`<div class="card"><div class="robo-says">📂 أعمالي المنجَزة (${AR(progress.completed.length)})</div>
+    <p class="muted">ذكرياتٌ علّمتَها الآليَّ وما سجّلتَه فيها. أحسنت! 🌟</p>
+    <div class="works">${items}</div>
+    <div class="btns" style="justify-content:center;margin-top:12px"><button class="act" onclick="renderIdle()">↩ رجوع</button></div></div>`;
 }
 // وضع الإخوة: يقصر الذكريات على أنشطة «لطفلين معًا» ويؤطّرها لطفلين.
 function coopOthers(){ const cu=getCurrentUser(); return listProfiles().filter(p=>!cu||p.id!==cu.id); }
@@ -907,7 +933,7 @@ async function openDashboard(){
       <div style="font-size:13px;color:var(--muted);line-height:1.9;margin-top:10px">
         <b style="color:var(--ink)">مِشكاةُ الطفلِ والآليّ 🪔</b> — الطفلُ يُعلّم، والآليُّ يَستنير.<br/>
         تطبيقٌ تعليميٌّ إسلاميٌّ للأطفال (4–10): <b>محلّيٌّ بالكامل</b> · يعمل دون اتصال · بلا ذكاءٍ اصطناعيٍّ وقتَ التشغيل · بياناتُ طفلِك لا تغادر جهازك.<br/>
-        الإصدار <b>v1.5.0</b> · الرخصة GPL-3.0 · تطوير SalehGNUTUX.<br/>
+        الإصدار <b>v1.5.1</b> · الرخصة GPL-3.0 · تطوير SalehGNUTUX.<br/>
         <a href="https://salehgnutux.github.io/GT-MISHKATKIDS/" target="_blank" rel="noopener" style="color:var(--primary-d);font-weight:700;text-decoration:none">🌐 الموقع الرسميّ</a>
         · <a href="https://github.com/SalehGNUTUX/GT-MISHKATKIDS" target="_blank" rel="noopener" style="color:var(--primary-d);font-weight:700;text-decoration:none">📦 المستودع</a>
         · <a href="https://salehgnutux.github.io/gnutux/" target="_blank" rel="noopener" style="color:var(--primary-d);font-weight:700;text-decoration:none">✨ مشاريع GNUTUX</a>
@@ -1034,7 +1060,7 @@ function syncMuteIcon(){ if(muteBtn) muteBtn.textContent = isSoundOn() ? "🔊" 
 if(muteBtn) muteBtn.addEventListener("click",()=>{ const on=toggleSound(); syncMuteIcon(); if(on) sfx.tap(); });
 syncMuteIcon();
 
-Object.assign(window,{spark,surprise,toggleCoop,go,goTeach,askRoboWrong,fixRoboWrong,heal,toggleRec,closePanel,renderIdle});
+Object.assign(window,{spark,surprise,toggleCoop,go,goTeach,askRoboWrong,fixRoboWrong,heal,toggleRec,closePanel,renderIdle,viewMyWorks});
 init();
 </script>
 </body>

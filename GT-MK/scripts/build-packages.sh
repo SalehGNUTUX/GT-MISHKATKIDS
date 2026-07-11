@@ -136,6 +136,11 @@ build_apk() {
     sed -i 's#<application#<uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n\n    <application#' "$mani"
     step "أُضيفت صلاحيّةُ RECORD_AUDIO إلى AndroidManifest"
   fi
+  # فتحُ ملفّاتِ .json بتطبيقنا (استيرادُ النسخةِ الاحتياطيّة): intent-filter للـVIEW على application/json في النشاطِ الرئيس.
+  if [ -f "$mani" ] && ! grep -q 'android:mimeType="application/json"' "$mani"; then
+    sed -i '0,/<\/intent-filter>/s|</intent-filter>|</intent-filter>\n            <intent-filter>\n                <action android:name="android.intent.action.VIEW" />\n                <category android:name="android.intent.category.DEFAULT" />\n                <category android:name="android.intent.category.BROWSABLE" />\n                <data android:mimeType="application/json" />\n            </intent-filter>|' "$mani"
+    step "أُضيف intent-filter لاستقبالِ ملفّاتِ JSON (فتحُ النسخةِ الاحتياطيّة)"
+  fi
   [ -n "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}" ] || wrn "ANDROID_HOME غير مضبوط — قد يفشل gradlew"
   local apk="$ANDROID/app/build/outputs/apk/debug/app-debug.apk"
   rm -f "$apk"  # لئلّا يُنسَخَ APK قديمٌ إن فشل البناء

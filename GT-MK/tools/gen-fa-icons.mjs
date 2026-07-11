@@ -16,6 +16,8 @@ const MAP = {
   lang: "language", stories: "images", tales: "scroll", play: "gamepad", puzzles: "puzzle-piece",
   quiz: "bullseye", progress: "trophy", print: "print", shield: "user-shield",
   components: "box-open", reports: "chart-column", accounts: "users", gear: "gear",
+  // v1.5: النسخة الاحتياطيّة + «الزمانُ والمكان» + الأصوات
+  backup: "floppy-disk", clock: "clock", trophy: "trophy", compass: "compass", leaf: "leaf", sun: "sun", sound: "volume-high",
   // الرياضيّات
   numbers: "list-ol", add: "plus", sub: "minus", mul: "xmark", div: "divide", find: "magnifying-glass",
   compare: "scale-balanced", pattern: "repeat", size: "ruler", circle: "circle", crafts: "scissors",
@@ -44,6 +46,7 @@ const EMOJI = {
   "✂️": "crafts", "🧠": "brain", "🚂": "train", "🧺": "pins", "🧱": "blocks", "🎣": "fish",
   "🧩": "puzzles", "🌀": "maze", "🎡": "wheel", "🖨️": "print", "📑": "index", "🔤": "basics",
   "🎙️": "mic", "🔗": "link", "🌟": "star", "🕌": "mosque", "🔬": "microscope", "🤝": "handshake",
+  "🕐": "clock", "🏆": "trophy", "🧭": "compass", "🍂": "leaf", "🌅": "sun", "🔊": "sound", "💾": "backup",
   "📝": "words", "💬": "phrases", "📚": "stories", "🎯": "quiz", "🎮": "play", "📖": "read",
   "🦁": "animals", "🎨": "colors", "👪": "family", "🍎": "food", "🧒": "body", "👋": "hand",
   "🏫": "school", "🌳": "nature", "🚗": "transport", "🍇": "fruits", "👕": "clothes",

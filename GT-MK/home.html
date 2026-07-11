@@ -201,7 +201,8 @@ import { wireThemeToggle } from "./src/theme.js";
 wireThemeToggle(document.getElementById("themeBtn"));
 wireThemeToggle(document.getElementById("loginThemeBtn")); // زرُّ تبديل الوضع في شاشة الدخول
 import { injectIcons } from "./src/icons.js";
-import { openBackupModal } from "./src/backup.js"; // نافذةُ النسخةِ الاحتياطيّة (تصدير/استيراد)
+import { openBackupModal, handleIncomingBackup } from "./src/backup.js"; // نافذةُ النسخةِ الاحتياطيّة + فتحُ ملفِّ .json الوارد
+handleIncomingBackup((t,ok)=>{ if(!ok){ try{ alert(t); }catch(e){} } }); // نقرُ ملفِّ .json خارجَ التطبيق ⇒ استيرادٌ (بتأكيد)
 import { ROBO_SVG } from "./src/robo-companion.js"; // شكلُ الآليّ الرسميّ (بطاقةُ الدخول = نفسُ المرافق)
 try{ const lr=document.getElementById("loginRobo"); if(lr) lr.innerHTML = ROBO_SVG; }catch(e){}
 injectIcons(); // أيقوناتُ SVG لبطاقات الفهرس (تستبدل الإيموجي الاحتياطيّة)

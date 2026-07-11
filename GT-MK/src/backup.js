@@ -19,8 +19,9 @@ export async function backupExport(msg = () => {}) {
     if (isNative && Filesystem && Share) {
       await Filesystem.writeFile({ path: filename, data: json, directory: "CACHE", encoding: "utf8" });
       const { uri } = await Filesystem.getUri({ path: filename, directory: "CACHE" });
-      await Share.share({ title: filename, text: "نسخةُ «مِشكاة» الاحتياطيّة 💾", files: [uri] });
-      msg("✓ جاهزةٌ — احفظْها في مكانٍ آمنٍ من صحيفةِ المشاركة.", true); return;
+      // الملفُّ وحدَه بلا نصّ: بعضُ تطبيقاتِ المراسلةِ يأخذُ النصَّ ويُسقِطُ المرفَق. + title = اسمُ الملفّ.
+      await Share.share({ title: filename, files: [uri] });
+      msg("✓ جاهزةٌ — اختَرْ تطبيقًا أو «حفظ في الملفّات» من صحيفةِ المشاركة.", true); return;
     }
   } catch (e) { const m = String((e && e.message) || e).toLowerCase(); if ((e && e.name === "AbortError") || m.includes("cancel")) return; }
   // (2) مشاركةُ الملفّ (ويب الهاتف)
@@ -36,20 +37,49 @@ export async function backupExport(msg = () => {}) {
   msg("✓ نُزِّل ملفُّ النسخةِ الاحتياطيّة.", true);
 }
 
+// استيرادٌ من نصِّ JSON مباشرةً (تُشارِكُه backupImport وفتحُ الملفِّ الوارد).
+export function backupImportText(text, msg = () => {}) {
+  let payload; try { payload = JSON.parse(text); } catch (e) { msg("تعذّر قراءةُ الملفّ (JSON غير صالح).", false); return false; }
+  const keys = (payload && payload.keys && typeof payload.keys === "object") ? payload.keys : payload;
+  if (!keys || typeof keys !== "object" || !Object.keys(keys).some(isTil)) { msg("ملفٌّ غير صالح — لا يحوي بياناتِ «مِشكاة».", false); return false; }
+  const n = Object.keys(keys).filter(isTil).length;
+  if (!confirm(`سيَستبدلُ الاستيرادُ كلَّ الحساباتِ والتقدّمِ والإعداداتِ الحاليّةَ على هذا الجهازِ بـ${n} عنصرًا من الملفّ. متابعة؟`)) return false;
+  Object.keys(collect()).forEach(k => localStorage.removeItem(k));                 // امحُ القديمَ
+  Object.keys(keys).forEach(k => { if (isTil(k)) localStorage.setItem(k, keys[k]); }); // استعِدْ
+  msg("✓ استُعيدت البيانات — يُعادُ التحميلُ الآن…", true);
+  setTimeout(() => location.reload(), 1000);
+  return true;
+}
+
 export function backupImport(file, msg = () => {}) {
   const reader = new FileReader();
-  reader.onload = () => {
-    let payload; try { payload = JSON.parse(reader.result); } catch (e) { msg("تعذّر قراءةُ الملفّ (JSON غير صالح).", false); return; }
-    const keys = (payload && payload.keys && typeof payload.keys === "object") ? payload.keys : payload;
-    if (!keys || typeof keys !== "object" || !Object.keys(keys).some(isTil)) { msg("ملفٌّ غير صالح — لا يحوي بياناتِ «مِشكاة».", false); return; }
-    const n = Object.keys(keys).filter(isTil).length;
-    if (!confirm(`سيَستبدلُ الاستيرادُ كلَّ الحساباتِ والتقدّمِ والإعداداتِ الحاليّةَ على هذا الجهازِ بـ${n} عنصرًا من الملفّ. متابعة؟`)) return;
-    Object.keys(collect()).forEach(k => localStorage.removeItem(k));                 // امحُ القديمَ
-    Object.keys(keys).forEach(k => { if (isTil(k)) localStorage.setItem(k, keys[k]); }); // استعِدْ
-    msg("✓ استُعيدت البيانات — يُعادُ التحميلُ الآن…", true);
-    setTimeout(() => location.reload(), 1000);
-  };
+  reader.onload = () => backupImportText(reader.result, msg);
   reader.readAsText(file);
+}
+
+// فتحُ ملفِّ .json من خارجِ التطبيق (نقرٌ على الملفّ → «فتح بواسطة مِشكاة») على أندرويد:
+// نقرأُ URI الملفِّ الوارد (VIEW) عبر Capacitor Filesystem ثمّ نعرضُ الاستيرادَ (بتأكيد). يتطلّبُ intent-filter (build-packages.sh).
+export async function handleIncomingBackup(msg = () => {}) {
+  try {
+    const C = window.Capacitor;
+    if (!(C && C.isNativePlatform && C.isNativePlatform())) return;
+    const P = C.Plugins || {}, App = P.App, Filesystem = P.Filesystem;
+    if (!App || !Filesystem) return;
+    const looksJson = u => u && (u.startsWith("content://") || u.startsWith("file://")) ;
+    const readImport = async (url) => {
+      if (!looksJson(url)) return;
+      if (sessionStorage.getItem("bk_incoming") === url) return; // لا تُكرّرِ المعالجةَ لنفسِ الملفّ
+      sessionStorage.setItem("bk_incoming", url);
+      try {
+        const r = await Filesystem.readFile({ path: url, encoding: "utf8" });
+        const text = typeof r.data === "string" ? r.data : "";
+        if (text) backupImportText(text, msg);
+      } catch (e) { try { msg("تعذّرت قراءةُ الملفّ المُختار — جرّبْ زرَّ «استيراد JSON».", false); } catch (_) {} }
+    };
+    const launch = await App.getLaunchUrl().catch(() => null);
+    if (launch && launch.url) readImport(launch.url);
+    App.addListener("appUrlOpen", d => { if (d && d.url) readImport(d.url); });
+  } catch (e) {}
 }
 
 // نافذةٌ منبثقةٌ مستقلّةٌ بالزرّين (تُستدعى من بطاقةِ صفحة الوالدين) — بأنماطٍ مضمّنةٍ فتعملُ في أيّ صفحة.

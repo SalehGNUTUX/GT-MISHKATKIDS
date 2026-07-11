@@ -131,8 +131,8 @@ function render(){
   document.getElementById("mission").innerHTML =
     `<div class="mission ${m.complete?"done":""}">
       <div class="mtitle">${m.complete?"🎉 أكملتَ مهمّة اليوم!":"✨ ثلاث مهامّ لهذا اليوم"}</div>
-      ${m.tasks.map(t=>`<a class="mrow ${t.done?"done":""}" href="${t.href}">
-        <span class="ic">${t.ic}</span><span class="lbl">${t.label}</span><span class="ck">${t.done?"✅":"⬜"}</span></a>`).join("")}
+      ${m.tasks.map(t=>{ const sep=t.href.includes("?")?"&":"?"; return `<a class="mrow ${t.done?"done":""}" href="${t.done?t.href:t.href+sep+"mission=1"}">
+        <span class="ic">${t.ic}</span><span class="lbl">${t.label}</span><span class="ck">${t.done?"✅":"⬜"}</span></a>`; }).join("")}
     </div>`;
 
   // stats

@@ -92,13 +92,14 @@ function mountMissionBanner() {
   try {
     if (new URLSearchParams(location.search).get("mission") !== "1") return;
     const page = (location.pathname.split("/").pop() || "").toLowerCase();
-    if (page === "home.html" || page === "index.html" || page === "") return; // وِجهةُ العودة
+    if (page === "progress.html" || page === "") return; // progress.html = صفحةُ المهامّ (وِجهةُ العودة)
     if (document.getElementById("missionBar")) return;
     const bar = document.createElement("div");
     bar.id = "missionBar";
-    bar.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:9998;background:linear-gradient(135deg,#E07A5F,#C7613F);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;font-family:inherit;font-weight:800;font-size:14px;box-shadow:0 -4px 16px rgba(0,0,0,.22)";
-    bar.innerHTML = `<span>🎯 أنت في مهمّة اليوم</span><a href="home.html" style="background:#fff;color:#C7613F;border-radius:999px;padding:7px 16px;text-decoration:none;font-weight:800">↩ العودة للمهامّ</a>`;
+    bar.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:9998;background:linear-gradient(135deg,#E07A5F,#C7613F);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;font-family:inherit;font-weight:800;font-size:13.5px;box-shadow:0 -4px 16px rgba(0,0,0,.22)";
+    bar.innerHTML = `<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎯 مهمّةُ اليوم</span><a href="progress.html" style="flex-shrink:0;background:#fff;color:#C7613F;border-radius:999px;padding:7px 15px;text-decoration:none;font-weight:800;white-space:nowrap">↩ العودة للمهامّ</a>`;
     document.body.appendChild(bar);
+    document.body.classList.add("mission-open"); // يرفعُ الآليَّ فوقَ الشريطِ (قاعدةٌ في robo-companion)
     document.body.style.paddingBottom = "62px"; // كيلا يُغطّيَ الشريطُ آخرَ المحتوى
   } catch (e) {}
 }

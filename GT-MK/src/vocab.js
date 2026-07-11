@@ -11,7 +11,7 @@ import numerals from "../content/numerals.js";
 import stories from "../content/stories.js";
 import sararim from "../content/sararim-stories.js";
 import { numberNames } from "./numbers-ar.js";
-import { REACTIONS, NOTICES, GAME_REACTIONS, GAME_INTROS } from "./robo-phrases.js";
+import { REACTIONS, NOTICES, GAME_REACTIONS, GAME_INTROS, GREETINGS } from "./robo-phrases.js";
 import { PRAISE } from "./islamic.js";
 import langEn from "../content/lang-en.js";
 import langFr from "../content/lang-fr.js";
@@ -33,7 +33,7 @@ export const WORD_UNITS = [
 ];
 export const SENTENCE_UNITS = [
   { key: "sread", label: "جمل القراءة", items: uniq((reading.sentences || []).map(s => s.text)) },
-  { key: "robo",  label: "عبارات الآليّ", items: uniq([].concat(...Object.values(REACTIONS || {}), PRAISE || [])) },
+  { key: "robo",  label: "عبارات الآليّ", items: uniq([].concat(...Object.values(REACTIONS || {}), PRAISE || [], GREETINGS || [])) },
   // إشعاراتُ الآليّ السياقيّة (نهاية سورة، حلّ لغز، ورشة، ألعاب…) — تُنطَق بمقاطع espeak وتُسجَّل بشريًّا.
   { key: "notices", label: "إشعارات الآليّ", items: uniq(Object.values(NOTICES || {})) },
   // تفاعلاتُ الألعاب التنافسيّة — تُنطَق عصبيًّا (kareem) في الألعاب.

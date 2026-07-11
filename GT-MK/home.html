@@ -143,7 +143,7 @@
     </div>
   </header>
 
-  <div id="daily" class="daily"></div>
+  <a id="daily" class="daily" href="progress.html"></a>
 
   <div id="parentHub" class="nav detailed" style="display:none"></div>
 
@@ -365,11 +365,9 @@ const _dm = getDailyMission();
 const _dailyEl = document.getElementById("daily");
 _dailyEl.classList.toggle("done", _dm.complete);
 const _rem = _dm.tasks.filter(t=>!t.done).length;
-// المهامُّ غيرُ المنجَزةِ روابطُ تدخلُ النشاطَ بوضعِ «مهمّة» (?mission=1) فيظهرُ شريطُ العودة؛ المنجَزةُ ثابتة.
-_dailyEl.innerHTML = `<div class="dh">${_dm.complete?"🎉 أكملتَ مهمّة اليوم! أحسنت.":`✨ مهمّة اليوم — بقيَ ${_rem} من ${_dm.tasks.length} (اضغط مهمّةً لتبدأها)`}</div>
-  <div class="dt">${_dm.tasks.map(t=>{ const sep=t.href.includes("?")?"&":"?"; return t.done
-    ? `<span class="dchip ok">${t.ic} ${t.label} ✅</span>`
-    : `<a class="dchip" href="${t.href}${sep}mission=1" style="text-decoration:none">${t.ic} ${t.label}</a>`; }).join("")}</div>`;
+// الكتلةُ كلُّها تُفضي إلى صفحةِ المهامّ (progress.html)؛ الشِّاراتُ حالةٌ فقط، والبدءُ من صفحةِ المهامّ.
+_dailyEl.innerHTML = `<div class="dh">${_dm.complete?"🎉 أكملتَ مهمّة اليوم! أحسنت.":`✨ مهمّة اليوم — بقيَ ${_rem} من ${_dm.tasks.length} (اضغط لمتابعتها)`}</div>
+  <div class="dt">${_dm.tasks.map(t=>`<span class="dchip ${t.done?"ok":""}">${t.ic} ${t.label}${t.done?" ✅":""}</span>`).join("")}</div>`;
 </script>
 </body>
 </html>

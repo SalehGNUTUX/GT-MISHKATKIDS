@@ -5,13 +5,15 @@
 import { roboSay, roboPhrase } from "./robo-voice.js";
 import { speak } from "./speak.js";
 import * as sfx from "./sfx.js";
-import { femaleize } from "./robo-phrases.js";
+import { femaleize, GREETINGS } from "./robo-phrases.js";
 import { isFemale } from "./accounts.js";
 
 let el = null, bubble = null, hideT = null, mounted = false;
 
 const STYLE = `
-.robo-comp{position:fixed;inset-inline-end:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:60;width:74px;text-align:center;pointer-events:none;font-family:inherit}
+.robo-comp{position:fixed;inset-inline-end:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:60;width:74px;text-align:center;pointer-events:auto;cursor:grab;touch-action:none;font-family:inherit;transition:bottom .2s}
+.robo-comp.dragging{cursor:grabbing;animation:none!important}
+body.mission-open .robo-comp:not(.moved){bottom:calc(74px + env(safe-area-inset-bottom))}
 .robo-comp svg{width:64px;height:64px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.18))}
 .robo-comp .rc-eye{transform-box:fill-box;transform-origin:center}
 @media (prefers-reduced-motion: no-preference){
@@ -49,6 +51,43 @@ function ensureMounted() {
   el = document.createElement("div"); el.className = "robo-comp"; el.innerHTML = SVG;
   bubble = document.createElement("div"); bubble.className = "rc-bubble";
   document.body.appendChild(bubble); document.body.appendChild(el);
+  attachRoboInteract(el);
+}
+
+// السحبُ لتغييرِ الموضع + النقرُ (دون سحب) لرسالةِ ترحيبٍ متنوّعة. الموضعُ يُحفَظُ محلّيًّا.
+const POS_KEY = "tilmithi_robo_pos";
+function attachRoboInteract(node) {
+  const setPos = (x, y) => { node.classList.add("moved"); node.style.left = x + "px"; node.style.top = y + "px"; node.style.right = "auto"; node.style.bottom = "auto"; };
+  try { const p = JSON.parse(localStorage.getItem(POS_KEY) || "null"); if (p && typeof p.x === "number") setPos(p.x, p.y); } catch (e) {}
+  let sx = 0, sy = 0, ox = 0, oy = 0, moved = false, dragging = false;
+  node.addEventListener("pointerdown", e => {
+    dragging = true; moved = false; sx = e.clientX; sy = e.clientY;
+    const r = node.getBoundingClientRect(); ox = r.left; oy = r.top;
+    try { node.setPointerCapture(e.pointerId); } catch (_) {}
+    node.classList.add("dragging"); e.preventDefault();
+  });
+  node.addEventListener("pointermove", e => {
+    if (!dragging) return; const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+    const w = node.offsetWidth, h = node.offsetHeight;
+    const x = Math.max(4, Math.min(innerWidth - w - 4, ox + dx)), y = Math.max(4, Math.min(innerHeight - h - 4, oy + dy));
+    setPos(x, y);
+  });
+  const end = () => {
+    if (!dragging) return; dragging = false; node.classList.remove("dragging");
+    if (moved) { const r = node.getBoundingClientRect(); try { localStorage.setItem(POS_KEY, JSON.stringify({ x: r.left, y: r.top })); } catch (_) {} }
+    else greet(); // نقرةٌ بلا سحب ⇒ ترحيب
+  };
+  node.addEventListener("pointerup", end);
+  node.addEventListener("pointercancel", () => { dragging = false; node.classList.remove("dragging"); });
+}
+let _lastGreet = -1;
+function greet() {
+  let i = Math.floor(Math.random() * GREETINGS.length);
+  if (i === _lastGreet) i = (i + 1) % GREETINGS.length; // لا تُكرّرْ نفسَ الرسالةِ مباشرةً
+  _lastGreet = i;
+  const g = GREETINGS[i];
+  flash("cheer"); showBubble(g); sfx.success(); roboSay(g, { mood: "happy" });
 }
 
 function flash(cls) {

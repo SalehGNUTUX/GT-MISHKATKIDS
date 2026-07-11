@@ -71,6 +71,16 @@
   .np-names{display:flex;justify-content:space-between;gap:16px;margin:0 0 14px;font-weight:800;font-size:14px;flex-wrap:wrap}
   .tx-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;align-items:flex-start}
   .tx-mini{flex:0 0 auto;width:30%;min-width:150px} .tx-lbl{text-align:center;font-weight:800;margin-bottom:6px;font-size:13px}
+  .tx-cut{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+  .tx-cut-h{font-weight:800;font-size:13px;width:100%;color:#555}
+  .tx-mk{width:48px;height:48px;border:1.5px dashed #999;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;line-height:1}
+  .tx-mk.x{color:#E0566B} .tx-mk.o{color:#4C8BF5}
+  .sl-g{display:grid;border:2px solid #333;border-radius:6px;overflow:hidden;max-width:540px;margin:12px auto}
+  .sl-c{aspect-ratio:1/1;border:1px solid #bbb;position:relative;padding:3px;display:flex}
+  .sl-n{font-weight:800;font-size:14px} .sl-lad,.sl-snk{position:absolute;bottom:2px;left:3px;right:3px;font-size:9px;font-weight:700;line-height:1.1}
+  .sl-lad{color:#2f7d32} .sl-snk{color:#c0392b}
+  .dt-g{display:grid;gap:42px;width:fit-content;margin:16px auto;padding:10px}
+  .dt-d{width:9px;height:9px;background:#333;border-radius:50%}
   .cn-wrap{display:flex;justify-content:center;gap:80px;max-width:440px;margin:0 auto}
   .cn-col{display:flex;flex-direction:column;gap:20px} .cn-c{font-size:34px;white-space:nowrap}
   .poster h2{font-size:26px;margin:0}
@@ -107,6 +117,7 @@
     <label class="chk"><input type="checkbox" id="tAll" checked /> الكلّ</label>
     <span id="tplChecks" style="display:contents"></span>
     <label>نُسخٌ في الورقة: <select id="copies"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+    <label>مظهرُ الذاكرة: <select id="memTheme"><option value="animals">حيوانات</option><option value="fruits">فواكه</option><option value="shapes">أشكال</option><option value="transport">مركبات</option><option value="food">طعام</option><option value="faces">وجوه</option><option value="sea">بحر</option><option value="space">فضاء</option><option value="sports">رياضة</option><option value="weather">طقس</option><option value="plants">نباتات</option></select></label>
     <span class="count" id="count"></span>
     <button class="print" onclick="smartPrint(document.querySelector('.sheet'),'أنشطة-مِشكاة.pdf')">اطبع / احفظ PDF</button>
   </div>
@@ -203,12 +214,31 @@ function tplXO(){
   const board=n=>`<div class="tx-mini"><div class="tx-lbl">${n===3?"سهل · 3×3":n===4?"متوسّط · 4×4":"صعب · 5×5"}</div><div class="tx-g" style="grid-template-columns:repeat(${n},1fr)">${'<div class="tx-c"></div>'.repeat(n*n)}</div></div>`;
   return `<section class="tpl"><h2>⭕✖ دائرةٌ وعلامة</h2>${nameStrip()}
     <p class="tpl-h">لاعبان: ◯ و✖. بالتناوب ضَعْ علامتَك؛ مَن يَصنعُ ثلاثةً في خطٍّ (وفي الكبيرة خطًّا كاملاً) يفوز. ثلاثُ صعوبات:</p>
-    <div class="tx-row">${board(3)}${board(4)}${board(5)}</div></section>`;
+    <div class="tx-row">${board(3)}${board(4)}${board(5)}</div>
+    <p class="tpl-h" style="margin-top:12px">✂️ بطاقاتٌ للقصّ (بمقاسِ المربّع) — تُوضَعُ على اللوحةِ بلا كتابةٍ فتُعادُ اللعبةُ مرارًا. لكلِّ لاعبٍ شكلُه:</p>
+    <div class="tx-cut"><div class="tx-cut-h">اللاعبُ الأوّل ✖</div>${'<div class="tx-mk x">✖</div>'.repeat(8)}</div>
+    <div class="tx-cut"><div class="tx-cut-h">اللاعبُ الثاني ◯</div>${'<div class="tx-mk o">◯</div>'.repeat(8)}</div></section>`;
 }
+// مظاهرُ الذاكرةِ الورقيّة (نفسُ تنوّعِ الرقميّة) — يختارُها المستخدمُ من الشريط.
+const MEM_THEMES = {
+  animals:  { name:"حيوانات", pool:["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐸","🐵","🦉","🐷"] },
+  fruits:   { name:"فواكه",   pool:["🍎","🍌","🍇","🍓","🍊","🥝","🍒","🍑","🍍","🥥","🍉","🍐","🍋","🥭","🫐"] },
+  shapes:   { name:"أشكال",   pool:["🔴","🔵","🟢","🟡","🟣","🟠","🔺","🔷","🟥","🟦","🟩","🟨","🟪","🟧","⬛"] },
+  transport:{ name:"مركبات",  pool:["🚗","🚌","🚂","✈️","⛵","🚲","🚁","🚀","🚕","🚚","🏍️","🚑","🚒","🚜","🛵"] },
+  food:     { name:"طعام",    pool:["🍕","🍔","🍟","🌭","🍩","🍪","🎂","🍰","🧁","🍫","🍿","🥨","🥐","🧀","🍦"] },
+  faces:    { name:"وجوه",    pool:["😀","😂","😍","🥰","😎","🤩","😐","😴","😡","🤔","😱","🥳","😇","🤗","😢"] },
+  sea:      { name:"بحر",     pool:["🐠","🐟","🐡","🦈","🐬","🐳","🐙","🦑","🦀","🦞","🐚","🐢","🦭","🐝","🐌"] },
+  space:    { name:"فضاء",    pool:["🚀","🛸","🌍","🌙","⭐","☄️","🪐","🌟","👽","🔭","🌌","☀️","🌠","🛰️","🌕"] },
+  sports:   { name:"رياضة",   pool:["⚽","🏀","🏈","⚾","🎾","🏐","🏓","🏸","🥊","🎽","🚴","🏊","⛷️","🏇","🥅"] },
+  weather:  { name:"طقس",     pool:["☀️","🌤️","⛅","🌧️","⛈️","🌨️","❄️","🌈","🌪️","🌫️","💧","☁️","🌡️","🌬️","⚡"] },
+  plants:   { name:"نباتات",  pool:["🌸","🌷","🌹","🌻","🌺","🌼","🌾","🌵","🌴","🌳","🍀","🍁","🍄","🌿","🪴"] },
+};
 function tplMemory(){
-  const pool=["🌙","⭐","🌳","🐦","🌊","☀️","🍎","🦋"]; // 8 أزواج = 16 بطاقة
-  const cards=shuf([...pool,...pool]);
-  return `<section class="tpl"><h2>🧠 بطاقاتُ الذاكرة — قُصَّ والعب</h2>${nameStrip()}
+  const th = (document.getElementById("memTheme") && document.getElementById("memTheme").value) || "animals";
+  const T = MEM_THEMES[th] || MEM_THEMES.animals;
+  const eight = shuf([...T.pool]).slice(0,8);   // 8 أزواج = 16 بطاقة
+  const cards=shuf([...eight,...eight]);
+  return `<section class="tpl"><h2>🧠 بطاقاتُ الذاكرة (${T.name}) — قُصَّ والعب</h2>${nameStrip()}
     <p class="tpl-h">اقطعِ البطاقاتِ الستَّ عشرة (ثمانيةُ أزواج)، اقلبها على وجهها واخلطها، ثمّ اقلبْ بطاقتين كلَّ دورٍ بحثًا عن المتطابقتين. مَن يجمعُ أزواجًا أكثرَ يفوز.</p>
     <div class="tm-g">${cards.map(e=>`<div class="tm-c">${e}</div>`).join("")}</div></section>`;
 }
@@ -278,8 +308,29 @@ function tplMissing(){
     <p class="tpl-h">اكتبِ العددَ الناقصَ ليصحَّ الجمعُ. لاعبان بالمسائلِ نفسِها؛ أوّلُ من يُكمِلُ بصحّةٍ يفوز!</p>
     <div class="ms-wrap">${col("اللاعب 1")}${col("اللاعب 2")}</div></section>`;
 }
+// 🪜🐍 سُلّمٌ وثعبان — لوحةُ 1–30 بسلالمَ وثعابين؛ نردٌ/عجلةٌ 1–6 وقِطَعٌ (تُقَصُّ أسفلَ الصفحة). مستدامٌ يُعادُ مرارًا.
+function tplSnake(){
+  const N=30, cols=6, LAD={4:14,9:21,17:27}, SNK={12:3,19:7,26:11};
+  let cells="";
+  for(let n=1;n<=N;n++){ let x=""; if(LAD[n])x=`<span class="sl-lad">🪜 → ${LAD[n]}</span>`; if(SNK[n])x=`<span class="sl-snk">🐍 → ${SNK[n]}</span>`; cells+=`<div class="sl-c"><span class="sl-n">${n}</span>${x}</div>`; }
+  return `<section class="tpl"><h2>🪜🐍 سُلّمٌ وثعبان</h2>${nameStrip()}
+    <p class="tpl-h">ارمِ نردًا (أو أدِرْ عجلةً 1–6) وحرّكْ قطعتَك بالعددِ الظاهر. إن وقفتَ على 🪜 اصعدْ إلى العددِ المُشار، وإن وقفتَ على 🐍 انزلْ. أوّلُ من يبلغُ ${N} يفوز.</p>
+    <div class="sl-g" style="grid-template-columns:repeat(${cols},1fr)">${cells}</div>
+    <p class="tpl-h" style="margin-top:10px">✂️ قِطَعُ اللاعبين (تُقَصُّ):</p>
+    <div class="tx-cut"><div class="tx-mk x">🔴</div><div class="tx-mk o">🔵</div><div class="tx-mk x">🟢</div><div class="tx-mk o">🟡</div></div></section>`;
+}
+// ▪️ مربّعاتُ النقاط — شبكةُ نقاطٍ؛ لاعبان يَصِلانِ نقطتين، ومَن يُغلِقُ مربّعًا يملكُه. كلاسيكيٌّ للتفكيرِ الاستراتيجيّ.
+function tplDots(){
+  const R=6, C=6; let dots="";
+  for(let i=0;i<R*C;i++) dots+='<div class="dt-d"></div>';
+  return `<section class="tpl"><h2>▪️ مربّعاتُ النقاط</h2>${nameStrip()}
+    <p class="tpl-h">لاعبان. بالتناوبِ صِلْ نقطتين متجاورتين (أفقيًّا أو رأسيًّا) بخطٍّ واحد. مَن يُكمِلُ الضلعَ الرابعَ لمربّعٍ يكتبُ حرفَه فيه ويلعبُ دورًا إضافيًّا. مَن يملكُ مربّعاتٍ أكثرَ يفوز.</p>
+    <div class="dt-g" style="grid-template-columns:repeat(${C},max-content)">${dots}</div></section>`;
+}
 const TEMPLATES=[
   {id:"t_xo",label:"⭕ دائرة وعلامة",fn:tplXO},
+  {id:"t_snake",label:"🪜 سُلّمٌ وثعبان",fn:tplSnake},
+  {id:"t_dots",label:"▪️ مربّعاتُ النقاط",fn:tplDots},
   {id:"t_ws",label:"🔤 شبكة الكلمات",fn:tplWordSearch},
   {id:"t_hunt",label:"🔎 صيد الحرف/الرقم",fn:tplHunt},
   {id:"t_math",label:"➕ تحدّي الجمع",fn:tplMath},
@@ -322,7 +373,7 @@ function init(){
   tc.innerHTML=TEMPLATES.map(t=>`<label class="chk"><input type="checkbox" class="tplc" id="${t.id}" checked /> ${t.label}</label>`).join("");
   const tAll=document.getElementById("tAll");
   const syncAll=()=>{ tAll.checked=[...document.querySelectorAll(".tplc")].every(c=>c.checked); };
-  ["fDomain","fAge","cCards","cPoster","copies"].forEach(id=>document.getElementById(id).addEventListener("change",render));
+  ["fDomain","fAge","cCards","cPoster","copies","memTheme"].forEach(id=>document.getElementById(id).addEventListener("change",render));
   document.querySelectorAll(".tplc").forEach(c=>c.addEventListener("change",()=>{ syncAll(); render(); }));
   tAll.addEventListener("change",()=>{ document.querySelectorAll(".tplc").forEach(c=>c.checked=tAll.checked); render(); });
   render();

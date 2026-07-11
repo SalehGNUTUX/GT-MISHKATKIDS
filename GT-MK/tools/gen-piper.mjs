@@ -13,6 +13,9 @@ import stories from "../content/stories.js";
 import sararim from "../content/sararim-stories.js";
 import { allClockPhrases } from "../content/clock-time.js"; // جُمَلُ الوقت (v1.5) — نطقُ الساعةِ العربيّ
 import { allOrientWords, allPrayerWords } from "../content/orient.js"; // اتجاهات/فصول/فترات + أسماءُ الصلوات (نطقٌ عصبيٌّ عربيّ)
+import { REACTIONS, GAME_REACTIONS, GAME_INTROS, NOTICES, GREETINGS, femaleize } from "../src/robo-phrases.js"; // عباراتُ الآليّ الموجَّهة
+import { PRAISE } from "../src/islamic.js";
+import library from "../content/library.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PYTHON = process.env.PIPER_PYTHON || join(ROOT, ".piper-venv", "bin", "python");
@@ -29,10 +32,22 @@ const sha = s => createHash("sha1").update(s).digest("hex").slice(0, 12);
 const SET = { id: "tts-kareem", name: "قارئ النصوص (kareem)", gender: "male", age: "adult", kind: "tts", types: ["sentence", "story", "reaction"] };
 
 const uniq = a => [...new Set(a.filter(Boolean).map(s => String(s).trim()).filter(Boolean))];
+// عباراتُ الآليِّ الموجَّهةُ للطفل (تُخاطَبُ بالمذكّرِ أو المؤنَّثِ حسبَ جنسِ الحساب) — نولّدُ النسختين
+// كي يكونَ للنصِّ المؤنَّثِ (femaleize) مقطعُ Piper عصبيٌّ ولا يَصمُتَ لحساباتِ البنات.
+const roboDirected = uniq([
+  ...Object.values(REACTIONS || {}).flat(),
+  ...Object.values(GAME_REACTIONS || {}).flat(),
+  ...Object.values(GAME_INTROS || {}),
+  ...Object.values(NOTICES || {}),
+  ...(PRAISE || []), ...(GREETINGS || []),
+  ...(library.memories || []).flatMap(m => [m.spark && m.spark.robo_line, m.teach && m.teach.robo_question, m.heal && m.heal.robo_reaction, m.think && m.think.robo_wrong]),
+]);
 const texts = uniq([
   ...SENTENCE_UNITS.flatMap(u => u.items),   // جُمَل القراءة + ردود الآلي + الإشعارات + نصوص قصّة الأرقام + القصص
   ...(stories.stories || []).flatMap(s => [s.title, s.lesson, ...(s.pages || []).map(p => p.text)]),
   ...(sararim.stories || []).flatMap(s => [s.title, s.text]),
+  ...roboDirected,                            // خطابُ الآليّ المذكّر (يشمل حلقةَ «علّم الآليّ»)
+  ...roboDirected.map(femaleize),             // النسخُ المؤنّثةُ (تُطابقُ خطابَ الآليّ للأنثى)
   ...allClockPhrases("ar"),                  // نطقُ الوقتِ العربيُّ (144 جملة + لصيقتا ص/م)
   ...allOrientWords("ar"),                   // الاتجاهاتُ والفصولُ وفتراتُ اليوم (20 كلمة، عصبيّ)
   ...allPrayerWords(),                        // أسماءُ الصلواتِ الخمس (عصبيّ)

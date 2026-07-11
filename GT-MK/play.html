@@ -494,7 +494,7 @@ function renderTrain(){
     else if(a==="say")robo.read(cur.word); else if(a==="clear"){t_placed=[];t_solved=false;renderTrain();} else if(a==="next")startTrain(); });
 }
 function tValidate(){
-  if(t_placed.map(id=>t_tiles[id].letter).join("")===cur.word){ t_solved=true; celebrate(); renderTrain(); document.getElementById("fb").innerHTML=winBanner("انطلق القطار! 🚂"); document.getElementById("cont").onclick=startTrain; }
+  if(t_placed.map(id=>t_tiles[id].letter).join("")===cur.word){ t_solved=true; celebrate(); renderTrain(); document.getElementById("fb").innerHTML=winBanner("انطلق القطار! 🚂"); try{document.getElementById("fb").scrollIntoView({behavior:"smooth",block:"center"});}catch(_){} document.getElementById("cont").onclick=startTrain; }
   else { streak=0; robo.encourage(); document.querySelectorAll("#slots .slot.full").forEach(el=>el.classList.add("err")); document.getElementById("fb").innerHTML=`<div class="fb">ليست صحيحة — جرّب ترتيبًا آخر أو ↺ أفرغ.</div>`; setTimeout(()=>{ if(!t_solved) renderTrain(); },750); }
 }
 
@@ -508,7 +508,7 @@ function renderPins(){
     `<div class="controls"><button data-act="hint">💡 تلميح</button><button data-act="say">🔊 استمع</button><button data-act="shuffle">🔀 اخلط</button><button class="go" data-act="next">كلمة جديدة ⏭️</button></div>`;
   wireBack(); wireAge(startPins);
   view.querySelector("#line").addEventListener("click",e=>{ const d=e.target.closest(".peg"); if(!d||p_solved)return; const i=+d.getAttribute("data-i");
-    if(p_sel===null){ p_sel=i; } else if(p_sel===i){ p_sel=null; } else { [p_arr[p_sel],p_arr[i]]=[p_arr[i],p_arr[p_sel]]; p_sel=null; p_swaps++; if(p_arr.map(x=>x.l).join("")===cur.word){ p_solved=true; celebrate(); renderPins(); document.getElementById("fb").innerHTML=winBanner("نشرتها بالترتيب! 🧺"); document.getElementById("cont").onclick=startPins; return; } }
+    if(p_sel===null){ p_sel=i; } else if(p_sel===i){ p_sel=null; } else { [p_arr[p_sel],p_arr[i]]=[p_arr[i],p_arr[p_sel]]; p_sel=null; p_swaps++; if(p_arr.map(x=>x.l).join("")===cur.word){ p_solved=true; celebrate(); renderPins(); document.getElementById("fb").innerHTML=winBanner("نشرتها بالترتيب! 🧺"); try{document.getElementById("fb").scrollIntoView({behavior:"smooth",block:"center"});}catch(_){} document.getElementById("cont").onclick=startPins; return; } }
     renderPins(); });
   view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-act]"); if(!b)return; const a=b.getAttribute("data-act");
     if(a==="hint"){const f=document.getElementById("flash");f.classList.add("on");setTimeout(()=>f.classList.remove("on"),1300);}
@@ -530,7 +530,7 @@ function renderBlocks(){
     `<div class="controls"><button data-act="say">🔊 استمع</button><button class="go" data-act="next">كلمة جديدة ⏭️</button></div>`;
   wireBack(); wireAge(startBlocks);
   view.querySelector("#cands").addEventListener("click",e=>{ const b=e.target.closest("[data-id]"); if(!b||b_solved)return; const c=b_cands.find(x=>x.id===+b.getAttribute("data-id")); const g=nextGap();
-    if(g!=null && c.l===b_L[g]){ b_filled[g]=c.l; c.used=true; if(nextGap()==null){ b_solved=true; celebrate(); renderBlocks(); document.getElementById("fb").innerHTML=winBanner("بنيتَ الكلمة! 🧱"); document.getElementById("cont").onclick=startBlocks; return;} renderBlocks(); }
+    if(g!=null && c.l===b_L[g]){ b_filled[g]=c.l; c.used=true; if(nextGap()==null){ b_solved=true; celebrate(); renderBlocks(); document.getElementById("fb").innerHTML=winBanner("بنيتَ الكلمة! 🧱"); try{document.getElementById("fb").scrollIntoView({behavior:"smooth",block:"center"});}catch(_){} document.getElementById("cont").onclick=startBlocks; return;} renderBlocks(); }
     else { b.classList.add("dart"); streak=0; robo.encourage(); setTimeout(()=>b.classList.remove("dart"),450); }});
   view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-act]"); if(!b)return; if(b.getAttribute("data-act")==="say")robo.read(cur.word); else startBlocks(); });
 }
@@ -548,7 +548,7 @@ function renderFish(){
     `<div class="controls"><button data-act="hint">💡 تلميح</button><button data-act="say">🔊 استمع</button><button class="go" data-act="next">كلمة جديدة ⏭️</button></div>`;
   wireBack(); wireAge(startFish);
   view.querySelector("#pond").addEventListener("click",e=>{ const b=e.target.closest(".fish"); if(!b||f_solved)return; const id=b.getAttribute("data-id"); const f=f_pond.find(x=>x.id===id);
-    if(f.l===f_word[f_prog]){ b.classList.add("dart"); f_prog++; setTimeout(()=>{ f_pond=f_pond.filter(x=>x.id!==id); if(f_prog>=f_word.length){ f_solved=true; celebrate(); renderFish(); document.getElementById("fb").innerHTML=winBanner("اصطدتها كلّها! 🎣"); document.getElementById("cont").onclick=startFish; } else renderFish(); },300); }
+    if(f.l===f_word[f_prog]){ b.classList.add("dart"); f_prog++; setTimeout(()=>{ f_pond=f_pond.filter(x=>x.id!==id); if(f_prog>=f_word.length){ f_solved=true; celebrate(); renderFish(); document.getElementById("fb").innerHTML=winBanner("اصطدتها كلّها! 🎣"); try{document.getElementById("fb").scrollIntoView({behavior:"smooth",block:"center"});}catch(_){} document.getElementById("cont").onclick=startFish; } else renderFish(); },300); }
     else { streak=0; robo.encourage(); b.classList.add("dart"); setTimeout(()=>b.classList.remove("dart"),450); }});
   view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-act]"); if(!b)return; const a=b.getAttribute("data-act");
     if(a==="hint"){const f=document.getElementById("flash");f.classList.add("on");setTimeout(()=>f.classList.remove("on"),1300);} else if(a==="say")robo.read(cur.word); else startFish(); });
@@ -568,7 +568,7 @@ function renderCards(){
   wireBack(); wireAge(startCards);
   view.querySelector("#choices").addEventListener("click",e=>{ const b=e.target.closest(".choice"); if(!b||c_done)return; c_done=true; const pick=c_opts[+b.getAttribute("data-i")];
     view.querySelectorAll(".choice").forEach(el=>{ el.disabled=true; if(c_opts[+el.getAttribute("data-i")]===cur.word) el.classList.add("correct"); });
-    if(pick===cur.word){ celebrate(); document.getElementById("fb").innerHTML=winBanner("اختيارٌ صحيح! 🧩"); document.getElementById("cont").onclick=startCards; }
+    if(pick===cur.word){ celebrate(); document.getElementById("fb").innerHTML=winBanner("اختيارٌ صحيح! 🧩"); try{document.getElementById("fb").scrollIntoView({behavior:"smooth",block:"center"});}catch(_){} document.getElementById("cont").onclick=startCards; }
     else { streak=0; b.classList.add("wrong"); robo.encourage(); document.getElementById("fb").innerHTML=`<div class="controls"><button class="go" id="cont">صورة أخرى ▶</button></div>`; document.getElementById("cont").onclick=startCards; }});
   view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-act]"); if(!b)return; if(b.getAttribute("data-act")==="say")robo.read(cur.word); else startCards(); });
 }
@@ -589,7 +589,7 @@ function renderMaze(){
     `<div class="controls"><button data-act="hint">💡 تلميح</button><button data-act="reset">↺ من جديد</button><button class="go" data-act="new">🔀 متاهة جديدة</button></div>`;
   wireBack(); wireAge(startMaze);
   view.querySelector("#maze").addEventListener("click",e=>{ const d=e.target.closest(".cell"); if(!d||done)return; const i=+d.getAttribute("data-i");
-    if(i===path[mzP]){ mzP++; if(mzP>=L.length){ celebrate(); renderMaze(); document.getElementById("fb").innerHTML=winBanner("وصلت! 🌟"); document.getElementById("cont").onclick=startMaze; } else renderMaze(); }
+    if(i===path[mzP]){ mzP++; if(mzP>=L.length){ celebrate(); renderMaze(); document.getElementById("fb").innerHTML=winBanner("وصلت! 🌟"); try{document.getElementById("fb").scrollIntoView({behavior:"smooth",block:"center"});}catch(_){} document.getElementById("cont").onclick=startMaze; } else renderMaze(); }
     else { streak=0; robo.encourage(); d.classList.add("bad"); setTimeout(()=>d.classList.remove("bad"),400); }});
   view.querySelector(".controls").addEventListener("click",e=>{ const b=e.target.closest("[data-act]"); if(!b)return; const a=b.getAttribute("data-act");
     if(a==="hint"){ const el=view.querySelector(`.cell[data-i="${path[mzP]}"]`); if(el){el.classList.add("start");setTimeout(()=>el.classList.remove("start"),900);} }

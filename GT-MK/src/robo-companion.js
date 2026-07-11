@@ -82,7 +82,14 @@ function attachRoboInteract(node) {
   node.addEventListener("pointercancel", () => { dragging = false; node.classList.remove("dragging"); });
 }
 let _lastGreet = -1;
+function anyAudioBusy() {
+  try { if ([...document.querySelectorAll("audio")].some(a => !a.paused && !a.ended && a.currentTime > 0)) return true; } catch (e) {}
+  try { if (window.speechSynthesis && window.speechSynthesis.speaking) return true; } catch (e) {}
+  return false;
+}
 function greet() {
+  // يُكتَمُ الآليُّ تلقائيًّا إن كان صوتٌ آخرُ يعمل (تلاوةٌ/قصّةٌ/نطق) — يُرحّبُ فقط حين لا شيءَ يُشغَّل.
+  if (anyAudioBusy()) return;
   let i = Math.floor(Math.random() * GREETINGS.length);
   if (i === _lastGreet) i = (i + 1) % GREETINGS.length; // لا تُكرّرْ نفسَ الرسالةِ مباشرةً
   _lastGreet = i;
@@ -116,7 +123,7 @@ export const robo = {
   // كلامٌ عامّ بمزاجٍ مُحدَّد. opts.then يُستدعى عند انتهاء الكلام.
   say(text, mood = "talk", opts = {}) { ensureMounted(); flash(mood === "happy" ? "cheer" : ""); showBubble(text); roboSay(text, { mood, onend: opts.then }); },
   // قراءةُ حرفٍ أو كلمةٍ بوضوحٍ (بلا نبضةٍ آليّة كي لا تُزعجَ عند التكرار).
-  read(text, opts = {}) { ensureMounted(); flash(""); showBubble(text); speak(text, { rate: opts.rate != null ? opts.rate : 0.7, onend: opts.then }); },
+  read(text, opts = {}) { ensureMounted(); flash(""); try { if (isFemale()) text = femaleize(text); } catch (e) {} showBubble(text); speak(text, { rate: opts.rate != null ? opts.rate : 0.7, onend: opts.then }); },
   // عرضٌ مرئيٌّ فقط (فقاعة + مزاج + مؤثّر) بلا نطقٍ آليّ — ليُشغَّلَ نطقٌ خارجيٌّ بعده (كاللغات الأجنبيّة).
   // opts.good: true=فرح+نغمةُ نجاح، false=طمأنة+نغمةُ خطأ.
   show(text, mood = "talk", opts = {}) { ensureMounted(); flash(opts.good === true ? "cheer" : (opts.good === false ? "sad" : "")); showBubble(text); if (opts.good === true) sfx.success(); else if (opts.good === false) sfx.nope(); },

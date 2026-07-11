@@ -33,6 +33,8 @@ function appendNext(view, next, label, cls) {
   const d = document.createElement("div"); d.className = "qa-next";
   d.innerHTML = `<button class="${cls || "qa-nextbtn"}">${label || "التالي ▶"}</button>`;
   view.appendChild(d);
+  // يُمرَّرُ الزرُّ تلقائيًّا إلى مجالِ الرؤيةِ فلا يحتاجُ المستخدمُ للسحبِ يدويًّا.
+  try { d.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
   d.querySelector("button").onclick = () => { try { d.remove(); } catch (e) {} next && next(); };
 }
 

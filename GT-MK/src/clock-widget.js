@@ -54,7 +54,9 @@ function ensureStyle() {
   .clk-type input{width:74px;font:800 26px system-ui,monospace;text-align:center;border:2px solid var(--line,#ECE6DA);border-radius:12px;padding:8px;background:var(--card,#fff);color:var(--ink,#2B2B2B)}
   .clk-type .colon{font:800 26px system-ui;color:var(--muted,#6B6B6B)}
   .clk-check{background:var(--good,#7BB661);color:#fff;border:none;border-radius:14px;padding:12px 26px;font:inherit;font-weight:800;font-size:16px;cursor:pointer;margin-top:4px}
-  .clk-bubble{background:color-mix(in srgb,var(--sky,#6FB3D6) 14%,var(--card,#fff));border:1px solid var(--line,#ECE6DA);border-radius:14px;padding:10px 14px;font-size:14px;color:var(--ink,#2B2B2B);max-width:440px;margin:6px auto;line-height:1.7}`;
+  .clk-bubble{background:color-mix(in srgb,var(--sky,#6FB3D6) 14%,var(--card,#fff));border:1px solid var(--line,#ECE6DA);border-radius:14px;padding:10px 14px;font-size:14px;color:var(--ink,#2B2B2B);max-width:440px;margin:6px auto;line-height:1.7}
+  .clk-timebar{height:6px;background:var(--line,#ECE6DA);border-radius:999px;overflow:hidden;max-width:340px;margin:6px auto 2px}
+  .clk-timebar span{display:block;height:100%;width:100%;background:var(--primary,#E07A5F);transition:width .1s linear}`;
   document.head.appendChild(st);
 }
 
@@ -169,7 +171,8 @@ const STEP = { easy: 60, medium: 15, hard: 5 };
 const MODES = { easy: ["a2d", "d2a"], medium: ["a2d", "d2a", "type", "conv"], hard: ["a2d", "d2a", "type", "set", "conv"] };
 const AMPM_MODE = { a2d: false, d2a: true, type: false, set: true, conv: true };   // متى يُنطَقُ صباحًا/مساءً
 const AIPR = { easy: .6, medium: .76, hard: .9 };
-let clkDiff = "easy";
+const CLK_TIME = { easy: 16000, medium: 12000, hard: 9000 }; // مهلةُ «ضدّ الوقت» لكلِّ صعوبة
+let clkDiff = "easy", clkTimed = true, clkRaf = 0;
 const _pad = pad;
 export function clockGame(host, opts = {}) {
   const L = opts.L || AR_L, lang = opts.lang || "ar", speakPhrase = opts.speakPhrase || (() => {}), TARGET = 5;
@@ -177,8 +180,22 @@ export function clockGame(host, opts = {}) {
   vsSetup(host, {
     say: `🕐 ${L.game} — ${L.roboGame}`, soloOk: true,
     diffs: [{ v: "easy", label: "سهل" }, { v: "medium", label: "متوسّط" }, { v: "hard", label: "صعب" }],
-    getDiff: () => clkDiff, setDiff: v => clkDiff = v, start: newRound
+    getDiff: () => clkDiff, setDiff: v => clkDiff = v,
+    toggle: { label: "⏱️ اللعبُ ضدّ الوقت", get: () => clkTimed, set: v => clkTimed = v },
+    start: newRound
   });
+  function cancelTimer() { if (clkRaf) { cancelAnimationFrame(clkRaf); clkRaf = 0; } }
+  function armTimer() {
+    const ms = CLK_TIME[clkDiff] || 12000, t0 = Date.now(); cancelTimer();
+    const tick = () => {
+      if (!host.isConnected) { cancelTimer(); return; }
+      const left = ms - (Date.now() - t0), bar = host.querySelector("#clkbar");
+      if (bar) bar.style.width = Math.max(0, left / ms * 100) + "%";
+      if (left <= 0) { if (!lock) { lock = true; sfx.wrong(); resolve(false); } return; }
+      clkRaf = requestAnimationFrame(tick);
+    };
+    tick();
+  }
   const same = (a, b) => h12of(a.h12) === h12of(b.h12) && a.m === b.m;    // العقاربُ لا تُميّزُ ص/م
   const sameFull = (a, b) => same(a, b) && !!a.pm === !!b.pm;             // التحويلُ يُميّزُ ص/م
   const eq = (a, b) => q && q.mode === "conv" ? sameFull(a, b) : same(a, b);
@@ -202,14 +219,11 @@ export function clockGame(host, opts = {}) {
     else if (mode === "conv") { q.list = distractors(answer, clkDiff === "hard" ? 4 : 3, true); q.a12 = Math.random() < .5; } // a12: يُعرَضُ 12h ← تُختارُ 24h
     render();
   }
-  const head = cur => `${vsScoreHtml(ps)}${vsTurnHtml(cur)}`;
+  const head = cur => `${vsScoreHtml(ps)}${vsTurnHtml(cur)}${(clkTimed && !cur.cpu) ? '<div class="clk-timebar"><span id="clkbar"></span></div>' : ''}`;
   function render() {
-    const cur = ps[turn]; if (!host.isConnected) return; lock = false;
-    if (q.mode === "a2d") return renderA2D(cur);
-    if (q.mode === "d2a") return renderD2A(cur);
-    if (q.mode === "type") return renderType(cur);
-    if (q.mode === "set") return renderSet(cur);
-    if (q.mode === "conv") return renderConv(cur);
+    const cur = ps[turn]; if (!host.isConnected) return; lock = false; cancelTimer();
+    ({ a2d: renderA2D, d2a: renderD2A, type: renderType, set: renderSet, conv: renderConv }[q.mode] || renderA2D)(cur);
+    if (clkTimed && !cur.cpu) armTimer();   // «ضدّ الوقت»: عدّادٌ لدورِ اللاعب
   }
   // عقارب → اختَرِ الرقميّ
   function renderA2D(cur) {
@@ -283,7 +297,7 @@ export function clockGame(host, opts = {}) {
     } catch (e) {}
   }
   function resolve(ok) {
-    if (!host.isConnected) return; lock = true;
+    if (!host.isConnected) return; lock = true; cancelTimer();
     if (ok) ps[turn].score++;
     // تفاعلُ الآليّ + نطقُ الوقتِ داخلَ try كي لا يمنعَ خطأٌ عارضٌ (صوت/DOM) انتقالَ الدور.
     try { if (ok) robo.applaud(); else sfx.wrong(); sayTime(lang, q.answer, speakPhrase, AMPM_MODE[q.mode]); } catch (e) {}

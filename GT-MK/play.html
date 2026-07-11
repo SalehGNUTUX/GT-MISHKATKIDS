@@ -46,6 +46,7 @@
   .pill b{color:var(--primary-d)}
 
   .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .gsec{font-size:16px;font-weight:800;margin:16px 2px 8px;color:var(--ink);border-bottom:2px solid var(--line);padding-bottom:4px}
   .gcard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
   .gcard:hover{transform:translateY(-3px);border-color:var(--primary)}
   .gcard.vs{border-color:color-mix(in srgb,var(--primary) 45%,var(--line))}
@@ -302,32 +303,44 @@ function celebrate(){ score++; streak++; logEvent("word_win"); if(cur) recordMas
   if(cur && cur.word) robo.read(cur.word, { then:()=>robo.cheer() }); else robo.cheer(); }
 
 /* ===================== MENU ===================== */
+// cat: تصنيفٌ يفصلُ التعليميَّ عن الترفيهيّ ويوجّهُ المهامّ. letters=حروف/قراءة · math=أرقام · skill=مهارة تعليميّة · fun=ترفيهيّ · tool=أداة.
 const GAMES = [
-  { id:"memory", ic:"🧠", t:"لعبة الذاكرة", d:"جِد الصورتين المتطابقتين — بمظاهرَ متعدّدة", vs:1, nw:1 },
-  { id:"train",  ic:"🚂", t:"قطار الكلمات", d:"رتّب الحروف من الأوّل" },
-  { id:"pins",   ic:"🧺", t:"مشابك الغسيل", d:"بدّل حرفين لتصحّح الترتيب" },
-  { id:"blocks", ic:"🧱", t:"بناء المكعّبات", d:"أكمِل الحرف الناقص" },
-  { id:"fish",   ic:"🎣", t:"صيد الحروف", d:"اصطَد الصحيح وتجنّب الدخيل" },
-  { id:"cards",  ic:"🧩", t:"بطاقات الصور", d:"اختر الكتابة الصحيحة" },
-  { id:"maze",   ic:"🌀", t:"متاهة الحروف", d:"امشِ على الحروف بالترتيب" },
-  { id:"wheel",  ic:"🎡", t:"عجلة الحروف", d:"أدِرِ العجلةَ ← تعلّمِ الحرفَ ومقاطعَه", nw:1 },
-  { id:"xo",     ic:"⭕", t:"دائرةٌ وعلامة", d:"ثلاثةٌ في خطٍّ ضدّ الآليّ", vs:1 },
-  { id:"numrace",ic:"🔢", t:"تحدّي الأعداد", d:"سابِقِ الآليَّ في الحساب", vs:1 },
-  { id:"hunt",   ic:"🔎", t:"صيدُ الحرف/الرقم", d:"اعثرْ على المطلوبِ بسرعة", vs:1 },
-  { id:"smatch", ic:"⚡", t:"سباقُ المطابقة", d:"جِدِ الصورةَ المطابقةَ أسرع", vs:1 },
-  { id:"wgrid",  ic:"🔤", t:"شبكةُ الكلمات", d:"كوّنِ الكلماتِ وتنافسْ بالألوان", vs:1 },
-  { id:"spinq",  ic:"🎡", t:"عجلة أدرْ وأجب", d:"أدِرِ العجلةَ ثمّ أجِبْ عن سؤالِ القطاع", vs:1, nw:1 },
-  { id:"clock",  ic:"🕐", t:"تحدّي الساعة", d:"اقرأِ الساعةَ (عقارب ورقميّ) وتنافسْ — أنماطٌ متنوّعة", vs:1, nw:1 },
-  { id:"print",  ic:"🖨️", t:"ألعاب/أنشطة للطباعة", d:"ألعابٌ تُلعَبُ على الورق + أنشطةٌ حسّيّة" },
+  { id:"train",  ic:"🚂", t:"قطار الكلمات", d:"رتّب الحروف من الأوّل", cat:"letters" },
+  { id:"pins",   ic:"🧺", t:"مشابك الغسيل", d:"بدّل حرفين لتصحّح الترتيب", cat:"letters" },
+  { id:"blocks", ic:"🧱", t:"بناء المكعّبات", d:"أكمِل الحرف الناقص", cat:"letters" },
+  { id:"fish",   ic:"🎣", t:"صيد الحروف", d:"اصطَد الصحيح وتجنّب الدخيل", cat:"letters" },
+  { id:"cards",  ic:"🧩", t:"بطاقات الصور", d:"اختر الكتابة الصحيحة", cat:"letters" },
+  { id:"maze",   ic:"🌀", t:"متاهة الحروف", d:"امشِ على الحروف بالترتيب", cat:"letters" },
+  { id:"wheel",  ic:"🎡", t:"عجلة الحروف", d:"أدِرِ العجلةَ ← تعلّمِ الحرفَ ومقاطعَه", nw:1, cat:"letters" },
+  { id:"wgrid",  ic:"🔤", t:"شبكةُ الكلمات", d:"كوّنِ الكلماتِ وتنافسْ بالألوان", vs:1, cat:"letters" },
+  { id:"numrace",ic:"🔢", t:"تحدّي الأعداد", d:"سابِقِ الآليَّ في الحساب", vs:1, cat:"math" },
+  { id:"clock",  ic:"🕐", t:"تحدّي الساعة", d:"اقرأِ الساعةَ (عقارب ورقميّ) وتنافسْ — أنماطٌ متنوّعة", vs:1, nw:1, cat:"math" },
+  { id:"hunt",   ic:"🔎", t:"صيدُ الحرف/الرقم", d:"اعثرْ على المطلوبِ بسرعة", vs:1, cat:"skill" },
+  { id:"smatch", ic:"⚡", t:"سباقُ المطابقة", d:"جِدِ الصورةَ المطابقةَ أسرع", vs:1, cat:"skill" },
+  { id:"spinq",  ic:"🎡", t:"عجلة أدرْ وأجب", d:"أدِرِ العجلةَ ثمّ أجِبْ عن سؤالِ القطاع", vs:1, nw:1, cat:"skill" },
+  { id:"memory", ic:"🧠", t:"لعبة الذاكرة", d:"جِد الصورتين المتطابقتين — بمظاهرَ متعدّدة", vs:1, nw:1, cat:"fun" },
+  { id:"xo",     ic:"⭕", t:"دائرةٌ وعلامة", d:"ثلاثةٌ في خطٍّ ضدّ الآليّ", vs:1, cat:"fun" },
+  { id:"print",  ic:"🖨️", t:"ألعاب/أنشطة للطباعة", d:"ألعابٌ تُلعَبُ على الورق + أنشطةٌ حسّيّة", cat:"tool" },
+];
+const GAME_GROUPS = [
+  { key:"letters", label:"🔤 ألعابُ الحروفِ والكلمات (تعليميّة)" },
+  { key:"math",    label:"🔢 ألعابُ الأرقامِ والوقت (تعليميّة)" },
+  { key:"skill",   label:"⚡ ألعابُ المهارةِ والتركيز (تعليميّة)" },
+  { key:"fun",     label:"🎈 ألعابٌ ترفيهيّة" },
+  { key:"tool",    label:"🖨️ أدوات" },
 ];
 function renderMenu(){
   vsRun=false; // مغادرةُ اللعبة إلى قائمة الألعاب ⇒ أوقِفِ المؤقّتات
   document.body.classList.remove("ingame"); // إعادةُ الرأسِ الكامل في القائمة
-  view.innerHTML = ageChips() + `<div class="menu">` +
-    GAMES.map(g=>`<div class="gcard${g.vs?" vs":""}${g.nw?" hasnew":""}" data-g="${g.id}">${g.vs?'<span class="vsbadge">⚔️ تنافسيّة</span>':''}${g.nw?'<span class="newbadge">🆕 جديد</span>':''}<div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
-    `</div><div class="hint">🎮 <b>ألعابٌ تنافسيّة</b> ضدّ الآليّ (بثلاث صعوبات) أو الإخوة: الذاكرة · دائرةٌ وعلامة · تحدّي الأعداد · صيدُ الحرف/الرقم · سباقُ المطابقة · شبكةُ الكلمات — مع ألعابِ دمجِ الحروف وأنشطةِ الطباعة 🌱</div>`;
+  const only = new URLSearchParams(location.search).get("only"); // فلترةٌ لفئةٍ (من المهامّ): letters/math/skill/fun
+  const card = g=>`<div class="gcard${g.vs?" vs":""}${g.nw?" hasnew":""}" data-g="${g.id}">${g.vs?'<span class="vsbadge">⚔️ تنافسيّة</span>':''}${g.nw?'<span class="newbadge">🆕 جديد</span>':''}<div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`;
+  const groups = GAME_GROUPS.filter(gr=>!only || gr.key===only);
+  const sections = groups.map(gr=>{ const gs=GAMES.filter(g=>g.cat===gr.key); if(!gs.length) return ""; return `<h2 class="gsec">${gr.label}</h2><div class="menu">${gs.map(card).join("")}</div>`; }).join("");
+  const bar = only ? `<div class="hint" style="text-align:center;margin-bottom:6px"><a href="play.html" style="color:var(--primary-d);font-weight:700;text-decoration:none">↩ كلُّ الألعاب</a></div>` : "";
+  view.innerHTML = ageChips() + bar + sections +
+    `<div class="hint">🎓 الألعابُ التعليميّةُ مفصولةٌ عن الترفيهيّة لتركيزِ الطفل. علامةُ ⚔️ تعني «تنافسيّة» (ضدّ الآليّ/الإخوة/الوالد).</div>`;
   wireAge(renderMenu);
-  view.querySelector(".menu").addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); });
+  view.querySelectorAll(".menu").forEach(m=>m.addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); }));
 }
 function open(id){ if(id!=="print") document.body.classList.add("ingame"); // شاشةٌ مخصّصةٌ للّعبة: يُطوى رأسُ الصفحةِ وشريطُ التنقّل
   ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,clock:startClock,print:()=>location.assign("print.html")})[id](); }
@@ -1091,7 +1104,8 @@ function renderPrint(){
 // زرُّ الرجوع في الهاتف (Capacitor، عبر theme.js): إن كان الطفلُ داخلَ لعبةٍ (زرُّ «الألعاب» ظاهر)
 // نُعيدُه لقائمة الألعاب لا أن يخرجَ من البرنامج.
 window.appBack = () => { if(document.getElementById("back")){ renderMenu(); return true; } return false; };
-renderMenu();
+// ?g=<id> يفتحُ لعبةً بعينها مباشرةً (توجيهُ المهامّ)؛ وإلّا قائمةٌ مجمَّعة.
+{ const _g=new URLSearchParams(location.search).get("g"); if(_g && GAMES.some(x=>x.id===_g)){ renderMenu(); open(_g); } else renderMenu(); }
 </script>
 </body>
 </html>

@@ -83,7 +83,7 @@ export function getBadgesFor(id) { const s = getStatsFor(id); return BADGES.map(
 export const MISSION = [
   { key: "quran",  ic: "📖", label: "اقرأ من القرآن",        href: "quran.html",  types: ["quran_open", "quran_listen"] },
   { key: "tales",  ic: "📚", label: "اقرأ قصّة",            href: "tales.html",  types: ["story_open"] },
-  { key: "play",   ic: "🔤", label: "العب لعبة حروف",       href: "play.html",   types: ["word_win"] },
+  { key: "play",   ic: "🔤", label: "العب لعبة حروف",       href: "play.html?only=letters", types: ["word_win"] },
   { key: "basics", ic: "🔍", label: "تدرّب على الأساسيّات",  href: "basics.html", types: ["basics_correct"] },
 ];
 export function getDailyMission() {

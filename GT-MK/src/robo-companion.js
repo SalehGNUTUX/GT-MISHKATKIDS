@@ -112,6 +112,9 @@ function showBubble(text) {
 // واجهةٌ عالية المستوى تستعملها صفحات الأنشطة:
 export const robo = {
   mount() { ensureMounted(); return this; },
+  // ترحيبٌ تلقائيٌّ (كالنقر على الآليّ): رسالةٌ متنوّعةٌ تُؤنَّثُ للأنثى، وتُكتَمُ إن كان صوتٌ آخرُ يعمل.
+  // يُستعمَل في الفهرس عند أوّل تشغيلٍ للبرنامج.
+  hello() { ensureMounted(); greet(); return this; },
   // نجاحٌ: فرحٌ + هتافٌ مع نبرةٍ إسلامية. opts.then يُستدعى عند انتهاء الكلام (لتأخير الانتقال).
   cheer(text, opts = {}) { ensureMounted(); const t = text || roboPhrase("praise"); flash("cheer"); showBubble(t); sfx.success(); roboSay(t, { mood: "happy", onend: opts.then }); },
   // خطأٌ: تشجيعٌ لطيفٌ لا قسوةَ فيه.

@@ -354,7 +354,13 @@ function startClock(){
 /* ===================== 🧠 MEMORY MATCH (وحدي · الإخوة · الوالد · الآليّ) ===================== */
 // الصعوبة: 4 أزواج=8 بطاقات · 6=12 · 8=16. الخصم: solo | ai | parent | p:<id>. مستوى الآليّ: easy/medium/hard.
 let m_pairs=6, m_deck=[], m_flip=[], m_match=new Set(), m_moves=0, m_lock=false;
-let m_opp="solo", m_ai="medium", m_players=[], m_turn=0, m_seen=new Map();
+let m_opp="solo", m_ai="medium", m_players=[], m_turn=0, m_seen=new Map(), m_timed=true, m_raf=null;
+const MEM_MS=8000; // مهلةُ «ضدّ الوقت» لكلِّ حركةِ قلبٍ (في وضعِ اللاعبين)
+function memCancelT(){ if(m_raf){ cancelAnimationFrame(m_raf); m_raf=null; } }
+function memArmT(){ const t0=Date.now(); memCancelT();
+  const tick=()=>{ if(!vsRun){ memCancelT(); return; } const left=MEM_MS-(Date.now()-t0), bar=document.getElementById("memtbar"); if(bar) bar.style.width=Math.max(0,left/MEM_MS*100)+"%";
+    if(left<=0){ if(vsRun && m_players.length>1 && !m_lock && m_players[m_turn] && !m_players[m_turn].cpu){ m_flip=[]; m_lock=false; sfx.wrong(); m_turn=(m_turn+1)%m_players.length; renderMemory(); if(m_players[m_turn].cpu) aiTurn(); } return; }
+    m_raf=requestAnimationFrame(tick); }; tick(); }
 // مظاهرُ لعبة الذاكرة (v1.4): مجموعاتُ أيقوناتٍ مختلفةٌ يختارُها اللاعب — الأصلُ (رسومُ SVG) + مظاهرُ رموزٍ تعبيريّة.
 const MEMORY_THEMES = [
   { id:"nature",    name:"مِشكاة",   ic:"🌿", pool:Object.keys(MEMORY_ART), art:k=>MEMORY_ART[k] },
@@ -390,6 +396,7 @@ function renderMemSetup(){
        <div class="setrow"><div class="setlbl">🎨 المظهر</div><div class="lvl" id="mtheme">${MEMORY_THEMES.map(t=>`<button data-t="${t.id}" class="${m_theme===t.id?"on":""}">${t.ic} ${t.name}</button>`).join("")}</div></div>
        <div class="setrow"><div class="setlbl">👥 اللعبُ مع</div><div class="lvl" id="mopp">${oppList}</div></div>
        <div class="setrow" id="airow" style="${m_opp==="ai"?"":"display:none"}"><div class="setlbl">🤖 مستوى الآليّ</div><div class="lvl" id="maint"><button data-ai="easy" class="${m_ai==="easy"?"on":""}">سهل</button><button data-ai="medium" class="${m_ai==="medium"?"on":""}">متوسّط</button><button data-ai="hard" class="${m_ai==="hard"?"on":""}">صعب</button></div></div>
+       <div class="setrow"><div class="setlbl">⏱️ ضدّ الوقت</div><div class="lvl" id="mtimed"><button data-tm="1" class="${m_timed?"on":""}">مُفعَّل</button><button data-tm="0" class="${!m_timed?"on":""}">مُعطَّل</button></div></div>
        <button id="memStart">▶ ابدأ اللعب</button>
      </div>`;
   wireBack();
@@ -397,6 +404,7 @@ function renderMemSetup(){
   document.getElementById("mtheme").addEventListener("click",e=>{ const b=e.target.closest("[data-t]"); if(!b)return; m_theme=b.getAttribute("data-t"); renderMemSetup(); });
   document.getElementById("mopp").addEventListener("click",e=>{ const b=e.target.closest("[data-opp]"); if(!b)return; m_opp=b.getAttribute("data-opp"); renderMemSetup(); });
   document.getElementById("maint").addEventListener("click",e=>{ const b=e.target.closest("[data-ai]"); if(!b)return; m_ai=b.getAttribute("data-ai"); renderMemSetup(); });
+  document.getElementById("mtimed").addEventListener("click",e=>{ const b=e.target.closest("[data-tm]"); if(!b)return; m_timed=b.getAttribute("data-tm")==="1"; renderMemSetup(); });
   document.getElementById("memStart").onclick=newMemGame;
 }
 
@@ -418,8 +426,10 @@ function renderMemory(){
     ? m_players.map((p,k)=>`<span class="pill ${k===m_turn?"turn":""}">${p.avatar} ${p.name}: <b>${p.score}</b></span>`).join("")
     : `<span class="pill">المحاولات: <b>${m_moves}</b></span><span class="pill">المطابقات: <b>${m_match.size/2}</b></span>`;
   const turnNote = multi ? vsTurnHtml(m_players[m_turn]) : "";
-  view.innerHTML = backBar()+`<div class="gbar">${board}</div>${turnNote}<div class="mgrid" id="grid"></div><div id="msg"></div>`;
+  const armT = multi && m_timed && m_players[m_turn] && !m_players[m_turn].cpu && !m_lock && m_match.size < m_deck.length;
+  view.innerHTML = backBar()+`<div class="gbar">${board}</div>${turnNote}${armT?`<div class="hubar" style="max-width:420px;margin:4px auto"><span id="memtbar"></span></div>`:""}<div class="mgrid" id="grid"></div><div id="msg"></div>`;
   wireBack();
+  memCancelT(); if(armT) memArmT();   // «ضدّ الوقت»: عدّادٌ لحركةِ اللاعب
   const grid=document.getElementById("grid");
   const art=m_art||MEMORY_THEMES[0].art;
   grid.innerHTML=m_deck.map((k,i)=>{ const up=m_flip.includes(i)||m_match.has(i); return `<div class="mcard ${up?"up":""} ${m_match.has(i)?"matched":""}" data-i="${i}"><div class="fback">${ROBO_SVG}</div><div class="ffront">${art(k)}</div></div>`; }).join("");
@@ -697,15 +707,21 @@ function vsSetup(cfg){
 
 /* ===================== ⭕✖ دائرةٌ وعلامة (ضدّ الآليّ بثلاث صعوبات · أو الحسابات) ===================== */
 // حجمُ اللوحة (3/4/5) + صعوبةُ الآليّ (vs_ai). طولُ الفوز = min(N,4): 3×3→3، 4×4/5×5→4.
-let xo_size=3, xo_win=3, xo_lines=[], xo_b=[], xo_ps=[], xo_turn=0, xo_lock=false, xo_done=false;
+let xo_size=3, xo_win=3, xo_lines=[], xo_b=[], xo_ps=[], xo_turn=0, xo_lock=false, xo_done=false, xo_timed=true, xo_raf=null;
 const XO_MK=["✖","◯"];
+const XO_MS=9000; // مهلةُ «ضدّ الوقت» لكلِّ حركة
+function xoCancelT(){ if(xo_raf){ cancelAnimationFrame(xo_raf); xo_raf=null; } }
+function xoArmT(){ const t0=Date.now(); xoCancelT();
+  const tick=()=>{ if(!vsRun){ xoCancelT(); return; } const left=XO_MS-(Date.now()-t0), bar=document.getElementById("xotbar"); if(bar) bar.style.width=Math.max(0,left/XO_MS*100)+"%";
+    if(left<=0){ if(!xo_lock&&!xo_done&&xo_ps[xo_turn]&&!xo_ps[xo_turn].cpu){ const emp=[...xo_b.keys()].filter(i=>xo_b[i]==null); if(emp.length){ xo_b[emp[Math.floor(Math.random()*emp.length)]]=xo_turn; sfx.wrong(); afterXOMove(); } } return; }
+    xo_raf=requestAnimationFrame(tick); }; tick(); }
 function xoBuildLines(N,W){ const L=[];
   for(let r=0;r<N;r++)for(let c=0;c<=N-W;c++)L.push(Array.from({length:W},(_,k)=>r*N+c+k));       // أفقيّ
   for(let c=0;c<N;c++)for(let r=0;r<=N-W;r++)L.push(Array.from({length:W},(_,k)=>(r+k)*N+c));       // رأسيّ
   for(let r=0;r<=N-W;r++)for(let c=0;c<=N-W;c++)L.push(Array.from({length:W},(_,k)=>(r+k)*N+c+k));   // قُطريّ ↘
   for(let r=0;r<=N-W;r++)for(let c=W-1;c<N;c++)L.push(Array.from({length:W},(_,k)=>(r+k)*N+c-k));     // قُطريّ ↙
   return L; }
-function startXO(){ vsSetup({ say:GI.xo, soloOk:true, diffLabel:"🔲 حجمُ اللوحة", diffs:[{v:3,label:"3×3"},{v:4,label:"4×4"},{v:5,label:"5×5"}], getDiff:()=>xo_size, setDiff:v=>{xo_size=+v;}, start:newXO }); try{speak(GI.xo);}catch(e){} }
+function startXO(){ xoCancelT(); vsSetup({ say:GI.xo, soloOk:true, diffLabel:"🔲 حجمُ اللوحة", diffs:[{v:3,label:"3×3"},{v:4,label:"4×4"},{v:5,label:"5×5"}], getDiff:()=>xo_size, setDiff:v=>{xo_size=+v;}, toggle:{ label:"⏱️ اللعبُ ضدّ الوقت", get:()=>xo_timed, set:v=>{xo_timed=v;} }, start:newXO }); try{speak(GI.xo);}catch(e){} }
 function newXO(){ vsRun=true; const N=xo_size; xo_win=Math.min(N,4); xo_lines=xoBuildLines(N,xo_win); xo_b=Array(N*N).fill(null);
   xo_ps=vsMakePlayers(); // «وحدي» في دائرة-وعلامة = لعبٌ منفردٌ بالعلامتين (تُبادِلُ ✖ و◯ بنفسك)
   if(xo_ps.length<2){ const me=xo_ps[0]; xo_ps=[{...me,name:me.name+" ✖",avatar:"✖",color:VS_COLA},{...me,name:me.name+" ◯",avatar:"◯",color:VS_COLB}]; }
@@ -716,20 +732,21 @@ function renderXO(){
   let turnHtml = xo_done ? "" : vsTurnHtml(cur);
   const cells = xo_b.map((v,i)=>{ const mk=v==null?"":XO_MK[v]; const col=v==null?"":xo_ps[v].color; const wn=w&&w.line&&w.line.includes(i)?" wn":""; return `<div class="xoc${wn}" data-i="${i}" style="color:${col};font-size:${cf}px">${mk}</div>`; }).join("");
   view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">دائرةٌ وعلامة ⭕✖ — ${xo_win} في خطٍّ تفوز!</div></div>`
-    + vsScoreHtml(xo_ps) + turnHtml + `<div class="xob" id="xob" style="grid-template-columns:repeat(${N},1fr);max-width:${N===3?300:N===4?340:360}px">${cells}</div>`
+    + vsScoreHtml(xo_ps) + turnHtml + ((xo_timed && !xo_done && cur && !cur.cpu)?`<div class="hubar" style="max-width:${N===3?300:N===4?340:360}px;margin:6px auto"><span id="xotbar"></span></div>`:"") + `<div class="xob" id="xob" style="grid-template-columns:repeat(${N},1fr);max-width:${N===3?300:N===4?340:360}px">${cells}</div>`
     + `<div id="xomsg"></div>`
     + `<div class="controls" style="margin-top:14px"><button class="go" id="xoagain">جولةٌ جديدة</button> <button id="xoreset">↻ إعدادات</button></div>`;
   wireBack();
   document.getElementById("xob").addEventListener("click",e=>{ const c=e.target.closest("[data-i]"); if(!c) return; xoPlay(+c.getAttribute("data-i")); });
   document.getElementById("xoagain").onclick=newXO;
   document.getElementById("xoreset").onclick=startXO;
+  xoCancelT(); if(xo_timed && !xo_done && cur && !cur.cpu) xoArmT();   // «ضدّ الوقت»: عدّادٌ لدورِ اللاعب
 }
 function xoPlay(i){
   if(xo_lock||xo_done||xo_b[i]!=null) return;
   if(xo_ps[xo_turn].cpu) return;
   xo_b[i]=xo_turn; sfx.tap(); afterXOMove();
 }
-function afterXOMove(){ if(!vsRun) return;
+function afterXOMove(){ if(!vsRun) return; xoCancelT();
   const w=xoWinner(xo_b);
   if(w){ xoEnd(w); return; }
   xo_turn=(xo_turn+1)%xo_ps.length; renderXO();

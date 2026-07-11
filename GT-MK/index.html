@@ -272,13 +272,14 @@ import { ART } from "./src/art.js";
 import { logEvent, recordMastery, getAllMastery, isDueForReview, getChildAge, setChildAge, getStatsFor, getBadgesFor, loadProgressFor } from "./src/progress.js";
 import * as sfx from "./src/sfx.js";
 import { roboSay, roboPhrase } from "./src/robo-voice.js";
-import { NOTICES } from "./src/robo-phrases.js";
+import { NOTICES, femaleize } from "./src/robo-phrases.js";
 import { praise, tadabburFor } from "./src/islamic.js";
 import { deepenFor, roboWrongFor } from "./src/think.js";
 import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, getVoiceSet, setVoiceSet, CLIPS, AUTO, getStoryVoice, setStoryVoice, isStoryReadOn, setStoryReadOn } from "./src/sound-prefs.js";
 import { listSets, primeVoices } from "./src/voices.js";
 import { practiceByAccount, clearAccount as clearPracticeAccount } from "./src/practice.js";
-import { verifyParentPassword, markParentAuthed, isParentAuthed, isParent, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser, addProfile, updateProfile, AVATARS } from "./src/accounts.js";
+import { verifyParentPassword, markParentAuthed, isParentAuthed, isParent, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser, addProfile, updateProfile, AVATARS, isFemale } from "./src/accounts.js";
+const F = t => { try { return isFemale() ? femaleize(t) : t; } catch (e) { return t; } }; // تأنيثُ نصِّ الآليِّ المعروضِ للأنثى
 import { backupExport, backupImport } from "./src/backup.js"; // نسخةٌ احتياطيّة (مصدرٌ واحدٌ مشترَك)
 import { confirmWithPassword, undoable } from "./src/confirm-action.js";
 import voicesBundled from "./src/voices-bundled.json";
@@ -458,7 +459,7 @@ function renderCard(){
   if(state==="spark"){
     host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.spark}</span>${pairBadge}
       <div class="mem-art">${ART[m.id]||DOMAIN_ART[m.domain]||""}</div>
-      <div class="robo-says">${m.spark.robo_line}</div>${m.spark.cue?`<div class="cue">📷 ${m.spark.cue}</div>`:""}
+      <div class="robo-says">${F(m.spark.robo_line)}</div>${m.spark.cue?`<div class="cue">📷 ${m.spark.cue}</div>`:""}
       <div class="btns"><button class="act" onclick="go('task')">هيّا نبدأ المهمّة ←</button>
       <button class="ghost" onclick="spark()">ذكرى أخرى</button></div></div>`;
     roboSay(m.spark.robo_line, {mood:"curious"});
@@ -484,7 +485,7 @@ function renderCard(){
         <div id="capStatus"></div></div>`;
     }
     host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.teach}</span>
-      <div class="robo-says">🤖 ${m.teach.robo_question}</div>
+      <div class="robo-says">🤖 ${F(m.teach.robo_question)}</div>
       <div class="cue">أجِبْ الآليّ بصوتك، أو اكتبْ جوابك، أو أرِهِ ما صنعت.</div>
       <div class="succ">✅ علامة النجاح (يقرّرها الأهل): ${m.teach.success_signal}</div>
       ${capHtml}
@@ -501,12 +502,12 @@ function renderCard(){
     if(rw){
       if(wrongState===0) wrongHtml=`<div class="capture"><div class="lbl">🧠 تحدٍّ إضافيّ للتفكير:</div>
         <button class="capbtn" onclick="askRoboWrong()">اسمعْ فكرة الآليّ… أصوابٌ هي؟</button></div>`;
-      else if(wrongState===1) wrongHtml=`<div class="capture"><div class="robo-says" style="font-size:16px">🤖 ${rw}</div>
+      else if(wrongState===1) wrongHtml=`<div class="capture"><div class="robo-says" style="font-size:16px">🤖 ${F(rw)}</div>
         <button class="capbtn rec" onclick="fixRoboWrong()">✋ لا أيّها الآليّ، الصوابُ غيرُ ذلك!</button></div>`;
-      else wrongHtml=`<div class="capture"><div class="succ done" style="color:var(--good-d)">🤖 صحّحتَني يا معلّمي! ما كنتُ لأعرفَ لولاك. 🌟</div></div>`;
+      else wrongHtml=`<div class="capture"><div class="succ done" style="color:var(--good-d)">🤖 ${F("صحّحتَني يا معلّمي! ما كنتُ لأعرفَ لولاك.")} 🌟</div></div>`;
     }
     host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.teach} · تفكير</span>
-      <div class="robo-says">🤖 ${dq}</div>
+      <div class="robo-says">🤖 ${F(dq)}</div>
       <div class="cue">اشرَحْ للآليّ سببَ تفكيرك — لا توجد إجابةٌ واحدة.</div>
       ${wrongHtml}
       <div class="btns"><button class="act" onclick="heal()">علّمَ الآليّ! 💡</button>
@@ -517,7 +518,7 @@ function renderCard(){
     const isl=praise(progress.completed.length), td=tadabburFor(m.domain);
     const cheer=roboPhrase("praise", progress.completed.length);
     host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.heal}</span>
-      <div class="robo-says">${cheer} ${m.heal.robo_reaction}</div>
+      <div class="robo-says">${cheer} ${F(m.heal.robo_reaction)}</div>
       <div class="cue">${isl}${td?" "+td:""}</div>
       <div class="heal-reward">✨ ${label}</div>
       <div class="btns"><button class="act" onclick="spark()">ذكرى جديدة للآليّ ←</button>
@@ -655,20 +656,23 @@ function openAcctForm(pid){
     <div id="afAvRow" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">${AVATARS.map(a=>`<button class="afav" data-a="${a}" style="font-size:22px;border:2px solid ${a===curAv?"var(--primary)":"var(--line)"};border-radius:10px;padding:3px 7px;cursor:pointer;background:var(--card)">${a}</button>`).join("")}</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:3px">الفئة العمريّة:</div>
     <div style="display:flex;gap:6px;margin-bottom:6px">${ages.map(a=>`<button class="afage" data-a="${a}" style="flex:1;border:1px solid var(--line);border-radius:8px;padding:6px;cursor:pointer;font-family:inherit;${curAge===a?"background:var(--primary);color:#fff":"background:var(--card)"}">${a==="all"?"الكل":a}</button>`).join("")}</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:3px">الجنس (لتأنيثِ خطابِ الآليّ):</div>
+    <div style="display:flex;gap:6px;margin-bottom:6px">${[["m","👦 ذكر"],["f","👧 أنثى"]].map(([g,l])=>`<button class="afgen" data-a="${g}" style="flex:1;border:1px solid var(--line);border-radius:8px;padding:6px;cursor:pointer;font-family:inherit;${(((p&&p.gender)||"m")===g)?"background:var(--primary);color:#fff":"background:var(--card)"}">${l}</button>`).join("")}</div>
     <input id="afPw" type="password" placeholder="${p&&p.password?"كلمة مرور جديدة (فارغ = إبقاء)":"كلمة مرور (اختياريّة)"}" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-family:inherit;margin-bottom:6px">
     ${p&&p.password?'<label style="font-size:12px;display:block;margin-bottom:6px"><input type="checkbox" id="afClear"> إزالة كلمة المرور</label>':""}
     <div class="btns"><button class="act" id="afSave">حفظ</button> <button class="ghost" id="afCancel">إلغاء</button></div>
   </div>`;
-  let age=curAge, av=curAv;
+  let age=curAge, av=curAv, gen=((p&&p.gender)==="f")?"f":"m";
   host.querySelectorAll(".afage").forEach(b=>b.onclick=()=>{ age=b.getAttribute("data-a"); host.querySelectorAll(".afage").forEach(x=>{x.style.background="var(--card)";x.style.color="var(--ink)";}); b.style.background="var(--primary)"; b.style.color="#fff"; });
+  host.querySelectorAll(".afgen").forEach(b=>b.onclick=()=>{ gen=b.getAttribute("data-a"); host.querySelectorAll(".afgen").forEach(x=>{x.style.background="var(--card)";x.style.color="var(--ink)";}); b.style.background="var(--primary)"; b.style.color="#fff"; });
   host.querySelectorAll(".afav").forEach(b=>b.onclick=()=>{ av=b.getAttribute("data-a"); host.querySelectorAll(".afav").forEach(x=>x.style.borderColor="var(--line)"); b.style.borderColor="var(--primary)"; });
   document.getElementById("afCancel").onclick=()=>{ host.innerHTML=""; };
   document.getElementById("afSave").onclick=()=>{
     const name=document.getElementById("afName").value.trim()||"طفلي";
     const pw=document.getElementById("afPw").value;
     const clr=document.getElementById("afClear")&&document.getElementById("afClear").checked;
-    if(p){ const patch={name,ageGroup:age,avatar:av}; if(clr) patch.password=""; else if(pw) patch.password=pw; updateProfile(p.id,patch); }
-    else addProfile({name,ageGroup:age,avatar:av,password:pw});
+    if(p){ const patch={name,ageGroup:age,avatar:av,gender:gen}; if(clr) patch.password=""; else if(pw) patch.password=pw; updateProfile(p.id,patch); }
+    else addProfile({name,ageGroup:age,avatar:av,gender:gen,password:pw});
     openDashboard();
   };
 }

@@ -4,7 +4,8 @@
 // الفكرة: نبضةٌ قصيرة (بحسب المزاج) ثم ينطق الآليّ كلماته — كأنّه يشتغل ثمّ يتكلّم.
 import { isTonesOn } from "./sound-prefs.js";
 import { speak } from "./speak.js";
-import { REACTIONS, QUESTION_STARTERS } from "./robo-phrases.js";
+import { REACTIONS, QUESTION_STARTERS, femaleize } from "./robo-phrases.js";
+import { isFemale } from "./accounts.js";
 
 // بنك العبارات يأتي من src/robo-phrases.js (مصدرٌ واحد يُقرأ في المتصفّح وNode).
 export { REACTIONS, QUESTION_STARTERS };
@@ -57,6 +58,7 @@ export function roboBlip(mood = "talk") {
 // mood: talk | ask | happy | wonder | curious | ok
 export function roboSay(text, opts = {}) {
   const mood = opts.mood || "talk";
+  try { if (isFemale()) text = femaleize(text); } catch (e) {} // تأنيثُ خطابِ الآليِّ للأنثى
   roboBlip(mood);
   // صوتٌ ودودٌ آليّ لطيف: نبرةٌ أعلى قليلًا وإيقاعٌ مُتمهِّل يناسب الصغار.
   speak(text, {

@@ -5,6 +5,8 @@
 import { roboSay, roboPhrase } from "./robo-voice.js";
 import { speak } from "./speak.js";
 import * as sfx from "./sfx.js";
+import { femaleize } from "./robo-phrases.js";
+import { isFemale } from "./accounts.js";
 
 let el = null, bubble = null, hideT = null, mounted = false;
 
@@ -56,6 +58,7 @@ function flash(cls) {
 }
 function showBubble(text) {
   if (!bubble || !text) return;
+  try { if (isFemale()) text = femaleize(text); } catch (e) {} // تأنيثُ فقاعةِ الآليّ للأنثى
   bubble.textContent = text; bubble.classList.add("show");
   clearTimeout(hideT); hideT = setTimeout(() => bubble.classList.remove("show"), 3200);
 }

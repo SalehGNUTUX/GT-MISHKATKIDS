@@ -34,12 +34,14 @@ const norm = a => String(a || "").trim().toLowerCase().replace(/\s+/g, " ");
 export function listProfiles() { return state().profiles; }
 export function getProfile(id) { return state().profiles.find(p => p.id === id) || null; }
 
-export function addProfile({ name, ageGroup = "all", avatar, password = "" }) {
+export function addProfile({ name, ageGroup = "all", avatar, password = "", gender = "m" }) {
   const s = state();
   const p = { id: uid(), name: String(name || "").trim() || "طفلي", role: "child", ageGroup,
-    avatar: avatar || AVATARS[s.profiles.length % AVATARS.length], password: password || "", created: Date.now() };
+    avatar: avatar || AVATARS[s.profiles.length % AVATARS.length], password: password || "", gender: gender === "f" ? "f" : "m", created: Date.now() };
   s.profiles.push(p); save(s); return p;
 }
+// جنسُ الحسابِ النشِط أنثى؟ (لتأنيثِ خطابِ الآليّ). الوالدُ/الضيفُ/بلا-حساب ⇒ مذكَّرٌ افتراضًا.
+export function isFemale() { try { const u = getCurrentUser(); return !!(u && u.gender === "f"); } catch (e) { return false; } }
 export function updateProfile(id, patch) {
   const s = state(); const p = s.profiles.find(x => x.id === id);
   if (p) { Object.assign(p, patch); save(s); } return p;

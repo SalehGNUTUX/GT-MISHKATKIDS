@@ -343,15 +343,18 @@ function renderAdd(){
     <input id="np" class="lfield" placeholder="اسم الطفل">
     <div class="llabel">الفئة العمريّة:</div>
     <div class="lchips" id="ageRow">${["4-6","7-10","all"].map((a,i)=>`<button type="button" class="lchip age${i===0?' on':''}" data-a="${a}">${a==="all"?"الكل":a}</button>`).join("")}</div>
+    <div class="llabel">الجنس (لتأنيثِ خطابِ الآليّ):</div>
+    <div class="lchips" id="genRow"><button type="button" class="lchip age on" data-a="m">👦 ذكر</button><button type="button" class="lchip age" data-a="f">👧 أنثى</button></div>
     <div class="llabel">الصورة:</div>
     <div class="lavgrid" id="avRow">${AVATARS.map((a,i)=>`<button type="button" class="lchip av${i===0?' on':''}" data-a="${a}">${a}</button>`).join("")}</div>
     <input id="npw" type="password" class="lfield" placeholder="كلمة مرور (اختياريّة)" style="margin-top:12px">
     <div style="display:flex;gap:8px;margin-top:14px"><button id="createGo" class="lbtn primary" style="flex:1">إنشاء ودخول</button><button id="createBack" class="lbtn ghost">رجوع</button></div>`;
-  let age="4-6", av=AVATARS[0];
+  let age="4-6", av=AVATARS[0], gender="m";
   const pick=(sel,set)=>body.querySelectorAll(sel).forEach(b=>b.onclick=()=>{ set(b.dataset.a); body.querySelectorAll(sel).forEach(x=>x.classList.remove("on")); b.classList.add("on"); });
   pick("#ageRow .lchip", v=>age=v);
+  pick("#genRow .lchip", v=>gender=v);
   pick("#avRow .lchip", v=>av=v);
-  document.getElementById("createGo").onclick=()=>{ const name=document.getElementById("np").value.trim()||"طفلي"; const p=addProfile({name,ageGroup:age,avatar:av,password:document.getElementById("npw").value}); setCurrentUser(p); enter(); };
+  document.getElementById("createGo").onclick=()=>{ const name=document.getElementById("np").value.trim()||"طفلي"; const p=addProfile({name,ageGroup:age,avatar:av,gender,password:document.getElementById("npw").value}); setCurrentUser(p); enter(); };
   document.getElementById("createBack").onclick=renderLogin;
 }
 

@@ -53,6 +53,10 @@
   .tbtn{border:none;border-radius:999px;padding:9px 15px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(0,0,0,.1)}
   .tbtn.play{background:var(--primary);color:#fff} .tbtn.stop{background:#E0566B;color:#fff}
   .tbtn.rep{background:var(--card);border:1px solid var(--line);color:#555} .tbtn.rep.on{background:var(--gold);color:#fff}
+  .memrange{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:0 2px 8px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+  .mr-lbl{font-size:14px;font-weight:700;color:var(--ink)}
+  .mr-sel{padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:800;font-size:15px}
+  .mr-hint{flex-basis:100%;text-align:center;font-size:12px;color:var(--muted);margin-top:2px}
 
   .mushaf{background:#FFFDF6;border:1px solid #EFE6CF;border-radius:18px;box-shadow:var(--shadow);padding:18px 16px;margin:8px 2px;
     font-size:30px;line-height:2.35;text-align:justify;text-justify:inter-word;direction:rtl;color:#1c2b25}
@@ -90,6 +94,8 @@ robo.mount();
 const view = document.getElementById("view");
 const pad3 = n => String(n).padStart(3, "0");
 const ayNum = n => String(n); // أرقام الآيات بالغربيّة (العربيّة) في كل الواجهة بطلب المستخدم
+// خياراتُ «من/إلى» لنطاقِ الحفظ: 1..عددِ آياتِ السورة (يُحدَّدُ تلقائيًّا). المحدَّدُ = sel.
+const ayOpts = sel => Array.from({ length: surah ? surah.ayahCount : 0 }, (_, k) => `<option value="${k + 1}" ${k + 1 === sel ? "selected" : ""}>${k + 1}</option>`).join("");
 const BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
 const audioSrc = (s, a) => `quran/husary/${pad3(s)}${pad3(a)}.mp3`;
 const BASMALA_AUDIO = audioSrc(1, 1); // صوتُ البسملة المستقلّ = الفاتحة آية1 (تلاوةُ الحصري لا تضمّن البسملةَ في باقي السور)
@@ -153,7 +159,7 @@ function renderList() {
 
 /* ===== عرض السورة ===== */
 let surah = null, selIdx = 0;
-function openSurah(n) { surah = QURAN.surahs.find(s => s.n === n); selIdx = 0; logEvent("quran_open"); renderSurah(); }
+function openSurah(n) { surah = QURAN.surahs.find(s => s.n === n); selIdx = 0; repeatAyah = false; repeatSurah = false; loopSeq = false; memOpen = false; memFrom = 1; memTo = Math.min(5, surah.ayahCount || 5); logEvent("quran_open"); renderSurah(); } // سورةٌ جديدةٌ = بلا تكرارٍ عالِق
 
 // نصُّ الآية للعرض: بلا بسملةٍ للآية الأولى (لغير الفاتحة)، وبلا محرف BOM/علاماتٍ خفيّة.
 function ayahText(ay) { const t = (surah.n !== 1 && ay.a === 1) ? verseNoBism(ay.text) : ay.text; return t.replace(/﻿/g, "").trim(); }
@@ -170,9 +176,18 @@ function renderSurah() {
      <div class="toolbar">
        <button class="tbtn play" id="playAll">▶ اقرأ السورة</button>
        <button class="tbtn stop" id="stop">⏹️ إيقاف</button>
-       <button class="tbtn rep" id="repAyah">🔁 كرّر الآية</button>
-       <button class="tbtn rep" id="repSurah">🔁 كرّر السورة</button>
+       <button class="tbtn rep ${repeatAyah ? "on" : ""}" id="repAyah">🔁 كرّر الآية</button>
+       <button class="tbtn rep ${repeatSurah ? "on" : ""}" id="repSurah">🔁 كرّر السورة</button>
+       <button class="tbtn rep ${memOpen ? "on" : ""}" id="memBtn">📖 حفظُ نطاق</button>
        ${surah.n !== 1 ? `<button class="tbtn rep ${showBasmala() ? "on" : ""}" id="basmala">🕌 البسملة</button>` : ""}
+     </div>
+     <div class="memrange" id="memRange" style="display:${memOpen ? "flex" : "none"}">
+       <span class="mr-lbl">من الآية</span>
+       <select id="mrFrom" class="mr-sel">${ayOpts(memFrom)}</select>
+       <span class="mr-lbl">إلى</span>
+       <select id="mrTo" class="mr-sel">${ayOpts(memTo)}</select>
+       <button class="tbtn play" id="mrPlay">🔁 كرّرِ النطاق</button>
+       <span class="mr-hint">اختَرِ الآياتِ التي تحفظُها فتتكرّرَ حتى تُتقِنَها. اضغطْ «⏹️ إيقاف» لتتوقّف.</span>
      </div>
      <div class="mushaf ${f}" id="mushaf">${(surah.n !== 1 && showBasmala()) ? `<span class="bism" data-bism>${BASMALA} <span class="num">🔊</span></span>` : ""}${surah.ayahs.map(ayahHtml).join("")}</div>
      <div id="practice"></div>
@@ -187,6 +202,11 @@ function renderSurah() {
   document.getElementById("stop").onclick = stopAll;
   document.getElementById("repAyah").onclick = e => { repeatAyah = !repeatAyah; e.currentTarget.classList.toggle("on", repeatAyah); };
   document.getElementById("repSurah").onclick = e => { repeatSurah = !repeatSurah; e.currentTarget.classList.toggle("on", repeatSurah); };
+  document.getElementById("memBtn").onclick = e => { memOpen = !memOpen; e.currentTarget.classList.toggle("on", memOpen); const mr = document.getElementById("memRange"); if (mr) mr.style.display = memOpen ? "flex" : "none"; };
+  { const mf = document.getElementById("mrFrom"), mt = document.getElementById("mrTo");
+    if (mf) mf.onchange = () => { memFrom = +mf.value; if (memTo < memFrom) { memTo = memFrom; mt.value = String(memTo); } };
+    if (mt) mt.onchange = () => { memTo = +mt.value; if (memFrom > memTo) { memFrom = memTo; mf.value = String(memFrom); } };
+    const mp = document.getElementById("mrPlay"); if (mp) mp.onclick = () => { const a = Math.min(memFrom, memTo), b = Math.max(memFrom, memTo); playRange(a - 1, b - 1); }; }
   const bb = document.getElementById("basmala"); if (bb) bb.onclick = () => { setBasmala(!showBasmala()); renderSurah(); };
   renderPractice();
 }
@@ -205,18 +225,19 @@ function renderPractice() {
 
 /* ===== محرّك التشغيل والتظليل (عنصرُ صوتٍ واحدٌ + قائمةُ تشغيل؛ لا يتقدّم إلا عند انتهاءِ المقطعِ فعليّاً) ===== */
 const player = new Audio(); player.preload = "auto";
-let repeatAyah = false, repeatSurah = false;
+let repeatAyah = false, repeatSurah = false, loopSeq = false; // loopSeq: تكرارُ النطاقِ/التسلسلِ المختار (للحفظ)
+let memOpen = false, memFrom = 1, memTo = 5;                   // لوحةُ «حفظِ نطاق» (تكرارُ آياتٍ من كذا إلى كذا)
 let seq = [], seqPos = 0, mode = "idle"; // mode: idle | seq ؛ كلُّ عنصرٍ: {bism:true} أو {ayah:i}
 function clearHL() { view.querySelectorAll(".ayah.on, .bism.on").forEach(x => x.classList.remove("on")); }
 function hlAyah(i) { clearHL(); const sp = view.querySelector(`.ayah[data-i="${i}"]`); if (sp) { sp.classList.add("on"); sp.scrollIntoView({ block: "center", behavior: "smooth" }); } }
 function hlBism() { clearHL(); const b = view.querySelector(".bism"); if (b) b.classList.add("on"); }
-function stopAll() { mode = "idle"; seq = []; player.onended = null; try { player.pause(); } catch (e) {} clearHL(); }
+function stopAll() { mode = "idle"; seq = []; loopSeq = false; player.onended = null; try { player.pause(); } catch (e) {} clearHL(); }
 
 const srcOf = st => st.bism ? BASMALA_AUDIO : audioSrc(surah.n, surah.ayahs[st.ayah].a);
 function runSeq() {
   if (mode !== "seq") return;
   if (seqPos >= seq.length) { // انتهى التسلسل
-    if (repeatSurah && seq.some(s => !s.bism)) { seqPos = 0; runSeq(); return; }
+    if ((repeatSurah || loopSeq) && seq.some(s => !s.bism)) { seqPos = 0; runSeq(); return; } // تكرارُ السورةِ أو نطاقِ الحفظ
     mode = "idle"; clearHL(); logEvent("quran_listen"); recordMastery("S:" + surah.n, true); try { robo.cheer(NOTICES.quranSurahDone); } catch (e) {}
     return;
   }
@@ -232,10 +253,16 @@ function runSeq() {
   const p = player.play(); if (p && p.catch) p.catch(() => {}); // تجاهلُ رفضِ التشغيل المؤقّت — التقدّمُ عند ended فقط
 }
 // آيةٌ مفردة (تُكرَّر إن فُعِّل «كرّر الآية»).
-function playSingle(i) { mode = "seq"; seq = [{ ayah: i }]; seqPos = 0; selIdx = i; runSeq(); }
+function playSingle(i) { mode = "seq"; loopSeq = false; seq = [{ ayah: i }]; seqPos = 0; selIdx = i; runSeq(); }
+// نطاقُ حفظٍ: الآياتُ [from..to] (فهارسُ 0) تتكرّرُ حتى الإيقاف.
+function playRange(fromIdx, toIdx) {
+  mode = "seq"; loopSeq = true; seq = [];
+  for (let i = fromIdx; i <= toIdx; i++) seq.push({ ayah: i });
+  seqPos = 0; if (seq.length) { selIdx = fromIdx; runSeq(); }
+}
 // السورةُ كاملةً: البسملةُ أوّلًا (إن فُعِّلت، لغير الفاتحة) ثمّ كلُّ الآيات.
 function playAll(from) {
-  mode = "seq"; seq = [];
+  mode = "seq"; loopSeq = false; seq = [];
   if (from === 0 && surah.n !== 1 && showBasmala()) seq.push({ bism: true });
   for (let i = from; i < surah.ayahs.length; i++) seq.push({ ayah: i });
   seqPos = 0; runSeq();

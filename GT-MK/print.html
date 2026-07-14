@@ -248,12 +248,20 @@ function tplBingo(){
     <p class="tpl-h">يُنادي الأهلُ عددًا (1–30)؛ مَن وجدَه يُعلّمُه — وأوّلُ من يُكمِلُ صفًّا كاملاً (أفقيّ/رأسيّ/قُطريّ) ينادي «بنغو!» ويفوز.</p>
     <div class="tb-wrap">${card()}${card()}</div></section>`;
 }
+// أزواجٌ مترابطةٌ (مألوفةٌ للطفل) — تُنتقى منها مجموعةٌ مختلفةٌ عشوائيًّا في كلِّ طباعةٍ فتتنوّع.
+const CONNECT_PAIRS=[
+  ["🐝","🌸"],["🐟","🌊"],["🐄","🥛"],["🐫","🏜️"],["🐧","❄️"],["🐒","🍌"],
+  ["🐰","🥕"],["🕷️","🕸️"],["🌧️","☂️"],["🔑","🔒"],["🐤","🥚"],["🌱","🌳"],
+  ["🐛","🦋"],["☀️","🌻"],["🌙","⭐"],["🐭","🧀"],["🐑","🧶"],["🦴","🐕"]
+];
 function tplConnect(){
-  const pool=["🌙","⭐","🌳","🐦","🌊","☀️"];
-  const right=shuf([...pool]);
-  return `<section class="tpl"><h2>⚡ سباقُ المطابقة — وصِّلْ بخطّ</h2>${nameStrip()}
-    <p class="tpl-h">صِلْ كلَّ صورةٍ على جهةٍ بمثيلتها على الجهة الأخرى بخطّ. مَن يُكمِلُ الوصلَ الصحيحَ أسرعَ يفوز! (اطبعْ نسخةً لكلّ لاعب)</p>
-    <div class="cn-wrap"><div class="cn-col">${pool.map(e=>`<div class="cn-c">${e} ●</div>`).join("")}</div><div class="cn-col">${right.map(e=>`<div class="cn-c">● ${e}</div>`).join("")}</div></div></section>`;
+  const n=5+Math.floor(Math.random()*2);                 // 5–6 أزواجٍ مختلفةٍ كلَّ طباعة
+  const pairs=shuf([...CONNECT_PAIRS]).slice(0,n);
+  const left=shuf(pairs.map(p=>p[0]));                     // كلُّ عمودٍ مُبعثَرٌ استقلالًا فلا يتحاذى الزوجان
+  const right=shuf(pairs.map(p=>p[1]));
+  return `<section class="tpl"><h2>⚡ وصِّلْ بخطّ — العناصرُ المترابطة</h2>${nameStrip()}
+    <p class="tpl-h">صِلْ كلَّ صورةٍ على جهةٍ بما يرتبطُ بها على الجهةِ الأخرى بخطّ (مثلًا: النحلةُ ← الزهرة). مَن يُكمِلُ الوصلَ الصحيحَ أسرعَ يفوز! (اطبعْ نسخةً لكلّ لاعب)</p>
+    <div class="cn-wrap"><div class="cn-col">${left.map(e=>`<div class="cn-c">${e} ●</div>`).join("")}</div><div class="cn-col">${right.map(e=>`<div class="cn-c">● ${e}</div>`).join("")}</div></div></section>`;
 }
 const WS_WORDS=["شمس","قمر","بحر","نجم","ورد","سحب","جبل","نهر","تمر","عسل","ديك","فيل","نمل","حوت","باب","بيت","سمك","قلم"];
 const AR_L="ا ب ت ث ج ح د ر س ش ع ف ق ك ل م ن ه و ي".split(" ");

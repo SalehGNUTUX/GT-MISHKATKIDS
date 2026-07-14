@@ -114,6 +114,11 @@
   /* Parent overlay */
   .overlay{position:fixed;inset:0;background:rgba(43,43,43,.45);display:none;align-items:flex-start;justify-content:center;padding:20px;z-index:50;overflow:auto}
   .overlay.show{display:flex}
+  /* عارضُ الوسائط (صورة/فيديو) بملءِ الشاشة */
+  .medialb{position:fixed;inset:0;background:rgba(20,20,20,.92);display:flex;align-items:center;justify-content:center;z-index:120;opacity:0;transition:opacity .15s;padding:16px}
+  .medialb.show{opacity:1}
+  .medialb-el{max-width:96vw;max-height:88vh;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+  .medialb-x{position:fixed;top:14px;left:14px;width:48px;height:48px;border-radius:50%;border:none;background:rgba(255,255,255,.94);color:#2B2B2B;font-size:22px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;line-height:1}
   .panel{background:var(--card);border-radius:20px;box-shadow:var(--shadow);width:100%;max-width:680px;padding:22px;margin-top:10px}
   .panel h2{margin:0 0 2px;font-size:20px}
   .panel .close{float:left;background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
@@ -398,7 +403,7 @@ async function viewMyWorks(){
     const cs=capByTs[e.ts]||[];
     const media=cs.map(c=>{
       if(c.type==="note") return `<div class="worknote">📝 ${esc(c.text)}</div>`;
-      try{ const url=URL.createObjectURL(c.blob); return c.type==="audio"?`<audio controls src="${url}"></audio>`:`<img class="workimg" src="${url}" onclick="window.open('${url}')" />`; }catch(_){ return ""; }
+      try{ const url=URL.createObjectURL(c.blob); if(c.type==="audio") return `<audio controls src="${url}"></audio>`; const isVid=c.type==="video"||(c.mime&&/^video\//.test(c.mime)); return isVid?`<video class="workimg" src="${url}" muted playsinline onclick="openMedia('${url}','video')"></video>`:`<img class="workimg" src="${url}" onclick="openMedia('${url}','photo')" />`; }catch(_){ return ""; }
     }).join("");
     return `<div class="workitem"><div class="workhd">✅ ${esc(e.title)} <span class="muted" style="font-size:12px">· ${esc(e.domain)}</span></div>${media||'<span class="muted" style="font-size:12px">أُنجِزت</span>'}</div>`;
   }).join("") : `<p class="muted" style="text-align:center">لم تُنجِزْ أعمالًا بعد — علّمِ الآليَّ ذكرى لتظهرَ هنا!</p>`;
@@ -407,6 +412,23 @@ async function viewMyWorks(){
     <div class="works">${items}</div>
     <div class="btns" style="justify-content:center;margin-top:12px"><button class="act" onclick="renderIdle()">↩ رجوع</button></div></div>`;
 }
+// عارضُ الوسائطِ داخلَ التطبيق (صورة/فيديو) بملءِ الشاشة مع زرِّ إغلاقٍ ونقرٍ على الخلفيّةِ للإغلاق —
+// بديلٌ عن window.open الذي كان يفتحُ رابطَ blob في نافذةٍ فيخرجُ من التطبيقِ بلا سبيلٍ للعودة (ولا زرُّ الرجوع).
+function openMedia(url, type){
+  closeMedia();
+  const ov=document.createElement("div"); ov.id="mediaLightbox"; ov.className="medialb";
+  ov.innerHTML = (type==="video")
+    ? `<video src="${url}" controls autoplay playsinline class="medialb-el"></video>`
+    : `<img src="${url}" class="medialb-el" alt="" />`;
+  const x=document.createElement("button"); x.className="medialb-x"; x.type="button"; x.setAttribute("aria-label","إغلاق"); x.textContent="✕"; x.onclick=closeMedia;
+  ov.appendChild(x);
+  ov.addEventListener("click", e=>{ if(e.target===ov) closeMedia(); });
+  document.body.appendChild(ov); requestAnimationFrame(()=>ov.classList.add("show"));
+}
+function closeMedia(){ const ov=document.getElementById("mediaLightbox"); if(!ov) return false; try{ const v=ov.querySelector("video"); if(v) v.pause(); }catch(_){} ov.remove(); return true; }
+window.openMedia=openMedia; window.closeMedia=closeMedia;
+// زرُّ الرجوعِ في أندرويد: إن كان عارضُ الوسائطِ مفتوحًا فأغلِقْه بدلَ الخروجِ من التطبيق (يُرجِعُ true فيُستهلَك).
+window.appBack = () => closeMedia();
 // وضع الإخوة: يقصر الذكريات على أنشطة «لطفلين معًا» ويؤطّرها لطفلين.
 function coopOthers(){ const cu=getCurrentUser(); return listProfiles().filter(p=>!cu||p.id!==cu.id); }
 function coopPartnerName(){ const p=coopPartnerId&&listProfiles().find(x=>x.id===coopPartnerId); return p?`${p.avatar||"🙂"} ${p.name}`:""; }

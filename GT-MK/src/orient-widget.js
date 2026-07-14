@@ -32,7 +32,10 @@ function ensureStyle() {
     background:var(--card,#fff);color:var(--ink,#2B2B2B);border:1px solid var(--line,#ECE6DA);border-radius:16px;
     box-shadow:0 12px 34px rgba(0,0,0,.3);padding:14px 16px;text-align:center;font-size:15px;line-height:1.8;opacity:0;transition:opacity .2s,transform .2s}
   .or-float.on{opacity:1;transform:translateX(-50%) translateY(0)}
-  .or-float .ft{font-weight:800;font-size:17px;margin-bottom:4px}`;
+  .or-float .ft{font-weight:800;font-size:17px;margin-bottom:4px}
+  .or-realbtn{background:var(--card,#fff);color:var(--ink,#2B2B2B);border:2px solid var(--primary,#E07A5F);border-radius:999px;padding:8px 16px;font:inherit;font-weight:800;font-size:14px;cursor:pointer;transition:transform .1s}
+  .or-realbtn:active{transform:scale(.96)} .or-realbtn.on{background:var(--primary,#E07A5F);color:#fff}
+  .or-realmsg{font-size:12.5px;color:var(--muted,#6B6B6B);min-height:16px;margin-top:4px}`;
   document.head.appendChild(st);
 }
 // بطاقةٌ عائمةٌ مقتضبةٌ (تُغلَقُ تلقائيًّا أو بالنقر) — لمعلوماتِ الصلاةِ المرتبطةِ بالفترة.
@@ -57,21 +60,68 @@ export function makeCompass(lang, onPick) {
   const svg = svgEl("svg", { viewBox: "0 0 200 200", class: "or-svg or-dir" });
   svg.appendChild(svgEl("circle", { cx: 100, cy: 100, r: 94, fill: "var(--card,#fff)", stroke: "var(--primary,#E07A5F)", "stroke-width": 4 }));
   svg.appendChild(svgEl("circle", { cx: 100, cy: 100, r: 6, fill: "var(--primary-d,#C7613F)" }));
+  // وردةُ البوصلة (إبرةٌ + أحرفٌ) داخلَ مجموعةٍ تدورُ مع الاتجاهِ الحقيقيِّ على أندرويد؛ الدائرةُ الخارجيّةُ ثابتة.
+  const rose = svgEl("g", { class: "or-rose", style: "transition:transform .12s ease-out" });
   // إبرةُ الشمال (نصفٌ أحمرُ لأعلى)
   const needle = svgEl("polygon", { points: "100,20 108,100 100,110 92,100", fill: "var(--bad,#E0566B)" });
-  svg.appendChild(needle);
-  svg.appendChild(svgEl("polygon", { points: "100,180 108,100 100,90 92,100", fill: "var(--muted,#9a9a9a)" }));
+  rose.appendChild(needle);
+  rose.appendChild(svgEl("polygon", { points: "100,180 108,100 100,90 92,100", fill: "var(--muted,#9a9a9a)" }));
   // الأحرفُ + مناطقُ النقر
   DIRECTIONS.forEach(d => {
     const a = rad(d.deg), r = d.prime ? 74 : 78, fs = d.prime ? 20 : 12;
     const short = lang === "ar" ? { n: "ش", ne: "شق", e: "ق", se: "جق", s: "ج", sw: "جغ", w: "غ", nw: "شغ" }[d.k] : (d[lang] || d.en).split(/[-\s]/).map(w => w[0].toUpperCase()).join("");
     const t = svgEl("text", { x: 100 + r * Math.cos(a), y: 100 + r * Math.sin(a), "text-anchor": "middle", "dominant-baseline": "central", fill: d.prime ? "var(--ink,#2B2B2B)" : "var(--muted,#8a8a8a)", "font-weight": d.prime ? "800" : "600", "font-size": fs, style: "cursor:pointer" });
-    t.textContent = short; t.addEventListener("click", () => onPick && onPick(d)); svg.appendChild(t);
+    t.textContent = short; t.addEventListener("click", () => onPick && onPick(d)); rose.appendChild(t);
     // منطقةُ نقرٍ أوسع
     const hit = svgEl("circle", { cx: 100 + r * Math.cos(a), cy: 100 + r * Math.sin(a), r: 16, fill: "transparent", style: "cursor:pointer" });
-    hit.addEventListener("click", () => onPick && onPick(d)); svg.appendChild(hit);
+    hit.addEventListener("click", () => onPick && onPick(d)); rose.appendChild(hit);
   });
+  svg.appendChild(rose);
+  svg._rose = rose; // مرجعٌ لتدويرِ الوردةِ ببوصلةٍ حقيقيّة
   return svg;
+}
+
+// قراءةُ اتجاهِ البوصلةِ (درجاتٌ من الشمالِ مع عقاربِ الساعة) من حدثِ اتجاهِ الجهاز.
+function headingFromEvent(e) {
+  if (typeof e.webkitCompassHeading === "number" && !isNaN(e.webkitCompassHeading)) return e.webkitCompassHeading; // iOS
+  if (e.absolute && typeof e.alpha === "number" && e.alpha !== null) return (360 - e.alpha) % 360;                  // أندرويد (مطلق)
+  if (typeof e.alpha === "number" && e.alpha !== null) return (360 - e.alpha) % 360;
+  return null;
+}
+// ربطُ زرِّ «بوصلةٌ حقيقيّة»: يستمعُ لمستشعرِ الاتجاهِ فيُديرُ وردةَ البوصلةِ لتشيرَ الإبرةُ (والأحرفُ) للشمالِ الحقيقيّ.
+let _compassStop = null; // مُوقِفُ آخرِ بوصلةٍ حقيقيّةٍ نشطة (كي لا يتراكمَ مستمِعٌ عند إعادةِ رسمِ البطاقة)
+function wireRealCompass(btn, msg, compass, L) {
+  if (!btn) return;
+  if (_compassStop) { try { _compassStop(); } catch (_) {} } // أوقِفْ أيَّ بوصلةٍ سابقةٍ قبلَ ربطِ الجديدة
+  const rose = compass && compass._rose;
+  let on = false, handler = null, got = false, timer = null;
+  const setRose = deg => { if (rose) rose.setAttribute("transform", `rotate(${deg} 100 100)`); };
+  const stop = () => {
+    if (handler) { try { window.removeEventListener("deviceorientationabsolute", handler, true); window.removeEventListener("deviceorientation", handler, true); } catch (_) {} handler = null; }
+    if (timer) { clearTimeout(timer); timer = null; }
+    on = false; got = false; btn.classList.remove("on"); btn.textContent = `🧭 ${L.realCompass || "بوصلةٌ حقيقيّة"}`;
+    setRose(0); if (msg) msg.textContent = ""; if (_compassStop === stop) _compassStop = null;
+  };
+  const start = () => {
+    on = true; got = false; btn.classList.add("on"); btn.textContent = `⏹️ ${L.compassStop || "أوقِفِ البوصلة"}`; _compassStop = stop;
+    if (msg) msg.textContent = L.compassWait || "وجِّهْ جهازَك وحرّكْه قليلًا…";
+    let gotAbs = false; // فضِّلِ الاتجاهَ المطلقَ (الشمالُ الحقيقيّ) على النسبيِّ إن توفّرا معًا
+    handler = e => {
+      const abs = e.type === "deviceorientationabsolute" || e.absolute === true;
+      if (gotAbs && !abs) return; if (abs) gotAbs = true;
+      const h = headingFromEvent(e); if (h == null) return; got = true; if (msg) msg.textContent = ""; setRose(-h);
+    };
+    try { window.addEventListener("deviceorientationabsolute", handler, true); } catch (_) {}
+    try { window.addEventListener("deviceorientation", handler, true); } catch (_) {}
+    timer = setTimeout(() => { if (!got && msg) msg.textContent = L.compassNo || "المستشعرُ غيرُ متاحٍ على هذا الجهاز."; }, 2500);
+  };
+  btn.onclick = () => {
+    if (on) { stop(); return; }
+    const DOE = window.DeviceOrientationEvent;
+    if (DOE && typeof DOE.requestPermission === "function") { // iOS 13+ يتطلّبُ إذنًا من إيماءةِ المستخدم
+      DOE.requestPermission().then(r => { if (r === "granted") start(); else if (msg) msg.textContent = L.compassNo || "لم يُسمَحْ بالمستشعر."; }).catch(() => { if (msg) msg.textContent = L.compassNo || "تعذّرَ تشغيلُ المستشعر."; });
+    } else start();
+  };
 }
 
 // ===== كرةٌ أرضيّةٌ مبسّطة =====
@@ -98,10 +148,13 @@ export function attachDirections(host, opts = {}) {
   host.innerHTML = `<div class="or-wrap"><div class="or-bubble">${L.dirIntro}</div>
     <div class="or-two"><div class="cslot"></div><div class="gslot"></div></div>
     <div class="or-q" id="orLbl" style="font-size:18px;min-height:24px"></div>
+    <div style="text-align:center;margin-top:2px"><button class="or-realbtn" id="orReal" type="button">🧭 ${L.realCompass || "بوصلةٌ حقيقيّة"}</button><div class="or-realmsg" id="orRealMsg"></div></div>
     <div class="or-bubble" style="max-width:420px">${L.qibla}</div></div>`;
   const lbl = host.querySelector("#orLbl");
-  host.querySelector(".cslot").appendChild(makeCompass(lang, d => { lbl.textContent = nameOf(d, lang); try { speak(nameOf(d, lang)); } catch (e) {} }));
+  const compass = makeCompass(lang, d => { lbl.textContent = nameOf(d, lang); try { speak(nameOf(d, lang)); } catch (e) {} });
+  host.querySelector(".cslot").appendChild(compass);
   host.querySelector(".gslot").appendChild(makeGlobe());
+  wireRealCompass(host.querySelector("#orReal"), host.querySelector("#orRealMsg"), compass, L); // بوصلةٌ حقيقيّةٌ بمستشعرِ الاتجاه
 }
 
 // ===== بطاقةُ الفصول =====
@@ -194,4 +247,5 @@ export const AR_L = {
   seasonsIntro: "🍂 فصولُ السنةِ الأربعة — اضغطْ كلَّ فصلٍ لتسمعَ اسمَه وتعرفَ صفتَه.",
   daypartsIntro: "🌅 فتراتُ اليومِ والليل بالترتيب — اضغطْ كلَّ فترةٍ لتسمعَ اسمَها.",
   quizSay: "تنافَسْ في المطابقة!", qName: "ما اسمُ هذا؟", qPick: "اختَرِ الرمزَ المطابق", quiz: "اختبار",
+  realCompass: "بوصلةٌ حقيقيّة", compassWait: "وجِّهْ جهازَك وحرّكْه قليلًا…", compassNo: "المستشعرُ غيرُ متاحٍ على هذا الجهاز.", compassStop: "أوقِفِ البوصلة",
 };

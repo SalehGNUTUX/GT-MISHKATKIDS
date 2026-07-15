@@ -112,6 +112,11 @@
   details.workitem[open]>summary::after{transform:rotate(180deg)}
   details.workitem[open]>summary{margin-bottom:6px}
   details.workitem>summary:active{transform:scale(.995)}
+  /* أزرارُ الإضافةِ اللاحقةِ داخلَ كلِّ عمل */
+  .workadd{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+  .wadd{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;transition:background .12s,color .12s}
+  .wadd:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .wadd.rec{background:var(--bad,#E0566B);color:#fff;border-color:var(--bad,#E0566B)}
   .workitem audio{width:100%;margin-top:4px} .workimg{max-width:120px;border-radius:10px;margin-top:4px;cursor:pointer}
   .worknote{background:color-mix(in srgb,var(--gold,#F4C95D) 16%,var(--card));border-radius:10px;padding:6px 10px;font-size:13px;margin-top:4px}
   .err{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:16px}
@@ -436,14 +441,60 @@ async function viewMyWorks(){
       try{ const url=URL.createObjectURL(c.blob); if(c.type==="audio") return `<audio controls src="${url}"></audio>`; const isVid=c.type==="video"||(c.mime&&/^video\//.test(c.mime)); return isVid?`<video class="workimg" src="${url}" muted playsinline onclick="openMedia('${url}','video')"></video>`:`<img class="workimg" src="${url}" onclick="openMedia('${url}','photo')" />`; }catch(_){ return ""; }
     }).join("");
     const hd=`✅ ${esc(e.title)} <span class="muted" style="font-size:12px">· ${esc(e.domain)}</span>`;
-    // كلُّ عملٍ مطويٌّ: عنوانُه ظاهرٌ، ومحتواه (صوت/صورة/ملاحظة) يُكشَفُ بنقرة. وبلا محتوًى ⇒ صفٌّ بسيطٌ بلا سهم.
-    if(!media) return `<div class="workitem"><div class="workhd">${hd}</div><span class="muted" style="font-size:12px">أُنجِزت</span></div>`;
-    return `<details class="workitem"><summary class="workhd">${hd}</summary><div class="workmedia">${media}</div></details>`;
+    // أزرارُ إضافةٍ لاحقةٍ لما نسيَه الطفلُ وقتَ المهمّة (تُربَطُ بالعملِ بطابعِ وقتِه نفسِه).
+    const add=`<div class="workadd"><span class="muted" style="font-size:12px">أضِفْ ما نسيتَه:</span>
+      <button class="wadd" data-ts="${e.ts}" data-t="note">📝 ملاحظة</button>
+      <button class="wadd" data-ts="${e.ts}" data-t="photo">📸 صورة</button>
+      <button class="wadd" data-ts="${e.ts}" data-t="audio">🎤 صوت</button></div>`;
+    // كلُّ عملٍ مطويّ: عنوانُه ظاهرٌ، ومحتواه وأزرارُ الإضافةِ تُكشَفُ بنقرة.
+    return `<details class="workitem"><summary class="workhd">${hd}</summary>
+      ${media?`<div class="workmedia">${media}</div>`:`<span class="muted" style="font-size:12px">أُنجِزت — بلا توثيقٍ بعد.</span>`}
+      ${add}</details>`;
   }).join("") : `<p class="muted" style="text-align:center">لم تُنجِزْ أعمالًا بعد — علّمِ الآليَّ ذكرى لتظهرَ هنا!</p>`;
   host.innerHTML=`<div class="card"><div class="robo-says">📂 أعمالي المنجَزة (${AR(progress.completed.length)})</div>
     <p class="muted">ذكرياتٌ علّمتَها الآليَّ وما سجّلتَه فيها. أحسنت! 🌟</p>
     <div class="works">${items}</div>
     <div class="btns" style="justify-content:center;margin-top:12px"><button class="act" onclick="renderIdle()">↩ رجوع</button></div></div>`;
+  // ربطُ أزرارِ الإضافةِ اللاحقة (الحدثُ يُعرَفُ بطابعِ وقتِه من السجلّ).
+  host.querySelectorAll(".wadd").forEach(b=>b.onclick=()=>{
+    const ts=+b.getAttribute("data-ts"), ent=log.find(x=>x.ts===ts); if(!ent) return;
+    addToWork(ts, ent.id, ent.title, b.getAttribute("data-t"), b);
+  });
+}
+// اختيارُ صورةٍ عبرَ حقلٍ مؤقّتٍ (لا نُشارِكُ #photoInput الخاصَّ بحلقةِ التلقين كي لا تختلطَ الوجهتان).
+function pickPhoto(){
+  return new Promise(res=>{ const i=document.createElement("input"); i.type="file"; i.accept="image/*"; i.setAttribute("capture","environment");
+    i.style.display="none"; document.body.appendChild(i);
+    i.addEventListener("change",()=>{ const f=i.files&&i.files[0]; i.remove(); res(f||null); });
+    i.addEventListener("cancel",()=>{ i.remove(); res(null); });
+    i.click(); });
+}
+let _waddRec=null; // مُسجِّلُ الإضافةِ اللاحقة (نقرةٌ تبدأُ وأخرى تُنهي)
+// إضافةٌ لاحقةٌ لعملٍ منجَز: تُحفَظُ بطابعِ وقتِ الجلسةِ نفسِه فتظهرُ داخلَها.
+async function addToWork(ts, memId, title, type, btn){
+  const stamp=Date.now();
+  try{
+    if(type==="note"){
+      const t=prompt("اكتبْ ما تريدُ إضافتَه:"); if(!t||!t.trim()) return;
+      await putCapture({key:ts+"-"+stamp+"-note", ts, memId, title, type:"note", text:t.trim()});
+    } else if(type==="photo"){
+      const f=await pickPhoto(); if(!f) return;
+      await putCapture({key:ts+"-"+stamp+"-photo", ts, memId, title, type:"photo", blob:f});
+    } else {
+      if(_waddRec && _waddRec.state==="recording"){ _waddRec.stop(); return; } // نقرةٌ ثانيةٌ ⇒ إنهاءٌ وحفظ
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      const chunks=[]; _waddRec=new MediaRecorder(stream);
+      _waddRec.ondataavailable=ev=>{ if(ev.data.size) chunks.push(ev.data); };
+      _waddRec.onstop=async ()=>{
+        stream.getTracks().forEach(t=>t.stop()); _waddRec=null;
+        try{ await putCapture({key:ts+"-"+stamp+"-audio", ts, memId, title, type:"audio", blob:new Blob(chunks,{type:"audio/webm"})}); }catch(e){}
+        viewMyWorks();
+      };
+      _waddRec.start(); if(btn){ btn.textContent="■ إيقافٌ وحفظ"; btn.classList.add("rec"); }
+      return; // الحفظُ والتحديثُ يجريانِ عند الإيقاف
+    }
+    viewMyWorks(); // أعِدْ رسمَ المعرضِ ليَظهرَ المُضاف
+  }catch(e){ try{ alert("تعذّرت الإضافة: "+((e&&e.message)||e)); }catch(_){} }
 }
 // عارضُ الوسائطِ داخلَ التطبيق (صورة/فيديو) بملءِ الشاشة مع زرِّ إغلاقٍ ونقرٍ على الخلفيّةِ للإغلاق —
 // بديلٌ عن window.open الذي كان يفتحُ رابطَ blob في نافذةٍ فيخرجُ من التطبيقِ بلا سبيلٍ للعودة (ولا زرُّ الرجوع).

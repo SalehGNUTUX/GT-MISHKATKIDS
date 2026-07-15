@@ -156,6 +156,14 @@
   /* سجلُّ الجلسات: بطاقةٌ رأسيّةٌ (عنوانٌ+تاريخ ثمّ الوسائط) — الصفُّ الأفقيُّ الواحدُ كان يسحقُ الملاحظةَ
      إلى عمودٍ بكلمةٍ في السطر. تتجاوبُ على الهاتفِ والحاسوبِ معًا. */
   .log{max-height:300px;overflow:auto}
+  /* مطويّةُ حسابٍ في سجلِّ الجلسات */
+  .loggrp{border:1px solid var(--line);border-radius:10px;margin:6px 0;overflow:hidden}
+  .loggrp>summary{cursor:pointer;padding:8px 10px;font-size:13px;font-weight:800;color:var(--ink);list-style:none;display:flex;align-items:center;gap:6px;user-select:none}
+  .loggrp>summary::-webkit-details-marker{display:none}
+  .loggrp>summary::after{content:"▾";margin-inline-start:auto;font-size:11px;transition:transform .15s}
+  .loggrp[open]>summary::after{transform:rotate(180deg)}
+  .loggrp .log{padding:0 10px 6px;border-top:1px solid var(--line)}
+  .logcount{color:var(--muted);font-weight:600;font-size:12px}
   .logitem{display:flex;flex-direction:column;gap:6px;padding:10px 4px;border-bottom:1px solid var(--line);font-size:14px}
   .loghd{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
   .logtitle{font-weight:800;color:var(--ink)}
@@ -776,7 +784,37 @@ async function openDashboard(){
     return {d,tot,dn,pct: tot?Math.round(dn/tot*100):0, on: progress.settings.enabledDomains[d]!==false};
   });
   const log=[...progress.log].sort((x,y)=>y.ts-x.ts);
+  // مجموعاتُ سجلِّ الجلسات: مطويّةٌ لكلِّ حساب (كلُّ حسابٍ سجلُّ تقدّمٍ مستقلٌّ بمفتاحِه).
+  // يُقرَأُ من مفاتيحِ التقدّمِ مباشرةً لا من الحسابِ الجاري وحدَه، ويُلتقَطُ الوالدانِ وأيُّ مفتاحٍ متبقٍّ.
+  const logGroups=(()=>{
+    const gs=[], seen=new Set();
+    try{ for(const p of listProfiles()){ gs.push({name:`${p.avatar||"🙂"} ${p.name}`, log:(loadProgressFor(p.id)||{}).log||[]}); seen.add("tilmithi_progress_v1__"+p.id); } }catch(e){}
+    gs.push({name:"👋 الضيف / بلا حساب", log:(loadProgressFor(null)||{}).log||[]}); seen.add("tilmithi_progress_v1");
+    try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i);
+      if(!k||!k.startsWith("tilmithi_progress_v1")||seen.has(k)) continue;
+      const id=k.slice("tilmithi_progress_v1__".length);
+      gs.push({name: id==="parent"?"👪 الوالدان":("• "+id), log:(loadProgressFor(id)||{}).log||[]});
+    } }catch(e){}
+    return gs.filter(g=>g.log.length).map(g=>({name:g.name, log:[...g.log].sort((a,b)=>b.ts-a.ts)}));
+  })();
+  const logTotal=logGroups.reduce((a,g)=>a+g.log.length,0);
   const fmt=ts=>{ const dt=new Date(ts); return dt.toLocaleDateString("ar-EG-u-nu-latn")+" "+dt.toLocaleTimeString("ar-EG-u-nu-latn",{hour:"2-digit",minute:"2-digit"}); };
+  // بطاقةُ جلسةٍ واحدة (تُستعمَلُ داخلَ كلِّ مطويّة)
+  const logItemHtml=e=>{
+    const media=(capByTs[e.ts]||[]).map(c=>{
+      let inner;
+      if(c.type==="note") inner=`<span class="lognote">📝 ${c.text||""}</span>`;
+      else { const url=URL.createObjectURL(c.blob); const isVid=c.type==="video"||(c.mime&&/^video\//.test(c.mime));
+        inner = c.type==="audio"?`<audio controls src="${url}"></audio>`
+          : isVid?`<video src="${url}" muted playsinline onclick="openMedia('${url}','video')"></video>`
+          : `<img src="${url}" onclick="openMedia('${url}','photo')" />`; }
+      return `<span class="capwrap" data-key="${c.key}">${inner}<button class="capdel" data-key="${c.key}" title="حذف هذا التسجيل">🗑️</button></span>`;
+    }).join("");
+    return `<div class="logitem">
+      <div class="loghd"><span class="logtitle">${e.title}</span><span class="logmeta">· ${e.domain} · ${e.age_band}</span><span class="when">${fmt(e.ts)}</span></div>
+      ${media?`<div class="logmedia">${media}</div>`:""}
+    </div>`;
+  };
 
   // رؤى الإتقان (تتبّع لايتنر): ماذا أتقن الطفل وما يحتاج مراجعة، بحسب نوع المهارة.
   const MAST=getAllMastery(), mkeys=Object.keys(MAST);
@@ -904,24 +942,12 @@ async function openDashboard(){
       </div>
     </div>
 
-    <div class="sec"><h3>سجلّ الجلسات (${AR(log.length)})</h3>
-      <div class="muted" style="font-size:12px;margin-bottom:6px">يمكنك حذف أيّ تسجيلٍ على حدة (مع مهلة تراجع).</div>
-      <div class="log" id="logHost">${ log.length? log.map(e=>{
-        const cs=capByTs[e.ts]||[];
-        const media=cs.map(c=>{
-          let inner;
-          if(c.type==="note") inner=`<span class="lognote">📝 ${c.text||""}</span>`;
-          else { const url=URL.createObjectURL(c.blob); const isVid=c.type==="video"||(c.mime&&/^video\//.test(c.mime));
-            inner = c.type==="audio"?`<audio controls src="${url}"></audio>`
-              : isVid?`<video src="${url}" muted playsinline onclick="openMedia('${url}','video')"></video>`
-              : `<img src="${url}" onclick="openMedia('${url}','photo')" />`; } // عارضٌ داخليٌّ لا window.open (كان يخرجُ من التطبيقِ بلا رجوع)
-          return `<span class="capwrap" data-key="${c.key}">${inner}<button class="capdel" data-key="${c.key}" title="حذف هذا التسجيل">🗑️</button></span>`;
-        }).join("");
-        return `<div class="logitem">
-          <div class="loghd"><span class="logtitle">${e.title}</span><span class="logmeta">· ${e.domain} · ${e.age_band}</span><span class="when">${fmt(e.ts)}</span></div>
-          ${media?`<div class="logmedia">${media}</div>`:""}
-        </div>`;
-      }).join(""):`<p class="muted">لا جلسات بعد.</p>` }</div>
+    <div class="sec"><h3>سجلّ الجلسات (${AR(logTotal)})</h3>
+      <div class="muted" style="font-size:12px;margin-bottom:6px">مطويّةٌ لكلِّ حساب. يمكنك حذف أيّ تسجيلٍ على حدة (مع مهلة تراجع).</div>
+      <div id="logHost">${ logGroups.length ? logGroups.map(g=>`
+        <details class="loggrp"><summary>${g.name} <span class="logcount">(${AR(g.log.length)})</span></summary>
+          <div class="log">${g.log.map(logItemHtml).join("")}</div>
+        </details>`).join("") : `<p class="muted">لا جلسات بعد.</p>` }</div>
     </div>
 
     <div class="sec" id="sec-accounts"><h3>الحسابات والأمان</h3>

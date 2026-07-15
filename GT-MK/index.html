@@ -322,7 +322,7 @@ const WORLD_ART={
 import { ART } from "./src/art.js";
 import { logEvent, recordMastery, getAllMastery, isDueForReview, getChildAge, setChildAge, getStatsFor, getBadgesFor, loadProgressFor } from "./src/progress.js";
 import * as sfx from "./src/sfx.js";
-import { roboSay, roboPhrase } from "./src/robo-voice.js";
+import { roboSay, roboPhrase, roboSayChain } from "./src/robo-voice.js";
 import { robo } from "./src/robo-companion.js"; // المرافقُ العائمُ (سحبٌ + نقرٌ للترحيب) — يظهرُ في «علّم الآليّ» كبقيّةِ الأقسام
 import { NOTICES, femaleize } from "./src/robo-phrases.js";
 import { praise, tadabburFor } from "./src/islamic.js";
@@ -672,7 +672,7 @@ function renderCard(){
       <div class="heal-reward">✨ ${label}</div>
       <div class="btns"><button class="act" onclick="spark()">ذكرى جديدة للآليّ ←</button>
       <button class="ghost" onclick="renderIdle()">توقّف الآن</button></div></div>`;
-    roboSay(`${cheer} ${m.heal.robo_reaction} ${isl}${td?" "+td:""}`, {mood:"happy"});
+    roboSayChain([cheer, m.heal.robo_reaction, isl, td], {mood:"happy"}); // كلُّ جزءٍ بمقطعِه (الدمجُ يُفقِدُ المطابقةَ الحرفيّة)
   }
 }
 function go(s){ state=s; if(s==="teach"){teachStage=0; wrongState=0; pendingNote="";} renderCard(); if(s==="teach") roboSay(current.teach.robo_question,{mood:"ask"}); }
@@ -682,7 +682,7 @@ function goTeach(n){ teachStage=n; if(n===0) wrongState=0; renderCard();
   if(n===1) logEvent("think_deep"); // وسام المُفكِّر
   roboSay(n===1 ? deepenFor(current) : current.teach.robo_question, {mood:"ask"}); }
 function askRoboWrong(){ wrongState=1; renderCard(); roboSay(roboWrongFor(current), {mood:"talk"}); }
-function fixRoboWrong(){ wrongState=2; logEvent("wrong_fixed"); renderCard(); roboSay(`${roboPhrase("thanks")} صحّحتَني، شكرًا يا معلّمي!`, {mood:"happy"}); }
+function fixRoboWrong(){ wrongState=2; logEvent("wrong_fixed"); renderCard(); roboSayChain([roboPhrase("thanks"), NOTICES.wrongFixed], {mood:"happy"}); }
 
 // مزاج الآليّ: يجعل العلاقة تفاعلية نشطة — فضولٌ عند الشرارة، تفكيرٌ عند السؤال، فرحٌ عند الشفاء.
 function setMood(mood){

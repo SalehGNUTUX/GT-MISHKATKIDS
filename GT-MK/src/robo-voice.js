@@ -59,11 +59,26 @@ export function roboBlip(mood = "talk") {
 export function roboSay(text, opts = {}) {
   const mood = opts.mood || "talk";
   try { if (isFemale()) text = femaleize(text); } catch (e) {} // تأنيثُ خطابِ الآليِّ للأنثى
-  roboBlip(mood);
+  if (!opts.noBlip) roboBlip(mood);
   // صوتٌ ودودٌ آليّ لطيف: نبرةٌ أعلى قليلًا وإيقاعٌ مُتمهِّل يناسب الصغار.
   speak(text, {
     pitch: opts.pitch != null ? opts.pitch : 1.25,
     rate: opts.rate != null ? opts.rate : 0.85,
     onend: opts.onend,   // إشعارٌ بانتهاء كلام الآليّ (لتأخير الانتقال للسؤال التالي)
   });
+}
+
+// نطقُ أجزاءٍ متتابعةً، **كلُّ جزءٍ بمقطعِه الخاصّ**. مطابقةُ المقاطعِ حرفيّةٌ تمامًا، فدمجُ عدّةِ نصوصٍ
+// في سلسلةٍ واحدةٍ (`${a} ${b}`) يُنتِجُ نصًّا لا مقطعَ له فيَرتدُّ لنطقِ النظام (رديءٌ للعربيّةِ وصامتٌ على لينكس).
+// النبضةُ تُطلَقُ مرّةً واحدةً في أوّلِ الجملةِ لا مع كلِّ جزء. opts.onend يُستدعى بعدَ آخرِ جزء.
+export function roboSayChain(parts, opts = {}) {
+  const list = (parts || []).map(p => String(p == null ? "" : p).trim()).filter(Boolean);
+  if (!list.length) { if (opts.onend) opts.onend(); return; }
+  let i = 0;
+  const next = () => {
+    if (i >= list.length) { if (opts.onend) opts.onend(); return; }
+    const t = list[i]; const first = i === 0; i++;
+    roboSay(t, { ...opts, noBlip: !first, onend: next });
+  };
+  next();
 }

@@ -14,7 +14,8 @@ import sararim from "../content/sararim-stories.js";
 import { allClockPhrases } from "../content/clock-time.js"; // جُمَلُ الوقت (v1.5) — نطقُ الساعةِ العربيّ
 import { allOrientWords, allPrayerWords } from "../content/orient.js"; // اتجاهات/فصول/فترات + أسماءُ الصلوات (نطقٌ عصبيٌّ عربيّ)
 import { REACTIONS, GAME_REACTIONS, GAME_INTROS, NOTICES, GREETINGS, femaleize } from "../src/robo-phrases.js"; // عباراتُ الآليّ الموجَّهة
-import { PRAISE } from "../src/islamic.js";
+import { PRAISE, TADABBUR } from "../src/islamic.js";
+import { DEEPEN, DEEPEN_FALLBACK } from "../src/think.js"; // أسئلةُ التعميقِ المنطوقة
 import library from "../content/library.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -40,7 +41,9 @@ const roboDirected = uniq([
   ...Object.values(GAME_INTROS || {}),
   ...Object.values(NOTICES || {}),
   ...(PRAISE || []), ...(GREETINGS || []),
-  ...(library.memories || []).flatMap(m => [m.spark && m.spark.robo_line, m.teach && m.teach.robo_question, m.heal && m.heal.robo_reaction, m.think && m.think.robo_wrong]),
+  ...(library.memories || []).flatMap(m => [m.spark && m.spark.robo_line, m.teach && m.teach.robo_question, m.heal && m.heal.robo_reaction, m.think && m.think.robo_wrong, m.think && m.think.why]),
+  ...Object.values(DEEPEN || {}), DEEPEN_FALLBACK,   // أسئلةُ التعميقِ العامّةُ بحسبِ المجال + احتياطُها
+  ...Object.values(TADABBUR || {}),                  // عباراتُ التدبّرِ في بطاقةِ الشفاء
 ]);
 const texts = uniq([
   ...SENTENCE_UNITS.flatMap(u => u.items),   // جُمَل القراءة + ردود الآلي + الإشعارات + نصوص قصّة الأرقام + القصص

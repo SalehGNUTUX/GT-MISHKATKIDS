@@ -23,7 +23,14 @@
   .bar label{font-size:14px;color:var(--muted)}
   select,.chk{font-family:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
   .chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
-  .count{font-size:13px;color:var(--muted)}
+  .count{font-size:13px;color:var(--muted);font-weight:600}
+  /* مطويّاتُ الخيارات — تترُكُ مساحةً لمعاينةِ الأوراق */
+  .pgrp{flex-basis:100%;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .pgrp>summary{cursor:pointer;padding:9px 12px;font-size:14px;font-weight:800;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+  .pgrp>summary::-webkit-details-marker{display:none}
+  .pgrp>summary::after{content:"▾";margin-inline-start:auto;font-size:12px;transition:transform .15s}
+  .pgrp[open]>summary::after{transform:rotate(180deg)}
+  .pgrp-b{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-top:1px solid var(--line)}
   button.print{margin-inline-start:auto;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:10px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
   a.back{display:inline-flex;align-items:center;gap:6px;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:14px;font-weight:700;text-decoration:none}
   a.back:active{transform:scale(.96)}
@@ -105,21 +112,27 @@
   <div class="bar noprint">
     <h1>🖨️ ألعابٌ وأنشطةٌ للطباعة</h1>
     <a class="back" href="home.html">🏠 الفهرس</a>
-    <label>المجال:
-      <select id="fDomain"><option value="all">الكلّ</option></select>
-    </label>
-    <label>العمر:
-      <select id="fAge"><option value="all">الكلّ</option><option value="4-6">4–6</option><option value="7-10">7–10</option></select>
-    </label>
-    <label class="chk"><input type="checkbox" id="cCards" checked /> بطاقات المهام</label>
-    <label class="chk"><input type="checkbox" id="cPoster" checked /> ملصق الشفاء</label>
-    <span class="chk" style="font-weight:800">🎲 ألعابٌ ورقيّة:</span>
-    <label class="chk"><input type="checkbox" id="tAll" checked /> الكلّ</label>
-    <span id="tplChecks" style="display:contents"></span>
-    <label>نُسخٌ في الورقة: <select id="copies"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-    <label>مظهرُ الذاكرة: <select id="memTheme"><option value="animals">حيوانات</option><option value="fruits">فواكه</option><option value="shapes">أشكال</option><option value="transport">مركبات</option><option value="food">طعام</option><option value="faces">وجوه</option><option value="sea">بحر</option><option value="space">فضاء</option><option value="sports">رياضة</option><option value="weather">طقس</option><option value="plants">نباتات</option></select></label>
-    <span class="count" id="count"></span>
     <button class="print" onclick="smartPrint(document.querySelector('.sheet'),'أنشطة-مِشكاة.pdf')">اطبع / احفظ PDF</button>
+    <!-- مطويّاتٌ: تُطوى الخياراتُ افتراضًا فتبقى معاينةُ الأوراقِ ظاهرةً على الشاشة -->
+    <details class="pgrp">
+      <summary>🎲 ما الذي تطبعُه؟ <span class="count" id="count"></span></summary>
+      <div class="pgrp-b">
+        <label class="chk"><input type="checkbox" id="cCards" checked /> بطاقات المهام</label>
+        <label class="chk"><input type="checkbox" id="cPoster" checked /> ملصق الشفاء</label>
+        <span class="chk" style="font-weight:800">🎲 ألعابٌ ورقيّة:</span>
+        <label class="chk"><input type="checkbox" id="tAll" checked /> الكلّ</label>
+        <span id="tplChecks" style="display:contents"></span>
+      </div>
+    </details>
+    <details class="pgrp">
+      <summary>⚙️ خياراتٌ وتصفية</summary>
+      <div class="pgrp-b">
+        <label>المجال: <select id="fDomain"><option value="all">الكلّ</option></select></label>
+        <label>العمر: <select id="fAge"><option value="all">الكلّ</option><option value="4-6">4–6</option><option value="7-10">7–10</option></select></label>
+        <label>نُسخٌ في الورقة: <select id="copies"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+        <label>مظهرُ الذاكرة: <select id="memTheme"><option value="animals">حيوانات</option><option value="fruits">فواكه</option><option value="shapes">أشكال</option><option value="transport">مركبات</option><option value="food">طعام</option><option value="faces">وجوه</option><option value="sea">بحر</option><option value="space">فضاء</option><option value="sports">رياضة</option><option value="weather">طقس</option><option value="plants">نباتات</option></select></label>
+      </div>
+    </details>
   </div>
   <div class="sheet">
     <div class="hint noprint">🎲 اختَرِ الألعابَ الورقيّةَ التي تريدُها (واحدة/أكثر/الكلّ) من الأعلى، ثمّ «اطبع / احفظ PDF». كلُّ لعبةٍ جاهزةٌ للطباعة واللعبِ مباشرةً — وفيها مكانٌ لأسماء المتنافسين. 🌿</div>

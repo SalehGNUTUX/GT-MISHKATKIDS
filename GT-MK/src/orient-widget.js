@@ -76,17 +76,54 @@ export function makeCompass(lang, onPick) {
     const hit = svgEl("circle", { cx: 100 + r * Math.cos(a), cy: 100 + r * Math.sin(a), r: 16, fill: "transparent", style: "cursor:pointer" });
     hit.addEventListener("click", () => onPick && onPick(d)); rose.appendChild(hit);
   });
+  // مؤشّرُ القِبلةِ (🕋) — يظهرُ حين يُعرَفُ الموقعُ؛ يدورُ داخلَ الوردةِ بزاويةِ القبلةِ من الشمال.
+  const qib = svgEl("g", { class: "or-qibla", style: "display:none" });
+  qib.appendChild(svgEl("line", { x1: 100, y1: 100, x2: 100, y2: 52, stroke: "var(--good,#7BB661)", "stroke-width": 3.5, "stroke-linecap": "round" }));
+  const qt = svgEl("text", { x: 100, y: 40, "text-anchor": "middle", "dominant-baseline": "central", "font-size": 17 });
+  qt.textContent = "🕋"; qib.appendChild(qt);
+  rose.appendChild(qib);
   svg.appendChild(rose);
-  svg._rose = rose; // مرجعٌ لتدويرِ الوردةِ ببوصلةٍ حقيقيّة
+  svg._rose = rose;   // مرجعٌ لتدويرِ الوردةِ ببوصلةٍ حقيقيّة
+  svg._qibla = qib;   // مرجعٌ لتوجيهِ مؤشّرِ القبلة
   return svg;
 }
 
+// هل نحنُ داخلَ تطبيقِ الهاتفِ الأصليّ؟ (البوصلةُ الحقيقيّةُ تُعرَضُ فيه وحدَه — المتصفّحاتُ تحجبُ المستشعر.)
+export function isNativeApp() {
+  try { const C = window.Capacitor; return !!(C && C.isNativePlatform && C.isNativePlatform()); } catch (e) { return false; }
+}
+// اتجاهُ البوصلةِ من زوايا الجهازِ **مع تعويضِ الميل** — أدقُّ بكثيرٍ من alpha وحدَها (التي لا تصحُّ إلّا والجهازُ مسطَّح).
+function compassHeadingFromAngles(alpha, beta, gamma) {
+  const r = Math.PI / 180;
+  const _x = (beta || 0) * r, _y = (gamma || 0) * r, _z = (alpha || 0) * r;
+  const cX = Math.cos(_x), cY = Math.cos(_y), cZ = Math.cos(_z);
+  const sX = Math.sin(_x), sY = Math.sin(_y), sZ = Math.sin(_z);
+  const Vx = -cZ * sY - sZ * sX * cY;
+  const Vy = -sZ * sY + cZ * sX * cY;
+  return (Math.atan2(Vx, Vy) * (180 / Math.PI) + 360) % 360;
+}
+// اتجاهُ البوصلةِ من كواترنيونِ المستشعر: نُدوّرُ متّجهَ «أعلى الشاشة» (0,1,0) إلى إطارِ الأرضِ (شرق/شمال/أعلى)
+// ثمّ نُسقِطُه على المستوى الأفقيّ — فيصحُّ الاتجاهُ مهما مالَ الجهاز.
+function headingFromQuaternion(q) {
+  const x = q[0], y = q[1], z = q[2], w = q[3];
+  const east = 2 * (x * y - z * w);
+  const north = 1 - 2 * (x * x + z * z);
+  return (Math.atan2(east, north) * (180 / Math.PI) + 360) % 360;
+}
 // قراءةُ اتجاهِ البوصلةِ (درجاتٌ من الشمالِ مع عقاربِ الساعة) من حدثِ اتجاهِ الجهاز.
 function headingFromEvent(e) {
-  if (typeof e.webkitCompassHeading === "number" && !isNaN(e.webkitCompassHeading)) return e.webkitCompassHeading; // iOS
-  if (e.absolute && typeof e.alpha === "number" && e.alpha !== null) return (360 - e.alpha) % 360;                  // أندرويد (مطلق)
-  if (typeof e.alpha === "number" && e.alpha !== null) return (360 - e.alpha) % 360;
+  if (typeof e.webkitCompassHeading === "number" && !isNaN(e.webkitCompassHeading)) return e.webkitCompassHeading; // iOS (جاهزٌ ومعوَّض)
+  if (typeof e.alpha === "number" && e.alpha !== null) return compassHeadingFromAngles(e.alpha, e.beta, e.gamma);  // أندرويد: عوِّضِ الميل
   return null;
+}
+// زاويةُ القِبلةِ (من الشمالِ مع عقاربِ الساعة) من موقعٍ إلى الكعبةِ المشرّفة — حسابٌ محلّيٌّ بحتٌ (بلا إنترنت).
+const KAABA = { lat: 21.4224779, lon: 39.8251832 };
+function qiblaBearing(lat, lon) {
+  const r = Math.PI / 180, d = 180 / Math.PI;
+  const f1 = lat * r, f2 = KAABA.lat * r, dl = (KAABA.lon - lon) * r;
+  const y = Math.sin(dl);
+  const x = Math.cos(f1) * Math.tan(f2) - Math.sin(f1) * Math.cos(dl);
+  return (Math.atan2(y, x) * d + 360) % 360;
 }
 // واجهةُ المستشعرِ العامّة (Generic Sensor) — أدقُّ اتجاهٍ مطلقٍ في كروميوم/أندرويد (يشملُ WebView التطبيق) حين تُحجَبُ أحداثُ deviceorientation.
 // cb(heading) بالدرجاتِ من الشمالِ مع عقاربِ الساعة. تُرجِعُ مُوقِفًا أو null إن تعذّر.
@@ -94,14 +131,8 @@ function startAbsoluteSensor(cb) {
   const AOS = typeof window !== "undefined" && window.AbsoluteOrientationSensor;
   if (!AOS) return null;
   let sensor;
-  try { sensor = new AOS({ frequency: 30, referenceFrame: "screen" }); } catch (e) { return null; }
-  const onReading = () => {
-    const q = sensor.quaternion; if (!q) return;
-    // زاويةُ السمتِ (الدورانُ حولَ المحورِ الرأسيّ) من الكواترنيون → اتجاهُ البوصلة
-    let h = Math.atan2(2 * (q[0] * q[1] + q[2] * q[3]), 1 - 2 * (q[1] * q[1] + q[2] * q[2])) * 180 / Math.PI;
-    h = (h + 360) % 360;
-    cb(h);
-  };
+  try { sensor = new AOS({ frequency: 30, referenceFrame: "device" }); } catch (e) { return null; }
+  const onReading = () => { const q = sensor.quaternion; if (q) cb(headingFromQuaternion(q)); };
   try {
     sensor.addEventListener("reading", onReading);
     sensor.addEventListener("error", () => {});
@@ -111,26 +142,48 @@ function startAbsoluteSensor(cb) {
 }
 // ربطُ زرِّ «بوصلةٌ حقيقيّة»: يستمعُ لمستشعرِ الاتجاهِ فيُديرُ وردةَ البوصلةِ لتشيرَ الإبرةُ (والأحرفُ) للشمالِ الحقيقيّ.
 let _compassStop = null; // مُوقِفُ آخرِ بوصلةٍ حقيقيّةٍ نشطة (كي لا يتراكمَ مستمِعٌ عند إعادةِ رسمِ البطاقة)
-function wireRealCompass(btn, msg, compass, L) {
+function wireRealCompass(btn, msg, compass, globe, L) {
   if (!btn) return;
   if (_compassStop) { try { _compassStop(); } catch (_) {} } // أوقِفْ أيَّ بوصلةٍ سابقةٍ قبلَ ربطِ الجديدة
-  const rose = compass && compass._rose;
-  let on = false, handler = null, got = false, timer = null, sensorStop = null, sensorLive = false;
-  const setRose = deg => { if (rose) rose.setAttribute("transform", `rotate(${deg} 100 100)`); };
+  const rose = compass && compass._rose, qib = compass && compass._qibla, grot = globe && globe._rot;
+  let on = false, handler = null, got = false, timer = null, sensorStop = null, sensorLive = false, smooth = null;
+  // تدويرُ الوردةِ **والكرةِ الأرضيّةِ** معًا فيتجاوبُ الشكلانِ مع الاتجاهِ الحقيقيّ.
+  const setRot = deg => {
+    if (rose) rose.setAttribute("transform", `rotate(${deg} 100 100)`);
+    if (grot) grot.setAttribute("transform", `rotate(${deg} 100 100)`);
+  };
+  // تنعيمٌ دائريٌّ يمنعُ ارتجافَ الإبرة (يراعي الالتفافَ 359°→0°).
+  const smoothOf = h => {
+    if (smooth == null) { smooth = h; return h; }
+    const d = ((h - smooth + 540) % 360) - 180;
+    smooth = (smooth + d * 0.18 + 360) % 360;
+    return smooth;
+  };
+  // مؤشّرُ القِبلة: يُحسَبُ من موقعِ الجهازِ محلّيًّا (بلا إنترنت) ويُوجَّهُ داخلَ الوردة.
+  const showQibla = () => {
+    if (!qib || !navigator.geolocation) return;
+    try {
+      navigator.geolocation.getCurrentPosition(p => {
+        const b = qiblaBearing(p.coords.latitude, p.coords.longitude);
+        qib.setAttribute("transform", `rotate(${b} 100 100)`); qib.style.display = "";
+      }, () => {}, { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 });
+    } catch (_) {}
+  };
   const onHeading = (h, fromSensor) => {
     if (fromSensor) sensorLive = true; else if (sensorLive) return; // المستشعرُ العامُّ يعملُ ⇐ تجاهلْ أحداثَ deviceorientation
-    got = true; if (msg) msg.textContent = ""; setRose(-h);
+    got = true; if (msg) msg.textContent = ""; setRot(-smoothOf(h));
   };
   const stop = () => {
     if (handler) { try { window.removeEventListener("deviceorientationabsolute", handler, true); window.removeEventListener("deviceorientation", handler, true); } catch (_) {} handler = null; }
     if (sensorStop) { try { sensorStop(); } catch (_) {} sensorStop = null; }
     if (timer) { clearTimeout(timer); timer = null; }
-    on = false; got = false; sensorLive = false; btn.classList.remove("on"); btn.textContent = `🧭 ${L.realCompass || "بوصلةٌ حقيقيّة"}`;
-    setRose(0); if (msg) msg.textContent = ""; if (_compassStop === stop) _compassStop = null;
+    on = false; got = false; sensorLive = false; smooth = null; btn.classList.remove("on"); btn.textContent = `🧭 ${L.realCompass || "بوصلةٌ حقيقيّة"}`;
+    setRot(0); if (qib) qib.style.display = "none"; if (msg) msg.textContent = ""; if (_compassStop === stop) _compassStop = null;
   };
   const start = () => {
-    on = true; got = false; sensorLive = false; btn.classList.add("on"); btn.textContent = `⏹️ ${L.compassStop || "أوقِفِ البوصلة"}`; _compassStop = stop;
+    on = true; got = false; sensorLive = false; smooth = null; btn.classList.add("on"); btn.textContent = `⏹️ ${L.compassStop || "أوقِفِ البوصلة"}`; _compassStop = stop;
     if (msg) msg.textContent = L.compassWait || "وجِّهْ جهازَك وحرّكْه قليلًا…";
+    showQibla();                                               // مؤشّرُ القبلةِ (إن سُمِحَ بالموقع)
     sensorStop = startAbsoluteSensor(h => onHeading(h, true)); // (1) الأدقّ (Generic Sensor)
     let gotAbs = false; // (2) ارتدادٌ لأحداثِ الاتجاه؛ فضِّلِ المطلقَ (الشمالُ الحقيقيّ) على النسبيّ
     handler = e => {
@@ -155,15 +208,19 @@ function wireRealCompass(btn, msg, compass, L) {
 export function makeGlobe() {
   const svg = svgEl("svg", { viewBox: "0 0 200 200", class: "or-svg" });
   svg.appendChild(svgEl("circle", { cx: 100, cy: 100, r: 88, fill: "#4C8BF5", stroke: "var(--line,#cfd8e3)", "stroke-width": 3 }));
+  // ما يدورُ مع الاتجاهِ الحقيقيّ (قارّاتٌ + أقطاب)؛ الكرةُ وخطوطُها تبقى ثابتة.
+  const rot = svgEl("g", { class: "or-globerot", style: "transition:transform .12s ease-out" });
   // قارّاتٌ خضراءُ (كتلٌ حرّة)
   const land = "M60 70 q20 -14 40 -4 q18 8 8 26 q-16 14 -34 6 q-22 -8 -14 -28 Z M120 110 q22 -8 30 12 q6 20 -16 24 q-24 2 -24 -18 q0 -14 10 -18 Z M70 130 q16 -6 26 8 q6 16 -12 20 q-20 2 -22 -14 q-1 -10 8 -14 Z";
-  svg.appendChild(svgEl("path", { d: land, fill: "#7BB661", opacity: ".95" }));
+  rot.appendChild(svgEl("path", { d: land, fill: "#7BB661", opacity: ".95" }));
   // خطُّ الاستواءِ ومدارٌ رأسيّ
   svg.appendChild(svgEl("ellipse", { cx: 100, cy: 100, rx: 88, ry: 30, fill: "none", stroke: "#ffffff", "stroke-width": 1.3, opacity: ".5" }));
   svg.appendChild(svgEl("ellipse", { cx: 100, cy: 100, rx: 30, ry: 88, fill: "none", stroke: "#ffffff", "stroke-width": 1.3, opacity: ".5" }));
   // أقطابٌ واتّجاهات
-  const cap = (x, y, txt, col) => { const t = svgEl("text", { x, y, "text-anchor": "middle", "dominant-baseline": "central", fill: col, "font-weight": "800", "font-size": 15 }); t.textContent = txt; svg.appendChild(t); };
+  const cap = (x, y, txt, col) => { const t = svgEl("text", { x, y, "text-anchor": "middle", "dominant-baseline": "central", fill: col, "font-weight": "800", "font-size": 15 }); t.textContent = txt; rot.appendChild(t); };
   cap(100, 22, "N", "#fff"); cap(100, 178, "S", "#fff"); cap(178, 100, "E", "#fff"); cap(22, 100, "W", "#fff");
+  svg.appendChild(rot);
+  svg._rot = rot; // مرجعٌ لتدويرِ الكرةِ مع البوصلةِ الحقيقيّة
   return svg;
 }
 
@@ -175,13 +232,15 @@ export function attachDirections(host, opts = {}) {
   host.innerHTML = `<div class="or-wrap"><div class="or-bubble">${L.dirIntro}</div>
     <div class="or-two"><div class="cslot"></div><div class="gslot"></div></div>
     <div class="or-q" id="orLbl" style="font-size:18px;min-height:24px"></div>
-    <div style="text-align:center;margin-top:2px"><button class="or-realbtn" id="orReal" type="button">🧭 ${L.realCompass || "بوصلةٌ حقيقيّة"}</button><div class="or-realmsg" id="orRealMsg"></div></div>
+    ${isNativeApp() ? `<div style="text-align:center;margin-top:2px"><button class="or-realbtn" id="orReal" type="button">🧭 ${L.realCompass || "بوصلةٌ حقيقيّة"}</button><div class="or-realmsg" id="orRealMsg"></div></div>` : ""}
     <div class="or-bubble" style="max-width:420px">${L.qibla}</div></div>`;
   const lbl = host.querySelector("#orLbl");
   const compass = makeCompass(lang, d => { lbl.textContent = nameOf(d, lang); try { speak(nameOf(d, lang)); } catch (e) {} });
+  const globe = makeGlobe();
   host.querySelector(".cslot").appendChild(compass);
-  host.querySelector(".gslot").appendChild(makeGlobe());
-  wireRealCompass(host.querySelector("#orReal"), host.querySelector("#orRealMsg"), compass, L); // بوصلةٌ حقيقيّةٌ بمستشعرِ الاتجاه
+  host.querySelector(".gslot").appendChild(globe);
+  // البوصلةُ الحقيقيّةُ في تطبيقِ الهاتفِ وحدَه (المتصفّحاتُ تحجبُ المستشعرَ فلا داعيَ لإظهارِ زرٍّ لا يعمل).
+  if (isNativeApp()) wireRealCompass(host.querySelector("#orReal"), host.querySelector("#orRealMsg"), compass, globe, L);
 }
 
 // ===== بطاقةُ الفصول =====

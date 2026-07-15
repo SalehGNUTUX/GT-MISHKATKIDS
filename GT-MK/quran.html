@@ -48,7 +48,13 @@
   .stitle{text-align:center;margin:6px 2px 10px}
   .stitle .nm{font-family:'amiri-quran';font-size:30px;color:var(--primary-d);font-weight:700}
   .stitle .meta{font-size:12px;color:var(--muted)}
-  .fontbar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 2px}
+  .fontbar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;align-items:center;margin:6px 2px}
+  /* حجمُ الخطّ: «أ» صغيرةٌ للتصغيرِ و«أ» كبيرةٌ للتكبير — دلالةٌ بصريّةٌ بلا شرح */
+  .fszoom{display:inline-flex;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+  .fsbtn{width:34px;height:34px;border-radius:50%;border:none;background:transparent;color:var(--ink);font-family:'amiri-quran',inherit;font-weight:800;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;transition:background .12s,transform .1s}
+  .fsbtn.sm{font-size:15px} .fsbtn.lg{font-size:23px}
+  .fsbtn:hover{background:var(--hl)} .fsbtn:active{transform:scale(.9)}
+  .fsdiv{width:1px;height:18px;background:var(--line);margin:0 1px}
   .toolbar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 2px}
   .tbtn{border:none;border-radius:999px;padding:9px 15px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(0,0,0,.1)}
   .tbtn.play{background:var(--primary);color:#fff} .tbtn.stop{background:#E0566B;color:#fff}
@@ -177,7 +183,8 @@ function renderSurah() {
   view.innerHTML =
     `<button class="backstep" id="back">كل السور</button>
      <div class="stitle"><div class="nm">${surah.name}</div><div class="meta">${ayNum(surah.ayahCount)} آية · ${surah.type === "Meccan" ? "مكّيّة" : "مدنيّة"}</div></div>
-     <div class="fontbar">${FONTS.map(x => `<button class="chip ${f === x.id ? "on" : ""}" data-font="${x.id}">${x.label}</button>`).join("")}<button class="chip" id="fsMinus" title="تصغيرُ الخطّ" aria-label="تصغيرُ الخطّ">أ−</button><button class="chip" id="fsPlus" title="تكبيرُ الخطّ" aria-label="تكبيرُ الخطّ">أ+</button></div>
+     <div class="fontbar">${FONTS.map(x => `<button class="chip ${f === x.id ? "on" : ""}" data-font="${x.id}">${x.label}</button>`).join("")}
+       <span class="fszoom" role="group" aria-label="حجمُ الخطّ"><button class="fsbtn sm" id="fsMinus" title="تصغيرُ الخطّ" aria-label="تصغيرُ الخطّ">أ</button><span class="fsdiv"></span><button class="fsbtn lg" id="fsPlus" title="تكبيرُ الخطّ" aria-label="تكبيرُ الخطّ">أ</button></span></div>
      <div class="toolbar">
        <button class="tbtn play" id="playAll">▶ اقرأ السورة</button>
        <button class="tbtn stop" id="stop">⏹️ إيقاف</button>

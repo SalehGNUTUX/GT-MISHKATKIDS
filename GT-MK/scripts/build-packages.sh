@@ -136,6 +136,11 @@ build_apk() {
     sed -i 's#<application#<uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n\n    <application#' "$mani"
     step "أُضيفت صلاحيّةُ RECORD_AUDIO إلى AndroidManifest"
   fi
+  # صلاحيّةُ الموقعِ (اتجاهُ القِبلةِ في البوصلةِ الحقيقيّة) — تُحسَبُ محلّيًّا على الجهازِ ولا تُرسَلُ لأيِّ جهة.
+  if [ -f "$mani" ] && ! grep -q "ACCESS_COARSE_LOCATION" "$mani"; then
+    sed -i 's#<application#<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n\n    <application#' "$mani"
+    step "أُضيفت صلاحيّةُ الموقعِ (اتجاهُ القبلة) إلى AndroidManifest"
+  fi
   # فتحُ ملفّاتِ .json بتطبيقنا (استيرادُ النسخةِ الاحتياطيّة): intent-filter للـVIEW على application/json في النشاطِ الرئيس.
   if [ -f "$mani" ] && ! grep -q 'android:mimeType="application/json"' "$mani"; then
     sed -i '0,/<\/intent-filter>/s|</intent-filter>|</intent-filter>\n            <intent-filter>\n                <action android:name="android.intent.action.VIEW" />\n                <category android:name="android.intent.category.DEFAULT" />\n                <category android:name="android.intent.category.BROWSABLE" />\n                <data android:mimeType="application/json" />\n            </intent-filter>|' "$mani"

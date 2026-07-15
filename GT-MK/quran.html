@@ -59,7 +59,7 @@
   .mr-hint{flex-basis:100%;text-align:center;font-size:12px;color:var(--muted);margin-top:2px}
 
   .mushaf{background:#FFFDF6;border:1px solid #EFE6CF;border-radius:18px;box-shadow:var(--shadow);padding:18px 16px;margin:8px 2px;
-    font-size:30px;line-height:2.35;text-align:justify;text-justify:inter-word;direction:rtl;color:#1c2b25}
+    font-size:30px;line-height:2.35;text-align:center;direction:rtl;color:#1c2b25;word-spacing:normal}
   .mushaf.f-amiri{font-family:'amiri-quran'} .mushaf.f-amiric{font-family:'amiri-quran-colored'} .mushaf.f-uthmani{font-family:'uthmanic-hafs'}
   .ayah{cursor:pointer;border-radius:8px;padding:0 2px;transition:background .15s}
   .ayah.on{background:var(--hl);box-shadow:0 0 0 2px var(--gold) inset}
@@ -108,6 +108,11 @@ const FONTS = [{ id: "f-amiri", label: "أميري" }, { id: "f-amiric", label: 
 const FKEY = "tilmithi_quran_font";
 const getFont = () => { try { return localStorage.getItem(FKEY) || "f-amiri"; } catch (e) { return "f-amiri"; } };
 const setFont = f => { try { localStorage.setItem(FKEY, f); } catch (e) {} };
+// حجمُ خطِّ المصحف (تكبير/تصغير) — محفوظٌ محلّيًّا، ضمنَ 20–48 بكسل.
+const FSKEY = "tilmithi_quran_fs";
+const clampFS = px => Math.max(20, Math.min(48, px));
+const getFS = () => { try { const v = parseInt(localStorage.getItem(FSKEY) || "30", 10); return clampFS(isNaN(v) ? 30 : v); } catch (e) { return 30; } };
+const setFS = px => { try { localStorage.setItem(FSKEY, String(clampFS(px))); } catch (e) {} };
 
 // المستوى بحسب طول السورة (الأقصر أسهل): s≤7 · m≤25 · h>25.
 const levelOf = c => c <= 7 ? "s" : c <= 25 ? "m" : "h";
@@ -172,7 +177,7 @@ function renderSurah() {
   view.innerHTML =
     `<button class="backstep" id="back">كل السور</button>
      <div class="stitle"><div class="nm">${surah.name}</div><div class="meta">${ayNum(surah.ayahCount)} آية · ${surah.type === "Meccan" ? "مكّيّة" : "مدنيّة"}</div></div>
-     <div class="fontbar">${FONTS.map(x => `<button class="chip ${f === x.id ? "on" : ""}" data-font="${x.id}">${x.label}</button>`).join("")}</div>
+     <div class="fontbar">${FONTS.map(x => `<button class="chip ${f === x.id ? "on" : ""}" data-font="${x.id}">${x.label}</button>`).join("")}<button class="chip" id="fsMinus" title="تصغيرُ الخطّ" aria-label="تصغيرُ الخطّ">أ−</button><button class="chip" id="fsPlus" title="تكبيرُ الخطّ" aria-label="تكبيرُ الخطّ">أ+</button></div>
      <div class="toolbar">
        <button class="tbtn play" id="playAll">▶ اقرأ السورة</button>
        <button class="tbtn stop" id="stop">⏹️ إيقاف</button>
@@ -189,14 +194,19 @@ function renderSurah() {
        <button class="tbtn play" id="mrPlay">🔁 كرّرِ النطاق</button>
        <span class="mr-hint">اختَرِ الآياتِ التي تحفظُها فتتكرّرَ حتى تُتقِنَها. اضغطْ «⏹️ إيقاف» لتتوقّف.</span>
      </div>
-     <div class="mushaf ${f}" id="mushaf">${(surah.n !== 1 && showBasmala()) ? `<span class="bism" data-bism>${BASMALA} <span class="num">🔊</span></span>` : ""}${surah.ayahs.map(ayahHtml).join("")}</div>
+     <div class="mushaf ${f}" id="mushaf" style="font-size:${getFS()}px">${(surah.n !== 1 && showBasmala()) ? `<span class="bism" data-bism>${BASMALA} <span class="num">🔊</span></span>` : ""}${surah.ayahs.map(ayahHtml).join("")}</div>
      <div id="practice"></div>
      <div class="hint">اضغطْ آيةً لتستمعَ إليها وتسجّلَ تلاوتك. «كرّر الآية» يعيدُها لتحفظَها. (تلاوةُ الحصري تتضمّن البسملةَ في أوّل السورة كما تُتلى.)</div>`;
   document.getElementById("back").onclick = renderList;
   view.querySelector(".fontbar").addEventListener("click", e => { const b = e.target.closest("[data-font]"); if (!b) return; setFont(b.getAttribute("data-font")); renderSurah(); });
+  const applyFS = () => { const m = document.getElementById("mushaf"); if (m) m.style.fontSize = getFS() + "px"; };
+  document.getElementById("fsPlus").onclick = () => { setFS(getFS() + 3); applyFS(); };
+  document.getElementById("fsMinus").onclick = () => { setFS(getFS() - 3); applyFS(); };
   view.querySelector("#mushaf").addEventListener("click", e => {
     if (e.target.closest("[data-bism]")) { playAll(0); return; } // البسملةُ بدايةُ السورة: تُسمَع ثمّ تُكمَل السورةُ كاملةً تلقائياً
-    const sp = e.target.closest(".ayah"); if (!sp) return; selIdx = +sp.getAttribute("data-i"); playSingle(selIdx); renderPractice();
+    const sp = e.target.closest(".ayah"); if (!sp) return; selIdx = +sp.getAttribute("data-i");
+    if (repeatAyah) playSingle(selIdx); else playFrom(selIdx); // «كرّر الآية» = تكرارُ المنقورة؛ وإلّا أكمِلِ السورةَ منها
+    renderPractice();
   });
   document.getElementById("playAll").onclick = () => playAll(0);
   document.getElementById("stop").onclick = stopAll;
@@ -225,7 +235,7 @@ function renderPractice() {
 
 /* ===== محرّك التشغيل والتظليل (عنصرُ صوتٍ واحدٌ + قائمةُ تشغيل؛ لا يتقدّم إلا عند انتهاءِ المقطعِ فعليّاً) ===== */
 const player = new Audio(); player.preload = "auto";
-let repeatAyah = false, repeatSurah = false, loopSeq = false; // loopSeq: تكرارُ النطاقِ/التسلسلِ المختار (للحفظ)
+let repeatAyah = false, repeatSurah = false, loopSeq = false, announceDone = false; // loopSeq: تكرارُ النطاقِ؛ announceDone: هل نُهنّئُ بإتمامِ السورةِ عند النهاية
 let memOpen = false, memFrom = 1, memTo = 5;                   // لوحةُ «حفظِ نطاق» (تكرارُ آياتٍ من كذا إلى كذا)
 let seq = [], seqPos = 0, mode = "idle"; // mode: idle | seq ؛ كلُّ عنصرٍ: {bism:true} أو {ayah:i}
 function clearHL() { view.querySelectorAll(".ayah.on, .bism.on").forEach(x => x.classList.remove("on")); }
@@ -238,7 +248,9 @@ function runSeq() {
   if (mode !== "seq") return;
   if (seqPos >= seq.length) { // انتهى التسلسل
     if ((repeatSurah || loopSeq) && seq.some(s => !s.bism)) { seqPos = 0; runSeq(); return; } // تكرارُ السورةِ أو نطاقِ الحفظ
-    mode = "idle"; clearHL(); logEvent("quran_listen"); recordMastery("S:" + surah.n, true); try { robo.cheer(NOTICES.quranSurahDone); } catch (e) {}
+    mode = "idle"; clearHL();
+    const last = seq[seq.length - 1]; // تهنئةُ إتمامِ السورةِ فقط إذا بلغتِ القراءةُ آخرَ آيةٍ فعلًا (لا لآيةٍ مفردةٍ في الوسط)
+    if (announceDone && last && !last.bism && last.ayah === surah.ayahs.length - 1) { logEvent("quran_listen"); recordMastery("S:" + surah.n, true); try { robo.cheer(NOTICES.quranSurahDone); } catch (e) {} }
     return;
   }
   const st = seq[seqPos];
@@ -252,17 +264,23 @@ function runSeq() {
   player.src = srcOf(st); try { player.currentTime = 0; } catch (e) {}
   const p = player.play(); if (p && p.catch) p.catch(() => {}); // تجاهلُ رفضِ التشغيل المؤقّت — التقدّمُ عند ended فقط
 }
-// آيةٌ مفردة (تُكرَّر إن فُعِّل «كرّر الآية»).
-function playSingle(i) { mode = "seq"; loopSeq = false; seq = [{ ayah: i }]; seqPos = 0; selIdx = i; runSeq(); }
+// آيةٌ مفردة (تُكرَّر إن فُعِّل «كرّر الآية»؛ بلا تهنئةِ إتمامِ سورة).
+function playSingle(i) { mode = "seq"; loopSeq = false; announceDone = false; seq = [{ ayah: i }]; seqPos = 0; selIdx = i; runSeq(); }
+// النقرُ على آيةٍ (بلا «كرّر الآية»): يُكمِلُ قراءةَ السورةِ من تلكَ الآيةِ إلى آخرها.
+function playFrom(i) {
+  mode = "seq"; loopSeq = false; announceDone = true; seq = [];
+  for (let k = i; k < surah.ayahs.length; k++) seq.push({ ayah: k });
+  seqPos = 0; if (seq.length) { selIdx = i; runSeq(); }
+}
 // نطاقُ حفظٍ: الآياتُ [from..to] (فهارسُ 0) تتكرّرُ حتى الإيقاف.
 function playRange(fromIdx, toIdx) {
-  mode = "seq"; loopSeq = true; seq = [];
+  mode = "seq"; loopSeq = true; announceDone = false; seq = [];
   for (let i = fromIdx; i <= toIdx; i++) seq.push({ ayah: i });
   seqPos = 0; if (seq.length) { selIdx = fromIdx; runSeq(); }
 }
 // السورةُ كاملةً: البسملةُ أوّلًا (إن فُعِّلت، لغير الفاتحة) ثمّ كلُّ الآيات.
 function playAll(from) {
-  mode = "seq"; loopSeq = false; seq = [];
+  mode = "seq"; loopSeq = false; announceDone = true; seq = [];
   if (from === 0 && surah.n !== 1 && showBasmala()) seq.push({ bism: true });
   for (let i = from; i < surah.ayahs.length; i++) seq.push({ ayah: i });
   seqPos = 0; runSeq();

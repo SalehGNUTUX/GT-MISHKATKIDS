@@ -88,32 +88,59 @@ function headingFromEvent(e) {
   if (typeof e.alpha === "number" && e.alpha !== null) return (360 - e.alpha) % 360;
   return null;
 }
+// واجهةُ المستشعرِ العامّة (Generic Sensor) — أدقُّ اتجاهٍ مطلقٍ في كروميوم/أندرويد (يشملُ WebView التطبيق) حين تُحجَبُ أحداثُ deviceorientation.
+// cb(heading) بالدرجاتِ من الشمالِ مع عقاربِ الساعة. تُرجِعُ مُوقِفًا أو null إن تعذّر.
+function startAbsoluteSensor(cb) {
+  const AOS = typeof window !== "undefined" && window.AbsoluteOrientationSensor;
+  if (!AOS) return null;
+  let sensor;
+  try { sensor = new AOS({ frequency: 30, referenceFrame: "screen" }); } catch (e) { return null; }
+  const onReading = () => {
+    const q = sensor.quaternion; if (!q) return;
+    // زاويةُ السمتِ (الدورانُ حولَ المحورِ الرأسيّ) من الكواترنيون → اتجاهُ البوصلة
+    let h = Math.atan2(2 * (q[0] * q[1] + q[2] * q[3]), 1 - 2 * (q[1] * q[1] + q[2] * q[2])) * 180 / Math.PI;
+    h = (h + 360) % 360;
+    cb(h);
+  };
+  try {
+    sensor.addEventListener("reading", onReading);
+    sensor.addEventListener("error", () => {});
+    sensor.start();
+  } catch (e) { return null; }
+  return () => { try { sensor.removeEventListener("reading", onReading); sensor.stop(); } catch (_) {} };
+}
 // ربطُ زرِّ «بوصلةٌ حقيقيّة»: يستمعُ لمستشعرِ الاتجاهِ فيُديرُ وردةَ البوصلةِ لتشيرَ الإبرةُ (والأحرفُ) للشمالِ الحقيقيّ.
 let _compassStop = null; // مُوقِفُ آخرِ بوصلةٍ حقيقيّةٍ نشطة (كي لا يتراكمَ مستمِعٌ عند إعادةِ رسمِ البطاقة)
 function wireRealCompass(btn, msg, compass, L) {
   if (!btn) return;
   if (_compassStop) { try { _compassStop(); } catch (_) {} } // أوقِفْ أيَّ بوصلةٍ سابقةٍ قبلَ ربطِ الجديدة
   const rose = compass && compass._rose;
-  let on = false, handler = null, got = false, timer = null;
+  let on = false, handler = null, got = false, timer = null, sensorStop = null, sensorLive = false;
   const setRose = deg => { if (rose) rose.setAttribute("transform", `rotate(${deg} 100 100)`); };
+  const onHeading = (h, fromSensor) => {
+    if (fromSensor) sensorLive = true; else if (sensorLive) return; // المستشعرُ العامُّ يعملُ ⇐ تجاهلْ أحداثَ deviceorientation
+    got = true; if (msg) msg.textContent = ""; setRose(-h);
+  };
   const stop = () => {
     if (handler) { try { window.removeEventListener("deviceorientationabsolute", handler, true); window.removeEventListener("deviceorientation", handler, true); } catch (_) {} handler = null; }
+    if (sensorStop) { try { sensorStop(); } catch (_) {} sensorStop = null; }
     if (timer) { clearTimeout(timer); timer = null; }
-    on = false; got = false; btn.classList.remove("on"); btn.textContent = `🧭 ${L.realCompass || "بوصلةٌ حقيقيّة"}`;
+    on = false; got = false; sensorLive = false; btn.classList.remove("on"); btn.textContent = `🧭 ${L.realCompass || "بوصلةٌ حقيقيّة"}`;
     setRose(0); if (msg) msg.textContent = ""; if (_compassStop === stop) _compassStop = null;
   };
   const start = () => {
-    on = true; got = false; btn.classList.add("on"); btn.textContent = `⏹️ ${L.compassStop || "أوقِفِ البوصلة"}`; _compassStop = stop;
+    on = true; got = false; sensorLive = false; btn.classList.add("on"); btn.textContent = `⏹️ ${L.compassStop || "أوقِفِ البوصلة"}`; _compassStop = stop;
     if (msg) msg.textContent = L.compassWait || "وجِّهْ جهازَك وحرّكْه قليلًا…";
-    let gotAbs = false; // فضِّلِ الاتجاهَ المطلقَ (الشمالُ الحقيقيّ) على النسبيِّ إن توفّرا معًا
+    sensorStop = startAbsoluteSensor(h => onHeading(h, true)); // (1) الأدقّ (Generic Sensor)
+    let gotAbs = false; // (2) ارتدادٌ لأحداثِ الاتجاه؛ فضِّلِ المطلقَ (الشمالُ الحقيقيّ) على النسبيّ
     handler = e => {
       const abs = e.type === "deviceorientationabsolute" || e.absolute === true;
       if (gotAbs && !abs) return; if (abs) gotAbs = true;
-      const h = headingFromEvent(e); if (h == null) return; got = true; if (msg) msg.textContent = ""; setRose(-h);
+      const h = headingFromEvent(e); if (h == null) return; onHeading(h, false);
     };
     try { window.addEventListener("deviceorientationabsolute", handler, true); } catch (_) {}
     try { window.addEventListener("deviceorientation", handler, true); } catch (_) {}
-    timer = setTimeout(() => { if (!got && msg) msg.textContent = L.compassNo || "المستشعرُ غيرُ متاحٍ على هذا الجهاز."; }, 2500);
+    timer = setTimeout(() => { if (!got && msg) msg.textContent = L.compassNo || "المستشعرُ غيرُ متاحٍ على هذا الجهاز."; }, 5000);
   };
   btn.onclick = () => {
     if (on) { stop(); return; }

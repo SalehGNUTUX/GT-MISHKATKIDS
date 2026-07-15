@@ -164,12 +164,18 @@
   .loggrp[open]>summary::after{transform:rotate(180deg)}
   .loggrp .log{padding:0 10px 6px;border-top:1px solid var(--line)}
   .logcount{color:var(--muted);font-weight:600;font-size:12px}
-  .logitem{display:flex;flex-direction:column;gap:6px;padding:10px 4px;border-bottom:1px solid var(--line);font-size:14px}
+  .logitem{display:block;padding:9px 4px;border-bottom:1px solid var(--line);font-size:14px}
   .loghd{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
   .logtitle{font-weight:800;color:var(--ink)}
   .logmeta{color:var(--muted);font-size:12px}
   .loghd .when{color:var(--muted);font-size:12px;margin-inline-start:auto;white-space:nowrap}
-  .logmedia{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  /* كلُّ جلسةٍ مطويّةٌ: العنوانُ والتاريخُ ظاهرانِ، والوسائطُ عندَ الطلب */
+  details.logitem>summary{cursor:pointer;list-style:none;user-select:none}
+  details.logitem>summary::-webkit-details-marker{display:none}
+  details.logitem>summary::after{content:"▾";font-size:11px;color:var(--muted);margin-inline-start:6px;transition:transform .15s}
+  details.logitem[open]>summary::after{transform:rotate(180deg)}
+  details.logitem>summary:hover .logtitle{color:var(--primary-d)}
+  .logmedia{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
   .logitem audio{height:32px;max-width:100%;flex:1 1 220px;min-width:0}
   .logitem img{width:44px;height:44px;object-fit:cover;border-radius:8px;cursor:pointer;flex:none}
   .capwrap{display:inline-flex;align-items:center;gap:4px;min-width:0;flex:1 1 auto}
@@ -810,10 +816,10 @@ async function openDashboard(){
           : `<img src="${url}" onclick="openMedia('${url}','photo')" />`; }
       return `<span class="capwrap" data-key="${c.key}">${inner}<button class="capdel" data-key="${c.key}" title="حذف هذا التسجيل">🗑️</button></span>`;
     }).join("");
-    return `<div class="logitem">
-      <div class="loghd"><span class="logtitle">${e.title}</span><span class="logmeta">· ${e.domain} · ${e.age_band}</span><span class="when">${fmt(e.ts)}</span></div>
-      ${media?`<div class="logmedia">${media}</div>`:""}
-    </div>`;
+    const hd=`<span class="logtitle">${e.title}</span><span class="logmeta">· ${e.domain} · ${e.age_band}</span><span class="when">${fmt(e.ts)}</span>`;
+    // بلا وسائطَ ⇒ صفٌّ بسيطٌ (لا سهمَ طيٍّ لمحتوًى غيرِ موجود). ومع الوسائطِ ⇒ مطويّةٌ تُكشَفُ عندَ الطلب.
+    if(!media) return `<div class="logitem"><div class="loghd">${hd}</div></div>`;
+    return `<details class="logitem"><summary class="loghd">${hd}</summary><div class="logmedia">${media}</div></details>`;
   };
 
   // رؤى الإتقان (تتبّع لايتنر): ماذا أتقن الطفل وما يحتاج مراجعة، بحسب نوع المهارة.

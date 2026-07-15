@@ -103,8 +103,15 @@
   .filters button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
   .heal-reward{font-size:15px;font-weight:700;color:var(--good-d);margin-top:8px}
   .works{display:flex;flex-direction:column;gap:10px;margin-top:10px;max-height:56vh;overflow:auto}
-  .workitem{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+  .workitem{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:block}
   .workhd{font-weight:800;margin-bottom:6px}
+  /* كلُّ عملٍ مطويّ: العنوانُ ظاهرٌ والمحتوى عندَ الطلب */
+  details.workitem>summary{cursor:pointer;list-style:none;user-select:none;margin-bottom:0;display:flex;align-items:baseline;gap:6px}
+  details.workitem>summary::-webkit-details-marker{display:none}
+  details.workitem>summary::after{content:"▾";font-size:12px;color:var(--muted);margin-inline-start:auto;transition:transform .15s}
+  details.workitem[open]>summary::after{transform:rotate(180deg)}
+  details.workitem[open]>summary{margin-bottom:6px}
+  details.workitem>summary:active{transform:scale(.995)}
   .workitem audio{width:100%;margin-top:4px} .workimg{max-width:120px;border-radius:10px;margin-top:4px;cursor:pointer}
   .worknote{background:color-mix(in srgb,var(--gold,#F4C95D) 16%,var(--card));border-radius:10px;padding:6px 10px;font-size:13px;margin-top:4px}
   .err{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:16px}
@@ -428,7 +435,10 @@ async function viewMyWorks(){
       if(c.type==="note") return `<div class="worknote">📝 ${esc(c.text)}</div>`;
       try{ const url=URL.createObjectURL(c.blob); if(c.type==="audio") return `<audio controls src="${url}"></audio>`; const isVid=c.type==="video"||(c.mime&&/^video\//.test(c.mime)); return isVid?`<video class="workimg" src="${url}" muted playsinline onclick="openMedia('${url}','video')"></video>`:`<img class="workimg" src="${url}" onclick="openMedia('${url}','photo')" />`; }catch(_){ return ""; }
     }).join("");
-    return `<div class="workitem"><div class="workhd">✅ ${esc(e.title)} <span class="muted" style="font-size:12px">· ${esc(e.domain)}</span></div>${media||'<span class="muted" style="font-size:12px">أُنجِزت</span>'}</div>`;
+    const hd=`✅ ${esc(e.title)} <span class="muted" style="font-size:12px">· ${esc(e.domain)}</span>`;
+    // كلُّ عملٍ مطويٌّ: عنوانُه ظاهرٌ، ومحتواه (صوت/صورة/ملاحظة) يُكشَفُ بنقرة. وبلا محتوًى ⇒ صفٌّ بسيطٌ بلا سهم.
+    if(!media) return `<div class="workitem"><div class="workhd">${hd}</div><span class="muted" style="font-size:12px">أُنجِزت</span></div>`;
+    return `<details class="workitem"><summary class="workhd">${hd}</summary><div class="workmedia">${media}</div></details>`;
   }).join("") : `<p class="muted" style="text-align:center">لم تُنجِزْ أعمالًا بعد — علّمِ الآليَّ ذكرى لتظهرَ هنا!</p>`;
   host.innerHTML=`<div class="card"><div class="robo-says">📂 أعمالي المنجَزة (${AR(progress.completed.length)})</div>
     <p class="muted">ذكرياتٌ علّمتَها الآليَّ وما سجّلتَه فيها. أحسنت! 🌟</p>

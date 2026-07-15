@@ -483,8 +483,9 @@ async function viewMyWorks(){
   host.querySelectorAll(".capdel[data-del]").forEach(b=>b.onclick=async ev=>{
     ev.preventDefault(); ev.stopPropagation();
     if(!await confirmChoice("حذفُ هذا العنصر؟","🗑️ احذفْ","إبقاء")) return;
-    try{ await delCapture(b.getAttribute("data-del")); }catch(e){}
-    viewMyWorks();
+    const key=b.getAttribute("data-del"), box=b.closest(".workrow")||b.closest(".worknote");
+    if(box) box.style.display="none"; // إخفاءٌ فوريّ؛ لا يُمَسُّ التخزينُ إلّا بعدَ انقضاءِ مهلةِ التراجع
+    undoable("حُذِفَ العنصر.", async ()=>{ try{ await delCapture(key); }catch(e){} viewMyWorks(); }, 6000, ()=>{ if(box) box.style.display=""; });
   });
 }
 // حقلُ نصٍّ من داخلِ التطبيقِ (بديلُ prompt الذي يَعرضُ نافذةَ المتصفّحِ الغريبةَ عن التصميمِ والسمة).

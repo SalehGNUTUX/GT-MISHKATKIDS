@@ -153,15 +153,22 @@
     .panel .dom-row > select.storyvset{max-width:100% !important; flex:1 1 100% !important}
     .panel .dom-row .chips{justify-content:flex-start !important}
   }
-  .log{max-height:240px;overflow:auto}
-  .logitem{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--line);font-size:14px}
-  .logitem .when{color:var(--muted);font-size:12px;margin-inline-start:auto}
-  .logitem audio{height:30px}
-  .logitem img{width:42px;height:42px;object-fit:cover;border-radius:8px;cursor:pointer}
-  .capwrap{display:inline-flex;align-items:center;gap:4px}
-  .capdel{background:none;border:none;cursor:pointer;font-size:15px;opacity:.55;padding:2px}
+  /* سجلُّ الجلسات: بطاقةٌ رأسيّةٌ (عنوانٌ+تاريخ ثمّ الوسائط) — الصفُّ الأفقيُّ الواحدُ كان يسحقُ الملاحظةَ
+     إلى عمودٍ بكلمةٍ في السطر. تتجاوبُ على الهاتفِ والحاسوبِ معًا. */
+  .log{max-height:300px;overflow:auto}
+  .logitem{display:flex;flex-direction:column;gap:6px;padding:10px 4px;border-bottom:1px solid var(--line);font-size:14px}
+  .loghd{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+  .logtitle{font-weight:800;color:var(--ink)}
+  .logmeta{color:var(--muted);font-size:12px}
+  .loghd .when{color:var(--muted);font-size:12px;margin-inline-start:auto;white-space:nowrap}
+  .logmedia{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .logitem audio{height:32px;max-width:100%;flex:1 1 220px;min-width:0}
+  .logitem img{width:44px;height:44px;object-fit:cover;border-radius:8px;cursor:pointer;flex:none}
+  .capwrap{display:inline-flex;align-items:center;gap:4px;min-width:0;flex:1 1 auto}
+  .capdel{background:none;border:none;cursor:pointer;font-size:15px;opacity:.55;padding:2px;flex:none}
   .capdel:hover{opacity:1}
-  .lognote{background:#F6F3EC;border-radius:8px;padding:4px 8px;font-size:13px;color:#444;max-width:220px}
+  .lognote{background:var(--hl,#F6F3EC);border-radius:8px;padding:6px 10px;font-size:13px;color:var(--ink);line-height:1.7;flex:1 1 240px;min-width:0}
+  @media(max-width:560px){ .loghd .when{margin-inline-start:0;flex-basis:100%} }
   /* حقل الجواب المكتوب في خطوة التلقين */
   .notefield{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;font-family:inherit;font-size:15px;resize:vertical;margin-top:6px;color:var(--ink)}
   /* شريط التراجع عن الحذف */
@@ -277,6 +284,7 @@ import { ART } from "./src/art.js";
 import { logEvent, recordMastery, getAllMastery, isDueForReview, getChildAge, setChildAge, getStatsFor, getBadgesFor, loadProgressFor } from "./src/progress.js";
 import * as sfx from "./src/sfx.js";
 import { roboSay, roboPhrase } from "./src/robo-voice.js";
+import { robo } from "./src/robo-companion.js"; // المرافقُ العائمُ (سحبٌ + نقرٌ للترحيب) — يظهرُ في «علّم الآليّ» كبقيّةِ الأقسام
 import { NOTICES, femaleize } from "./src/robo-phrases.js";
 import { praise, tadabburFor } from "./src/islamic.js";
 import { deepenFor, roboWrongFor } from "./src/think.js";
@@ -342,7 +350,8 @@ function init(){
   const dom=params.get("domain");
   if(dom && DOMAINS.includes(dom)){ domFilter=dom; renderMap(); }
   document.querySelectorAll("#filters button").forEach(x=>x.classList.toggle("on", x.getAttribute("data-f")===filter));
-  if(!parentOnly){ renderRobo(); renderWorld(); renderProgress(); renderIdle(); }
+  // المرافقُ العائمُ حاضرٌ في «علّم الآليّ» أيضًا (يُسحَبُ ويُنقَرُ للترحيب) — لا خلفَ بوّابةِ الأهل.
+  if(!parentOnly){ try{ robo.mount(); }catch(e){} renderRobo(); renderWorld(); renderProgress(); renderIdle(); }
   const mid=params.get("memory");
   if(mid && !parentOnly){ const m=MEM.find(x=>x.id===mid); if(m){ current=m; pending=[]; state="spark"; renderCard(); } }
   else if(wantsParent){ openGate(); }
@@ -902,10 +911,16 @@ async function openDashboard(){
         const media=cs.map(c=>{
           let inner;
           if(c.type==="note") inner=`<span class="lognote">📝 ${c.text||""}</span>`;
-          else { const url=URL.createObjectURL(c.blob); inner = c.type==="audio"?`<audio controls src="${url}"></audio>`:`<img src="${url}" onclick="window.open('${url}')" />`; }
+          else { const url=URL.createObjectURL(c.blob); const isVid=c.type==="video"||(c.mime&&/^video\//.test(c.mime));
+            inner = c.type==="audio"?`<audio controls src="${url}"></audio>`
+              : isVid?`<video src="${url}" muted playsinline onclick="openMedia('${url}','video')"></video>`
+              : `<img src="${url}" onclick="openMedia('${url}','photo')" />`; } // عارضٌ داخليٌّ لا window.open (كان يخرجُ من التطبيقِ بلا رجوع)
           return `<span class="capwrap" data-key="${c.key}">${inner}<button class="capdel" data-key="${c.key}" title="حذف هذا التسجيل">🗑️</button></span>`;
         }).join("");
-        return `<div class="logitem"><span>${e.title}</span><span class="muted" style="font-size:12px">· ${e.domain} · ${e.age_band}</span>${media}<span class="when">${fmt(e.ts)}</span></div>`;
+        return `<div class="logitem">
+          <div class="loghd"><span class="logtitle">${e.title}</span><span class="logmeta">· ${e.domain} · ${e.age_band}</span><span class="when">${fmt(e.ts)}</span></div>
+          ${media?`<div class="logmedia">${media}</div>`:""}
+        </div>`;
       }).join(""):`<p class="muted">لا جلسات بعد.</p>` }</div>
     </div>
 

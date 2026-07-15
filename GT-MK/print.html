@@ -130,7 +130,7 @@
         <label>المجال: <select id="fDomain"><option value="all">الكلّ</option></select></label>
         <label>العمر: <select id="fAge"><option value="all">الكلّ</option><option value="4-6">4–6</option><option value="7-10">7–10</option></select></label>
         <label>نُسخٌ في الورقة: <select id="copies"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-        <label>مظهرُ الذاكرة: <select id="memTheme"><option value="animals">حيوانات</option><option value="fruits">فواكه</option><option value="shapes">أشكال</option><option value="transport">مركبات</option><option value="food">طعام</option><option value="faces">وجوه</option><option value="sea">بحر</option><option value="space">فضاء</option><option value="sports">رياضة</option><option value="weather">طقس</option><option value="plants">نباتات</option></select></label>
+        <label>مظهرُ الرموز: <select id="memTheme"><option value="mixed">مختلط</option><option value="animals">حيوانات</option><option value="fruits">فواكه</option><option value="shapes">أشكال</option><option value="transport">مركبات</option><option value="food">طعام</option><option value="faces">وجوه</option><option value="sea">بحر</option><option value="space">فضاء</option><option value="sports">رياضة</option><option value="weather">طقس</option><option value="plants">نباتات</option></select></label>
       </div>
     </details>
   </div>
@@ -246,10 +246,16 @@ const MEM_THEMES = {
   weather:  { name:"طقس",     pool:["☀️","🌤️","⛅","🌧️","⛈️","🌨️","❄️","🌈","🌪️","🌫️","💧","☁️","🌡️","🌬️","⚡"] },
   plants:   { name:"نباتات",  pool:["🌸","🌷","🌹","🌻","🌺","🌼","🌾","🌵","🌴","🌳","🍀","🍁","🍄","🌿","🪴"] },
 };
+// مظهرُ الرموزِ المختار (يَحكمُ بطاقاتِ الذاكرةِ وورقةَ «وصّل بخط» معًا). «مختلط» = رموزٌ من تصنيفاتٍ شتّى.
+const themeKey = () => (document.getElementById("memTheme") && document.getElementById("memTheme").value) || "mixed";
+const themeName = th => th === "mixed" ? "مختلط" : ((MEM_THEMES[th] || MEM_THEMES.animals).name);
+const themePool = th => th === "mixed"
+  ? [...new Set(Object.values(MEM_THEMES).flatMap(t => t.pool))]
+  : (MEM_THEMES[th] || MEM_THEMES.animals).pool;
 function tplMemory(){
-  const th = (document.getElementById("memTheme") && document.getElementById("memTheme").value) || "animals";
-  const T = MEM_THEMES[th] || MEM_THEMES.animals;
-  const eight = shuf([...T.pool]).slice(0,8);   // 8 أزواج = 16 بطاقة
+  const th = themeKey();
+  const T = { name: themeName(th) };
+  const eight = shuf([...themePool(th)]).slice(0,8);   // 8 أزواج = 16 بطاقة
   const cards=shuf([...eight,...eight]);
   return `<section class="tpl"><h2>🧠 بطاقاتُ الذاكرة (${T.name}) — قُصَّ والعب</h2>${nameStrip()}
     <p class="tpl-h">اقطعِ البطاقاتِ الستَّ عشرة (ثمانيةُ أزواج)، اقلبها على وجهها واخلطها، ثمّ اقلبْ بطاقتين كلَّ دورٍ بحثًا عن المتطابقتين. مَن يجمعُ أزواجًا أكثرَ يفوز.</p>
@@ -268,12 +274,21 @@ const CONNECT_PAIRS=[
   ["🐛","🦋"],["☀️","🌻"],["🌙","⭐"],["🐭","🧀"],["🐑","🧶"],["🦴","🐕"]
 ];
 function tplConnect(){
-  const n=5+Math.floor(Math.random()*2);                 // 5–6 أزواجٍ مختلفةٍ كلَّ طباعة
-  const pairs=shuf([...CONNECT_PAIRS]).slice(0,n);
-  const left=shuf(pairs.map(p=>p[0]));                     // كلُّ عمودٍ مُبعثَرٌ استقلالًا فلا يتحاذى الزوجان
-  const right=shuf(pairs.map(p=>p[1]));
-  return `<section class="tpl"><h2>⚡ وصِّلْ بخطّ — العناصرُ المترابطة</h2>${nameStrip()}
-    <p class="tpl-h">صِلْ كلَّ صورةٍ على جهةٍ بما يرتبطُ بها على الجهةِ الأخرى بخطّ (مثلًا: النحلةُ ← الزهرة). مَن يُكمِلُ الوصلَ الصحيحَ أسرعَ يفوز! (اطبعْ نسخةً لكلّ لاعب)</p>
+  const th = themeKey(), n = 5 + Math.floor(Math.random() * 2); // 5–6 أزواجٍ مختلفةٍ كلَّ طباعة
+  let left, right, title, hint;
+  if (th === "mixed") { // مختلط: أزواجٌ **مترابطةٌ** عبرَ التصنيفات (نحلة↔زهرة)
+    const pairs = shuf([...CONNECT_PAIRS]).slice(0, n);
+    left = shuf(pairs.map(p => p[0])); right = shuf(pairs.map(p => p[1]));
+    title = "⚡ وصِّلْ بخطّ — العناصرُ المترابطة";
+    hint = "صِلْ كلَّ صورةٍ على جهةٍ بما يرتبطُ بها على الجهةِ الأخرى بخطّ (مثلًا: النحلةُ ← الزهرة).";
+  } else {              // تصنيفٌ بعينِه: رموزُه وحدَها، والوصلُ بين المتماثلَين
+    const pick = shuf([...themePool(th)]).slice(0, n);
+    left = shuf([...pick]); right = shuf([...pick]);
+    title = `⚡ وصِّلْ بخطّ — ${themeName(th)}`;
+    hint = "صِلْ كلَّ صورةٍ على جهةٍ بمثيلتِها على الجهةِ الأخرى بخطّ.";
+  }
+  return `<section class="tpl"><h2>${title}</h2>${nameStrip()}
+    <p class="tpl-h">${hint} مَن يُكمِلُ الوصلَ الصحيحَ أسرعَ يفوز! (اطبعْ نسخةً لكلّ لاعب)</p>
     <div class="cn-wrap"><div class="cn-col">${left.map(e=>`<div class="cn-c">${e} ●</div>`).join("")}</div><div class="cn-col">${right.map(e=>`<div class="cn-c">● ${e}</div>`).join("")}</div></div></section>`;
 }
 const WS_WORDS=["شمس","قمر","بحر","نجم","ورد","سحب","جبل","نهر","تمر","عسل","ديك","فيل","نمل","حوت","باب","بيت","سمك","قلم"];

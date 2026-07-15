@@ -286,7 +286,7 @@ import { practiceByAccount, clearAccount as clearPracticeAccount } from "./src/p
 import { verifyParentPassword, markParentAuthed, isParentAuthed, isParent, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser, addProfile, updateProfile, AVATARS, isFemale } from "./src/accounts.js";
 const F = t => { try { return isFemale() ? femaleize(t) : t; } catch (e) { return t; } }; // تأنيثُ نصِّ الآليِّ المعروضِ للأنثى
 import { backupExport, backupImport } from "./src/backup.js"; // نسخةٌ احتياطيّة (مصدرٌ واحدٌ مشترَك)
-import { confirmWithPassword, undoable } from "./src/confirm-action.js";
+import { confirmWithPassword, undoable, confirmChoice } from "./src/confirm-action.js";
 import voicesBundled from "./src/voices-bundled.json";
 const STATE_TAG = {spark:"1) الشرارة", task:"2) المهمة", teach:"3) التلقين", heal:"4) الشفاء"};
 const AR = n => String(n);
@@ -910,6 +910,12 @@ async function openDashboard(){
     </div>
 
     <div class="sec" id="sec-accounts"><h3>الحسابات والأمان</h3>
+      <div style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:4px 0">
+        <div style="font-size:13px;margin-bottom:6px">🧹 تفريغُ حسابِ الضيف</div>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 6px">يمحو تقدّمَ الضيفِ وما التقطَه وسجّلَه — لئلّا تتراكمَ بياناتُ الضيوفِ العابرين. لا يمسُّ حساباتِ الأبناء.</p>
+        <button class="topbtn" id="clrGuest" style="font-size:13px">تفريغُ حسابِ الضيف</button>
+        <span id="clrGuestMsg" style="font-size:12px;margin-inline-start:8px;color:var(--good-d)"></span>
+      </div>
       ${(() => { const st=getSettings(), sq=getSecurityQuestion(); return `
       <div style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:4px 0">
         <div style="font-size:13px;margin-bottom:6px">🔑 تغيير كلمة مرور اللوحة</div>
@@ -995,6 +1001,18 @@ async function openDashboard(){
   const bkE=document.getElementById("bkExport"); if(bkE) bkE.addEventListener("click",()=>backupExport(bkMsg));
   const bkI=document.getElementById("bkImport"), bkF=document.getElementById("bkFile");
   if(bkI&&bkF){ bkI.addEventListener("click",()=>bkF.click()); bkF.addEventListener("change",()=>{ if(bkF.files&&bkF.files[0]) backupImport(bkF.files[0], bkMsg); bkF.value=""; }); }
+  // تفريغُ حسابِ الضيف: تقدّمُه + التقاطاتُه + تسجيلاتُه. الالتقاطاتُ لا تحملُ هويّةَ حسابٍ فتُطابَقُ
+  // بطوابعِ الوقتِ في سجلِّ تقدّمِ الضيفِ (قبلَ محوِه) — فلا تُمَسُّ التقاطاتُ الأبناء.
+  const clrG=document.getElementById("clrGuest");
+  if(clrG) clrG.addEventListener("click",async ()=>{
+    const msg=document.getElementById("clrGuestMsg");
+    if(!await confirmChoice("تفريغُ حسابِ الضيف: يُمحى تقدّمُه وصورُه وتسجيلاتُه نهائيًّا. حساباتُ الأبناءِ لا تتأثّر.","🧹 فرِّغْ","إلغاء")) return;
+    let tss=[]; try{ const gp=JSON.parse(localStorage.getItem("tilmithi_progress_v1")||"{}"); tss=(gp.log||[]).map(e=>e.ts).filter(t=>t!=null); }catch(e){}
+    try{ if(tss.length){ const set=new Set(tss); for(const c of await allCaptures()) if(set.has(c.ts)) await delCapture(c.key); } }catch(e){}
+    try{ localStorage.removeItem("tilmithi_progress_v1"); }catch(e){}
+    try{ await clearPracticeAccount("guest"); }catch(e){}
+    if(msg) msg.textContent="✓ فُرِّغَ حسابُ الضيف";
+  });
   const savePw=document.getElementById("savePw");
   if(savePw) savePw.addEventListener("click",()=>{
     const oldv=document.getElementById("oldPw").value, nv=document.getElementById("newPw").value.trim(), nv2=document.getElementById("newPw2").value.trim();

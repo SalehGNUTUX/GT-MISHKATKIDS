@@ -110,10 +110,20 @@ function headingFromQuaternion(q) {
   const north = 1 - 2 * (x * x + z * z);
   return (Math.atan2(east, north) * (180 / Math.PI) + 360) % 360;
 }
+// زاويةُ دورانِ الشاشةِ (0/90/180/270) — تُضافُ ليصحَّ الاتجاهُ في الوضعِ العرضيِّ والمقلوب.
+function screenAngle() {
+  try { if (screen.orientation && typeof screen.orientation.angle === "number") return screen.orientation.angle; } catch (e) {}
+  try { if (typeof window.orientation === "number") return (window.orientation + 360) % 360; } catch (e) {}
+  return 0;
+}
 // قراءةُ اتجاهِ البوصلةِ (درجاتٌ من الشمالِ مع عقاربِ الساعة) من حدثِ اتجاهِ الجهاز.
+// **المطلقُ فقط**: الاتجاهُ النسبيُّ (deviceorientation بلا absolute) مبنيٌّ على الجيروسكوبِ فينحرفُ تراكميًّا
+// كلّما تحرّكَ الجهازُ ويُعطي شمالًا خاطئًا لا يُصحَّحُ إلّا بعدَ طولِ وقتٍ — فرفضُه أصوبُ من بوصلةٍ كاذبة.
 function headingFromEvent(e) {
-  if (typeof e.webkitCompassHeading === "number" && !isNaN(e.webkitCompassHeading)) return e.webkitCompassHeading; // iOS (جاهزٌ ومعوَّض)
-  if (typeof e.alpha === "number" && e.alpha !== null) return compassHeadingFromAngles(e.alpha, e.beta, e.gamma);  // أندرويد: عوِّضِ الميل
+  if (typeof e.webkitCompassHeading === "number" && !isNaN(e.webkitCompassHeading)) return (e.webkitCompassHeading + screenAngle()) % 360; // iOS (مطلقٌ ومعوَّض)
+  const absolute = e.type === "deviceorientationabsolute" || e.absolute === true;
+  if (!absolute) return null;
+  if (typeof e.alpha === "number" && e.alpha !== null) return (compassHeadingFromAngles(e.alpha, e.beta, e.gamma) + screenAngle() + 360) % 360; // أندرويد: عوِّضِ الميلَ ودورانَ الشاشة
   return null;
 }
 // زاويةُ القِبلةِ (من الشمالِ مع عقاربِ الساعة) من موقعٍ إلى الكعبةِ المشرّفة — حسابٌ محلّيٌّ بحتٌ (بلا إنترنت).
@@ -131,7 +141,8 @@ function startAbsoluteSensor(cb) {
   const AOS = typeof window !== "undefined" && window.AbsoluteOrientationSensor;
   if (!AOS) return null;
   let sensor;
-  try { sensor = new AOS({ frequency: 30, referenceFrame: "device" }); } catch (e) { return null; }
+  // referenceFrame:"screen" يُراعي دورانَ الشاشةِ تلقائيًّا ⇒ يصحُّ الاتجاهُ مسطَّحًا في الوضعِ الطوليِّ والعرضيِّ والمقلوب.
+  try { sensor = new AOS({ frequency: 30, referenceFrame: "screen" }); } catch (e) { return null; }
   const onReading = () => { const q = sensor.quaternion; if (q) cb(headingFromQuaternion(q)); };
   try {
     sensor.addEventListener("reading", onReading);
@@ -146,7 +157,7 @@ function wireRealCompass(btn, msg, compass, globe, L) {
   if (!btn) return;
   if (_compassStop) { try { _compassStop(); } catch (_) {} } // أوقِفْ أيَّ بوصلةٍ سابقةٍ قبلَ ربطِ الجديدة
   const rose = compass && compass._rose, qib = compass && compass._qibla, grot = globe && globe._rot;
-  let on = false, handler = null, got = false, timer = null, sensorStop = null, sensorLive = false, smooth = null;
+  let on = false, handler = null, got = false, timer = null, sensorStop = null, sensorLive = false, smooth = null, useRel = false;
   // تدويرُ الوردةِ **والكرةِ الأرضيّةِ** معًا فيتجاوبُ الشكلانِ مع الاتجاهِ الحقيقيّ.
   const setRot = deg => {
     if (rose) rose.setAttribute("transform", `rotate(${deg} 100 100)`);
@@ -171,29 +182,37 @@ function wireRealCompass(btn, msg, compass, globe, L) {
   };
   const onHeading = (h, fromSensor) => {
     if (fromSensor) sensorLive = true; else if (sensorLive) return; // المستشعرُ العامُّ يعملُ ⇐ تجاهلْ أحداثَ deviceorientation
-    got = true; if (msg) msg.textContent = ""; setRot(-smoothOf(h));
+    got = true; if (msg && !useRel) msg.textContent = ""; setRot(-smoothOf(h));
   };
   const stop = () => {
     if (handler) { try { window.removeEventListener("deviceorientationabsolute", handler, true); window.removeEventListener("deviceorientation", handler, true); } catch (_) {} handler = null; }
     if (sensorStop) { try { sensorStop(); } catch (_) {} sensorStop = null; }
     if (timer) { clearTimeout(timer); timer = null; }
-    on = false; got = false; sensorLive = false; smooth = null; btn.classList.remove("on"); btn.textContent = `🧭 ${L.realCompass || "بوصلةٌ حقيقيّة"}`;
+    on = false; got = false; sensorLive = false; smooth = null; useRel = false; btn.classList.remove("on"); btn.textContent = `🧭 ${L.realCompass || "بوصلةٌ حقيقيّة"}`;
     setRot(0); if (qib) qib.style.display = "none"; if (msg) msg.textContent = ""; if (_compassStop === stop) _compassStop = null;
   };
   const start = () => {
-    on = true; got = false; sensorLive = false; smooth = null; btn.classList.add("on"); btn.textContent = `⏹️ ${L.compassStop || "أوقِفِ البوصلة"}`; _compassStop = stop;
+    on = true; got = false; sensorLive = false; smooth = null; useRel = false; btn.classList.add("on"); btn.textContent = `⏹️ ${L.compassStop || "أوقِفِ البوصلة"}`; _compassStop = stop;
     if (msg) msg.textContent = L.compassWait || "وجِّهْ جهازَك وحرّكْه قليلًا…";
     showQibla();                                               // مؤشّرُ القبلةِ (إن سُمِحَ بالموقع)
     sensorStop = startAbsoluteSensor(h => onHeading(h, true)); // (1) الأدقّ (Generic Sensor)
-    let gotAbs = false; // (2) ارتدادٌ لأحداثِ الاتجاه؛ فضِّلِ المطلقَ (الشمالُ الحقيقيّ) على النسبيّ
+    // (2) ارتدادٌ لأحداثِ الاتجاه: المطلقُ فقط. والنسبيُّ لا يُستعمَلُ إلّا إذا عدِمَ الجهازُ المطلقَ تمامًا — وحينها بتنبيهٍ صريح.
+    let relSeen = false;
     handler = e => {
-      const abs = e.type === "deviceorientationabsolute" || e.absolute === true;
-      if (gotAbs && !abs) return; if (abs) gotAbs = true;
-      const h = headingFromEvent(e); if (h == null) return; onHeading(h, false);
+      const h = headingFromEvent(e);
+      if (h != null) { onHeading(h, false); return; }
+      if (typeof e.alpha === "number" && e.alpha !== null) {
+        relSeen = true;
+        if (useRel) onHeading((compassHeadingFromAngles(e.alpha, e.beta, e.gamma) + screenAngle() + 360) % 360, false);
+      }
     };
     try { window.addEventListener("deviceorientationabsolute", handler, true); } catch (_) {}
     try { window.addEventListener("deviceorientation", handler, true); } catch (_) {}
-    timer = setTimeout(() => { if (!got && msg) msg.textContent = L.compassNo || "المستشعرُ غيرُ متاحٍ على هذا الجهاز."; }, 5000);
+    timer = setTimeout(() => {
+      if (got) return;
+      if (relSeen) { useRel = true; if (msg) msg.textContent = L.compassApprox || "اتجاهٌ تقريبيٌّ — جهازُك لا يوفّرُ شمالًا مطلقًا."; }
+      else if (msg) msg.textContent = L.compassNo || "المستشعرُ غيرُ متاحٍ على هذا الجهاز.";
+    }, 5000);
   };
   btn.onclick = () => {
     if (on) { stop(); return; }
@@ -333,5 +352,6 @@ export const AR_L = {
   seasonsIntro: "🍂 فصولُ السنةِ الأربعة — اضغطْ كلَّ فصلٍ لتسمعَ اسمَه وتعرفَ صفتَه.",
   daypartsIntro: "🌅 فتراتُ اليومِ والليل بالترتيب — اضغطْ كلَّ فترةٍ لتسمعَ اسمَها.",
   quizSay: "تنافَسْ في المطابقة!", qName: "ما اسمُ هذا؟", qPick: "اختَرِ الرمزَ المطابق", quiz: "اختبار",
-  realCompass: "بوصلةٌ حقيقيّة", compassWait: "وجِّهْ جهازَك وحرّكْه قليلًا…", compassNo: "المستشعرُ غيرُ متاحٍ على هذا الجهاز.", compassStop: "أوقِفِ البوصلة",
+  realCompass: "بوصلةٌ حقيقيّة", compassWait: "ضعِ الجهازَ مسطَّحًا وحرّكْه على هيئةِ ٨ ليُعايِرَ نفسَه…", compassNo: "المستشعرُ غيرُ متاحٍ على هذا الجهاز.", compassStop: "أوقِفِ البوصلة",
+  compassApprox: "اتجاهٌ تقريبيٌّ — جهازُك لا يوفّرُ شمالًا مطلقًا.",
 };

@@ -954,7 +954,7 @@ function vsHistoryHtml(){
       </div></details>`;
   }).join("");
   return `<div class="sec" id="sec-vshistory">${head}
-    <div class="muted" style="font-size:12px;margin-bottom:6px">اضغطْ على أيِّ سجلٍّ لعرضِ مبارياتِه (يُطوى الآخرُ تلقائيًّا):</div>${groups}
+    <div id="vsHistBody"><div class="muted" style="font-size:12px;margin-bottom:6px">اضغطْ على أيِّ سجلٍّ لعرضِ مبارياتِه (يُطوى الآخرُ تلقائيًّا):</div>${groups}</div>
     <button id="vsHistReset" style="margin-top:12px;background:none;border:none;color:#c0392b;font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit">↺ صفّرِ السجلّ</button>
   </div>`;
 }
@@ -1294,7 +1294,14 @@ async function openDashboard(){
     }
   });
   renderVoiceMgmt();
-  { const vsRst=document.getElementById("vsHistReset"); if(vsRst) vsRst.onclick=async(e)=>{ e.stopPropagation(); if(await confirmChoice("تصفيرُ سجلِّ الألعابِ التنافسيّة نهائيًّا؟","↺ صفّر","إبقاء")){ clearVsHistory(); openDashboard(); } }; }
+  // التصفيرُ الشامل: كلمةُ مرورِ الوالدَين ثمّ مهلةُ تراجع (حذفٌ دائمٌ لكلِّ السجلّ).
+  { const vsRst=document.getElementById("vsHistReset"); if(vsRst) vsRst.onclick=async(e)=>{
+      e.stopPropagation();
+      if(!await confirmWithPassword("تصفيرُ سجلِّ الألعابِ التنافسيّة **كلِّه** نهائيًّا؟ ستظهرُ مهلةُ تراجعٍ بعد التأكيد.")) return;
+      const sec=document.getElementById("sec-vshistory"), body=sec&&sec.querySelector("#vsHistBody");
+      if(body) body.style.display="none";   // إخفاءٌ فوريّ؛ لا يُمَسُّ التخزينُ إلّا بعدَ المهلة
+      undoable("صُفِّرَ سجلُّ الألعابِ التنافسيّة.", ()=>{ clearVsHistory(); openDashboard(); }, 6000, ()=>{ if(body) body.style.display=""; });
+    }; }
   // مطويّاتُ سجلِّ التنافسِ حصريّة: فتحُ سجلِّ طرفَينِ يطوي المفتوحَ قبلَه (بـJS لا بخاصّيّةِ name كي يعملَ على كلِّ المتصفّحاتِ وWebView).
   { const vsg=[...document.querySelectorAll("details.vsgrp")];
     vsg.forEach(d=>d.addEventListener("toggle",()=>{ if(d.open) vsg.forEach(o=>{ if(o!==d) o.open=false; }); })); }
@@ -1302,7 +1309,8 @@ async function openDashboard(){
   document.querySelectorAll(".vsg-del").forEach(b=>b.onclick=async e=>{
     e.preventDefault(); e.stopPropagation();
     const key=decodeURIComponent(b.getAttribute("data-pair")), label=b.getAttribute("data-label")||"هذين الطرفَين";
-    if(!await confirmChoice(`تصفيرُ سجلِّ «${label}»؟ لن يُمَسَّ سجلُّ بقيّةِ المتنافسين.`,"↺ صفّرْ هذا السجلّ","إبقاء")) return;
+    // حذفٌ دائمٌ ⇒ كلمةُ مرورِ الوالدَين، ثمّ مهلةُ تراجع.
+    if(!await confirmWithPassword(`تصفيرُ سجلِّ «${label}»؟ لن يُمَسَّ سجلُّ بقيّةِ المتنافسين. ستظهرُ مهلةُ تراجعٍ بعد التأكيد.`)) return;
     const grp=b.closest("details.vsgrp"); if(grp) grp.style.display="none";   // إخفاءٌ فوريّ، والحذفُ بعدَ المهلة
     undoable(`صُفِّرَ سجلُّ «${label}».`, ()=>{ clearVsPair(key); openDashboard(); }, 6000, ()=>{ if(grp) grp.style.display=""; });
   });

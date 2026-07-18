@@ -18,6 +18,8 @@ const MAP = {
   components: "box-open", reports: "chart-column", accounts: "users", gear: "gear",
   // v1.5: النسخة الاحتياطيّة + «الزمانُ والمكان» + الأصوات
   backup: "floppy-disk", clock: "clock", trophy: "trophy", compass: "compass", leaf: "leaf", sun: "sun", sound: "volume-high",
+  // أيقوناتٌ أُضيفت بعدَ تدقيقِ v1.6 (كانت إيموجي خامًا في بطاقاتِ الألعاب)
+  hunt: "magnifying-glass", bolt: "bolt", circledot: "circle-dot", dots: "table-cells-large", paw: "paw", globe: "globe", stopwatch: "stopwatch",
   // الرياضيّات
   numbers: "list-ol", add: "plus", sub: "minus", mul: "xmark", div: "divide", find: "magnifying-glass",
   compare: "scale-balanced", pattern: "repeat", size: "ruler", circle: "circle", crafts: "scissors",
@@ -47,6 +49,7 @@ const EMOJI = {
   "🧩": "puzzles", "🌀": "maze", "🎡": "wheel", "🖨️": "print", "📑": "index", "🔤": "basics",
   "🎙️": "mic", "🔗": "link", "🌟": "star", "🕌": "mosque", "🔬": "microscope", "🤝": "handshake",
   "🕐": "clock", "🏆": "trophy", "🧭": "compass", "🍂": "leaf", "🌅": "sun", "🔊": "sound", "💾": "backup",
+  "🔎": "hunt", "⚡": "bolt", "⭕": "circledot", "▪️": "dots", "🐾": "paw", "🌍": "globe", "⏱️": "stopwatch",
   "📝": "words", "💬": "phrases", "📚": "stories", "🎯": "quiz", "🎮": "play", "📖": "read",
   "🦁": "animals", "🎨": "colors", "👪": "family", "🍎": "food", "🧒": "body", "👋": "hand",
   "🏫": "school", "🌳": "nature", "🚗": "transport", "🍇": "fruits", "👕": "clothes",

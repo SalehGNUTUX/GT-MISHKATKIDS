@@ -47,6 +47,12 @@
 
   .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
   .gsec{font-size:16px;font-weight:800;margin:16px 2px 8px;color:var(--ink);border-bottom:2px solid var(--line);padding-bottom:4px}
+  .ccard{position:relative;background:var(--card);border:2px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:20px 14px;text-align:center;cursor:pointer;transition:transform .12s,border-color .15s}
+  .ccard:hover{transform:translateY(-3px);border-color:var(--primary)} .ccard:active{transform:scale(.97)}
+  .ccard .ic{font-size:42px;line-height:1.2}
+  .ccard .t{font-weight:800;font-size:16px;margin-top:6px;color:var(--ink)}
+  .ccard .d{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .menu.cats{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
   .gcard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s}
   .gcard:hover{transform:translateY(-3px);border-color:var(--primary)}
   .gcard.vs{border-color:color-mix(in srgb,var(--primary) 45%,var(--line))}
@@ -330,17 +336,39 @@ const GAME_GROUPS = [
   { key:"skill",   label:"⚡ ألعابُ المهارةِ والتركيز (تعليميّة)" },
   { key:"tool",    label:"🖨️ أدوات" },
 ];
+let curCat=null; // القسمُ المفتوحُ في لوحةِ الأقسام (null = لوحةُ الأقسام)
 function renderMenu(){
   vsRun=false; // مغادرةُ اللعبة إلى قائمة الألعاب ⇒ أوقِفِ المؤقّتات
   document.body.classList.remove("ingame"); // إعادةُ الرأسِ الكامل في القائمة
-  const only = new URLSearchParams(location.search).get("only"); // فلترةٌ لفئةٍ (من المهامّ): letters/math/skill/fun
+  // فئةٌ من الرابط (المهامّ) أو من اختيارِ الطفلِ لبطاقةِ قسمٍ في هذه الجلسة.
+  const only = new URLSearchParams(location.search).get("only") || curCat;
   const card = g=>`<div class="gcard${g.vs?" vs":""}${g.nw?" hasnew":""}" data-g="${g.id}">${g.vs?'<span class="vsbadge">⚔️ تنافسيّة</span>':''}${g.nw?'<span class="newbadge">🆕 جديد</span>':''}<div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`;
-  const groups = GAME_GROUPS.filter(gr=>!only || gr.key===only);
-  const sections = groups.map(gr=>{ const gs=GAMES.filter(g=>g.cat===gr.key); if(!gs.length) return ""; return `<h2 class="gsec">${gr.label}</h2><div class="menu">${gs.map(card).join("")}</div>`; }).join("");
-  const bar = only ? `<div class="hint" style="text-align:center;margin-bottom:6px"><a href="play.html" style="color:var(--primary-d);font-weight:700;text-decoration:none">↩ كلُّ الألعاب</a></div>` : "";
-  view.innerHTML = ageChips() + bar + sections +
-    `<div class="hint">🎓 الألعابُ التعليميّةُ مفصولةٌ عن الترفيهيّة لتركيزِ الطفل. علامةُ ⚔️ تعني «تنافسيّة» (ضدّ الآليّ/الإخوة/الوالد).</div>`;
+  if(!only){   // ===== لوحةُ الأقسام: بطاقةٌ لكلِّ صنفٍ يدخلُ منها الطفلُ إلى ألعابِه وحدَها =====
+    const cats = GAME_GROUPS.map(gr=>{
+      const gs=GAMES.filter(g=>g.cat===gr.key); if(!gs.length) return "";
+      const vs=gs.filter(g=>g.vs).length, nw=gs.some(g=>g.nw);
+      const e=gr.label.trim().slice(0,2), name=gr.label.trim().slice(2).trim();
+      return `<div class="ccard" data-cat="${gr.key}">${nw?'<span class="newbadge">🆕 جديد</span>':''}
+        <div class="ic">${e}</div><div class="t">${name}</div>
+        <div class="d">${gs.length} ${gs.length===1?"لعبة":"ألعاب"}${vs?` · ⚔️ ${vs} تنافسيّة`:""}</div></div>`;
+    }).join("");
+    view.innerHTML = ageChips() + `<div class="menu cats">${cats}</div>` +
+      `<div class="hint">🎓 اختَرْ قسمًا لتظهرَ ألعابُه. علامةُ ⚔️ تعني «تنافسيّة» (ضدّ الآليّ/الإخوة/الوالد).</div>`;
+    wireAge(renderMenu);
+    view.querySelector(".cats").addEventListener("click", e=>{ const c=e.target.closest("[data-cat]"); if(c){ curCat=c.getAttribute("data-cat"); renderMenu(); try{ scrollTo({top:0,behavior:"smooth"}); }catch(_){} } });
+    return;
+  }
+  // ===== قسمٌ بعينِه: ألعابُه وحدَها + رجوعٌ للأقسام =====
+  const gr = GAME_GROUPS.find(x=>x.key===only);
+  const gs = GAMES.filter(g=>g.cat===only);
+  const sections = `<h2 class="gsec">${gr?gr.label:"الألعاب"}</h2><div class="menu">${gs.map(card).join("")}</div>`;
+  const bar = `<div class="hint" style="text-align:center;margin-bottom:6px"><button class="backstep" id="allCats">كلُّ الأقسام</button></div>`;
+  view.innerHTML = ageChips() + bar + sections;
   wireAge(renderMenu);
+  { const b=document.getElementById("allCats"); if(b) b.onclick=()=>{ curCat=null;
+      // الرجوعُ من فئةٍ جاءت بالرابطِ (مهمّة) يُنظّفُ الرابطَ كي تظهرَ الأقسامُ لا الفئةُ نفسُها
+      try{ if(new URLSearchParams(location.search).get("only")) history.replaceState(null,"","play.html"); }catch(_){}
+      renderMenu(); }; }
   view.querySelectorAll(".menu").forEach(m=>m.addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); }));
 }
 function open(id){ if(id!=="print") document.body.classList.add("ingame"); // شاشةٌ مخصّصةٌ للّعبة: يُطوى رأسُ الصفحةِ وشريطُ التنقّل
@@ -1132,7 +1160,7 @@ function renderPrint(){
 
 // زرُّ الرجوع في الهاتف (Capacitor، عبر theme.js): إن كان الطفلُ داخلَ لعبةٍ (زرُّ «الألعاب» ظاهر)
 // نُعيدُه لقائمة الألعاب لا أن يخرجَ من البرنامج.
-window.appBack = () => { if(document.getElementById("back")){ renderMenu(); return true; } return false; };
+window.appBack = () => { if(document.getElementById("back")){ renderMenu(); return true; } if(curCat){ curCat=null; renderMenu(); return true; } return false; };
 // ?g=<id> يفتحُ لعبةً بعينها مباشرةً (توجيهُ المهامّ)؛ وإلّا قائمةٌ مجمَّعة.
 { const _g=new URLSearchParams(location.search).get("g"); if(_g && GAMES.some(x=>x.id===_g)){ renderMenu(); open(_g); } else renderMenu(); }
 </script>

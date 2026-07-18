@@ -58,7 +58,8 @@ export function roboBlip(mood = "talk") {
 // mood: talk | ask | happy | wonder | curious | ok
 export function roboSay(text, opts = {}) {
   const mood = opts.mood || "talk";
-  try { if (isFemale()) text = femaleize(text); } catch (e) {} // تأنيثُ خطابِ الآليِّ للأنثى
+  // تأنيثُ خطابِ الآليّ: يُحترَمُ جنسٌ صريحٌ (opts.female — لمخاطبةِ لاعبٍ بعينه في الألعاب) وإلّا جنسُ الحسابِ الداخل.
+  try { const fem = opts.female != null ? opts.female : isFemale(); if (fem) text = femaleize(text); } catch (e) {}
   if (!opts.noBlip) roboBlip(mood);
   // صوتٌ ودودٌ آليّ لطيف: نبرةٌ أعلى قليلًا وإيقاعٌ مُتمهِّل يناسب الصغار.
   speak(text, {

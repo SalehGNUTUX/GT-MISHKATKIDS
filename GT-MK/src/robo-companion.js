@@ -102,9 +102,10 @@ function flash(cls) {
   el.classList.remove("cheer", "sad");
   if (cls) { void el.offsetWidth; el.classList.add(cls); } // ملاحظة: classList.add("") يرمي استثناءً
 }
-function showBubble(text) {
+function showBubble(text, female) {
   if (!bubble || !text) return;
-  try { if (isFemale()) text = femaleize(text); } catch (e) {} // تأنيثُ فقاعةِ الآليّ للأنثى
+  // تأنيثُ فقاعةِ الآليّ: جنسٌ صريحٌ (female — لمخاطبةِ لاعبٍ بعينه) وإلّا جنسُ الحسابِ الداخل.
+  try { const fem = female != null ? female : isFemale(); if (fem) text = femaleize(text); } catch (e) {}
   bubble.textContent = text; bubble.classList.add("show");
   clearTimeout(hideT); hideT = setTimeout(() => bubble.classList.remove("show"), 3200);
 }
@@ -116,18 +117,18 @@ export const robo = {
   // يُستعمَل في الفهرس عند أوّل تشغيلٍ للبرنامج.
   hello() { ensureMounted(); greet(); return this; },
   // نجاحٌ: فرحٌ + هتافٌ مع نبرةٍ إسلامية. opts.then يُستدعى عند انتهاء الكلام (لتأخير الانتقال).
-  cheer(text, opts = {}) { ensureMounted(); const t = text || roboPhrase("praise"); flash("cheer"); showBubble(t); sfx.success(); roboSay(t, { mood: "happy", onend: opts.then }); },
+  cheer(text, opts = {}) { ensureMounted(); const t = text || roboPhrase("praise"); flash("cheer"); showBubble(t, opts.female); sfx.success(); roboSay(t, { mood: "happy", onend: opts.then, female: opts.female }); },
   // خطأٌ: تشجيعٌ لطيفٌ لا قسوةَ فيه.
-  encourage(text, opts = {}) { ensureMounted(); const t = text || roboPhrase("encourage"); flash("sad"); showBubble(t); sfx.nope(); roboSay(t, { mood: "ok", onend: opts.then }); },
+  encourage(text, opts = {}) { ensureMounted(); const t = text || roboPhrase("encourage"); flash("sad"); showBubble(t, opts.female); sfx.nope(); roboSay(t, { mood: "ok", onend: opts.then, female: opts.female }); },
   // عند تجاوز سؤالٍ بعد الخطأ: طمأنةٌ مع وعدٍ بالعودة إليه.
   recall(opts = {}) { ensureMounted(); const t = roboPhrase("recall"); flash("sad"); showBubble(t); sfx.nope(); roboSay(t, { mood: "ok", onend: opts.then }); },
   // تصفيقٌ صامتٌ: فرحٌ + نغمةُ نجاحٍ بلا كلام — حين يكون هناك نطقٌ آخرُ جارٍ (كقراءة كلمة).
   applaud() { ensureMounted(); flash("cheer"); sfx.success(); },
   // كلامٌ عامّ بمزاجٍ مُحدَّد. opts.then يُستدعى عند انتهاء الكلام.
-  say(text, mood = "talk", opts = {}) { ensureMounted(); flash(mood === "happy" ? "cheer" : ""); showBubble(text); roboSay(text, { mood, onend: opts.then }); },
+  say(text, mood = "talk", opts = {}) { ensureMounted(); flash(mood === "happy" ? "cheer" : ""); showBubble(text, opts.female); roboSay(text, { mood, onend: opts.then, female: opts.female }); },
   // قراءةُ حرفٍ أو كلمةٍ بوضوحٍ (بلا نبضةٍ آليّة كي لا تُزعجَ عند التكرار).
-  read(text, opts = {}) { ensureMounted(); flash(""); try { if (isFemale()) text = femaleize(text); } catch (e) {} showBubble(text); speak(text, { rate: opts.rate != null ? opts.rate : 0.7, onend: opts.then }); },
+  read(text, opts = {}) { ensureMounted(); flash(""); try { const fem = opts.female != null ? opts.female : isFemale(); if (fem) text = femaleize(text); } catch (e) {} showBubble(text, false); speak(text, { rate: opts.rate != null ? opts.rate : 0.7, onend: opts.then }); },
   // عرضٌ مرئيٌّ فقط (فقاعة + مزاج + مؤثّر) بلا نطقٍ آليّ — ليُشغَّلَ نطقٌ خارجيٌّ بعده (كاللغات الأجنبيّة).
   // opts.good: true=فرح+نغمةُ نجاح، false=طمأنة+نغمةُ خطأ.
-  show(text, mood = "talk", opts = {}) { ensureMounted(); flash(opts.good === true ? "cheer" : (opts.good === false ? "sad" : "")); showBubble(text); if (opts.good === true) sfx.success(); else if (opts.good === false) sfx.nope(); },
+  show(text, mood = "talk", opts = {}) { ensureMounted(); flash(opts.good === true ? "cheer" : (opts.good === false ? "sad" : "")); showBubble(text, opts.female); if (opts.good === true) sfx.success(); else if (opts.good === false) sfx.nope(); },
 };

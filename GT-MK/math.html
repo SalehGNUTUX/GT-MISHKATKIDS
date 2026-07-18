@@ -549,12 +549,12 @@ function pvResolve(ok,btn){ if(!pvRun) return;
   if(!ok) mark(cv,"ok");                                                                   // وتُظهَرُ الصحيحة
   document.querySelectorAll("#pvopts .opt").forEach(x=>x.disabled=true);
   if(ok){ cur.score++; const won=cur.score>=PV_TARGET;
-    if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok)); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
-  else { if(human) robo.encourage(vP(GR.no)); else sfx.nope(); }
+    if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok), {female:cur.female}); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
+  else { if(human) robo.encourage(vP(GR.no), {female:cur.female}); else sfx.nope(); }
   const fb=document.getElementById("pvfb"); if(fb) fb.innerHTML=`<div class="hint">${ok?"✅ صحيح!":`الصحيحُ: <b>${cv}</b>`}</div>`;
   setTimeout(()=>{ if(!pvRun) return; pv_turn=(pv_turn+1)%pv_ps.length; pvNext(); }, 1200);
 }
-function pvEnd(){ logEvent("math_pattern_win"); vsEndRound(pv_ps, { onAgain:newPatternVs, onExit:startPatternVs }); }
+function pvEnd(){ logEvent("math_pattern_win"); vsEndRound(pv_ps, { game:"أكملِ النمط", diff:({easy:"سهل",medium:"متوسّط",hard:"صعب"}[pv_diff]||""), onAgain:newPatternVs, onExit:startPatternVs }); }
 
 /* ===== 🧮 تحدّي الحساب (تنافسيّ · versus) — عمليّاتٌ مختلطة (يشاركُ الحارسَ pvRun) ===== */
 let ca_diff="easy", ca_ps=[], ca_turn=0, ca_lock=false, ca_q=null, ca_raf=null, ca_timed=true, ca_aiPick=null; const CA_TARGET=5;
@@ -607,12 +607,12 @@ function caResolve(ok,btn){ if(!pvRun) return;
   if(!ok) mark(cv,"ok");                                                                   // وتُظهَرُ الصحيحة
   document.querySelectorAll("#caopts .opt").forEach(x=>x.disabled=true);
   if(ok){ cur.score++; const won=cur.score>=CA_TARGET;
-    if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok)); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
-  else { if(human) robo.encourage(vP(GR.no)); else sfx.nope(); }
+    if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok), {female:cur.female}); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
+  else { if(human) robo.encourage(vP(GR.no), {female:cur.female}); else sfx.nope(); }
   const fb=document.getElementById("cafb"); if(fb) fb.innerHTML=`<div class="hint">${ok?"✅ صحيح!":`الصحيحُ: <b>${cv}</b>`}</div>`;
   setTimeout(()=>{ if(!pvRun) return; ca_turn=(ca_turn+1)%ca_ps.length; caNext(); }, 1200);
 }
-function caEnd(){ logEvent("math_arith_win"); vsEndRound(ca_ps, { onAgain:newArithVs, onExit:startArithVs }); }
+function caEnd(){ logEvent("math_arith_win"); vsEndRound(ca_ps, { game:"سباقُ الحساب", diff:({easy:"سهل",medium:"متوسّط",hard:"صعب"}[ca_diff]||""), onAgain:newArithVs, onExit:startArithVs }); }
 
 /* ===== 📏 الأكبر والأصغر ===== */
 let zScore=0;

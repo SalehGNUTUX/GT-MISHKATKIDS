@@ -141,10 +141,40 @@ build_apk() {
     sed -i 's#<application#<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n\n    <application#' "$mani"
     step "أُضيفت صلاحيّةُ الموقعِ (اتجاهُ القبلة) إلى AndroidManifest"
   fi
-  # فتحُ ملفّاتِ .json بتطبيقنا (استيرادُ النسخةِ الاحتياطيّة): intent-filter للـVIEW على application/json في النشاطِ الرئيس.
-  if [ -f "$mani" ] && ! grep -q 'android:mimeType="application/json"' "$mani"; then
-    sed -i '0,/<\/intent-filter>/s|</intent-filter>|</intent-filter>\n            <intent-filter>\n                <action android:name="android.intent.action.VIEW" />\n                <category android:name="android.intent.category.DEFAULT" />\n                <category android:name="android.intent.category.BROWSABLE" />\n                <data android:mimeType="application/json" />\n            </intent-filter>|' "$mani"
-    step "أُضيف intent-filter لاستقبالِ ملفّاتِ JSON (فتحُ النسخةِ الاحتياطيّة)"
+  # فتحُ ملفّاتِ .json بتطبيقنا (استيرادُ النسخةِ الاحتياطيّة): مجموعةُ intent-filters تغطّي
+  # application/json (المعياريّ) + scheme=content/file + **application/octet-stream وtext/plain بـpathPattern=.*.json**
+  # لأنّ واتساب وتطبيقاتِ المراسلةِ ترسلُ الـ.json بنوعٍ عامٍّ (BIN/octet-stream) فلا يطابقُ مُرشِّحَ json وحدَه — نهجُ GT-SARARIM المثبَت.
+  # علاماتُ BACKUP-JSON-FILTERS تجعلُ الحقنَ قابلًا للإعادةِ دون تكرارٍ (يُنزَعُ القديمُ ثمّ يُحقَنُ المُحدَّث).
+  if [ -f "$mani" ]; then
+    MANI="$mani" node <<'NODE'
+    const fs = require("fs");
+    const p = process.env.MANI;
+    let m = fs.readFileSync(p, "utf8");
+    // انزِعْ أيَّ حقنةٍ سابقةٍ بين العلامتين (idempotent)
+    m = m.replace(/[ \t]*<!-- BACKUP-JSON-FILTERS:START[\s\S]*?BACKUP-JSON-FILTERS:END -->\n?/g, "");
+    const IND = "            ";
+    const filter = attrs => [
+      IND + '<intent-filter android:label="@string/app_name">',
+      IND + '    <action android:name="android.intent.action.VIEW" />',
+      IND + '    <category android:name="android.intent.category.DEFAULT" />',
+      IND + '    <data ' + attrs + ' />',
+      IND + '</intent-filter>',
+    ].join("\n");
+    const block = [
+      IND + '<!-- BACKUP-JSON-FILTERS:START — فتحُ ملفّاتِ النسخِ الاحتياطيّةِ .json من مديرِ الملفّاتِ وتطبيقاتِ المراسلة -->',
+      filter('android:mimeType="application/json"'),
+      filter('android:scheme="file" android:mimeType="application/json"'),
+      filter('android:scheme="content" android:mimeType="application/json"'),
+      filter('android:scheme="content" android:mimeType="text/plain" android:pathPattern=".*\\\\.json"'),
+      filter('android:scheme="file" android:mimeType="text/plain" android:pathPattern=".*\\\\.json"'),
+      filter('android:scheme="content" android:mimeType="application/octet-stream" android:pathPattern=".*\\\\.json"'),
+      IND + '<!-- BACKUP-JSON-FILTERS:END -->',
+    ].join("\n");
+    // احقِنْ بعدَ أوّلِ </intent-filter> (وهو مُرشِّحُ MAIN/LAUNCHER)
+    m = m.replace(/<\/intent-filter>/, "</intent-filter>\n" + block);
+    fs.writeFileSync(p, m);
+NODE
+    step "حُقِنت intent-filters لاستقبالِ .json (json + content/file + octet-stream/text·pathPattern لواتساب)"
   fi
   [ -n "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}" ] || wrn "ANDROID_HOME غير مضبوط — قد يفشل gradlew"
   local apk="$ANDROID/app/build/outputs/apk/debug/app-debug.apk"

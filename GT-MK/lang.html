@@ -280,14 +280,14 @@ function sayAsync(text, L){
 // ردُّ فعلِ الآلي (يظهرُ الآليُّ وفقاعتُه) ثنائيُّ اللغة: كلُّ ردٍّ أجنبيٍّ مقرونٌ بترجمته العربيّة المقابلة:
 // تُنطَق العبارةُ بلغة القسم (Piper alba/tom) ثمّ ترجمتُها العربيّةُ بالنموذج العصبيّ (kareem).
 const _pick = a => (a && a.length) ? a[Math.floor(Math.random() * a.length)] : null;
-function react(L, good){
+function react(L, good, female){
   const r = _pick(good ? (L.reactions || []) : (L.encourage || []));
   if(!r) return Promise.resolve();
-  robo.show(r.t + " · " + r.ar, good ? "happy" : "sad", { good });  // الآليُّ + الفقاعةُ (بلا نطقٍ آليّ)
+  robo.show(r.t + " · " + r.ar, good ? "happy" : "sad", { good, female });  // الآليُّ + الفقاعةُ (بلا نطقٍ آليّ)؛ female = جنسُ اللاعبِ الحاليّ
   return sayAsync(r.t, L).then(() => speak(r.ar));                   // لغةُ القسم ثمّ ترجمتُها العربيّة (عصبيّ) — يُرجِعُ وعدًا لِيُنتظَر اكتمالُه
 }
-const praise = L => react(L, true);
-const encourageReact = L => react(L, false);
+const praise = (L, female) => react(L, true, female);
+const encourageReact = (L, female) => react(L, false, female);
 let storyTok=0, reading=false;        // تتابعُ قراءة القصّة كاملةً
 function cancelRead(){ storyTok++; reading=false; try{ stopClip(); }catch(e){} }
 
@@ -530,14 +530,14 @@ function vsQuizResolve(ok,btn){ if(!qz) return;
   if(!ok) mark(cv,"ok");                                                                    // وتُظهَرُ الإجابةُ الصحيحةُ خضراءَ عند الخطأ
   // ردُّ فعلِ الآليّ ثنائيُّ اللغة للإنسان (أجنبيٌّ + عربيٌّ عبر react)، وقُويْمةٌ عربيّةٌ قصيرةٌ للآليّ.
   if(ok){ cur.score++; const won=cur.score>=target;
-    if(won) sfx.success(); else if(human) praise(cfg.L); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
-  else { if(human) encourageReact(cfg.L); else sfx.nope(); }
+    if(won) sfx.success(); else if(human) praise(cfg.L, cur.female); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
+  else { if(human) encourageReact(cfg.L, cur.female); else sfx.nope(); }
   const fb=cfg.host.querySelector("#qzFb"); if(fb) fb.innerHTML=`<div class="hint" style="text-align:center">${ok?"✅ صحيح!":cfg.correctLabel(qz.q)}</div>`;
   // مهلةٌ أطولُ للإنسان لتكتملَ ردّةُ الفعلِ باللغتين قبلَ السؤالِ التالي.
   setTimeout(()=>{ if(!trRun||!qz) return; qz.turn=(qz.turn+1)%qz.ps.length; vsQuizNext(); }, human ? 2600 : 1150);
 }
 function vsQuizEnd(){ const cfg=qz.cfg; try{ logEvent(cfg.logKey||"lang_game_win"); }catch(e){}
-  vsEndRound(qz.ps, { onAgain:()=>vsQuizNew(cfg), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
+  vsEndRound(qz.ps, { game:"اختبارُ اللغة", diff:(cfg&&cfg.L?cfg.L.nameAr:""), onAgain:()=>vsQuizNew(cfg), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
 
 // ---- إعداداتُ الألعابِ (كلٌّ منها إعدادٌ للمحرّك أعلاه) ----
 // 🏃 سباقُ الترجمة: كلمةٌ أجنبيّةٌ (تُنطَقُ وتُعرَض) ← اختَرْ معناها العربيّ (بطاقاتٌ تتبدّلُ عربيٌّ↔أجنبيّ).
@@ -610,9 +610,9 @@ function spNext(){ if(!trRun) return;
   const target=word.w, letters=shuffle(target.split("")); let built=[], done=false;
   cancelAnimationFrame(sp_raf);
   const finish=(solved)=>{ if(done) return; done=true; cancelAnimationFrame(sp_raf);
-    if(solved){ cur.score++; const won=cur.score>=SP_TARGET; if(won) sfx.success(); else praise(sp_L); // ردٌّ ثنائيُّ اللغة
+    if(solved){ cur.score++; const won=cur.score>=SP_TARGET; if(won) sfx.success(); else praise(sp_L, cur.female); // ردٌّ ثنائيُّ اللغة
       setTimeout(()=>{ if(!trRun) return; sp_turn=(sp_turn+1)%sp_ps.length; spNext(); }, won?700:2600); }
-    else { sfx.nope(); encourageReact(sp_L); // نفادُ الوقت ⇒ ردٌّ ثنائيُّ اللغة ثمّ يمرُّ الدور للخصم
+    else { sfx.nope(); encourageReact(sp_L, cur.female); // نفادُ الوقت ⇒ ردٌّ ثنائيُّ اللغة ثمّ يمرُّ الدور للخصم
       const fb=sp_host.querySelector("#spfb"); if(fb) fb.innerHTML=`<div class="hint">⌛ نفدَ الوقت — الكلمةُ: <b class="ltr">${esc(target)}</b></div>`;
       setTimeout(()=>{ if(!trRun) return; sp_turn=(sp_turn+1)%sp_ps.length; spNext(); }, 2400); }
   };
@@ -632,7 +632,7 @@ function spNext(){ if(!trRun) return;
       built.push({idx, ch:letters[idx]});
       if(built.length<target.length){ redraw(false); return; }
       if(built.map(x=>x.ch).join("")===target){ redraw(true); finish(true); }
-      else { sfx.nope(); robo.encourage(vP(GR.no)); built=[]; redraw(false); }
+      else { sfx.nope(); robo.encourage(vP(GR.no), {female:cur.female}); built=[]; redraw(false); }
     });
   }
   redraw(false); say(target, sp_L);
@@ -662,7 +662,7 @@ function spRobot(word, cur){ const target=word.w, ok=Math.random()<SP_DIFF[sp_di
   }
   setTimeout(place, 850);
 }
-function spEnd(){ try{ logEvent("lang_spell_win"); }catch(e){} vsEndRound(sp_ps, { onAgain:()=>newSpell(), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
+function spEnd(){ try{ logEvent("lang_spell_win"); }catch(e){} vsEndRound(sp_ps, { game:"تهجئةُ اللغة", diff:(sp_L?sp_L.nameAr:""), onAgain:()=>newSpell(), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
 
 // 🔤 رتّبِ الأبجديّة (تنافسيّ): في دورِك، رتّبِ الحروفَ المبعثرةَ حسبَ ترتيبِ الأبجديّةِ قبلَ خصمِك.
 let ao_diff="easy", ao_ps=[], ao_turn=0, ao_L=null, ao_host=null, ao_timed=true, ao_raf=null; const AO_TARGET=5;
@@ -688,9 +688,9 @@ function aoNext(){ if(!trRun) return;
   const chips=shuffle(target.slice()); let progress=0, done=false; const used=new Set();
   cancelAnimationFrame(ao_raf);
   const finish=(ok)=>{ if(done) return; done=true; cancelAnimationFrame(ao_raf);
-    if(ok){ cur.score++; const won=cur.score>=AO_TARGET; if(won) sfx.success(); else praise(ao_L); // ردٌّ ثنائيُّ اللغة
+    if(ok){ cur.score++; const won=cur.score>=AO_TARGET; if(won) sfx.success(); else praise(ao_L, cur.female); // ردٌّ ثنائيُّ اللغة
       setTimeout(()=>{ if(!trRun) return; ao_turn=(ao_turn+1)%ao_ps.length; aoNext(); }, won?700:2600); }
-    else { sfx.nope(); encourageReact(ao_L);
+    else { sfx.nope(); encourageReact(ao_L, cur.female);
       const fb=ao_host.querySelector("#aofb"); if(fb) fb.innerHTML=`<div class="hint">⌛ الترتيبُ الصحيح: <b class="ltr">${esc(target.map(t=>t.ch).join(" "))}</b></div>`;
       setTimeout(()=>{ if(!trRun) return; ao_turn=(ao_turn+1)%ao_ps.length; aoNext(); }, 2400); }
   };
@@ -734,7 +734,7 @@ function aoRobot(target, cur){ const ok=Math.random()<AO_DIFF[ao_diff].ai, chips
   }
   setTimeout(place, 850);
 }
-function aoEnd(){ try{ logEvent("lang_alphaorder_win"); }catch(e){} vsEndRound(ao_ps, { onAgain:()=>newAlphaOrder(), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
+function aoEnd(){ try{ logEvent("lang_alphaorder_win"); }catch(e){} vsEndRound(ao_ps, { game:"ترتيبُ الأبجديّة", diff:(ao_L?ao_L.nameAr:""), onAgain:()=>newAlphaOrder(), onExit:()=>{ const u=new URL(location.href); u.searchParams.delete("g"); history.replaceState(null,"",u); render(); } }); }
 
 // الأفعالُ والأزمنة: قائمةُ أفعالٍ ← تصريفُ الفعل في الماضي/المضارع/المستقبل (يُنطَق عند الضغط).
 function renderVerbs(L, host){

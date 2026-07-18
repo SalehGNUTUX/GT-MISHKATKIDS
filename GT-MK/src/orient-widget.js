@@ -341,7 +341,7 @@ export function orientQuiz(host, opts = {}) {
     if (ps.some(p => p.score >= TARGET)) { setTimeout(end, 1300); return; }
     setTimeout(() => { if (!host.isConnected) return; turn = (turn + 1) % ps.length; next(); }, 1400);
   }
-  function end() { opts.onWin && opts.onWin(); vsEndRound(ps, { onAgain: newRound, onExit: opts.onExit || (() => orientQuiz(host, opts)) }); }
+  function end() { opts.onWin && opts.onWin(); vsEndRound(ps, { game: "الاتجاهاتُ والفصول", diff: ({ easy: "سهل", hard: "صعب" }[diff] || ""), onAgain: newRound, onExit: opts.onExit || (() => orientQuiz(host, opts)) }); }
   function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; }
 }
 

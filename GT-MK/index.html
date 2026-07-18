@@ -73,6 +73,8 @@
   .stateTag{display:inline-block;font-size:12px;font-weight:700;color:var(--primary);background:#FBEDE7;border-radius:999px;padding:3px 12px;margin-bottom:10px}
   .badge-pair{display:inline-block;font-size:12px;font-weight:700;color:#5E9A47;background:#EEF6E9;border:1px solid #CDE6BE;border-radius:999px;padding:3px 10px;margin-bottom:10px;margin-inline-start:6px}
   .robo-says{font-size:19px;font-weight:700;margin:6px 0 4px}
+  .replay-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;margin-inline-start:8px;vertical-align:middle;border:2px solid var(--primary,#6FB3D6);border-radius:50%;background:var(--card,#fff);color:var(--ink);font-size:17px;line-height:1;cursor:pointer;padding:0;transition:transform .15s,background .15s}
+  .replay-btn:hover,.replay-btn:active{transform:scale(1.12);background:var(--primary,#6FB3D6)}
   .cue{color:var(--muted);font-size:13px;margin-bottom:8px}
   .mtitle{font-size:16px;font-weight:800;margin:2px 0 8px}
   .prompt{font-size:16px;margin:8px 0}
@@ -333,6 +335,7 @@ import { practiceByAccount, clearAccount as clearPracticeAccount } from "./src/p
 import { verifyParentPassword, markParentAuthed, isParentAuthed, isParent, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser, addProfile, updateProfile, AVATARS, isFemale } from "./src/accounts.js";
 const F = t => { try { return isFemale() ? femaleize(t) : t; } catch (e) { return t; } }; // تأنيثُ نصِّ الآليِّ المعروضِ للأنثى
 import { backupExport, backupImport } from "./src/backup.js"; // نسخةٌ احتياطيّة (مصدرٌ واحدٌ مشترَك)
+import { getVsHistory, clearVsHistory } from "./src/versus.js"; // سجلُّ الألعابِ التنافسيّة (v1.5.5)
 import { confirmWithPassword, undoable, confirmChoice } from "./src/confirm-action.js";
 import voicesBundled from "./src/voices-bundled.json";
 const STATE_TAG = {spark:"1) الشرارة", task:"2) المهمة", teach:"3) التلقين", heal:"4) الشفاء"};
@@ -601,6 +604,22 @@ function spark(){
   const c=candidates(); if(!c.length){ renderIdle(); return; }
   current=c[Math.floor(Math.random()*c.length)]; pending=[]; state="spark"; renderCard();
 }
+// إعادةُ الاستماع: نغلّفُ نطقَ الآليِّ لنحفظَ آخرَ ما قاله، فيُعيدُه زرُّ 🔊 (يريدُ الطفلُ سماعَه ثانيةً).
+let lastSpoken=null;
+function sayOnce(content,opts){ lastSpoken={chain:false,content,opts:opts||{}}; roboSay(content,opts); }
+function sayChainOnce(arr,opts){ const c=(arr||[]).filter(Boolean); lastSpoken={chain:true,content:c,opts:opts||{}}; roboSayChain(arr,opts); }
+function replay(){ if(!lastSpoken) return; if(lastSpoken.chain) roboSayChain(lastSpoken.content,lastSpoken.opts); else roboSay(lastSpoken.content,lastSpoken.opts); }
+// يحقنُ زرَّ إعادةِ الاستماعِ في فقاعةِ كلامِ الآليّ (يُستدعى بعدَ كلِّ رسمٍ للبطاقة).
+function mountReplay(){
+  const host=document.getElementById("cardHost");
+  const bubble=host&&host.querySelector(".robo-says");
+  if(!bubble||bubble.querySelector(".replay-btn")) return;
+  const b=document.createElement("button");
+  b.className="replay-btn"; b.type="button"; b.title="أعِدِ الاستماع"; b.setAttribute("aria-label","أعِدِ الاستماع");
+  b.textContent="🔊";
+  b.addEventListener("click",e=>{ e.stopPropagation(); replay(); });
+  bubble.appendChild(b);
+}
 function renderCard(){
   const m=current, host=document.getElementById("cardHost");
   setMood(state==="teach"?"thinking":state==="heal"?"happy":state==="spark"?"curious":"");
@@ -611,7 +630,7 @@ function renderCard(){
       <div class="robo-says">${F(m.spark.robo_line)}</div>${m.spark.cue?`<div class="cue">📷 ${m.spark.cue}</div>`:""}
       <div class="btns"><button class="act" onclick="go('task')">هيّا نبدأ المهمّة ←</button>
       <button class="ghost" onclick="spark()">ذكرى أخرى</button></div></div>`;
-    roboSay(m.spark.robo_line, {mood:"curious"});
+    sayOnce(m.spark.robo_line, {mood:"curious"});
   } else if(state==="task"){
     host.innerHTML=`<div class="card"><span class="stateTag">${STATE_TAG.task}</span>
       <div class="mem-art">${ART[m.id]||DOMAIN_ART[m.domain]||""}</div>
@@ -623,7 +642,7 @@ function renderCard(){
         <span class="chip">⏱️ ${AR(m.duration_min)} د${m.multi_day?" · عدّة أيّام":""}</span></div>
       <div class="parent"><b>للأهل:</b> ${m.task.parent_role}</div>
       <div class="btns"><button class="act" onclick="go('teach')">أنجزَ الطفلُ المهمّة ✋</button></div></div>`;
-    roboSay(roboPhrase("bismillah"), {mood:"ok"});
+    sayOnce(roboPhrase("bismillah"), {mood:"ok"});
   } else if(state==="teach" && teachStage===0){
     const caps=m.teach.capture||[];
     let capHtml="";
@@ -672,17 +691,18 @@ function renderCard(){
       <div class="heal-reward">✨ ${label}</div>
       <div class="btns"><button class="act" onclick="spark()">ذكرى جديدة للآليّ ←</button>
       <button class="ghost" onclick="renderIdle()">توقّف الآن</button></div></div>`;
-    roboSayChain([cheer, m.heal.robo_reaction, isl, td], {mood:"happy"}); // كلُّ جزءٍ بمقطعِه (الدمجُ يُفقِدُ المطابقةَ الحرفيّة)
+    sayChainOnce([cheer, m.heal.robo_reaction, isl, td], {mood:"happy"}); // كلُّ جزءٍ بمقطعِه (الدمجُ يُفقِدُ المطابقةَ الحرفيّة)
   }
+  mountReplay();
 }
-function go(s){ state=s; if(s==="teach"){teachStage=0; wrongState=0; pendingNote="";} renderCard(); if(s==="teach") roboSay(current.teach.robo_question,{mood:"ask"}); }
+function go(s){ state=s; if(s==="teach"){teachStage=0; wrongState=0; pendingNote="";} renderCard(); if(s==="teach") sayOnce(current.teach.robo_question,{mood:"ask"}); }
 
 // حوار التلقين: انتقالات تُنطَق فيها كلمات الآليّ في وقت الانتقال (لا في كل إعادة رسم).
 function goTeach(n){ teachStage=n; if(n===0) wrongState=0; renderCard();
   if(n===1) logEvent("think_deep"); // وسام المُفكِّر
-  roboSay(n===1 ? deepenFor(current) : current.teach.robo_question, {mood:"ask"}); }
-function askRoboWrong(){ wrongState=1; renderCard(); roboSay(roboWrongFor(current), {mood:"talk"}); }
-function fixRoboWrong(){ wrongState=2; logEvent("wrong_fixed"); renderCard(); roboSayChain([roboPhrase("thanks"), NOTICES.wrongFixed], {mood:"happy"}); }
+  sayOnce(n===1 ? deepenFor(current) : current.teach.robo_question, {mood:"ask"}); }
+function askRoboWrong(){ wrongState=1; renderCard(); sayOnce(roboWrongFor(current), {mood:"talk"}); }
+function fixRoboWrong(){ wrongState=2; logEvent("wrong_fixed"); renderCard(); sayChainOnce([roboPhrase("thanks"), NOTICES.wrongFixed], {mood:"happy"}); }
 
 // مزاج الآليّ: يجعل العلاقة تفاعلية نشطة — فضولٌ عند الشرارة، تفكيرٌ عند السؤال، فرحٌ عند الشفاء.
 function setMood(mood){
@@ -884,6 +904,44 @@ function openRecover(){
 // رسالةُ حالةِ النسخةِ الاحتياطيّة داخلَ اللوحة (تُمرَّرُ لدوالِّ backup.js المشترَكة).
 function bkMsg(t, ok){ const el=document.getElementById("bkMsg"); if(el){ el.textContent=t; el.style.color=ok?"#2f7d32":"#c0392b"; } }
 
+// سجلُّ الألعابِ التنافسيّة (لوحةُ الأهل): إجماليّاتُ الفوزِ لكلِّ طرف + آخرُ المباريات + تصفير.
+function vsOppLabel(opp){
+  if(!opp) return "—";
+  if(opp.role==="ai") return "🤖 الآليّ";
+  if(opp.role==="parent") return opp.female ? "👩 الأمّ" : "👨 الأب";
+  return "🧒 "+(opp.name||"أخ");   // sibling
+}
+function vsFmtDate(ts){ try{ const d=new Date(ts); const p=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; }catch(e){ return ""; } }
+function vsHistoryHtml(){
+  const hist=(getVsHistory()||[]).slice().reverse();   // الأحدثُ أوّلًا
+  const head=`<h3>🏆 سجلُّ الألعاب التنافسيّة</h3>`;
+  if(!hist.length) return `<div class="sec" id="sec-vshistory">${head}<p class="muted" style="font-size:13px">لا ألعابَ تنافسيّةً بعد — ستظهرُ هنا نتائجُ الألعابِ ضدّ الآليِّ أو الإخوةِ أو الوالدين (مع تحديدِ أب/أم).</p></div>`;
+  const agg={};
+  for(const e of hist){
+    const oppKey=e.opp ? (e.opp.role==="ai"?"ai":e.opp.role==="parent"?(e.opp.female?"mom":"dad"):"sib:"+(e.opp.name||"")) : "?";
+    const key=(e.me||"?")+"|"+oppKey;
+    const a=agg[key]||(agg[key]={me:e.me||"?", opp:e.opp, meWins:0, oppWins:0, ties:0});
+    if(!e.winner) a.ties++; else if(e.winner===e.me) a.meWins++; else a.oppWins++;
+  }
+  const aggRows=Object.values(agg).map(a=>`<div class="dom-row" style="flex-wrap:wrap">
+    <span style="flex:1;min-width:150px;font-size:13px">${a.me} <span class="muted">ضدّ</span> ${vsOppLabel(a.opp)}</span>
+    <span class="muted" style="font-size:12.5px">فاز ${a.me}: <b>${AR(a.meWins)}</b> · فاز ${vsOppLabel(a.opp)}: <b>${AR(a.oppWins)}</b>${a.ties?` · تعادُل ${AR(a.ties)}`:""}</span>
+  </div>`).join("");
+  const rows=hist.slice(0,20).map(e=>{
+    const win=!e.winner ? "🤝 تعادُل" : `🏆 ${e.winner}`;
+    return `<div class="dom-row" style="align-items:flex-start">
+      <span style="flex:1;font-size:12.5px"><b>${e.game||"لعبة"}</b>${e.diff?` <span class="muted">· ${e.diff}</span>`:""}<br>
+        <span class="muted">${vsFmtDate(e.ts)} · ${e.me} ضدّ ${vsOppLabel(e.opp)}</span></span>
+      <span style="font-size:12.5px;white-space:nowrap">${win}</span>
+    </div>`;
+  }).join("");
+  return `<div class="sec" id="sec-vshistory">${head}
+    <div class="muted" style="font-size:12px;margin-bottom:4px">إجماليُّ الفوز لكلِّ طرف:</div>${aggRows}
+    <div class="muted" style="font-size:12px;margin:12px 0 4px">آخرُ المباريات (${AR(Math.min(hist.length,20))} من ${AR(hist.length)}):</div>${rows}
+    <button id="vsHistReset" style="margin-top:12px;background:none;border:none;color:#c0392b;font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit">↺ صفّرِ السجلّ</button>
+  </div>`;
+}
+
 async function openDashboard(){
   panel.style.maxWidth=""; // إعادةُ عرض الحاوية للوحة الكاملة (كانت 380 لنافذة كلمة المرور)
   const caps=await allCaptures();
@@ -996,6 +1054,8 @@ async function openDashboard(){
     </div>
 
     ${reportsHtml}
+
+    ${vsHistoryHtml()}
 
     <div class="sec"><h3>التقدّم حسب المجال (وتفعيله)</h3>
       ${perDom.map(p=>`<div class="dom-row">
@@ -1217,6 +1277,7 @@ async function openDashboard(){
     }
   });
   renderVoiceMgmt();
+  { const vsRst=document.getElementById("vsHistReset"); if(vsRst) vsRst.onclick=async(e)=>{ e.stopPropagation(); if(await confirmChoice("تصفيرُ سجلِّ الألعابِ التنافسيّة نهائيًّا؟","↺ صفّر","إبقاء")){ clearVsHistory(); openDashboard(); } }; }
   // مطويات: كلُّ قسمٍ يُطوى افتراضاً (لوحةٌ مرتّبةٌ غيرُ مزدحمة)، والعنوانُ يفتحه/يطويه.
   const hash = location.hash;
   panel.querySelectorAll(".sec").forEach(sec=>{

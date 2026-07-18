@@ -268,7 +268,7 @@ import { speak } from "./src/speak.js";
 import { robo, ROBO_SVG } from "./src/robo-companion.js";
 import * as sfx from "./src/sfx.js"; // أصواتٌ تفاعليّة (لمسة/نجاح/خطأ) للألعاب
 import { GAME_REACTIONS as GR, GAME_INTROS as GI } from "./src/robo-phrases.js"; // تفاعلاتُ الألعاب (مُولَّدةٌ عبر Piper)
-import { vsEndRound, vsWinsOf, vsTurnHtml } from "./src/versus.js"; // نافذةُ نهاية الجولة + سجلُّ الانتصارات + حبّةُ الدور (v1.4)
+import { vsEndRound, vsWinsOf, vsTurnHtml, VS, setParentFemale } from "./src/versus.js"; // نافذةُ نهاية الجولة + سجلُّ الانتصارات + حبّةُ الدور (v1.4) + جنسُ الوالد (v1.5.5)
 import { clockGame, AR_L } from "./src/clock-widget.js"; // تحدّي الساعة (v1.5)
 import { playClipAsync } from "./src/tts-clips.js";      // نطقُ جُمَلِ الوقت (Piper العصبيّ)
 import { listProfiles, getProfile, getCurrentUser, getParentName, getParentAvatar } from "./src/accounts.js";
@@ -395,6 +395,7 @@ function renderMemSetup(){
        <div class="setrow"><div class="setlbl">🎚️ الصعوبة</div><div class="lvl" id="mlvl"><button data-p="4" class="${m_pairs===4?"on":""}">سهل · 8</button><button data-p="6" class="${m_pairs===6?"on":""}">متوسّط · 12</button><button data-p="8" class="${m_pairs===8?"on":""}">صعب · 16</button><button data-p="10" class="${m_pairs===10?"on":""}">خبير · 20</button></div></div>
        <div class="setrow"><div class="setlbl">🎨 المظهر</div><div class="lvl" id="mtheme">${MEMORY_THEMES.map(t=>`<button data-t="${t.id}" class="${m_theme===t.id?"on":""}">${t.ic} ${t.name}</button>`).join("")}</div></div>
        <div class="setrow"><div class="setlbl">👥 اللعبُ مع</div><div class="lvl" id="mopp">${oppList}</div></div>
+       <div class="setrow" id="mprow" style="${m_opp==="parent"?"":"display:none"}"><div class="setlbl">👤 مَن سيلعب؟ (ليخاطبَه الآليُّ صحيحًا)</div><div class="lvl" id="mpg"><button data-pg="m" class="${!VS.parentFemale?"on":""}">👨 أب</button><button data-pg="f" class="${VS.parentFemale?"on":""}">👩 أم</button></div></div>
        <div class="setrow" id="airow" style="${m_opp==="ai"?"":"display:none"}"><div class="setlbl">🤖 مستوى الآليّ</div><div class="lvl" id="maint"><button data-ai="easy" class="${m_ai==="easy"?"on":""}">سهل</button><button data-ai="medium" class="${m_ai==="medium"?"on":""}">متوسّط</button><button data-ai="hard" class="${m_ai==="hard"?"on":""}">صعب</button></div></div>
        <div class="setrow"><div class="setlbl">⏱️ ضدّ الوقت</div><div class="lvl" id="mtimed"><button data-tm="1" class="${m_timed?"on":""}">مُفعَّل</button><button data-tm="0" class="${!m_timed?"on":""}">مُعطَّل</button></div></div>
        <button id="memStart">▶ ابدأ اللعب</button>
@@ -403,6 +404,7 @@ function renderMemSetup(){
   document.getElementById("mlvl").addEventListener("click",e=>{ const b=e.target.closest("[data-p]"); if(!b)return; m_pairs=+b.getAttribute("data-p"); renderMemSetup(); });
   document.getElementById("mtheme").addEventListener("click",e=>{ const b=e.target.closest("[data-t]"); if(!b)return; m_theme=b.getAttribute("data-t"); renderMemSetup(); });
   document.getElementById("mopp").addEventListener("click",e=>{ const b=e.target.closest("[data-opp]"); if(!b)return; m_opp=b.getAttribute("data-opp"); renderMemSetup(); });
+  { const mpg=document.getElementById("mpg"); if(mpg) mpg.addEventListener("click",e=>{ const b=e.target.closest("[data-pg]"); if(!b)return; setParentFemale(b.getAttribute("data-pg")==="f"); renderMemSetup(); }); }
   document.getElementById("maint").addEventListener("click",e=>{ const b=e.target.closest("[data-ai]"); if(!b)return; m_ai=b.getAttribute("data-ai"); renderMemSetup(); });
   document.getElementById("mtimed").addEventListener("click",e=>{ const b=e.target.closest("[data-tm]"); if(!b)return; m_timed=b.getAttribute("data-tm")==="1"; renderMemSetup(); });
   document.getElementById("memStart").onclick=newMemGame;
@@ -412,11 +414,11 @@ function newMemGame(){ vsRun=true;
   const T=MEMORY_THEMES.find(t=>t.id===m_theme)||MEMORY_THEMES[0]; m_art=T.art;
   const chosen=shuffle([...T.pool]).slice(0,m_pairs);
   m_deck=shuffle([...chosen,...chosen]); m_flip=[]; m_match=new Set(); m_moves=0; m_lock=false; m_seen=new Map(); m_turn=0;
-  const me=meCard();
-  if(m_opp==="ai") m_players=[{...me,score:0,cpu:false},{name:"الآليّ",avatar:"🤖",score:0,cpu:true}];
-  else if(m_opp==="parent") m_players=[{...me,score:0,cpu:false},{name:getParentName(),avatar:getParentAvatar(),score:0,cpu:false}];
-  else if(m_opp.startsWith("p:")){ const p=getProfile(m_opp.slice(2)); m_players=[{...me,score:0,cpu:false},{name:p?p.name:"اللاعب 2",avatar:(p&&p.avatar)||"🙂",score:0,cpu:false}]; }
-  else m_players=[{...me,score:0,cpu:false}]; // وحدي
+  const me=meCard(); const u=getCurrentUser(); const meF=!!(u&&u.gender==="f");
+  if(m_opp==="ai") m_players=[{...me,role:"me",female:meF,score:0,cpu:false},{name:"الآليّ",avatar:"🤖",role:"ai",score:0,cpu:true}];
+  else if(m_opp==="parent") m_players=[{...me,role:"me",female:meF,score:0,cpu:false},{name:getParentName(),avatar:getParentAvatar(),role:"parent",score:0,cpu:false,female:VS.parentFemale}];
+  else if(m_opp.startsWith("p:")){ const p=getProfile(m_opp.slice(2)); m_players=[{...me,role:"me",female:meF,score:0,cpu:false},{name:p?p.name:"اللاعب 2",avatar:(p&&p.avatar)||"🙂",role:"sibling",score:0,cpu:false,female:!!(p&&p.gender==="f")}]; }
+  else m_players=[{...me,role:"me",female:meF,score:0,cpu:false}]; // وحدي
   renderMemory();
 }
 
@@ -449,7 +451,7 @@ function flipCard(i){
     setTimeout(()=>{ if(!vsRun) return; m_match.add(a); m_match.add(b); if(multi) m_players[m_turn].score++; m_flip=[]; m_lock=false; renderMemory();
       const done = m_match.size===m_deck.length;
       if(!done){ // ردّةُ فعلِ الآليّ على المطابقة (بصوته العصبيّ)
-        if(multi){ const cur=m_players[m_turn]; if(cur.cpu){ sfx.success(); if(Math.random()<0.4) robo.say(vP(VS_AIOK),"happy"); } else robo.cheer(vP(VS_OK)); }
+        if(multi){ const cur=m_players[m_turn]; if(cur.cpu){ sfx.success(); if(Math.random()<0.4) robo.say(vP(VS_AIOK),"happy"); } else robo.cheer(vP(VS_OK), {female:cur.female}); }
         else sfx.success();
       }
       if(done){ memWin(); return; }
@@ -482,7 +484,7 @@ function aiTurn(){ if(!vsRun) return;
 // ردودُ الآليّ التنافسيّة (لا «خطأٌ في اختبار») — يخسرُ بروحٍ رياضيّةٍ ويفوزُ بتواضع.
 function memWin(){
   logEvent("memory_win");
-  if(m_players.length>1){ vsEndRound(m_players, { onAgain:newMemGame, onExit:startMemory }); return; }
+  if(m_players.length>1){ vsEndRound(m_players, { game:"الذاكرة", diff:(m_pairs*2)+" بطاقة", onAgain:newMemGame, onExit:startMemory }); return; }
   robo.cheer();
   document.getElementById("msg").innerHTML=`<div class="win">🌟 أحسنت! وجدتَ كلَّ المطابقات في <b>${m_moves}</b> محاولة.<div class="controls"><button class="go" id="again">العب ثانيةً</button> <button id="reset2">↻ إعدادات</button></div></div>`;
   document.getElementById("again").onclick=newMemGame;
@@ -666,12 +668,14 @@ let vs_opp="ai", vs_ai="medium";
 const VS_BEATAI=GR.beatai, VS_AIWON=GR.aiwon, VS_TIE=GR.tie, VS_KIDS=GR.kids, VS_OK=GR.ok, VS_NO=GR.no, VS_AIOK=GR.aiok;
 const vP=a=>a[Math.floor(Math.random()*a.length)];
 const VS_COLA="#E0566B", VS_COLB="#4C8BF5";
+const AIDIFF=x=>({easy:"سهل",medium:"متوسّط",hard:"صعب"}[x]||"");   // صعوبةُ الآليّ عربيًّا (لسجلِّ الألعاب)
 function vsMakePlayers(forceTwo){
-  const me=meCard(), m={...me,score:0,cpu:false,color:VS_COLA};
-  if(vs_opp==="ai") return [m,{name:"الآليّ",avatar:"🤖",score:0,cpu:true,color:VS_COLB}];
-  if(vs_opp==="parent") return [m,{name:getParentName(),avatar:getParentAvatar(),score:0,cpu:false,color:VS_COLB}];
-  if(vs_opp.startsWith("p:")){ const p=getProfile(vs_opp.slice(2)); return [m,{name:p?p.name:"اللاعب 2",avatar:(p&&p.avatar)||"🙂",score:0,cpu:false,color:VS_COLB}]; }
-  return forceTwo ? [m,{name:"الآليّ",avatar:"🤖",score:0,cpu:true,color:VS_COLB}] : [m]; // وحدي (أو إجبارُ خصمٍ للألعاب الثنائيّة)
+  const u=getCurrentUser();
+  const me=meCard(), m={...me,role:"me",female:!!(u&&u.gender==="f"),score:0,cpu:false,color:VS_COLA};
+  if(vs_opp==="ai") return [m,{name:"الآليّ",avatar:"🤖",role:"ai",score:0,cpu:true,color:VS_COLB}];
+  if(vs_opp==="parent") return [m,{name:getParentName(),avatar:getParentAvatar(),role:"parent",score:0,cpu:false,female:VS.parentFemale,color:VS_COLB}];
+  if(vs_opp.startsWith("p:")){ const p=getProfile(vs_opp.slice(2)); return [m,{name:p?p.name:"اللاعب 2",avatar:(p&&p.avatar)||"🙂",role:"sibling",score:0,cpu:false,female:!!(p&&p.gender==="f"),color:VS_COLB}]; }
+  return forceTwo ? [m,{name:"الآليّ",avatar:"🤖",role:"ai",score:0,cpu:true,color:VS_COLB}] : [m]; // وحدي (أو إجبارُ خصمٍ للألعاب الثنائيّة)
 }
 function vsReact(p0,p1){ if(!p1){ robo.cheer(); return; } if(p1.cpu){ if(p0.score>p1.score) robo.read(vP(VS_BEATAI)); else if(p1.score>p0.score) robo.read(vP(VS_AIWON)); else robo.read(vP(VS_TIE)); } else robo.read(vP(VS_KIDS)); }
 function vsScoreHtml(ps){ return `<div class="vsscore">`+ps.map((p,i)=>{ const w=vsWinsOf(p.name); return `<span class="vschip" style="border-color:${p.color};color:${p.color}">${p.avatar} ${p.name}: ${p.score}${w?` <b style="opacity:.8">🏅${w}</b>`:""}</span>`; }).join("")+`</div>`; }
@@ -692,6 +696,7 @@ function vsSetup(cfg){
       <div class="memset">
         <div class="setrow"><div class="setlbl">${cfg.diffLabel||"🎚️ الصعوبة"}</div><div class="lvl" id="vdiff">${dh}</div></div>
         <div class="setrow"><div class="setlbl">👥 اللعبُ مع</div><div class="lvl" id="vopp">${opp}</div></div>
+        <div class="setrow" id="vprow" style="${vs_opp==="parent"?"":"display:none"}"><div class="setlbl">👤 مَن سيلعب؟ (ليخاطبَه الآليُّ صحيحًا)</div><div class="lvl" id="vpg"><button data-pg="m" class="${!VS.parentFemale?"on":""}">👨 أب</button><button data-pg="f" class="${VS.parentFemale?"on":""}">👩 أم</button></div></div>
         <div class="setrow" id="vairow" style="${vs_opp==="ai"?"":"display:none"}"><div class="setlbl">🤖 مستوى الآليّ</div><div class="lvl" id="vai"><button data-ai="easy" class="${vs_ai==="easy"?"on":""}">سهل</button><button data-ai="medium" class="${vs_ai==="medium"?"on":""}">متوسّط</button><button data-ai="hard" class="${vs_ai==="hard"?"on":""}">صعب</button></div></div>
         ${cfg.toggle?`<div class="setrow"><div class="setlbl">${cfg.toggle.label}</div><div class="lvl" id="vtg"><button data-tg="1" class="${cfg.toggle.get()?"on":""}">مُفعَّل</button><button data-tg="0" class="${!cfg.toggle.get()?"on":""}">مُعطَّل</button></div></div>`:""}
         <button id="vStart">▶ ابدأ اللعب</button>
@@ -700,6 +705,7 @@ function vsSetup(cfg){
   const rr=()=>vsSetup(cfg);
   document.getElementById("vdiff").addEventListener("click",e=>{ const b=e.target.closest("[data-d]"); if(!b)return; cfg.setDiff(b.getAttribute("data-d")); rr(); });
   document.getElementById("vopp").addEventListener("click",e=>{ const b=e.target.closest("[data-opp]"); if(!b)return; vs_opp=b.getAttribute("data-opp"); rr(); });
+  { const vpg=document.getElementById("vpg"); if(vpg) vpg.addEventListener("click",e=>{ const b=e.target.closest("[data-pg]"); if(!b)return; setParentFemale(b.getAttribute("data-pg")==="f"); rr(); }); }
   document.getElementById("vai").addEventListener("click",e=>{ const b=e.target.closest("[data-ai]"); if(!b)return; vs_ai=b.getAttribute("data-ai"); rr(); });
   const vtg=document.getElementById("vtg"); if(vtg) vtg.addEventListener("click",e=>{ const b=e.target.closest("[data-tg]"); if(!b)return; cfg.toggle.set(b.getAttribute("data-tg")==="1"); rr(); });
   document.getElementById("vStart").onclick=cfg.start;
@@ -784,7 +790,7 @@ function xoEnd(w){
   xo_done=true; logEvent("xo_win");
   if(w.p!==-1) xo_ps[w.p].score++;
   renderXO();
-  vsEndRound(xo_ps, { onAgain:newXO, onExit:startXO });
+  vsEndRound(xo_ps, { game:"دائرةٌ وعلامة", diff:`${xo_size}×${xo_size}`, onAgain:newXO, onExit:startXO });
 }
 
 /* ===================== 🔢 تحدّي الأعداد (تناوبٌ · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
@@ -825,12 +831,12 @@ function ncResolve(correct, btn){
   if(human){ if(btn) btn.classList.add(correct?"ok":"bad"); } else mark(nc_aiPick, correct?"ok":"bad"); // بطاقةُ مختارِ اللاعب/الآليّ
   if(!correct) mark(nc_q.ans,"ok");                                                                   // وتُظهَرُ الإجابةُ الصحيحة
   if(correct){ cur.score++; const won=cur.score>=NC_TARGET;
-    if(won) sfx.success(); else if(human) robo.cheer(vP(VS_OK)); else { sfx.success(); if(Math.random()<0.45) robo.say(vP(VS_AIOK),"happy"); } }
-  else { if(human) robo.encourage(vP(VS_NO)); else sfx.nope(); }
+    if(won) sfx.success(); else if(human) robo.cheer(vP(VS_OK), {female:cur.female}); else { sfx.success(); if(Math.random()<0.45) robo.say(vP(VS_AIOK),"happy"); } }
+  else { if(human) robo.encourage(vP(VS_NO), {female:cur.female}); else sfx.nope(); }
   const fb=document.getElementById("ncfb"); if(fb) fb.innerHTML=`<div class="fb">${correct?`✅ صحيح! ${nc_q.a} ${nc_q.op} ${nc_q.b} = ${nc_q.ans}`:`❌ الصحيحُ هو ${nc_q.ans}`}</div>`;
   setTimeout(()=>{ nc_turn=(nc_turn+1)%nc_ps.length; ncNext(); }, 1150);
 }
-function ncEnd(){ logEvent("numrace_win"); vsEndRound(nc_ps, { onAgain:newNC, onExit:startNC }); }
+function ncEnd(){ logEvent("numrace_win"); vsEndRound(nc_ps, { game:"تحدّي الأعداد", diff:AIDIFF(vs_ai), onAgain:newNC, onExit:startNC }); }
 
 /* ===================== 🔎 صيدُ الحرف/الرقم (تناوبٌ بمؤقّت · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
 let hu_diff="easy", hu_ps=[], hu_turn=0, hu_lock=false, hu_cells=[], hu_target="", hu_raf=null, hu_aiPick=null, hu_timed=true; const HU_TARGET=5;
@@ -871,12 +877,12 @@ function huResolve(ok,btn){
   if(human){ if(btn) btn.classList.add(ok?"ok":"bad"); } else mark(hu_aiPick, ok?"ok":"bad"); // خليّةُ مختارِ اللاعب/الآليّ
   if(!ok) mark(hu_target,"ok");                                                             // وتُظهَرُ الخليّةُ الصحيحة
   if(ok){ cur.score++; const won=cur.score>=HU_TARGET;
-    if(won) sfx.success(); else if(human) robo.cheer(vP(VS_OK)); else { sfx.success(); if(Math.random()<0.45) robo.say(vP(VS_AIOK),"happy"); } }
-  else { if(human) robo.encourage(vP(VS_NO)); else sfx.nope(); }
+    if(won) sfx.success(); else if(human) robo.cheer(vP(VS_OK), {female:cur.female}); else { sfx.success(); if(Math.random()<0.45) robo.say(vP(VS_AIOK),"happy"); } }
+  else { if(human) robo.encourage(vP(VS_NO), {female:cur.female}); else sfx.nope(); }
   const fb=document.getElementById("hufb"); if(fb) fb.innerHTML=`<div class="fb">${ok?"✅ أحسنت! صيدٌ سريع":`⌛ المطلوبُ كان «${hu_target}»`}</div>`;
   setTimeout(()=>{ hu_turn=(hu_turn+1)%hu_ps.length; huNext(); }, 1150);
 }
-function huEnd(){ logEvent("hunt_win"); vsEndRound(hu_ps, { onAgain:newHU, onExit:startHU }); }
+function huEnd(){ logEvent("hunt_win"); vsEndRound(hu_ps, { game:"صيدُ الحرف", diff:AIDIFF(vs_ai), onAgain:newHU, onExit:startHU }); }
 
 /* ===================== ⚡ سباقُ المطابقة (تناوبٌ بمؤقّت · صورٌ · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
 let sm_diff="easy", sm_ps=[], sm_turn=0, sm_lock=false, sm_target="", sm_opts=[], sm_raf=null, sm_aiPick=null, sm_timed=true; const SM_TARGET=5;
@@ -912,12 +918,12 @@ function smResolve(ok,btn){
   if(human){ if(btn) btn.classList.add(ok?"ok":"bad"); } else mark(sm_aiPick, ok?"ok":"bad"); // خليّةُ مختارِ اللاعب/الآليّ
   if(!ok) mark(sm_target,"ok");                                                             // وتُظهَرُ الصورةُ المطابِقة
   if(ok){ cur.score++; const won=cur.score>=SM_TARGET;
-    if(won) sfx.success(); else if(human) robo.cheer(vP(VS_OK)); else { sfx.success(); if(Math.random()<0.45) robo.say(vP(VS_AIOK),"happy"); } }
-  else { if(human) robo.encourage(vP(VS_NO)); else sfx.nope(); }
+    if(won) sfx.success(); else if(human) robo.cheer(vP(VS_OK), {female:cur.female}); else { sfx.success(); if(Math.random()<0.45) robo.say(vP(VS_AIOK),"happy"); } }
+  else { if(human) robo.encourage(vP(VS_NO), {female:cur.female}); else sfx.nope(); }
   const fb=document.getElementById("smfb"); if(fb) fb.innerHTML=`<div class="fb">${ok?"✅ مطابقةٌ صحيحة!":"⌛ هذه هي المطابِقة"}</div>`;
   setTimeout(()=>{ sm_turn=(sm_turn+1)%sm_ps.length; smNext(); },1100);
 }
-function smEnd(){ logEvent("smatch_win"); vsEndRound(sm_ps, { onAgain:newSM, onExit:startSM }); }
+function smEnd(){ logEvent("smatch_win"); vsEndRound(sm_ps, { game:"سباقُ المطابقة", diff:AIDIFF(vs_ai), onAgain:newSM, onExit:startSM }); }
 
 /* ===================== 🎡 عجلةُ «أدرْ وأجبْ» (فرديّ · أدِرِ العجلةَ ← أجِبْ عن سؤالِ القطاع) — مستقلّةٌ عن «عجلة الحروف» ===================== */
 let sq_diff="easy", sq_ps=[], sq_turn=0, sq_rot=0; const SQ_TARGET=5; const SQ_PR={easy:0.55,medium:0.72,hard:0.9};
@@ -1031,13 +1037,13 @@ function sqResolve(ok, btn, Q){ if(!vsRun) return; const box=document.getElement
   box.querySelectorAll(".sqopt").forEach(x=>{ x.disabled=true; if(String(x.getAttribute("data-v"))===String(Q.ans)) x.classList.add("ok"); }); // كشفُ الصحيحة
   if(btn && !ok) btn.classList.add("bad");   // بطاقةُ مختارِ اللاعب/الآليّ حمراءُ إن أخطأ
   if(ok){ cur.score++; const won=cur.score>=SQ_TARGET;
-    if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok)); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
-  else { if(human) robo.encourage(vP(GR.no)); else sfx.nope(); }
+    if(won) sfx.success(); else if(human) robo.cheer(vP(GR.ok), {female:cur.female}); else { sfx.success(); if(Math.random()<0.4) robo.say(vP(GR.aiok),"happy"); } }
+  else { if(human) robo.encourage(vP(GR.no), {female:cur.female}); else sfx.nope(); }
   const fb=document.createElement("div"); fb.className="hint"; fb.style.textAlign="center"; fb.style.marginTop="8px";
   fb.innerHTML = ok?"✅ صحيح!":`الصحيحُ: <b>${Q.ans}</b>`; box.appendChild(fb);
   setTimeout(()=>{ if(!vsRun) return; if(sq_ps.some(p=>p.score>=SQ_TARGET)){ sqEnd(); return; } sq_turn=(sq_turn+1)%sq_ps.length; renderSpinQ(); }, 1350);
 }
-function sqEnd(){ logEvent("wheel_win"); vsEndRound(sq_ps, { onAgain:newSpinQ, onExit:startSpinQ }); }
+function sqEnd(){ logEvent("wheel_win"); vsEndRound(sq_ps, { game:"عجلةُ الأسئلة", diff:AIDIFF(vs_ai), onAgain:newSpinQ, onExit:startSpinQ }); }
 
 /* ===================== 🔤 شبكةُ الكلمات (تناوبٌ · تكوينُ الكلمات بالترتيب · ألوانُ اللاعبين · ضدّ الآليّ/الحسابات) ===================== */
 let wg_diff="easy", wg_ps=[], wg_turn=0, wg_words=[], wg_found=0, wg_owner=[], wg_seq=[], wg_lock=false, wg_grid=[]; const WG_N=6;
@@ -1094,14 +1100,14 @@ function wgTap(i){
   if(!pre(wg_seq,fwd) && !pre(wg_seq,rev)){ // كسرَ التسلسل ⇒ خطأٌ وتمريرُ الدور
     wg_seq=[]; wg_lock=true; renderWG();
     const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">❌ ليست هي — ينتقلُ الدورُ للخصم.</div>`;
-    robo.encourage(vP(VS_NO));
+    robo.encourage(vP(VS_NO), {female:cur.female});
     setTimeout(()=>{ if(!vsRun) return; wg_turn=(wg_turn+1)%wg_ps.length; wg_lock=false; renderWG(); if(wg_ps[wg_turn].cpu) wgAI(); }, 1150);
     return;
   }
   if(wg_seq.length===cur.path.length){ // اكتملتِ الكلمة
     cur.path.forEach(idx=>wg_owner[idx]=wg_turn); wg_ps[wg_turn].score++; wg_found++; wg_seq=[];
     if(wg_found>=wg_words.length){ renderWG(); wgEnd(); return; } // الفوزُ: يتولّى wgEnd ردَّ الفعل (لا ازدواجَ صوت)
-    robo.cheer(vP(VS_OK)); renderWG(); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">✅ أحسنت! «${cur.word}» — تابِعْ بالكلمة التالية.</div>`;
+    robo.cheer(vP(VS_OK), {female:cur.female}); renderWG(); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">✅ أحسنت! «${cur.word}» — تابِعْ بالكلمة التالية.</div>`;
   } else { renderWG(); }
 }
 function wgAI(){ if(!vsRun) return;
@@ -1115,7 +1121,7 @@ function wgAI(){ if(!vsRun) return;
     } else { sfx.nope(); wg_lock=false; wg_turn=(wg_turn+1)%wg_ps.length; renderWG(); robo.say("أخطأتُ! دورُك الآن 🤖","ok"); const fb=document.getElementById("wgfb"); if(fb) fb.innerHTML=`<div class="fb">🤖 أخطأ الآليُّ — دورُك الآن!</div>`; if(wg_ps[wg_turn].cpu) wgAI(); }
   }, 950);
 }
-function wgEnd(){ logEvent("wordgrid_win"); vsEndRound(wg_ps, { onAgain:newWG, onExit:startWG }); }
+function wgEnd(){ logEvent("wordgrid_win"); vsEndRound(wg_ps, { game:"شبكةُ الكلمات", diff:AIDIFF(vs_ai), onAgain:newWG, onExit:startWG }); }
 
 function renderPrint(){
   view.innerHTML = backBar()+`<div class="intro">النسخة الحسّيّة الورقيّة للأهل — «نشاطٌ واقعيّ أوّلًا». اطبعها وعلّقها.</div><button class="printbtn" onclick="smartPrint(document.getElementById('printActs'),'أنشطة-مِشكاة.pdf')">🖨️ اطبع الأنشطة</button>`+

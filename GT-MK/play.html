@@ -53,6 +53,8 @@
   .dt-ln:not(.on):hover{background:var(--primary);opacity:.6}
   .dt-ln:not(.on):active{transform:scale(1.06)}
   .dt-ln.on{cursor:default;opacity:1}
+  .dt-ln.last{animation:dtblink .8s ease-in-out infinite;box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+  @keyframes dtblink{0%,100%{opacity:1;filter:brightness(1)}50%{opacity:.35;filter:brightness(1.6)}}
   .dt-box{position:absolute;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;animation:dtpop .18s ease-out}
   @keyframes dtpop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
   .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
@@ -837,8 +839,25 @@ function xoEnd(w){
    لوحةٌ من نقاط: يصلُ اللاعبُ نقطتَينِ متجاورتَينِ بخطّ، ومن أغلقَ مربّعًا ملكَه **ولعبَ مرّةً أخرى**.
    تمثيلُ الخطوط: أفقيّةٌ H[r][c] (بين (r,c)-(r,c+1)) ورأسيّةٌ V[r][c] (بين (r,c)-(r+1,c)). */
 let dt_n=4, dt_ps=[], dt_turn=0, dt_H=[], dt_V=[], dt_own=[], dt_lock=false, dt_done=false;
-function startDots(){ vsSetup({ say:GI.dots, soloOk:true, diffLabel:"🔲 حجمُ اللوحة",
-  diffs:[{v:3,label:"3×3"},{v:4,label:"4×4"},{v:5,label:"5×5"}], getDiff:()=>dt_n, setDiff:v=>{dt_n=+v;}, start:newDots }); try{speak(GI.dots);}catch(e){} }
+let dt_last=null, dt_timed=true, dt_raf=null;   // dt_last = آخرُ خطٍّ لُعِبَ (يومضُ ليعرفَ الخصمُ أين لعبَ الآخر)
+const DT_MS=9000;                                // مهلةُ «ضدّ الوقت» لكلِّ حركة
+function dtCancelT(){ if(dt_raf){ cancelAnimationFrame(dt_raf); dt_raf=null; } }
+function dtArmT(){ const t0=Date.now(); dtCancelT();
+  const tick=()=>{ if(!vsRun){ dtCancelT(); return; }
+    const left=DT_MS-(Date.now()-t0), bar=document.getElementById("dttbar");
+    if(bar) bar.style.width=Math.max(0,left/DT_MS*100)+"%";
+    if(left<=0){ // انتهتِ المهلةُ ⇒ خطٌّ عشوائيٌّ نيابةً عن اللاعب
+      if(!dt_lock && !dt_done && dt_ps[dt_turn] && !dt_ps[dt_turn].cpu){
+        const N=dt_n, free=[];
+        for(let r=0;r<=N;r++)for(let c=0;c<N;c++) if(dt_H[r][c]<0) free.push(["h",r,c]);
+        for(let r=0;r<N;r++)for(let c=0;c<=N;c++) if(dt_V[r][c]<0) free.push(["v",r,c]);
+        if(free.length){ const m=free[Math.floor(Math.random()*free.length)]; sfx.wrong(); dotsPlay(m[0],m[1],m[2]); }
+      }
+      dtCancelT(); return; }
+    dt_raf=requestAnimationFrame(tick); }; tick(); }
+function startDots(){ dtCancelT(); vsSetup({ say:GI.dots, soloOk:true, diffLabel:"🔲 حجمُ اللوحة",
+  diffs:[{v:3,label:"3×3"},{v:4,label:"4×4"},{v:5,label:"5×5"}], getDiff:()=>dt_n, setDiff:v=>{dt_n=+v;},
+  toggle:{ label:"⏱️ اللعبُ ضدّ الوقت", get:()=>dt_timed, set:v=>{dt_timed=v;} }, start:newDots }); try{speak(GI.dots);}catch(e){} }
 function newDots(){
   vsRun=true; const N=dt_n;
   dt_H=Array.from({length:N+1},()=>Array(N).fill(-1));   // -1 = لا خطّ
@@ -847,7 +866,7 @@ function newDots(){
   dt_ps=vsMakePlayers();
   if(dt_ps.length<2){ const me=dt_ps[0]; dt_ps=[{...me,name:me.name+" ١",color:VS_COLA},{...me,name:me.name+" ٢",color:VS_COLB}]; } // «وحدي» = بالدورَين
   dt_ps.forEach(p=>p.score=0);
-  dt_turn=vsStartIndex(dt_ps); dt_lock=false; dt_done=false;
+  dt_turn=vsStartIndex(dt_ps); dt_lock=false; dt_done=false; dt_last=null;
   renderDots(); if(dt_ps[dt_turn].cpu) setTimeout(dotsAI,600);
 }
 // المربّعاتُ التي تكتملُ بوضعِ هذا الخطّ (تُرجِعُ فهارسَها)
@@ -856,8 +875,9 @@ function dotsPlay(kind,r,c){
   if(dt_lock||dt_done) return;
   const N=dt_n, arr=kind==="h"?dt_H:dt_V;
   if(arr[r][c]>=0) return;                       // الخطُّ مرسومٌ سلفًا
+  dtCancelT();
   const before=dotsClosed(dt_H,dt_V,N).length;
-  arr[r][c]=dt_turn; sfx.tap();
+  arr[r][c]=dt_turn; dt_last={k:kind,r,c}; sfx.tap();   // آخرُ خطٍّ يومضُ حتى يلعبَ الآخَر
   const after=dotsClosed(dt_H,dt_V,N);
   let gained=0;
   for(const i of after){ if(dt_own[i]<0){ dt_own[i]=dt_turn; gained++; } }
@@ -865,7 +885,7 @@ function dotsPlay(kind,r,c){
   else dt_turn=(dt_turn+1)%dt_ps.length;          // لم يُغلِقْ مربّعًا ⇒ ينتقلُ الدور
   const total=N*N, filled=dt_own.filter(x=>x>=0).length;
   renderDots();
-  if(filled>=total){ dt_done=true; renderDots();
+  if(filled>=total){ dt_done=true; dtCancelT(); renderDots();
     vsEndRound(dt_ps,{ game:"مربّعاتُ النقاط", diff:`${N}×${N}`, onAgain:newDots, onExit:startDots }); return; }
   if(dt_ps[dt_turn].cpu) setTimeout(dotsAI,600);
 }
@@ -891,18 +911,20 @@ function renderDots(){
   for(let r=0;r<=N;r++){
     for(let c=0;c<=N;c++){
       cells+=`<div class="dt-dot" style="left:${c*S}px;top:${r*S}px"></div>`;
-      if(c<N){ const o=dt_H[r][c]; cells+=`<div class="dt-ln h${o>=0?" on":""}" data-k="h" data-r="${r}" data-c="${c}" style="left:${c*S+7}px;top:${r*S-4}px;width:${S-14}px${o>=0?`;background:${dt_ps[o].color}`:""}"></div>`; }
+      if(c<N){ const o=dt_H[r][c], lz=dt_last&&dt_last.k==="h"&&dt_last.r===r&&dt_last.c===c?" last":""; cells+=`<div class="dt-ln h${o>=0?" on":""}${lz}" data-k="h" data-r="${r}" data-c="${c}" style="left:${c*S+7}px;top:${r*S-4}px;width:${S-14}px${o>=0?`;background:${dt_ps[o].color}`:""}"></div>`; }
     }
-    if(r<N) for(let c=0;c<=N;c++){ const o=dt_V[r][c]; cells+=`<div class="dt-ln v${o>=0?" on":""}" data-k="v" data-r="${r}" data-c="${c}" style="left:${c*S-4}px;top:${r*S+7}px;height:${S-14}px${o>=0?`;background:${dt_ps[o].color}`:""}"></div>`; }
+    if(r<N) for(let c=0;c<=N;c++){ const o=dt_V[r][c], lz=dt_last&&dt_last.k==="v"&&dt_last.r===r&&dt_last.c===c?" last":""; cells+=`<div class="dt-ln v${o>=0?" on":""}${lz}" data-k="v" data-r="${r}" data-c="${c}" style="left:${c*S-4}px;top:${r*S+7}px;height:${S-14}px${o>=0?`;background:${dt_ps[o].color}`:""}"></div>`; }
   }
   for(let i=0;i<N*N;i++){ const o=dt_own[i]; if(o<0) continue; const r=Math.floor(i/N), c=i%N;
     cells+=`<div class="dt-box" style="left:${c*S+5}px;top:${r*S+5}px;width:${S-10}px;height:${S-10}px;background:${dt_ps[o].color}22;color:${dt_ps[o].color};font-size:${Math.round(S*.4)}px">${dt_ps[o].avatar||"●"}</div>`; }
   view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">▪️ مربّعاتُ النقاط — صِلْ نقطتين، ومن أغلقَ مربّعًا لعبَ مرّةً أخرى!</div></div>`
     + vsScoreHtml(dt_ps) + (dt_done?"":vsTurnHtml(cur))
+    + ((dt_timed && !dt_done && cur && !cur.cpu)?`<div class="hubar" style="max-width:${N*S+8}px;margin:6px auto"><span id="dttbar"></span></div>`:"")
     + `<div class="dt-wrap" style="width:${N*S+8}px;height:${N*S+8}px">${cells}</div>`;
   wireBack();
   const w=view.querySelector(".dt-wrap");
   if(w && !dt_done && cur && !cur.cpu) w.addEventListener("click", e=>{ const l=e.target.closest(".dt-ln:not(.on)"); if(l) dotsPlay(l.dataset.k,+l.dataset.r,+l.dataset.c); });
+  dtCancelT(); if(dt_timed && !dt_done && cur && !cur.cpu) dtArmT();   // «ضدّ الوقت»: عدّادٌ لدورِ اللاعبِ البشريّ
 }
 
 /* ===================== 🔢 تحدّي الأعداد (تناوبٌ · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */

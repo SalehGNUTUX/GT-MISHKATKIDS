@@ -53,6 +53,15 @@ function siblings() { const u = getCurrentUser(); return listProfiles().filter(p
 
 // يبني لاعبَين حسب VS.opp (أو لاعبًا واحدًا للفرد؛ forceTwo يُجبرُ خصمًا للألعاب الثنائيّة).
 // كلُّ لاعبٍ بشريٍّ يحملُ female (لتجنيسِ خطابِ الآليِّ له)؛ الآليُّ بلا female (يتحدّثُ عن نفسه).
+// مَن يبدأُ الجولةَ التالية: أوّلُ لعبةٍ يبدؤها **صاحبُ الحساب**، ثمّ يبدأُ **الفائزُ** في كلِّ جولةٍ تالية
+// (والتعادلُ يُعيدُ البدءَ لصاحبِ الحساب). تُستدعى في كلِّ لعبةٍ بدلَ تثبيتِ turn=0.
+let vsNextStarter = null;   // اسمُ الفائزِ الأخير (null = صاحبُ الحساب)
+export function vsStartIndex(players) {
+  if (!vsNextStarter || !players || players.length < 2) return 0;
+  const i = players.findIndex(p => p.name === vsNextStarter);
+  return i > 0 ? i : 0;
+}
+export function vsResetStarter() { vsNextStarter = null; }   // بدءُ سلسلةٍ جديدة (تغييرُ الخصمِ/الإعدادات)
 export function vsMakePlayers(forceTwo) {
   const me = meCard(), m = { ...me, role: "me", score: 0, cpu: false, color: VS_COLA };
   if (VS.opp === "ai") return [m, { name: "الآليّ", avatar: "🤖", role: "ai", score: 0, cpu: true, color: VS_COLB }];
@@ -80,6 +89,7 @@ export function vsScoreHtml(ps) { return `<div class="vs-score">` + ps.map(p => 
 // شاشةُ الإعداد داخل host. cfg={ say, diffLabel?, diffs:[{v,label}], getDiff, setDiff, start, soloOk? }
 export function vsSetup(host, cfg) {
   ensureStyle();
+  vsResetStarter();   // شاشةُ الإعدادِ = سلسلةٌ جديدة ⇒ يبدأُ صاحبُ الحسابِ أوّلَ جولة
   const sibs = siblings();
   if (!cfg.soloOk && VS.opp === "solo") VS.opp = "ai";
   const opp = (cfg.soloOk ? `<button data-opp="solo" class="${VS.opp === "solo" ? "on" : ""}">🧒 وحدي</button>` : "")
@@ -153,6 +163,7 @@ export function vsEndRound(players, opts = {}) {
   const tie = sorted[1] && sorted[0].score === sorted[1].score;
   const winner = tie ? null : sorted[0];
   if (winner) vsWins[winner.name] = (vsWins[winner.name] || 0) + 1;
+  vsNextStarter = winner ? winner.name : null;   // الفائزُ يبدأُ الجولةَ التالية (والتعادلُ يُعيدُ البدءَ لصاحبِ الحساب)
   recordVsHistory(players, opts, winner);   // تسجيلٌ دائمٌ للوحةِ الأهل
   const me = players.find(p => !p.cpu), o = players.find(p => p.cpu);
   if (o && me) vsReact(me, o); else robo.read(vP(GR.kids)); // ردُّ فعلٍ عصبيٌّ منطوق

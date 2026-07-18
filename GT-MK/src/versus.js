@@ -114,6 +114,21 @@ export function vsWinsOf(name) { return vsWins[name] || 0; }
 const VS_HIST_KEY = "tilmithi_vs_history", VS_HIST_MAX = 300;
 export function getVsHistory() { try { return JSON.parse(localStorage.getItem(VS_HIST_KEY) || "[]"); } catch (e) { return []; } }
 export function clearVsHistory() { try { localStorage.removeItem(VS_HIST_KEY); } catch (e) {} }
+// مفتاحُ الطرفَين (الابنُ + الخصمُ، والأمُّ تُفصَلُ عن الأب) — مصدرٌ **واحدٌ** للتجميعِ والحذفِ الانتقائيِّ معًا
+// كي لا يختلفَ منطقانِ فيُحذَفَ غيرُ المقصود.
+export function vsPairKey(e) {
+  const opp = e && e.opp;
+  const ok = opp ? (opp.role === "ai" ? "ai" : opp.role === "parent" ? (opp.female ? "mom" : "dad") : "sib:" + (opp.name || "")) : "?";
+  return ((e && e.me) || "?") + "|" + ok;
+}
+// تصفيرُ سجلِّ طرفَينِ بعينِهما دونَ المساسِ ببقيّةِ السجلّ. يُرجِعُ عددَ المبارياتِ المحذوفة.
+export function clearVsPair(key) {
+  try {
+    const arr = getVsHistory(), keep = arr.filter(e => vsPairKey(e) !== key);
+    localStorage.setItem(VS_HIST_KEY, JSON.stringify(keep));
+    return arr.length - keep.length;
+  } catch (e) { return 0; }
+}
 function recordVsHistory(players, opts, winner) {
   try {
     if (!players || players.length < 2) return;   // تنافسيٌّ فقط (لا اللعبَ الفرديّ)

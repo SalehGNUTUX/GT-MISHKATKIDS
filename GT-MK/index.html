@@ -183,6 +183,16 @@
   /* سجلُّ الجلسات: بطاقةٌ رأسيّةٌ (عنوانٌ+تاريخ ثمّ الوسائط) — الصفُّ الأفقيُّ الواحدُ كان يسحقُ الملاحظةَ
      إلى عمودٍ بكلمةٍ في السطر. تتجاوبُ على الهاتفِ والحاسوبِ معًا. */
   .log{max-height:300px;overflow:auto}
+  /* مطويّةُ سجلِّ التنافسِ لكلِّ طرفَين (حصريّة: واحدةٌ مفتوحةٌ في كلِّ وقت) */
+  .vsgrp{border:1px solid var(--line);border-radius:12px;margin:6px 0;overflow:hidden;background:var(--card)}
+  .vsgrp>summary{cursor:pointer;padding:10px 12px;list-style:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;user-select:none}
+  .vsgrp>summary::-webkit-details-marker{display:none}
+  .vsgrp>summary::after{content:"▾";margin-inline-start:auto;font-size:11px;color:var(--muted);transition:transform .15s}
+  .vsgrp[open]>summary::after{transform:rotate(180deg)}
+  .vsgrp>summary:hover .vsg-t{color:var(--primary-d)}
+  .vsg-t{font-size:13.5px;font-weight:800;color:var(--ink)}
+  .vsg-s{font-size:12.5px;font-weight:800;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 10px;white-space:nowrap}
+  .vsg-b{padding:8px 12px 10px;border-top:1px solid var(--line);max-height:260px;overflow:auto}
   /* مطويّةُ حسابٍ في سجلِّ الجلسات */
   .loggrp{border:1px solid var(--line);border-radius:10px;margin:6px 0;overflow:hidden}
   .loggrp>summary{cursor:pointer;padding:8px 10px;font-size:13px;font-weight:800;color:var(--ink);list-style:none;display:flex;align-items:center;gap:6px;user-select:none}
@@ -923,21 +933,27 @@ function vsHistoryHtml(){
     const a=agg[key]||(agg[key]={me:e.me||"?", opp:e.opp, meWins:0, oppWins:0, ties:0});
     if(!e.winner) a.ties++; else if(e.winner===e.me) a.meWins++; else a.oppWins++;
   }
-  const aggRows=Object.values(agg).map(a=>`<div class="dom-row" style="flex-wrap:wrap">
-    <span style="flex:1;min-width:150px;font-size:13px">${a.me} <span class="muted">ضدّ</span> ${vsOppLabel(a.opp)}</span>
-    <span class="muted" style="font-size:12.5px">فاز ${a.me}: <b>${AR(a.meWins)}</b> · فاز ${vsOppLabel(a.opp)}: <b>${AR(a.oppWins)}</b>${a.ties?` · تعادُل ${AR(a.ties)}`:""}</span>
-  </div>`).join("");
-  const rows=hist.slice(0,20).map(e=>{
-    const win=!e.winner ? "🤝 تعادُل" : `🏆 ${e.winner}`;
-    return `<div class="dom-row" style="align-items:flex-start">
+  // مطويّةٌ لكلِّ طرفَين: عنوانُها الطرفانِ وحصيلةُ الفوز، وداخلَها مبارياتُهما وحدَها (لا قائمةٌ مسطّحةٌ مختلطة).
+  // وهي **حصريّة**: فتحُ واحدةٍ يطوي الأخرى — يُدارُ في wireVsHistory كي يعملَ على كلِّ المتصفّحات.
+  const oppKeyOf=e=> e.opp ? (e.opp.role==="ai"?"ai":e.opp.role==="parent"?(e.opp.female?"mom":"dad"):"sib:"+(e.opp.name||"")) : "?";
+  const groups=Object.entries(agg).map(([key,a])=>{
+    const mine=hist.filter(e=>(e.me||"?")+"|"+oppKeyOf(e)===key);
+    const rows=mine.map(e=>`<div class="dom-row" style="align-items:flex-start">
       <span style="flex:1;font-size:12.5px"><b>${e.game||"لعبة"}</b>${e.diff?` <span class="muted">· ${e.diff}</span>`:""}<br>
-        <span class="muted">${vsFmtDate(e.ts)} · ${e.me} ضدّ ${vsOppLabel(e.opp)}</span></span>
-      <span style="font-size:12.5px;white-space:nowrap">${win}</span>
-    </div>`;
+        <span class="muted">${vsFmtDate(e.ts)}</span></span>
+      <span style="font-size:12.5px;white-space:nowrap">${!e.winner?"🤝 تعادُل":`🏆 ${e.winner}`}</span>
+    </div>`).join("");
+    return `<details class="vsgrp"><summary>
+        <span class="vsg-t">${a.me} <span class="muted">ضدّ</span> ${vsOppLabel(a.opp)}</span>
+        <span class="vsg-s">${AR(a.meWins)} — ${AR(a.oppWins)}${a.ties?` <span class="muted">(تعادُل ${AR(a.ties)})</span>`:""}</span>
+      </summary>
+      <div class="vsg-b">
+        <div class="muted" style="font-size:12px;margin-bottom:4px">فاز ${a.me}: <b>${AR(a.meWins)}</b> · فاز ${vsOppLabel(a.opp)}: <b>${AR(a.oppWins)}</b>${a.ties?` · تعادُل: <b>${AR(a.ties)}</b>`:""} — ${AR(mine.length)} مباراة:</div>
+        ${rows}
+      </div></details>`;
   }).join("");
   return `<div class="sec" id="sec-vshistory">${head}
-    <div class="muted" style="font-size:12px;margin-bottom:4px">إجماليُّ الفوز لكلِّ طرف:</div>${aggRows}
-    <div class="muted" style="font-size:12px;margin:12px 0 4px">آخرُ المباريات (${AR(Math.min(hist.length,20))} من ${AR(hist.length)}):</div>${rows}
+    <div class="muted" style="font-size:12px;margin-bottom:6px">اضغطْ على أيِّ سجلٍّ لعرضِ مبارياتِه (يُطوى الآخرُ تلقائيًّا):</div>${groups}
     <button id="vsHistReset" style="margin-top:12px;background:none;border:none;color:#c0392b;font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit">↺ صفّرِ السجلّ</button>
   </div>`;
 }
@@ -1278,6 +1294,9 @@ async function openDashboard(){
   });
   renderVoiceMgmt();
   { const vsRst=document.getElementById("vsHistReset"); if(vsRst) vsRst.onclick=async(e)=>{ e.stopPropagation(); if(await confirmChoice("تصفيرُ سجلِّ الألعابِ التنافسيّة نهائيًّا؟","↺ صفّر","إبقاء")){ clearVsHistory(); openDashboard(); } }; }
+  // مطويّاتُ سجلِّ التنافسِ حصريّة: فتحُ سجلِّ طرفَينِ يطوي المفتوحَ قبلَه (بـJS لا بخاصّيّةِ name كي يعملَ على كلِّ المتصفّحاتِ وWebView).
+  { const vsg=[...document.querySelectorAll("details.vsgrp")];
+    vsg.forEach(d=>d.addEventListener("toggle",()=>{ if(d.open) vsg.forEach(o=>{ if(o!==d) o.open=false; }); })); }
   // مطويات: كلُّ قسمٍ يُطوى افتراضاً (لوحةٌ مرتّبةٌ غيرُ مزدحمة)، والعنوانُ يفتحه/يطويه.
   const hash = location.hash;
   panel.querySelectorAll(".sec").forEach(sec=>{

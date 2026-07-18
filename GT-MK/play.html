@@ -45,6 +45,16 @@
   .pill{background:#F3EEE3;border-radius:999px;padding:5px 12px;font-size:13px;color:#555}
   .pill b{color:var(--primary-d)}
 
+  /* ▪️ مربّعاتُ النقاط */
+  .dt-wrap{position:relative;margin:10px auto;touch-action:manipulation}
+  .dt-dot{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--ink);opacity:.55;transform:translate(-4.5px,-4.5px)}
+  .dt-ln{position:absolute;background:var(--line);border-radius:4px;cursor:pointer;transition:background .12s,transform .1s}
+  .dt-ln.h{height:8px} .dt-ln.v{width:8px}
+  .dt-ln:not(.on):hover{background:var(--primary);opacity:.6}
+  .dt-ln:not(.on):active{transform:scale(1.06)}
+  .dt-ln.on{cursor:default;opacity:1}
+  .dt-box{position:absolute;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;animation:dtpop .18s ease-out}
+  @keyframes dtpop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
   .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
   .gsec{font-size:16px;font-weight:800;margin:16px 2px 8px;color:var(--ink);border-bottom:2px solid var(--line);padding-bottom:4px}
   .ccard{position:relative;background:var(--card);border:2px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:20px 14px;text-align:center;cursor:pointer;transition:transform .12s,border-color .15s}
@@ -326,6 +336,7 @@ const GAMES = [
   { id:"spinq",  ic:"🎡", t:"عجلة أدرْ وأجب", d:"أدِرِ العجلةَ ثمّ أجِبْ عن سؤالِ القطاع", vs:1, nw:1, cat:"skill" },
   { id:"memory", ic:"🧠", t:"لعبة الذاكرة", d:"جِد الصورتين المتطابقتين — بمظاهرَ متعدّدة", vs:1, nw:1, cat:"fun" },
   { id:"xo",     ic:"⭕", t:"دائرةٌ وعلامة", d:"ثلاثةٌ في خطٍّ ضدّ الآليّ", vs:1, cat:"fun" },
+  { id:"dots",   ic:"▪️", t:"مربّعاتُ النقاط", d:"صِلِ النقاطَ وأغلِقِ المربّعات", vs:1, nw:1, cat:"fun" },
   { id:"print",  ic:"🖨️", t:"ألعاب/أنشطة للطباعة", d:"ألعابٌ تُلعَبُ على الورق + أنشطةٌ حسّيّة", cat:"tool" },
 ];
 // الترفيهيّةُ أوّلًا (طلبُ المستخدم): يفتحُ الطفلُ الصفحةَ فيجدُ ما يُمتِعُه في البداية.
@@ -372,7 +383,7 @@ function renderMenu(){
   view.querySelectorAll(".menu").forEach(m=>m.addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); }));
 }
 function open(id){ if(id!=="print") document.body.classList.add("ingame"); // شاشةٌ مخصّصةٌ للّعبة: يُطوى رأسُ الصفحةِ وشريطُ التنقّل
-  ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,clock:startClock,print:()=>location.assign("print.html")})[id](); }
+  ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,dots:startDots,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,clock:startClock,print:()=>location.assign("print.html")})[id](); }
 
 /* ===================== 🕐 تحدّي الساعة (v1.5 · versus مشترَك) ===================== */
 function startClock(){
@@ -820,6 +831,78 @@ function xoEnd(w){
   if(w.p!==-1) xo_ps[w.p].score++;
   renderXO();
   vsEndRound(xo_ps, { game:"دائرةٌ وعلامة", diff:`${xo_size}×${xo_size}`, onAgain:newXO, onExit:startXO });
+}
+
+/* ===================== ▪️ مربّعاتُ النقاط (v1.6 · نسخةٌ رقميّةٌ للّعبةِ الورقيّة) =====================
+   لوحةٌ من نقاط: يصلُ اللاعبُ نقطتَينِ متجاورتَينِ بخطّ، ومن أغلقَ مربّعًا ملكَه **ولعبَ مرّةً أخرى**.
+   تمثيلُ الخطوط: أفقيّةٌ H[r][c] (بين (r,c)-(r,c+1)) ورأسيّةٌ V[r][c] (بين (r,c)-(r+1,c)). */
+let dt_n=4, dt_ps=[], dt_turn=0, dt_H=[], dt_V=[], dt_own=[], dt_lock=false, dt_done=false;
+function startDots(){ vsSetup({ say:GI.dots, soloOk:true, diffLabel:"🔲 حجمُ اللوحة",
+  diffs:[{v:3,label:"3×3"},{v:4,label:"4×4"},{v:5,label:"5×5"}], getDiff:()=>dt_n, setDiff:v=>{dt_n=+v;}, start:newDots }); try{speak(GI.dots);}catch(e){} }
+function newDots(){
+  vsRun=true; const N=dt_n;
+  dt_H=Array.from({length:N+1},()=>Array(N).fill(-1));   // -1 = لا خطّ
+  dt_V=Array.from({length:N},()=>Array(N+1).fill(-1));
+  dt_own=Array(N*N).fill(-1);
+  dt_ps=vsMakePlayers();
+  if(dt_ps.length<2){ const me=dt_ps[0]; dt_ps=[{...me,name:me.name+" ١",color:VS_COLA},{...me,name:me.name+" ٢",color:VS_COLB}]; } // «وحدي» = بالدورَين
+  dt_ps.forEach(p=>p.score=0);
+  dt_turn=vsStartIndex(dt_ps); dt_lock=false; dt_done=false;
+  renderDots(); if(dt_ps[dt_turn].cpu) setTimeout(dotsAI,600);
+}
+// المربّعاتُ التي تكتملُ بوضعِ هذا الخطّ (تُرجِعُ فهارسَها)
+function dotsClosed(H,V,N){ const out=[]; for(let r=0;r<N;r++)for(let c=0;c<N;c++){ if(H[r][c]>=0&&H[r+1][c]>=0&&V[r][c]>=0&&V[r][c+1]>=0) out.push(r*N+c); } return out; }
+function dotsPlay(kind,r,c){
+  if(dt_lock||dt_done) return;
+  const N=dt_n, arr=kind==="h"?dt_H:dt_V;
+  if(arr[r][c]>=0) return;                       // الخطُّ مرسومٌ سلفًا
+  const before=dotsClosed(dt_H,dt_V,N).length;
+  arr[r][c]=dt_turn; sfx.tap();
+  const after=dotsClosed(dt_H,dt_V,N);
+  let gained=0;
+  for(const i of after){ if(dt_own[i]<0){ dt_own[i]=dt_turn; gained++; } }
+  if(gained){ dt_ps[dt_turn].score+=gained; sfx.success(); }
+  else dt_turn=(dt_turn+1)%dt_ps.length;          // لم يُغلِقْ مربّعًا ⇒ ينتقلُ الدور
+  const total=N*N, filled=dt_own.filter(x=>x>=0).length;
+  renderDots();
+  if(filled>=total){ dt_done=true; renderDots();
+    vsEndRound(dt_ps,{ game:"مربّعاتُ النقاط", diff:`${N}×${N}`, onAgain:newDots, onExit:startDots }); return; }
+  if(dt_ps[dt_turn].cpu) setTimeout(dotsAI,600);
+}
+// آليٌّ بسيطٌ ومحترم: يُغلِقُ مربّعًا إن أمكن، وإلّا يتجنّبُ إهداءَ مربّعٍ للخصمِ (خطٌّ يجعلُ للمربّعِ 3 أضلاع)، وإلّا عشوائيّ.
+function dotsAI(){
+  if(dt_done) return; const N=dt_n, moves=[];
+  for(let r=0;r<=N;r++)for(let c=0;c<N;c++) if(dt_H[r][c]<0) moves.push(["h",r,c]);
+  for(let r=0;r<N;r++)for(let c=0;c<=N;c++) if(dt_V[r][c]<0) moves.push(["v",r,c]);
+  if(!moves.length) return;
+  const sidesOf=(H,V,r,c)=>(H[r][c]>=0?1:0)+(H[r+1][c]>=0?1:0)+(V[r][c]>=0?1:0)+(V[r][c+1]>=0?1:0);
+  const trial=m=>{ const H=dt_H.map(x=>x.slice()), V=dt_V.map(x=>x.slice()); (m[0]==="h"?H:V)[m[1]][m[2]]=99; return {H,V}; };
+  const closes=m=>{ const {H,V}=trial(m); return dotsClosed(H,V,N).length > dotsClosed(dt_H,dt_V,N).length; };
+  const gifts=m=>{ const {H,V}=trial(m); for(let r=0;r<N;r++)for(let c=0;c<N;c++) if(sidesOf(H,V,r,c)===3 && sidesOf(dt_H,dt_V,r,c)!==3) return true; return false; };
+  const win=moves.filter(closes); const safe=moves.filter(m=>!closes(m)&&!gifts(m));
+  const pool = win.length?win : (safe.length?safe:moves);
+  const m=pool[Math.floor(Math.random()*pool.length)];
+  dotsPlay(m[0],m[1],m[2]);
+}
+function renderDots(){
+  const N=dt_n, cur=dt_ps[dt_turn];
+  const S=Math.min(78, Math.floor((Math.min(innerWidth-56,360))/N));   // مقاسٌ متجاوبٌ مع الشاشة
+  let cells="";
+  for(let r=0;r<=N;r++){
+    for(let c=0;c<=N;c++){
+      cells+=`<div class="dt-dot" style="left:${c*S}px;top:${r*S}px"></div>`;
+      if(c<N){ const o=dt_H[r][c]; cells+=`<div class="dt-ln h${o>=0?" on":""}" data-k="h" data-r="${r}" data-c="${c}" style="left:${c*S+7}px;top:${r*S-4}px;width:${S-14}px${o>=0?`;background:${dt_ps[o].color}`:""}"></div>`; }
+    }
+    if(r<N) for(let c=0;c<=N;c++){ const o=dt_V[r][c]; cells+=`<div class="dt-ln v${o>=0?" on":""}" data-k="v" data-r="${r}" data-c="${c}" style="left:${c*S-4}px;top:${r*S+7}px;height:${S-14}px${o>=0?`;background:${dt_ps[o].color}`:""}"></div>`; }
+  }
+  for(let i=0;i<N*N;i++){ const o=dt_own[i]; if(o<0) continue; const r=Math.floor(i/N), c=i%N;
+    cells+=`<div class="dt-box" style="left:${c*S+5}px;top:${r*S+5}px;width:${S-10}px;height:${S-10}px;background:${dt_ps[o].color}22;color:${dt_ps[o].color};font-size:${Math.round(S*.4)}px">${dt_ps[o].avatar||"●"}</div>`; }
+  view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">▪️ مربّعاتُ النقاط — صِلْ نقطتين، ومن أغلقَ مربّعًا لعبَ مرّةً أخرى!</div></div>`
+    + vsScoreHtml(dt_ps) + (dt_done?"":vsTurnHtml(cur))
+    + `<div class="dt-wrap" style="width:${N*S+8}px;height:${N*S+8}px">${cells}</div>`;
+  wireBack();
+  const w=view.querySelector(".dt-wrap");
+  if(w && !dt_done && cur && !cur.cpu) w.addEventListener("click", e=>{ const l=e.target.closest(".dt-ln:not(.on)"); if(l) dotsPlay(l.dataset.k,+l.dataset.r,+l.dataset.c); });
 }
 
 /* ===================== 🔢 تحدّي الأعداد (تناوبٌ · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */

@@ -48,6 +48,17 @@
   .sec{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;justify-content:space-between;font-size:14px}
   .sec b{color:var(--primary-d)}
 
+  /* سجلُّ مبارياتي (قراءةٌ فقط) — مطويّةٌ لكلِّ خصمٍ وهي حصريّة */
+  .vsgrp{border:1px solid var(--line);border-radius:12px;margin:6px 0;overflow:hidden;background:var(--card)}
+  .vsgrp>summary{cursor:pointer;padding:10px 12px;list-style:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;user-select:none}
+  .vsgrp>summary::-webkit-details-marker{display:none}
+  .vsgrp>summary::after{content:"▾";margin-inline-start:auto;font-size:11px;color:var(--muted);transition:transform .15s}
+  .vsgrp[open]>summary::after{transform:rotate(180deg)}
+  .vsg-t{font-size:14px;font-weight:800;color:var(--ink)}
+  .vsg-s{font-size:12.5px;font-weight:800;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 10px;white-space:nowrap}
+  .vsg-b{padding:8px 12px 10px;border-top:1px solid var(--line);max-height:260px;overflow:auto}
+  .vsm-row{display:flex;align-items:flex-start;gap:8px;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink)}
+  .vsm-row:last-child{border-bottom:none}
   .badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px}
   .badge{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:12px 6px;text-align:center;opacity:.45;filter:grayscale(1)}
   .badge.earned{opacity:1;filter:none;border-color:var(--gold)}
@@ -93,6 +104,12 @@
     <h2>الأوسمة</h2>
     <div class="badges" id="badges"></div>
 
+    <!-- سجلُّ مبارياتي: يراهُ الطفلُ في حسابِه (مبارياتُه وحدَه) — بلا تصفيرٍ (التصفيرُ للوالدَين في اللوحة) -->
+    <div id="vsWrap" style="display:none">
+      <h2>🏆 مبارياتي</h2>
+      <div id="vsMine"></div>
+    </div>
+
     <h2>شهادة إنجاز</h2>
     <div class="namefield">
       <input id="name" placeholder="اكتب اسم الطفل هنا…" maxlength="40" />
@@ -114,6 +131,8 @@ import { smartPrint } from "./src/smart-print.js"; window.smartPrint = smartPrin
 wireThemeToggle(document.getElementById("themeBtn"));
 import { getStats, getBadges, getDailyMission, getName, setName, resetProgress, SECTION_OF } from "./src/progress.js";
 import { confirmWithPassword, undoable } from "./src/confirm-action.js";
+import { getVsHistory } from "./src/versus.js";   // سجلُّ المباريات (قراءةٌ فقط — لا تصفيرَ في حسابِ الطفل)
+import { getCurrentUser } from "./src/accounts.js";
 
 const SEC_LABEL = {
   memory_heal:"ذكريات الآليّ 🤖", story_open:"قصص قُرئت 📖", comprehension_ok:"أسئلة فهم ✅",
@@ -122,6 +141,36 @@ const SEC_LABEL = {
   math_correct:"أرقام وهندسة 📐", craft_done:"ورشة الورق ✂️", quran_listen:"القرآن الكريم 📖",
 };
 const fmtDate = () => { const d=new Date(); return d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear(); };
+
+// سجلُّ مبارياتِ الطفلِ نفسِه (بلا تصفير): يُرشَّحُ من السجلِّ المشترَكِ باسمِ اللاعبِ الحاليّ.
+// مطويّةٌ لكلِّ خصمٍ وهي حصريّة — نفسُ أسلوبِ لوحةِ الأهل، بلا زرِّ تصفيرٍ (ذاك للوالدَينِ وحدَهما).
+function renderMyMatches(){
+  const wrap=document.getElementById("vsWrap"), host=document.getElementById("vsMine");
+  if(!wrap||!host) return;
+  let hist=[], me="";
+  try{ hist=(getVsHistory()||[]).slice().reverse(); }catch(e){}
+  try{ const u=getCurrentUser(); me=(u&&u.name)||""; }catch(e){}
+  const mine = me ? hist.filter(e=>e.me===me) : [];
+  if(!mine.length) return;                                  // لا مباريات ⇒ يبقى القسمُ مخفيًّا
+  wrap.style.display="";
+  const oppKeyOf=e=> e.opp ? (e.opp.role==="ai"?"ai":e.opp.role==="parent"?(e.opp.female?"mom":"dad"):"sib:"+(e.opp.name||"")) : "?";
+  const oppLabel=o=> !o ? "خصم" : o.role==="ai" ? "🤖 الآليّ" : o.role==="parent" ? (o.female?"👩 الأم":"👨 الأب") : `${o.avatar||"🙂"} ${o.name||"اللاعب"}`;
+  const fmt=ts=>{ try{ const d=new Date(ts); return d.toLocaleDateString("ar-EG-u-nu-latn")+" "+d.toLocaleTimeString("ar-EG-u-nu-latn",{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } };
+  const agg={};
+  for(const e of mine){ const k=oppKeyOf(e); const a=agg[k]||(agg[k]={opp:e.opp,w:0,l:0,t:0}); if(!e.winner)a.t++; else if(e.winner===me)a.w++; else a.l++; }
+  host.innerHTML=Object.entries(agg).map(([k,a])=>{
+    const rows=mine.filter(e=>oppKeyOf(e)===k).map(e=>`<div class="vsm-row">
+      <span><b>${e.game||"لعبة"}</b>${e.diff?` <span class="muted">· ${e.diff}</span>`:""}<br><span class="muted">${fmt(e.ts)}</span></span>
+      <span style="white-space:nowrap">${!e.winner?"🤝 تعادُل":(e.winner===me?"🏆 فُزتُ":`🏆 ${e.winner}`)}</span>
+    </div>`).join("");
+    return `<details class="vsgrp"><summary>
+      <span class="vsg-t">ضدّ ${oppLabel(a.opp)}</span>
+      <span class="vsg-s">فُزتُ ${a.w} — ${a.l}${a.t?` <span class="muted">(تعادُل ${a.t})</span>`:""}</span>
+    </summary><div class="vsg-b">${rows}</div></details>`;
+  }).join("");
+  const gs=[...host.querySelectorAll("details.vsgrp")];
+  gs.forEach(d=>d.addEventListener("toggle",()=>{ if(d.open) gs.forEach(o=>{ if(o!==d) o.open=false; }); }));
+}
 
 function render(){
   const s = getStats();
@@ -173,6 +222,7 @@ document.getElementById("name").addEventListener("keydown", e=>{ if(e.key==="Ent
 document.getElementById("reset").onclick = async ()=>{ if(await confirmWithPassword("تصفير كلّ التقدّم والأوسمة؟ ستظهر مهلةُ تراجع.")) undoable("سيُصفَّر التقدّم…", ()=>{ resetProgress(); render(); }); };
 
 render();
+renderMyMatches();
 </script>
 </body>
 </html>

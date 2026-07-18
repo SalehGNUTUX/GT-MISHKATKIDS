@@ -337,7 +337,7 @@ export function orientQuiz(host, opts = {}) {
       if (!ok) { const cb = host.querySelectorAll(".or-opt")[q.list.indexOf(q.answer)]; if (cb) cb.classList.add("ok"); }
     } catch (e) {}
     if (ok) ps[turn].score++;
-    try { if (ok) robo.applaud(); else sfx.wrong(); speak(nm(q.answer)); } catch (e) {}
+    try { if (ok) robo.applaud(); else sfx.nope(); speak(nm(q.answer)); } catch (e) {}
     if (ps.some(p => p.score >= TARGET)) { setTimeout(end, 1300); return; }
     setTimeout(() => { if (!host.isConnected) return; turn = (turn + 1) % ps.length; next(); }, 1400);
   }

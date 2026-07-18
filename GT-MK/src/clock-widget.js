@@ -191,7 +191,7 @@ export function clockGame(host, opts = {}) {
       if (!host.isConnected) { cancelTimer(); return; }
       const left = ms - (Date.now() - t0), bar = host.querySelector("#clkbar");
       if (bar) bar.style.width = Math.max(0, left / ms * 100) + "%";
-      if (left <= 0) { if (!lock) { lock = true; sfx.wrong(); resolve(false); } return; }
+      if (left <= 0) { if (!lock) { lock = true; sfx.nope(); resolve(false); } return; }
       clkRaf = requestAnimationFrame(tick);
     };
     tick();
@@ -300,7 +300,7 @@ export function clockGame(host, opts = {}) {
     if (!host.isConnected) return; lock = true; cancelTimer();
     if (ok) ps[turn].score++;
     // تفاعلُ الآليّ + نطقُ الوقتِ داخلَ try كي لا يمنعَ خطأٌ عارضٌ (صوت/DOM) انتقالَ الدور.
-    try { if (ok) robo.applaud(); else sfx.wrong(); sayTime(lang, q.answer, speakPhrase, AMPM_MODE[q.mode]); } catch (e) {}
+    try { if (ok) robo.applaud(); else sfx.nope(); sayTime(lang, q.answer, speakPhrase, AMPM_MODE[q.mode]); } catch (e) {}
     // الانتقالُ مجدولٌ دائمًا بعدَ الـtry (لا يُعلَقُ الدورُ أبدًا).
     if (ps.some(p => p.score >= TARGET)) { setTimeout(end, 1300); return; }
     setTimeout(() => { if (!host.isConnected) return; turn = (turn + 1) % ps.length; next(); }, 1500);

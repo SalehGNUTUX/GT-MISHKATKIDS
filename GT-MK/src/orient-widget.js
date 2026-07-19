@@ -51,6 +51,8 @@ export function floatCard(title, body) {
   el.onclick = close; _floatTmr = setTimeout(close, 5000);
 }
 
+// نصُّ القِبلةِ المنطوق — **مشكولٌ بالكامل** ليُولَّدَ له مقطعُ Piper ويُنطَقَ سليمًا.
+export const QIBLA_AR = "اتِّجَاهُ القِبْلَة";
 const NS = "http://www.w3.org/2000/svg";
 const svgEl = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
 const rad = d => (d - 90) * Math.PI / 180;
@@ -77,10 +79,15 @@ export function makeCompass(lang, onPick) {
     hit.addEventListener("click", () => onPick && onPick(d)); rose.appendChild(hit);
   });
   // مؤشّرُ القِبلةِ (🕋) — يظهرُ حين يُعرَفُ الموقعُ؛ يدورُ داخلَ الوردةِ بزاويةِ القبلةِ من الشمال.
-  const qib = svgEl("g", { class: "or-qibla", style: "display:none" });
+  const qib = svgEl("g", { class: "or-qibla", style: "display:none;cursor:pointer" });
   qib.appendChild(svgEl("line", { x1: 100, y1: 100, x2: 100, y2: 52, stroke: "var(--good,#7BB661)", "stroke-width": 3.5, "stroke-linecap": "round" }));
   const qt = svgEl("text", { x: 100, y: 40, "text-anchor": "middle", "dominant-baseline": "central", "font-size": 17 });
   qt.textContent = "🕋"; qib.appendChild(qt);
+  // منطقةُ نقرٍ أوسعُ على المؤشّر: النقرُ يُسمِّي «اتّجاهَ القِبلة» كما تُسمَّى الاتجاهاتُ الأخرى.
+  const qhit = svgEl("circle", { cx: 100, cy: 46, r: 18, fill: "transparent", style: "cursor:pointer" });
+  qib.appendChild(qhit);
+  const sayQibla = () => onPick && onPick({ k: "qibla", ar: QIBLA_AR, en: "Qibla", fr: "Qibla" });
+  qhit.addEventListener("click", sayQibla); qt.addEventListener("click", sayQibla);
   rose.appendChild(qib);
   svg.appendChild(rose);
   svg._rose = rose;   // مرجعٌ لتدويرِ الوردةِ ببوصلةٍ حقيقيّة

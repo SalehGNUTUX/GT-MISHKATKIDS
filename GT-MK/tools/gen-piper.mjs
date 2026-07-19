@@ -13,6 +13,7 @@ import stories from "../content/stories.js";
 import sararim from "../content/sararim-stories.js";
 import { allClockPhrases } from "../content/clock-time.js"; // جُمَلُ الوقت (v1.5) — نطقُ الساعةِ العربيّ
 import { allOrientWords, allPrayerWords } from "../content/orient.js"; // اتجاهات/فصول/فترات + أسماءُ الصلوات (نطقٌ عصبيٌّ عربيّ)
+import { QIBLA_AR } from "../src/orient-widget.js"; // نصُّ «اتّجاهُ القِبلة» المنطوق
 import { REACTIONS, GAME_REACTIONS, GAME_INTROS, NOTICES, GREETINGS, femaleize } from "../src/robo-phrases.js"; // عباراتُ الآليّ الموجَّهة
 import { PRAISE, TADABBUR } from "../src/islamic.js";
 import { DEEPEN, DEEPEN_FALLBACK } from "../src/think.js"; // أسئلةُ التعميقِ المنطوقة
@@ -52,6 +53,7 @@ const texts = uniq([
   ...roboDirected,                            // خطابُ الآليّ المذكّر (يشمل حلقةَ «علّم الآليّ»)
   ...roboDirected.map(femaleize),             // النسخُ المؤنّثةُ (تُطابقُ خطابَ الآليّ للأنثى)
   ...allClockPhrases("ar"),                  // نطقُ الوقتِ العربيُّ (144 جملة + لصيقتا ص/م)
+  QIBLA_AR,                                  // «اتّجاهُ القِبلة» (نقرُ مؤشّرِ القبلةِ في البوصلة)
   ...allOrientWords("ar"),                   // الاتجاهاتُ والفصولُ وفتراتُ اليوم (20 كلمة، عصبيّ)
   ...allPrayerWords(),                        // أسماءُ الصلواتِ الخمس (عصبيّ)
 ]);

@@ -20,7 +20,8 @@
     "gen:icons": "node tools/gen-fa-icons.mjs",
     "pkg:linux": "bash scripts/build-packages.sh linux",
     "pkg:apk": "bash scripts/build-packages.sh apk",
-    "pkg:all": "bash scripts/build-packages.sh all"
+    "pkg:all": "bash scripts/build-packages.sh all",
+    "check:icons": "node tools/check-icons.mjs"
   },
   "build": {
     "appId": "com.gnutux.gtmishkatkids",

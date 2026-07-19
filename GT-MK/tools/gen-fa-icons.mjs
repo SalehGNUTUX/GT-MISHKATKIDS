@@ -20,6 +20,8 @@ const MAP = {
   backup: "floppy-disk", clock: "clock", trophy: "trophy", compass: "compass", leaf: "leaf", sun: "sun", sound: "volume-high",
   // أيقوناتٌ أُضيفت بعدَ تدقيقِ v1.6 (كانت إيموجي خامًا في بطاقاتِ الألعاب)
   hunt: "magnifying-glass", bolt: "bolt", circledot: "circle-dot", dots: "table-cells-large", paw: "paw", globe: "globe", stopwatch: "stopwatch",
+  // تدقيقُ v1.6 الآليّ (npm run check:icons) — رموزٌ كانت خامّةً في مظاهرِ الذاكرةِ والأوسمةِ والمهامّ
+  abacus: "calculator", smile: "face-smile", rocket: "rocket", flower: "spa", seedling: "seedling", fire: "fire", dice: "dice", duo: "user-group",
   // الرياضيّات
   numbers: "list-ol", add: "plus", sub: "minus", mul: "xmark", div: "divide", find: "magnifying-glass",
   compare: "scale-balanced", pattern: "repeat", size: "ruler", circle: "circle", crafts: "scissors",
@@ -50,6 +52,8 @@ const EMOJI = {
   "🎙️": "mic", "🔗": "link", "🌟": "star", "🕌": "mosque", "🔬": "microscope", "🤝": "handshake",
   "🕐": "clock", "🏆": "trophy", "🧭": "compass", "🍂": "leaf", "🌅": "sun", "🔊": "sound", "💾": "backup",
   "🔎": "hunt", "⚡": "bolt", "⭕": "circledot", "▪️": "dots", "🐾": "paw", "🌍": "globe", "⏱️": "stopwatch",
+  "🧮": "abacus", "😀": "smile", "🚀": "rocket", "🌸": "flower", "🌱": "seedling", "🔥": "fire", "🎲": "dice", "👯": "duo",
+  "🐶": "animals", "🍕": "food", "🌿": "nature", "🐠": "fish", "⭐": "star", "🧐": "find", "💭": "sentences", "ﹷ": "spellcheck",
   "📝": "words", "💬": "phrases", "📚": "stories", "🎯": "quiz", "🎮": "play", "📖": "read",
   "🦁": "animals", "🎨": "colors", "👪": "family", "🍎": "food", "🧒": "body", "👋": "hand",
   "🏫": "school", "🌳": "nature", "🚗": "transport", "🍇": "fruits", "👕": "clothes",

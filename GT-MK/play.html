@@ -54,8 +54,8 @@
   .f4-c:active{transform:scale(.94)}
   .f4-d{width:82%;height:82%;border-radius:50%;display:block;animation:f4drop .22s cubic-bezier(.34,1.4,.64,1)}
   @keyframes f4drop{from{transform:translateY(-140%)}to{transform:translateY(0)}}
-  .f4-c.last{box-shadow:0 0 0 3px #fff inset;animation:f4blink .8s ease-in-out infinite}
-  @keyframes f4blink{0%,100%{filter:brightness(1)}50%{filter:brightness(1.55)}}
+  .f4-d.last{animation:f4blink .85s ease-in-out infinite;box-shadow:0 0 0 3px #fff}
+  @keyframes f4blink{0%,100%{filter:brightness(1);transform:scale(1)}50%{filter:brightness(1.6);transform:scale(.9)}}
   .f4-c.wn{box-shadow:0 0 0 3px var(--gold) inset}
   /* ▪️ مربّعاتُ النقاط */
   .dt-wrap{position:relative;margin:10px auto;touch-action:manipulation}
@@ -298,7 +298,7 @@ import { speak } from "./src/speak.js";
 import { robo, ROBO_SVG } from "./src/robo-companion.js";
 import * as sfx from "./src/sfx.js"; // أصواتٌ تفاعليّة (لمسة/نجاح/خطأ) للألعاب
 import { GAME_REACTIONS as GR, GAME_INTROS as GI, NOTICES } from "./src/robo-phrases.js"; // تفاعلاتُ الألعاب (مُولَّدةٌ عبر Piper)
-import { vsEndRound, vsWinsOf, vsTurnHtml, VS, setParentFemale, vsStartIndex, vsResetStarter } from "./src/versus.js"; // نافذةُ نهاية الجولة + سجلُّ الانتصارات + حبّةُ الدور (v1.4) + جنسُ الوالد (v1.5.5)
+import { vsEndRound, vsWinsOf, vsTurnHtml, VS, setParentFemale, vsStartIndex, vsResetStarter, PARENT_SELF, setParentSelf, parentLabel, parentAvatarOf } from "./src/versus.js"; // نافذةُ نهاية الجولة + سجلُّ الانتصارات + حبّةُ الدور (v1.4) + جنسُ الوالد (v1.5.5)
 import { clockGame, AR_L } from "./src/clock-widget.js"; // تحدّي الساعة (v1.5)
 import { playClipAsync } from "./src/tts-clips.js";      // نطقُ جُمَلِ الوقت (Piper العصبيّ)
 import { listProfiles, getProfile, getCurrentUser, getParentName, getParentAvatar } from "./src/accounts.js";
@@ -437,7 +437,10 @@ function emojiArt(k){ return `<span class="memoji">${k}</span>`; }
 let m_theme="nature", m_art=null;
 
 function startMemory(){ renderMemSetup(); try{speak(GI.memory);}catch(e){} }
-function meCard(){ const u=getCurrentUser(); return (u && u.name) ? { name:u.name, avatar:u.avatar||"🙂" } : { name:"أنت", avatar:"🧒" }; }
+function meCard(){ const u=getCurrentUser();
+  // حسابُ الوالدَينِ هويّةٌ واحدةٌ «الوالدان» ⇒ نُسمّيه أبًا أو أمًّا (سجلٌّ منفصلٌ وخطابٌ صحيح).
+  if(u && u.role==="parent") return { name:parentLabel(PARENT_SELF.female), avatar:parentAvatarOf(PARENT_SELF.female) };
+  return (u && u.name) ? { name:u.name, avatar:u.avatar||"🙂" } : { name:"أنت", avatar:"🧒" }; }
 function siblings(){ const u=getCurrentUser(); return listProfiles().filter(p=>!u||p.id!==u.id).map(p=>({ key:"p:"+p.id, name:p.name, avatar:p.avatar||"🙂" })); }
 
 function renderMemSetup(){
@@ -452,7 +455,8 @@ function renderMemSetup(){
        <div class="setrow"><div class="setlbl">🎚️ الصعوبة</div><div class="lvl" id="mlvl"><button data-p="4" class="${m_pairs===4?"on":""}">سهل · 8</button><button data-p="6" class="${m_pairs===6?"on":""}">متوسّط · 12</button><button data-p="8" class="${m_pairs===8?"on":""}">صعب · 16</button><button data-p="10" class="${m_pairs===10?"on":""}">خبير · 20</button></div></div>
        <div class="setrow"><div class="setlbl">🎨 المظهر</div><div class="lvl" id="mtheme">${MEMORY_THEMES.map(t=>`<button data-t="${t.id}" class="${m_theme===t.id?"on":""}">${t.ic} ${t.name}</button>`).join("")}</div></div>
        <div class="setrow"><div class="setlbl">👥 اللعبُ مع</div><div class="lvl" id="mopp">${oppList}</div></div>
-       <div class="setrow" id="mprow" style="${m_opp==="parent"?"":"display:none"}"><div class="setlbl">👤 مَن سيلعب؟ (ليخاطبَه الآليُّ صحيحًا)</div><div class="lvl" id="mpg"><button data-pg="m" class="${!VS.parentFemale?"on":""}">👨 أب</button><button data-pg="f" class="${VS.parentFemale?"on":""}">👩 أم</button></div></div>
+       ${(()=>{const u=getCurrentUser();if(!(u&&u.role==="parent"))return "";return `<div class="setrow"><div class="setlbl">👤 مَن أنت؟ (ليَنفصلَ سجلُّ كلٍّ منكما)</div><div class="lvl" id="mself"><button data-self="m" class="${!PARENT_SELF.female?"on":""}">👨 الأب</button><button data-self="f" class="${PARENT_SELF.female?"on":""}">👩 الأم</button></div></div>`;})()}
+       <div class="setrow" id="mprow" style="${m_opp==="parent" && !(()=>{const u=getCurrentUser();return !!(u&&u.role==="parent");})() ?"":"display:none"}"><div class="setlbl">👤 مَن سيلعب؟ (ليخاطبَه الآليُّ صحيحًا)</div><div class="lvl" id="mpg"><button data-pg="m" class="${!VS.parentFemale?"on":""}">👨 أب</button><button data-pg="f" class="${VS.parentFemale?"on":""}">👩 أم</button></div></div>
        <div class="setrow" id="airow" style="${m_opp==="ai"?"":"display:none"}"><div class="setlbl">🤖 مستوى الآليّ</div><div class="lvl" id="maint"><button data-ai="easy" class="${m_ai==="easy"?"on":""}">سهل</button><button data-ai="medium" class="${m_ai==="medium"?"on":""}">متوسّط</button><button data-ai="hard" class="${m_ai==="hard"?"on":""}">صعب</button></div></div>
        <div class="setrow"><div class="setlbl">⏱️ ضدّ الوقت</div><div class="lvl" id="mtimed"><button data-tm="1" class="${m_timed?"on":""}">مُفعَّل</button><button data-tm="0" class="${!m_timed?"on":""}">مُعطَّل</button></div></div>
        <button id="memStart">▶ ابدأ اللعب</button>
@@ -462,6 +466,7 @@ function renderMemSetup(){
   document.getElementById("mtheme").addEventListener("click",e=>{ const b=e.target.closest("[data-t]"); if(!b)return; m_theme=b.getAttribute("data-t"); renderMemSetup(); });
   document.getElementById("mopp").addEventListener("click",e=>{ const b=e.target.closest("[data-opp]"); if(!b)return; m_opp=b.getAttribute("data-opp"); renderMemSetup(); });
   { const mpg=document.getElementById("mpg"); if(mpg) mpg.addEventListener("click",e=>{ const b=e.target.closest("[data-pg]"); if(!b)return; setParentFemale(b.getAttribute("data-pg")==="f"); renderMemSetup(); }); }
+  { const msf=document.getElementById("mself"); if(msf) msf.addEventListener("click",e=>{ const b=e.target.closest("[data-self]"); if(!b)return; setParentSelf(b.getAttribute("data-self")==="f"); renderMemSetup(); }); }
   document.getElementById("maint").addEventListener("click",e=>{ const b=e.target.closest("[data-ai]"); if(!b)return; m_ai=b.getAttribute("data-ai"); renderMemSetup(); });
   document.getElementById("mtimed").addEventListener("click",e=>{ const b=e.target.closest("[data-tm]"); if(!b)return; m_timed=b.getAttribute("data-tm")==="1"; renderMemSetup(); });
   document.getElementById("memStart").onclick=newMemGame;
@@ -471,9 +476,10 @@ function newMemGame(){ vsRun=true;
   const T=MEMORY_THEMES.find(t=>t.id===m_theme)||MEMORY_THEMES[0]; m_art=T.art;
   const chosen=shuffle([...T.pool]).slice(0,m_pairs);
   m_deck=shuffle([...chosen,...chosen]); m_flip=[]; m_match=new Set(); m_moves=0; m_lock=false; m_seen=new Map(); m_turn=vsStartIndex(m_players);
-  const me=meCard(); const u=getCurrentUser(); const meF=!!(u&&u.gender==="f");
+  const me=meCard(); const u=getCurrentUser(); const isPar=!!(u&&u.role==="parent"); const meF=isPar?PARENT_SELF.female:!!(u&&u.gender==="f");
   if(m_opp==="ai") m_players=[{...me,role:"me",female:meF,score:0,cpu:false},{name:"الآليّ",avatar:"🤖",role:"ai",score:0,cpu:true}];
-  else if(m_opp==="parent") m_players=[{...me,role:"me",female:meF,score:0,cpu:false},{name:getParentName(),avatar:getParentAvatar(),role:"parent",score:0,cpu:false,female:VS.parentFemale}];
+  else if(m_opp==="parent"){ const o=isPar?!PARENT_SELF.female:VS.parentFemale;   // الوالدُ ضدّ الوالد ⇒ الطرفُ الآخرُ حتمًا
+    m_players=[{...me,role:"me",female:meF,score:0,cpu:false},{name:isPar?parentLabel(o):getParentName(),avatar:isPar?parentAvatarOf(o):getParentAvatar(),role:"parent",score:0,cpu:false,female:o}]; }
   else if(m_opp.startsWith("p:")){ const p=getProfile(m_opp.slice(2)); m_players=[{...me,role:"me",female:meF,score:0,cpu:false},{name:p?p.name:"اللاعب 2",avatar:(p&&p.avatar)||"🙂",role:"sibling",score:0,cpu:false,female:!!(p&&p.gender==="f")}]; }
   else m_players=[{...me,role:"me",female:meF,score:0,cpu:false}]; // وحدي
   renderMemory();
@@ -728,9 +734,11 @@ const VS_COLA="#E0566B", VS_COLB="#4C8BF5";
 const AIDIFF=x=>({easy:"سهل",medium:"متوسّط",hard:"صعب"}[x]||"");   // صعوبةُ الآليّ عربيًّا (لسجلِّ الألعاب)
 function vsMakePlayers(forceTwo){
   const u=getCurrentUser();
-  const me=meCard(), m={...me,role:"me",female:!!(u&&u.gender==="f"),score:0,cpu:false,color:VS_COLA};
+  const isPar=!!(u&&u.role==="parent");
+  const me=meCard(), m={...me,role:"me",female:isPar?PARENT_SELF.female:!!(u&&u.gender==="f"),score:0,cpu:false,color:VS_COLA};
   if(vs_opp==="ai") return [m,{name:"الآليّ",avatar:"🤖",role:"ai",score:0,cpu:true,color:VS_COLB}];
-  if(vs_opp==="parent") return [m,{name:getParentName(),avatar:getParentAvatar(),role:"parent",score:0,cpu:false,female:VS.parentFemale,color:VS_COLB}];
+  if(vs_opp==="parent"){ if(isPar){ const o=!PARENT_SELF.female; return [m,{name:parentLabel(o),avatar:parentAvatarOf(o),role:"parent",score:0,cpu:false,female:o,color:VS_COLB}]; }
+    return [m,{name:getParentName(),avatar:getParentAvatar(),role:"parent",score:0,cpu:false,female:VS.parentFemale,color:VS_COLB}]; }
   if(vs_opp.startsWith("p:")){ const p=getProfile(vs_opp.slice(2)); return [m,{name:p?p.name:"اللاعب 2",avatar:(p&&p.avatar)||"🙂",role:"sibling",score:0,cpu:false,female:!!(p&&p.gender==="f"),color:VS_COLB}]; }
   return forceTwo ? [m,{name:"الآليّ",avatar:"🤖",role:"ai",score:0,cpu:true,color:VS_COLB}] : [m]; // وحدي (أو إجبارُ خصمٍ للألعاب الثنائيّة)
 }
@@ -753,7 +761,8 @@ function vsSetup(cfg){
       <div class="memset">
         <div class="setrow"><div class="setlbl">${cfg.diffLabel||"🎚️ الصعوبة"}</div><div class="lvl" id="vdiff">${dh}</div></div>
         <div class="setrow"><div class="setlbl">👥 اللعبُ مع</div><div class="lvl" id="vopp">${opp}</div></div>
-        <div class="setrow" id="vprow" style="${vs_opp==="parent"?"":"display:none"}"><div class="setlbl">👤 مَن سيلعب؟ (ليخاطبَه الآليُّ صحيحًا)</div><div class="lvl" id="vpg"><button data-pg="m" class="${!VS.parentFemale?"on":""}">👨 أب</button><button data-pg="f" class="${VS.parentFemale?"on":""}">👩 أم</button></div></div>
+        ${(()=>{const u=getCurrentUser();if(!(u&&u.role==="parent"))return "";return `<div class="setrow"><div class="setlbl">👤 مَن أنت؟ (ليَنفصلَ سجلُّ كلٍّ منكما)</div><div class="lvl" id="vself"><button data-self="m" class="${!PARENT_SELF.female?"on":""}">👨 الأب</button><button data-self="f" class="${PARENT_SELF.female?"on":""}">👩 الأم</button></div></div>`;})()}
+        <div class="setrow" id="vprow" style="${vs_opp==="parent" && !(()=>{const u=getCurrentUser();return !!(u&&u.role==="parent");})() ?"":"display:none"}"><div class="setlbl">👤 مَن سيلعب؟ (ليخاطبَه الآليُّ صحيحًا)</div><div class="lvl" id="vpg"><button data-pg="m" class="${!VS.parentFemale?"on":""}">👨 أب</button><button data-pg="f" class="${VS.parentFemale?"on":""}">👩 أم</button></div></div>
         <div class="setrow" id="vairow" style="${vs_opp==="ai"?"":"display:none"}"><div class="setlbl">🤖 مستوى الآليّ</div><div class="lvl" id="vai"><button data-ai="easy" class="${vs_ai==="easy"?"on":""}">سهل</button><button data-ai="medium" class="${vs_ai==="medium"?"on":""}">متوسّط</button><button data-ai="hard" class="${vs_ai==="hard"?"on":""}">صعب</button></div></div>
         ${cfg.toggle?`<div class="setrow"><div class="setlbl">${cfg.toggle.label}</div><div class="lvl" id="vtg"><button data-tg="1" class="${cfg.toggle.get()?"on":""}">مُفعَّل</button><button data-tg="0" class="${!cfg.toggle.get()?"on":""}">مُعطَّل</button></div></div>`:""}
         <button id="vStart">▶ ابدأ اللعب</button>
@@ -763,6 +772,7 @@ function vsSetup(cfg){
   document.getElementById("vdiff").addEventListener("click",e=>{ const b=e.target.closest("[data-d]"); if(!b)return; cfg.setDiff(b.getAttribute("data-d")); rr(); });
   document.getElementById("vopp").addEventListener("click",e=>{ const b=e.target.closest("[data-opp]"); if(!b)return; vs_opp=b.getAttribute("data-opp"); rr(); });
   { const vpg=document.getElementById("vpg"); if(vpg) vpg.addEventListener("click",e=>{ const b=e.target.closest("[data-pg]"); if(!b)return; setParentFemale(b.getAttribute("data-pg")==="f"); rr(); }); }
+  { const vsf=document.getElementById("vself"); if(vsf) vsf.addEventListener("click",e=>{ const b=e.target.closest("[data-self]"); if(!b)return; setParentSelf(b.getAttribute("data-self")==="f"); rr(); }); }
   document.getElementById("vai").addEventListener("click",e=>{ const b=e.target.closest("[data-ai]"); if(!b)return; vs_ai=b.getAttribute("data-ai"); rr(); });
   const vtg=document.getElementById("vtg"); if(vtg) vtg.addEventListener("click",e=>{ const b=e.target.closest("[data-tg]"); if(!b)return; cfg.toggle.set(b.getAttribute("data-tg")==="1"); rr(); });
   document.getElementById("vStart").onclick=cfg.start;
@@ -922,7 +932,8 @@ function renderF4(){
     const i=f4Idx(r,c), v=f4_b[i];
     const wn=f4_win&&f4_win.line&&f4_win.line.includes(i)?" wn":"";
     const lz=i===f4_last?" last":"";
-    cells+=`<div class="f4-c${wn}${lz}" style="width:${S}px;height:${S}px">${v==null?"":`<span class="f4-d" style="background:${f4_ps[v].color}"></span>`}</div>`;
+    // data-c على كلِّ خليّة: النقرُ في أيِّ موضعٍ من العمودِ يُسقِطُ القرصَ (لا السهمَ وحدَه).
+    cells+=`<div class="f4-c${wn}" data-c="${c}" style="width:${S}px;height:${S}px">${v==null?"":`<span class="f4-d${lz}" style="background:${f4_ps[v].color}"></span>`}</div>`;
   }
   const heads=Array.from({length:F4_C},(_,c)=>`<div class="f4-h" data-c="${c}" style="width:${S}px">${f4LowestRow(f4_b,c)>=0?"▾":""}</div>`).join("");
   view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">🔴 أربعةٌ على التوالي — أسقِطْ قرصَكَ وصُفَّ أربعةً!</div></div>`

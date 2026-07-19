@@ -3,7 +3,7 @@
 // محلّيٌّ بالكامل. النطقُ عبر دالّةٍ مُمرَّرةٍ speak(text) (عربيّ: espeak · أجنبيّ: Piper).
 import { robo } from "./robo-companion.js";
 import { vsSetup, vsMakePlayers, vsScoreHtml, vsTurnHtml, vsEndRound, vP, sfx } from "./versus.js";
-import { DIRECTIONS, SEASONS, DAYPARTS, nameOf } from "../content/orient.js";
+import { DIRECTIONS, SEASONS, DAYPARTS, nameOf, QIBLA_AR } from "../content/orient.js";
 
 let styled = false;
 function ensureStyle() {
@@ -51,8 +51,6 @@ export function floatCard(title, body) {
   el.onclick = close; _floatTmr = setTimeout(close, 5000);
 }
 
-// نصُّ القِبلةِ المنطوق — **مشكولٌ بالكامل** ليُولَّدَ له مقطعُ Piper ويُنطَقَ سليمًا.
-export const QIBLA_AR = "اتِّجَاهُ القِبْلَة";
 const NS = "http://www.w3.org/2000/svg";
 const svgEl = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
 const rad = d => (d - 90) * Math.PI / 180;

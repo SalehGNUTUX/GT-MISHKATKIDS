@@ -12,8 +12,7 @@ import { forSynthesis } from "../src/arabic-normalize.js";
 import stories from "../content/stories.js";
 import sararim from "../content/sararim-stories.js";
 import { allClockPhrases } from "../content/clock-time.js"; // جُمَلُ الوقت (v1.5) — نطقُ الساعةِ العربيّ
-import { allOrientWords, allPrayerWords } from "../content/orient.js"; // اتجاهات/فصول/فترات + أسماءُ الصلوات (نطقٌ عصبيٌّ عربيّ)
-import { QIBLA_AR } from "../src/orient-widget.js"; // نصُّ «اتّجاهُ القِبلة» المنطوق
+import { allOrientWords, allPrayerWords, QIBLA_AR } from "../content/orient.js"; // اتجاهات/فصول/فترات + أسماءُ الصلوات (نطقٌ عصبيٌّ عربيّ)
 import { REACTIONS, GAME_REACTIONS, GAME_INTROS, NOTICES, GREETINGS, femaleize } from "../src/robo-phrases.js"; // عباراتُ الآليّ الموجَّهة
 import { PRAISE, TADABBUR } from "../src/islamic.js";
 import { DEEPEN, DEEPEN_FALLBACK } from "../src/think.js"; // أسئلةُ التعميقِ المنطوقة
@@ -65,7 +64,11 @@ const setDir = join(OUTDIR, setHash);
 mkdirSync(setDir, { recursive: true });
 // تصحيحاتُ تركيبٍ لكلماتٍ يُقصّرُ العصبيُّ مدَّها (المفتاحُ/الملفُّ يبقى الأصلَ، والنصُّ المُركَّبُ بديلٌ ممدود):
 // «مُمْتَاز» كان يُنطَقُ قصيرًا (mumtaz)؛ مدُّ الألفِ صراحةً يُعطي المدَّ الصحيح (mumtaaz).
-const SYNTH_FIX = { "مُمْتَاز!": "مُمْتَااز!" };
+const SYNTH_FIX = {
+  "مُمْتَاز!": "مُمْتَااز!",
+  // «الوَقْت» كان يُسمَعُ «الوَخْت» (القافُ الساكنةُ تُفخَّمُ خطأً) — فصلُ المقطعِ يُصحّحُ النطق.
+  "اِنْتَهَى الوَقْت! لَعِبْتُ عَنْكَ هَذِهِ المَرَّة.": "اِنْتَهَى الوَقَتُ. لَعِبْتُ عَنْكَ هَذِهِ المَرَّة.",
+};
 const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: forSynthesis(SYNTH_FIX[t] || (ORIENT_AR.has(t) ? t + " ." : t)), out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
 
 console.log(`🔊 توليد ${tasks.length} مقطعًا بصوت Piper العصبيّ (${SET.id})…`);

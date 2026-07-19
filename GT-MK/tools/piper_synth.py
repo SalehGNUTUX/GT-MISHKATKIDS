@@ -29,10 +29,18 @@ def main():
     with open(tasks_path, encoding="utf-8") as f:
         tasks = json.load(f)
 
-    manifest, ok, fail = {}, 0, 0
+    manifest, ok, fail, skip = {}, 0, 0, 0
     total = len(tasks)
+    # تخطّي المقاطعِ الموجودةِ سلفًا: التوليدُ تفاضليٌّ فلا يُعادُ بناءُ الألفِ لأجلِ عبارةٍ جديدة.
+    # (المفتاحُ = نصُّ العبارةِ نفسُه، فتغييرُ النصِّ يُنتِجُ ملفًّا جديدًا تلقائيًّا.)
+    # FORCE=1 يُعيدُ توليدَ كلِّ شيءٍ عند الحاجةِ (تغييرُ النموذجِ أو إعداداتِ التركيب).
+    force = os.environ.get("PIPER_FORCE") == "1"
     for i, t in enumerate(tasks):
         key, text, out, file = t["key"], t["text"], t["out"], t["file"]
+        if not force and os.path.exists(out) and os.path.getsize(out) > 0:
+            manifest[key] = file
+            skip += 1
+            continue
         wav_path = None
         try:
             fd, wav_path = tempfile.mkstemp(suffix=".wav")
@@ -60,7 +68,7 @@ def main():
 
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, separators=(",", ":"))
-    print(f"✅ {ok} مقطعًا ({fail} فشل) -> {manifest_path}")
+    print(f"✅ {ok} مقطعًا جديدًا · {skip} موجودًا (تُخُطِّي) · {fail} فشل -> {manifest_path}")
     sys.exit(0 if ok > 0 else 1)
 
 

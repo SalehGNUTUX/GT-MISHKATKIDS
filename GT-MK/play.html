@@ -45,6 +45,18 @@
   .pill{background:#F3EEE3;border-radius:999px;padding:5px 12px;font-size:13px;color:#555}
   .pill b{color:var(--primary-d)}
 
+  /* 🔴 أربعةٌ على التوالي */
+  .f4-wrap{margin:10px auto}
+  .f4-heads{display:flex;justify-content:center}
+  .f4-h{text-align:center;font-size:18px;color:var(--primary);cursor:pointer;line-height:1.2;user-select:none}
+  .f4-g{display:grid;justify-content:center;gap:3px;background:#2f6fd0;padding:6px;border-radius:14px}
+  .f4-c{background:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s}
+  .f4-c:active{transform:scale(.94)}
+  .f4-d{width:82%;height:82%;border-radius:50%;display:block;animation:f4drop .22s cubic-bezier(.34,1.4,.64,1)}
+  @keyframes f4drop{from{transform:translateY(-140%)}to{transform:translateY(0)}}
+  .f4-c.last{box-shadow:0 0 0 3px #fff inset;animation:f4blink .8s ease-in-out infinite}
+  @keyframes f4blink{0%,100%{filter:brightness(1)}50%{filter:brightness(1.55)}}
+  .f4-c.wn{box-shadow:0 0 0 3px var(--gold) inset}
   /* ▪️ مربّعاتُ النقاط */
   .dt-wrap{position:relative;margin:10px auto;touch-action:manipulation}
   .dt-dot{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--ink);opacity:.55;transform:translate(-4.5px,-4.5px)}
@@ -341,6 +353,7 @@ const GAMES = [
   { id:"memory", ic:"🧠", t:"لعبة الذاكرة", d:"جِد الصورتين المتطابقتين — بمظاهرَ متعدّدة", vs:1, nw:1, cat:"fun" },
   { id:"xo",     ic:"⭕", t:"دائرةٌ وعلامة", d:"ثلاثةٌ في خطٍّ ضدّ الآليّ", vs:1, cat:"fun" },
   { id:"dots",   ic:"▪️", t:"مربّعاتُ النقاط", d:"صِلِ النقاطَ وأغلِقِ المربّعات", vs:1, nw:1, cat:"fun" },
+  { id:"four",   ic:"⭕", t:"أربعةٌ على التوالي", d:"أسقِطْ قرصَكَ وصُفَّ أربعةً", vs:1, nw:1, cat:"fun" },
   { id:"print",  ic:"🖨️", t:"ألعاب/أنشطة للطباعة", d:"ألعابٌ تُلعَبُ على الورق + أنشطةٌ حسّيّة", cat:"tool" },
 ];
 // الترفيهيّةُ أوّلًا (طلبُ المستخدم): يفتحُ الطفلُ الصفحةَ فيجدُ ما يُمتِعُه في البداية.
@@ -387,7 +400,7 @@ function renderMenu(){
   view.querySelectorAll(".menu").forEach(m=>m.addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); }));
 }
 function open(id){ if(id!=="print") document.body.classList.add("ingame"); // شاشةٌ مخصّصةٌ للّعبة: يُطوى رأسُ الصفحةِ وشريطُ التنقّل
-  ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,dots:startDots,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,clock:startClock,print:()=>location.assign("print.html")})[id](); }
+  ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,dots:startDots,four:startF4,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,clock:startClock,print:()=>location.assign("print.html")})[id](); }
 
 /* ===================== 🕐 تحدّي الساعة (v1.5 · versus مشترَك) ===================== */
 function startClock(){
@@ -835,6 +848,91 @@ function xoEnd(w){
   if(w.p!==-1) xo_ps[w.p].score++;
   renderXO();
   vsEndRound(xo_ps, { game:"دائرةٌ وعلامة", diff:`${xo_size}×${xo_size}`, onAgain:newXO, onExit:startXO });
+}
+
+/* ===================== 🔴 أربعةٌ على التوالي (v1.6 · لوحةٌ رأسيّةٌ بالجاذبيّة) =====================
+   7 أعمدةٍ × 6 صفوف: تختارُ **عمودًا** فيسقطُ القرصُ لأدنى فراغ. أربعةٌ متتاليةٌ (أفقيّ/رأسيّ/قُطريّ) تفوز.
+   الخياراتُ 7 لا 42 — سهلةٌ على الطفلِ وعميقةٌ في آن. */
+let f4_ps=[], f4_b=[], f4_turn=0, f4_lock=false, f4_done=false, f4_win=null, f4_last=-1, f4_diff="medium", f4_timed=true, f4_raf=null;
+const F4_C=7, F4_R=6, F4_MS=12000;
+const f4Idx=(r,c)=>r*F4_C+c;
+function f4CancelT(){ if(f4_raf){ cancelAnimationFrame(f4_raf); f4_raf=null; } }
+function f4ArmT(){ const t0=Date.now(); f4CancelT();
+  const tick=()=>{ if(!vsRun){ f4CancelT(); return; }
+    const left=F4_MS-(Date.now()-t0), bar=document.getElementById("f4tbar");
+    if(bar) bar.style.width=Math.max(0,left/F4_MS*100)+"%";
+    if(left<=0){ if(!f4_lock&&!f4_done&&f4_ps[f4_turn]&&!f4_ps[f4_turn].cpu){ const av=f4Avail(f4_b); if(av.length){ sfx.nope(); dtSay(); f4Drop(av[Math.floor(Math.random()*av.length)]); } } f4CancelT(); return; }
+    f4_raf=requestAnimationFrame(tick); }; tick(); }
+function startF4(){ f4CancelT(); vsSetup({ say:GI.four, soloOk:true,
+  diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>f4_diff, setDiff:v=>{f4_diff=v;},
+  toggle:{ label:"⏱️ اللعبُ ضدّ الوقت", get:()=>f4_timed, set:v=>{f4_timed=v;} }, start:newF4 }); try{speak(GI.four);}catch(e){} }
+function newF4(){
+  vsRun=true; f4_b=Array(F4_C*F4_R).fill(null);
+  f4_ps=vsMakePlayers();
+  if(f4_ps.length<2){ const me=f4_ps[0]; f4_ps=[{...me,name:me.name+" 🔴",avatar:"🔴",color:VS_COLA},{...me,name:me.name+" 🟡",avatar:"🟡",color:VS_COLB}]; }
+  f4_ps.forEach(p=>p.score=0);
+  f4_turn=vsStartIndex(f4_ps); f4_lock=false; f4_done=false; f4_win=null; f4_last=-1;
+  renderF4(); if(f4_ps[f4_turn].cpu) setTimeout(f4AI,600);
+}
+const f4Avail=b=>{ const out=[]; for(let c=0;c<F4_C;c++) if(b[f4Idx(0,c)]==null) out.push(c); return out; };
+function f4LowestRow(b,c){ for(let r=F4_R-1;r>=0;r--) if(b[f4Idx(r,c)]==null) return r; return -1; }
+// أربعةٌ متتاليةٌ من خانةٍ في أيِّ اتجاهٍ من الاتجاهاتِ الأربعة
+function f4Winner(b){
+  const dirs=[[0,1],[1,0],[1,1],[1,-1]];
+  for(let r=0;r<F4_R;r++)for(let c=0;c<F4_C;c++){ const p=b[f4Idx(r,c)]; if(p==null) continue;
+    for(const [dr,dc] of dirs){ const line=[f4Idx(r,c)]; let rr=r+dr, cc=c+dc;
+      while(rr>=0&&rr<F4_R&&cc>=0&&cc<F4_C&&b[f4Idx(rr,cc)]===p){ line.push(f4Idx(rr,cc)); if(line.length===4) return {p,line}; rr+=dr; cc+=dc; } } }
+  return b.every(x=>x!=null) ? {p:-1,line:[]} : null;
+}
+function f4Drop(c){
+  if(f4_lock||f4_done) return;
+  const r=f4LowestRow(f4_b,c); if(r<0) return;
+  f4CancelT();
+  f4_b[f4Idx(r,c)]=f4_turn; f4_last=f4Idx(r,c); sfx.tap();
+  const w=f4Winner(f4_b);
+  if(w){ f4_done=true; f4_win=w; if(w.p!==-1) f4_ps[w.p].score++; renderF4();
+    vsEndRound(f4_ps,{ game:"أربعةٌ على التوالي", diff:f4_diff, onAgain:newF4, onExit:startF4 }); return; }
+  f4_turn=(f4_turn+1)%f4_ps.length; renderF4();
+  if(f4_ps[f4_turn].cpu) setTimeout(f4AI,600);
+}
+// آليٌّ بثلاثِ صعوبات: يفوزُ إن أمكن، ويَسُدُّ فوزَ الخصم، ويتجنّبُ عمودًا يُهدي الخصمَ فوزًا فوقَه.
+function f4AI(){
+  if(f4_done) return; const av=f4Avail(f4_b); if(!av.length) return;
+  const me=f4_turn, foe=(f4_turn+1)%f4_ps.length;
+  const tryDrop=(b,c,p)=>{ const r=f4LowestRow(b,c); if(r<0) return null; const n=b.slice(); n[f4Idx(r,c)]=p; return n; };
+  const wins=(b,p)=>{ const w=f4Winner(b); return w && w.p===p; };
+  if(f4_diff!=="easy"){
+    for(const c of av){ const n=tryDrop(f4_b,c,me); if(n&&wins(n,me)) return f4Drop(c); }        // افُزْ
+    for(const c of av){ const n=tryDrop(f4_b,c,foe); if(n&&wins(n,foe)) return f4Drop(c); }      // سُدَّ
+  }
+  let pool=av;
+  if(f4_diff==="hard"){                                                                          // لا تُهدِ فوزًا فوقَ حركتِك
+    const safe=av.filter(c=>{ const n=tryDrop(f4_b,c,me); if(!n) return false;
+      const n2=tryDrop(n,c,foe); return !(n2&&wins(n2,foe)); });
+    if(safe.length) pool=safe;
+    const mid=pool.filter(c=>Math.abs(c-3)<=1); if(mid.length) pool=mid;                         // الوسطُ أقوى
+  } else if(f4_diff==="medium"){ const mid=av.filter(c=>Math.abs(c-3)<=2); if(mid.length) pool=mid; }
+  f4Drop(pool[Math.floor(Math.random()*pool.length)]);
+}
+function renderF4(){
+  const cur=f4_ps[f4_turn];
+  const S=Math.min(46, Math.floor((Math.min(innerWidth-46,340))/F4_C));
+  let cells="";
+  for(let r=0;r<F4_R;r++)for(let c=0;c<F4_C;c++){
+    const i=f4Idx(r,c), v=f4_b[i];
+    const wn=f4_win&&f4_win.line&&f4_win.line.includes(i)?" wn":"";
+    const lz=i===f4_last?" last":"";
+    cells+=`<div class="f4-c${wn}${lz}" style="width:${S}px;height:${S}px">${v==null?"":`<span class="f4-d" style="background:${f4_ps[v].color}"></span>`}</div>`;
+  }
+  const heads=Array.from({length:F4_C},(_,c)=>`<div class="f4-h" data-c="${c}" style="width:${S}px">${f4LowestRow(f4_b,c)>=0?"▾":""}</div>`).join("");
+  view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">🔴 أربعةٌ على التوالي — أسقِطْ قرصَكَ وصُفَّ أربعةً!</div></div>`
+    + vsScoreHtml(f4_ps) + (f4_done?"":vsTurnHtml(cur))
+    + ((f4_timed && !f4_done && cur && !cur.cpu)?`<div class="hubar" style="max-width:${S*F4_C}px;margin:6px auto"><span id="f4tbar"></span></div>`:"")
+    + `<div class="f4-wrap" style="width:${S*F4_C}px"><div class="f4-heads">${heads}</div><div class="f4-g" style="grid-template-columns:repeat(${F4_C},${S}px)">${cells}</div></div>`;
+  wireBack();
+  const w=view.querySelector(".f4-wrap");
+  if(w && !f4_done && cur && !cur.cpu) w.addEventListener("click", e=>{ const h=e.target.closest("[data-c]"); if(h) f4Drop(+h.getAttribute("data-c")); });
+  f4CancelT(); if(f4_timed && !f4_done && cur && !cur.cpu) f4ArmT();
 }
 
 /* ===================== ▪️ مربّعاتُ النقاط (v1.6 · نسخةٌ رقميّةٌ للّعبةِ الورقيّة) =====================

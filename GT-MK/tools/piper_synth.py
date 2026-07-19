@@ -69,7 +69,7 @@ def main():
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, separators=(",", ":"))
     print(f"✅ {ok} مقطعًا جديدًا · {skip} موجودًا (تُخُطِّي) · {fail} فشل -> {manifest_path}")
-    sys.exit(0 if ok > 0 else 1)
+    sys.exit(0 if (ok + skip) > 0 and fail == 0 else 1)
 
 
 if __name__ == "__main__":

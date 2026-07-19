@@ -345,11 +345,11 @@ const GAMES = [
 ];
 // الترفيهيّةُ أوّلًا (طلبُ المستخدم): يفتحُ الطفلُ الصفحةَ فيجدُ ما يُمتِعُه في البداية.
 const GAME_GROUPS = [
-  { key:"fun",     label:"🎈 ألعابٌ ترفيهيّة" },
-  { key:"letters", label:"🔤 ألعابُ الحروفِ والكلمات (تعليميّة)" },
-  { key:"math",    label:"🔢 ألعابُ الأرقامِ والوقت (تعليميّة)" },
-  { key:"skill",   label:"⚡ ألعابُ المهارةِ والتركيز (تعليميّة)" },
-  { key:"tool",    label:"🖨️ أدوات" },
+  { key:"fun",     ic:"🎮", label:"🎈 ألعابٌ ترفيهيّة" },
+  { key:"letters", ic:"🔤", label:"🔤 ألعابُ الحروفِ والكلمات (تعليميّة)" },
+  { key:"math", ic:"🔢",    label:"🔢 ألعابُ الأرقامِ والوقت (تعليميّة)" },
+  { key:"skill", ic:"⚡",   label:"⚡ ألعابُ المهارةِ والتركيز (تعليميّة)" },
+  { key:"tool", ic:"🖨️",    label:"🖨️ أدوات" },
 ];
 let curCat=null; // القسمُ المفتوحُ في لوحةِ الأقسام (null = لوحةُ الأقسام)
 function renderMenu(){
@@ -362,7 +362,7 @@ function renderMenu(){
     const cats = GAME_GROUPS.map(gr=>{
       const gs=GAMES.filter(g=>g.cat===gr.key); if(!gs.length) return "";
       const vs=gs.filter(g=>g.vs).length, nw=gs.some(g=>g.nw);
-      const e=gr.label.trim().slice(0,2), name=gr.label.trim().slice(2).trim();
+      const e=iconHtml(gr.ic), name=gr.label.trim().replace(/^\S+\s*/,"");   // أيقونةٌ معتمدةٌ (SVG) لا إيموجي خام
       return `<div class="ccard" data-cat="${gr.key}">${nw?'<span class="newbadge">🆕 جديد</span>':''}
         <div class="ic">${e}</div><div class="t">${name}</div>
         <div class="d">${gs.length} ${gs.length===1?"لعبة":"ألعاب"}${vs?` · ⚔️ ${vs} تنافسيّة`:""}</div></div>`;

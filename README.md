@@ -143,11 +143,16 @@ GT-MISHKATKIDS/        # جذر المستودع
 - [`docs/audio-pronunciation.md`](GT-MK/docs/audio-pronunciation.md) — نظامُ الصوتِ والنطقِ وترتيبُ التشكيل.
 - [`docs/piper-tts-guide.md`](GT-MK/docs/piper-tts-guide.md) — **دليلُ Piper TTS الشامل** (الإعداد · اللغات · إصلاحُ النطق · التوليدُ التفاضليّ · الحدود) — مرجعٌ للمطوّرين.
 - [`docs/pitfalls-and-solutions.md`](GT-MK/docs/pitfalls-and-solutions.md) — **سجلُّ الحالاتِ والحلول** (العَرَض ← الجذر ← الحلّ ← الموضع).
+- [`docs/lessons-learned.md`](GT-MK/docs/lessons-learned.md) — **دروسٌ مستخلَصة** من تجربةِ بناءِ المشروع.
 - [`docs/packaging.md`](GT-MK/docs/packaging.md) — التحزيمُ والإصدار (AppImage · DEB · RPM · APK).
 - [`docs/content-format.md`](GT-MK/docs/content-format.md) — تنسيق المحتوى ونموذج الشفاء.
 - [`docs/PLAN.md`](GT-MK/docs/PLAN.md) — خطّةُ الإصداراتِ الحيّة.
 - [`docs/CREDITS.md`](GT-MK/docs/CREDITS.md) — نسبة الفضل والرخص.
 - [`CHANGELOG.md`](CHANGELOG.md) — سجلُّ التغييراتِ لكلِّ إصدار.
+
+---
+
+> 📖 **كلُّ هذه الوثائقِ منشورةٌ أيضًا في [ويكي المستودع](https://github.com/SalehGNUTUX/GT-MISHKATKIDS/wiki)** — مرآةٌ مولَّدةٌ من `docs/` عبرَ `bash GT-MK/tools/publish-wiki.sh`.
 
 ---
 

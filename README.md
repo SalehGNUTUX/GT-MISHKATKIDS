@@ -141,6 +141,7 @@ GT-MISHKATKIDS/        # جذر المستودع
 - [`docs/README.md`](GT-MK/docs/README.md) — فهرسُ الوثائق.
 - [`docs/architecture.md`](GT-MK/docs/architecture.md) — المرجع التقنيّ الحيّ (القرارات والمكوّنات).
 - [`docs/audio-pronunciation.md`](GT-MK/docs/audio-pronunciation.md) — نظامُ الصوتِ والنطقِ وترتيبُ التشكيل.
+- [`docs/piper-tts-guide.md`](GT-MK/docs/piper-tts-guide.md) — **دليلُ Piper TTS الشامل** (الإعداد · اللغات · إصلاحُ النطق · التوليدُ التفاضليّ · الحدود) — مرجعٌ للمطوّرين.
 - [`docs/pitfalls-and-solutions.md`](GT-MK/docs/pitfalls-and-solutions.md) — **سجلُّ الحالاتِ والحلول** (العَرَض ← الجذر ← الحلّ ← الموضع).
 - [`docs/packaging.md`](GT-MK/docs/packaging.md) — التحزيمُ والإصدار (AppImage · DEB · RPM · APK).
 - [`docs/content-format.md`](GT-MK/docs/content-format.md) — تنسيق المحتوى ونموذج الشفاء.

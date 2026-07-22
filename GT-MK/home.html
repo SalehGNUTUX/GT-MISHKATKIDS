@@ -126,6 +126,19 @@
   .b.src{background:#FBEDE7;color:var(--primary-d)}
   .go{color:var(--primary);font-size:18px;flex:none}
   .empty{padding:20px;text-align:center;color:var(--muted)}
+  /* بانرُ المناسبة (رمضان/عيد/يومٌ فاضل) — يظهرُ في أيّامِه فقط */
+  .occ{position:relative;border-radius:16px;padding:13px 40px 13px 16px;margin:6px 0 14px;box-shadow:var(--shadow);border:1px solid transparent;overflow:hidden}
+  .occ .oc-h{display:flex;align-items:center;gap:9px;font-weight:800;font-size:16px}
+  .occ .oc-h .em{font-size:22px}
+  .occ .oc-g{font-size:13.5px;line-height:1.6;margin-top:4px}
+  .occ .oc-x{position:absolute;top:8px;inset-inline-end:8px;width:26px;height:26px;border:none;border-radius:50%;cursor:pointer;
+    background:rgba(0,0,0,.08);color:inherit;font-size:15px;font-family:inherit;line-height:1}
+  .occ.ramadan{background:linear-gradient(135deg,#EAF3EC,#E3EEF3);border-color:#BFDDD0;color:#245c4a}
+  .occ.eid{background:linear-gradient(135deg,#FBF0DD,#F7E6D6);border-color:#E8CFA6;color:#9a6a1f}
+  .occ.sacred{background:linear-gradient(135deg,#F1EAF7,#EAE6F5);border-color:#D3C4E6;color:#5b4a86}
+  html[data-theme="dark"] .occ.ramadan{background:#1c2c26;border-color:#2f5044;color:#8fd0b6}
+  html[data-theme="dark"] .occ.eid{background:#2c2416;border-color:#544326;color:#e0b878}
+  html[data-theme="dark"] .occ.sacred{background:#241f30;border-color:#443a5a;color:#c3b3e6}
   .daily{display:block;text-decoration:none;color:inherit;background:linear-gradient(135deg,#FFF6EE,#FBEEE3);border:1px solid #F0DCCB;border-radius:16px;padding:12px 16px;box-shadow:var(--shadow);margin:6px 0 16px}
   .daily.done{background:#EEF6E9;border-color:#CDE6BE}
   .daily .dh{font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px}
@@ -243,6 +256,7 @@
     </div>
   </header>
 
+  <div id="occasion" class="occ" style="display:none"></div>
   <a id="daily" class="daily" href="progress.html"></a>
 
   <div id="parentHub" class="nav detailed" style="display:none"></div>
@@ -309,6 +323,17 @@ import { ROBO_SVG, robo } from "./src/robo-companion.js"; // شكلُ الآلي
 import { applyRoboColor } from "./src/robo-custom.js"; // لونُ الآليّ المخصَّص (يسري على بطاقةِ الدخولِ والمرافق)
 import { openRoboCustom } from "./src/robo-custom-ui.js"; // نافذةُ «خصّصْ آليّك»
 import { openParentGuide } from "./src/parent-guide-ui.js"; // دليلُ الوالدِ لكلِّ نشاط
+import { occasionFor } from "./src/occasions.js"; // بانرُ المناسباتِ الإسلاميّة (تحويلٌ هجريٌّ محلّيّ)
+
+// بانرُ المناسبة: يظهرُ في أيّامِ رمضان/العيد/الأيّامِ الفاضلة، ويُغلَقُ للجلسةِ عند الضغطِ على ×.
+{ const oc=occasionFor(), el=document.getElementById("occasion");
+  if(oc && el && sessionStorage.getItem("tilmithi_occ_hide")!==oc.id){
+    el.className="occ "+oc.tone; el.style.display="";
+    el.innerHTML=`<button class="oc-x" title="إخفاء" aria-label="إخفاء">✕</button>
+      <div class="oc-h"><span class="em">${oc.emoji}</span><span>${oc.title}</span></div>
+      <div class="oc-g">${oc.greeting}</div>`;
+    el.querySelector(".oc-x").onclick=()=>{ try{ sessionStorage.setItem("tilmithi_occ_hide",oc.id); }catch(e){} el.style.display="none"; };
+  } }
 import { speak } from "./src/speak.js"; // نطقُ اسمِ البطاقةِ في التنقّلِ الصوتيّ
 import { isVoiceNavOn, setVoiceNavOn, isNightMode, setNightMode, applyNightMode } from "./src/sound-prefs.js";
 applyRoboColor();

@@ -85,12 +85,12 @@ const speakWord = text => { try{ if(!playClipForSet(text, "tts-kareem")) speak(t
 function renderMenu(){
   document.body.classList.remove("ingame");
   view.innerHTML = `<div class="menu">
-    <div class="mcard" data-go="learn"><span class="nb">🆕 جديد</span><div class="mi">${icon("clock")}</div><div class="mt">تعلَّمِ الساعة</div><div class="md">عقاربُ تُسحَب + رقميٌّ صباح/مساء و24 ساعة + نطقُ الوقت</div></div>
-    <div class="mcard" data-go="game"><span class="nb">🆕 جديد</span><div class="mi">${icon("trophy")}</div><div class="mt">تحدّي الساعة</div><div class="md">لعبةٌ تنافسيّةٌ متنوّعة ضدّ الآليّ/الإخوة/الوالد/وحدي</div></div>
-    <div class="mcard" data-go="dayparts"><span class="nb">🆕 جديد</span><div class="mi">${icon("sun")}</div><div class="mt">فتراتُ اليوم</div><div class="md">الفجر · الصباح · الظهيرة · العصر · الغروب · المساء · الليل + اختبار</div></div>
-    <div class="mcard" data-go="directions"><span class="nb">🆕 جديد</span><div class="mi">${icon("compass")}</div><div class="mt">الاتجاهات</div><div class="md">بوصلةٌ وكرةٌ أرضيّة — شمال/جنوب/شرق/غرب + القِبلة + اختبار</div></div>
-    <div class="mcard" data-go="seasons"><span class="nb">🆕 جديد</span><div class="mi">${icon("leaf")}</div><div class="mt">الفصول</div><div class="md">الربيع · الصيف · الخريف · الشتاء وصفاتُها + اختبار</div></div>
-    <div class="mcard" data-go="prayer"><span class="nb">🆕 جديد</span><div class="mi">${icon("mosque")}</div><div class="mt">أوقاتُ الصلاة</div><div class="md">الصلواتُ الخمسُ ووقتُها من اليوم</div></div>
+    <div class="mcard" data-go="learn"><div class="mi">${icon("clock")}</div><div class="mt">تعلَّمِ الساعة</div><div class="md">عقاربُ تُسحَب + رقميٌّ صباح/مساء و24 ساعة + نطقُ الوقت</div></div>
+    <div class="mcard" data-go="game"><div class="mi">${icon("trophy")}</div><div class="mt">تحدّي الساعة</div><div class="md">لعبةٌ تنافسيّةٌ متنوّعة ضدّ الآليّ/الإخوة/الوالد/وحدي</div></div>
+    <div class="mcard" data-go="dayparts"><div class="mi">${icon("sun")}</div><div class="mt">فتراتُ اليوم</div><div class="md">الفجر · الصباح · الظهيرة · العصر · الغروب · المساء · الليل + اختبار</div></div>
+    <div class="mcard" data-go="directions"><div class="mi">${icon("compass")}</div><div class="mt">الاتجاهات</div><div class="md">بوصلةٌ وكرةٌ أرضيّة — شمال/جنوب/شرق/غرب + القِبلة + اختبار</div></div>
+    <div class="mcard" data-go="seasons"><div class="mi">${icon("leaf")}</div><div class="mt">الفصول</div><div class="md">الربيع · الصيف · الخريف · الشتاء وصفاتُها + اختبار</div></div>
+    <div class="mcard" data-go="prayer"><div class="mi">${icon("mosque")}</div><div class="mt">أوقاتُ الصلاة</div><div class="md">الصلواتُ الخمسُ ووقتُها من اليوم</div></div>
   </div>`;
   view.querySelectorAll("[data-go]").forEach(c=>c.onclick=()=>({learn:openLearn,game:openGame,dayparts:()=>openTopic("dayparts"),directions:()=>openTopic("directions"),seasons:()=>openTopic("seasons"),prayer:openPrayer}[c.getAttribute("data-go")])());
 }

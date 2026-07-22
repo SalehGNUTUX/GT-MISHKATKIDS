@@ -777,7 +777,7 @@ function renderLang(k){
     // شبكةُ بطاقاتِ الأقسام
     topnav = nav("↩ اللغات","langs");
     const newW = k==="fr"?"Nouveau":"New";  // «الأصوات» و«ألعاب» و«اختبار» فيها جديدُ v1.4 ⇒ وسمٌ يلفتُ الانتباه
-    const isNew = key => key==="sounds" || key==="syllables" || key==="games" || key==="quiz" || key==="time";
+    const isNew = key => false;   // شارةُ «جديد» تُحجَزُ لمزايا الإصداراتِ القادمةِ لا القديمة
     body = `<div class="lgrid">${SECTIONS.filter(s=>!s.need||(L[s.need]||[]).length).map(s=>`<button class="lcard${isNew(s.key)?" hasnew":""}" data-sec="${s.key}">${isNew(s.key)?`<span class="newbadge" data-ar="🆕 جديد" data-fg="🆕 ${newW}">🆕 جديد</span>`:''}<span class="ic">${iconHtml(s.icon)}</span><span class="lt" data-ar="${esc(s.ar)}" data-fg="${esc(s[k]||s.ar)}">${esc(s.ar)}</span></button>`).join("")}</div>`;
   } else if(sec==="letters"){
     topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔤 الأحرف</span>`;

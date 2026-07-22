@@ -46,6 +46,10 @@
     .robo-svg.thinking .antenna{animation:robo-pulse 1s ease-in-out infinite}
     .robo-svg.happy{animation:robo-happy 1s ease-in-out}
     .robo-svg.curious{animation:robo-curious 1.4s ease-in-out}
+    /* الذراعانِ تتمايلانِ من الكتفِ بتناسقٍ (نفسُ الطورِ فتتّسقُ الحركة)؛ وتلوّحانِ بحماسٍ عند الفرح */
+    .robo-arm{transform-box:view-box;animation:robo-arm-sway 3.6s ease-in-out infinite}
+    .arm-l{transform-origin:76px 160px} .arm-r{transform-origin:164px 160px}
+    .robo-svg.happy .robo-arm{animation:robo-arm-wave .5s ease-in-out 2}
   }
   @keyframes robo-breathe{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.012)}}
   @keyframes robo-blink{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.12)}}
@@ -53,6 +57,9 @@
   @keyframes robo-think{0%,100%{transform:rotate(0)}50%{transform:rotate(-3.5deg)}}
   @keyframes robo-happy{0%{transform:translateY(0) scale(1)}30%{transform:translateY(-13px) scale(1.05)}55%{transform:translateY(0) scale(1)}75%{transform:translateY(-6px)}100%{transform:translateY(0)}}
   @keyframes robo-curious{0%,100%{transform:rotate(0)}25%{transform:rotate(4deg)}60%{transform:rotate(-2deg)}}
+  /* تمايلٌ لطيفٌ للذراعِ (الاثنتانِ بنفسِ الطورِ فتبدوانِ متناسقتَين مع تنفّسِ الجسم) */
+  @keyframes robo-arm-sway{0%,100%{transform:rotate(0deg)}50%{transform:rotate(6deg)}}
+  @keyframes robo-arm-wave{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-22deg)}75%{transform:rotate(14deg)}}
   /* شفاءٌ مرئيّ فرديّ: الجزء/العنصر الذي يُضاء الآن ينبثق فرحًا */
   @keyframes pop-lit{0%{transform:scale(1)}45%{transform:scale(1.55)}100%{transform:scale(1)}}
   .part.just-lit{animation:pop-lit .8s ease;transform-box:fill-box;transform-origin:center}
@@ -273,10 +280,14 @@
       <rect x="98" y="110" width="44" height="11" rx="5" class="part" data-part="الفم"/>
       <rect x="76" y="138" width="88" height="86" rx="16" class="robo-base"/>
       <path class="part" data-part="القلب" d="M120 196 l-15 -15 a9 9 0 0 1 13 -12 l2 2 l2 -2 a9 9 0 0 1 13 12 z"/>
-      <line x1="76" y1="160" x2="52" y2="168" stroke="#8A93A0" stroke-width="6" stroke-linecap="round"/>
-      <line x1="164" y1="160" x2="188" y2="168" stroke="#8A93A0" stroke-width="6" stroke-linecap="round"/>
-      <circle cx="46" cy="170" r="11" class="part" data-part="اليدان"/>
-      <circle cx="194" cy="170" r="11" class="part" data-part="اليدان"/>
+      <g class="robo-arm arm-l">
+        <line x1="76" y1="160" x2="52" y2="168" stroke="#8A93A0" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="46" cy="170" r="11" class="part" data-part="اليدان"/>
+      </g>
+      <g class="robo-arm arm-r">
+        <line x1="164" y1="160" x2="188" y2="168" stroke="#8A93A0" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="194" cy="170" r="11" class="part" data-part="اليدان"/>
+      </g>
       <rect x="92" y="224" width="18" height="40" rx="9" class="part" data-part="الساقان"/>
       <rect x="130" y="224" width="18" height="40" rx="9" class="part" data-part="الساقان"/>
     </svg>

@@ -126,6 +126,17 @@
   .daily .dt{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
   .daily .dchip{font-size:13px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:#666}
   .daily .dchip.ok{background:#EAF4E3;border-color:#CDE6BE;color:#3f6b2c}
+  /* حلقةُ الهدفِ اليوميّ + شعلةُ السلسلة (تحفيزٌ بصريّ) */
+  .daily .drow{display:flex;align-items:center;gap:12px}
+  .daily .dmain{flex:1;min-width:0}
+  .dgoal{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;
+    background:conic-gradient(var(--good,#7BB661) var(--pg,0deg), #E6DFD2 0);position:relative}
+  html[data-theme="dark"] .dgoal{background:conic-gradient(var(--good,#7BB661) var(--pg,0deg), #3a3a44 0)}
+  .dgoal::before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--card)}
+  .dgoal span{position:relative;font-size:13px;font-weight:800;color:var(--primary-d)}
+  .dstreak{flex:none;background:#FDEEDF;border:1px solid #F3D3B6;border-radius:999px;padding:5px 11px;
+    font-size:13px;font-weight:800;color:#C7613F;white-space:nowrap}
+  html[data-theme="dark"] .dstreak{background:#3a2a1e;border-color:#5a4230;color:#E8987E}
   footer{margin-top:24px;text-align:center;color:var(--muted);font-size:12px}
   footer code{background:#F3EEE3;padding:1px 6px;border-radius:5px}
 
@@ -276,7 +287,7 @@
 </div>
 
 <script type="module">
-import { getDailyMission } from "./src/progress.js";
+import { getDailyMission, getStats } from "./src/progress.js";
 import { wireThemeToggle } from "./src/theme.js";
 wireThemeToggle(document.getElementById("themeBtn"));
 wireThemeToggle(document.getElementById("loginThemeBtn")); // زرُّ تبديل الوضع في شاشة الدخول
@@ -453,9 +464,16 @@ const _dm = getDailyMission();
 const _dailyEl = document.getElementById("daily");
 _dailyEl.classList.toggle("done", _dm.complete);
 const _rem = _dm.tasks.filter(t=>!t.done).length;
+// حلقةُ الهدفِ اليوميّ (مهامُّ اليوم) + شعلةُ السلسلة — تحفيزٌ يوميٌّ بصريّ.
+const _st = getStats(); const _doneN = _dm.tasks.length - _rem, _totN = _dm.tasks.length;
+const _pct = _totN ? Math.round(_doneN/_totN*100) : 0;
+const _ring = `<div class="dgoal" style="--pg:${_pct*3.6}deg" title="هدفُ اليوم"><span>${_doneN}/${_totN}</span></div>`;
+const _flame = _st.streak>0 ? `<span class="dstreak" title="أيّامٌ متتاليةٌ من التعلّم">🔥 ${_st.streak} ${_st.streak===1?"يوم":"أيّام"}</span>` : "";
 // الكتلةُ كلُّها تُفضي إلى صفحةِ المهامّ (progress.html)؛ الشِّاراتُ حالةٌ فقط، والبدءُ من صفحةِ المهامّ.
-_dailyEl.innerHTML = `<div class="dh">${_dm.complete?"🎉 أكملتَ مهمّة اليوم! أحسنت.":`✨ مهمّة اليوم — بقيَ ${_rem} من ${_dm.tasks.length} (اضغط لمتابعتها)`}</div>
-  <div class="dt">${_dm.tasks.map(t=>`<span class="dchip ${t.done?"ok":""}">${t.ic} ${t.label}${t.done?" ✅":""}</span>`).join("")}</div>`;
+_dailyEl.innerHTML = `<div class="drow">${_ring}<div class="dmain">
+    <div class="dh">${_dm.complete?"🎉 أكملتَ مهمّة اليوم! أحسنت.":`✨ مهمّة اليوم — بقيَ ${_rem} من ${_dm.tasks.length} (اضغط لمتابعتها)`}</div>
+    <div class="dt">${_dm.tasks.map(t=>`<span class="dchip ${t.done?"ok":""}">${t.ic} ${t.label}${t.done?" ✅":""}</span>`).join("")}</div>
+  </div>${_flame}</div>`;
 </script>
 </body>
 </html>

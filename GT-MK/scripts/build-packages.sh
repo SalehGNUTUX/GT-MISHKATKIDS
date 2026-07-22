@@ -141,6 +141,11 @@ build_apk() {
     sed -i 's#<application#<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n\n    <application#' "$mani"
     step "أُضيفت صلاحيّةُ الموقعِ (اتجاهُ القبلة) إلى AndroidManifest"
   fi
+  # صلاحيّةُ الاهتزازِ (تغذيةٌ راجعةٌ حسّيّةٌ خفيفةٌ مع المؤثّرات) — بلا خطرٍ ولا بيانات.
+  if [ -f "$mani" ] && ! grep -q "permission.VIBRATE" "$mani"; then
+    sed -i 's#<application#<uses-permission android:name="android.permission.VIBRATE" />\n\n    <application#' "$mani"
+    step "أُضيفت صلاحيّةُ الاهتزاز إلى AndroidManifest"
+  fi
   # فتحُ ملفّاتِ .json بتطبيقنا (استيرادُ النسخةِ الاحتياطيّة): مجموعةُ intent-filters تغطّي
   # application/json (المعياريّ) + scheme=content/file + **application/octet-stream وtext/plain بـpathPattern=.*.json**
   # لأنّ واتساب وتطبيقاتِ المراسلةِ ترسلُ الـ.json بنوعٍ عامٍّ (BIN/octet-stream) فلا يطابقُ مُرشِّحَ json وحدَه — نهجُ GT-SARARIM المثبَت.

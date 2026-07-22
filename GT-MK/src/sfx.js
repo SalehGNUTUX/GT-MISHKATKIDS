@@ -11,6 +11,11 @@ function ac() {
   } catch (e) { return null; }
 }
 
+// اهتزازٌ لطيفٌ على الهاتفِ يرافقُ المؤثّر (تغذيةٌ راجعةٌ حسّيّةٌ للصغار). يحترمُ نفسَ توگلِ النبضات،
+// ولا أثرَ له على سطحِ المكتب (navigator.vibrate لا وجودَ له أو يُرجِعُ false). أنماطٌ قصيرةٌ غيرُ مزعجة.
+function haptic(pattern) {
+  try { if (isTonesOn() && navigator.vibrate) navigator.vibrate(pattern); } catch (e) {}
+}
 // notes: [{ f: تردّد Hz, t: بداية ث, d: مدّة ث, g: ذروة الكسب, type: شكل الموجة }]
 function play(notes) {
   if (!isTonesOn()) return;
@@ -29,11 +34,11 @@ function play(notes) {
   }
 }
 
-// تتابع صاعد ودود — نجاحٌ صغير.
-export function success() { play([{ f: 523.25, t: 0, d: .14 }, { f: 659.25, t: .10, d: .14 }, { f: 783.99, t: .20, d: .20 }]); }
-// نفير أكبر — شفاء الآليّ / إنجاز مميّز.
-export function heal() { play([{ f: 523.25, t: 0, d: .15 }, { f: 659.25, t: .12, d: .15 }, { f: 783.99, t: .24, d: .15 }, { f: 1046.5, t: .36, d: .30, g: .2 }]); }
-// نغمة منخفضة ناعمة «حاوِل ثانيةً» — غير قاسية أبدًا على الطفل.
-export function nope() { play([{ f: 311.13, t: 0, d: .18, type: "triangle" }, { f: 261.63, t: .14, d: .22, type: "triangle" }]); }
-// نقرة تأكيد خفيفة.
-export function tap() { play([{ f: 587.33, t: 0, d: .08, g: .12 }]); }
+// تتابع صاعد ودود — نجاحٌ صغير (اهتزازٌ خفيفٌ مبهج).
+export function success() { play([{ f: 523.25, t: 0, d: .14 }, { f: 659.25, t: .10, d: .14 }, { f: 783.99, t: .20, d: .20 }]); haptic([18, 40, 30]); }
+// نفير أكبر — شفاء الآليّ / إنجاز مميّز (اهتزازٌ احتفاليّ).
+export function heal() { play([{ f: 523.25, t: 0, d: .15 }, { f: 659.25, t: .12, d: .15 }, { f: 783.99, t: .24, d: .15 }, { f: 1046.5, t: .36, d: .30, g: .2 }]); haptic([20, 40, 20, 40, 45]); }
+// نغمة منخفضة ناعمة «حاوِل ثانيةً» — غير قاسية أبدًا على الطفل (نبضةٌ واحدةٌ لطيفة).
+export function nope() { play([{ f: 311.13, t: 0, d: .18, type: "triangle" }, { f: 261.63, t: .14, d: .22, type: "triangle" }]); haptic(45); }
+// نقرة تأكيد خفيفة (نبضةٌ صغيرةٌ جدًّا).
+export function tap() { play([{ f: 587.33, t: 0, d: .08, g: .12 }]); haptic(12); }

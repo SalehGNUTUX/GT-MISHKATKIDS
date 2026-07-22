@@ -1,4 +1,4 @@
-// src/robo-custom-ui.js — نافذةُ «خصّصْ آليّك»: لونٌ + اسمٌ + إكسسواراتٌ تُكسَبُ بالإنجاز.
+// src/robo-custom-ui.js — نافذةُ «خصّصْ آليّك»: لونٌ + اسمٌ + ملحقاتٌ تُكسَبُ بالإنجاز.
 // محلّيّةٌ بالكامل. تُعاينُ التغييرَ فورًا على آليٍّ مصغّرٍ داخلَ النافذة، وتُحدّثُ المرافقَ عند الحفظ.
 import { ROBO_SVG, robo } from "./robo-companion.js";
 import { getRoboCustom, setRoboCustom, ROBO_COLORS, ROBO_ACCESSORIES, isAccessoryUnlocked, earnedCount, accessorySvg } from "./robo-custom.js";
@@ -47,13 +47,13 @@ export function openRoboCustom(onSaved) {
   const ov = document.createElement("div"); ov.className = "rcx-ov";
   ov.innerHTML = `<div class="rcx" role="dialog" aria-label="خصّص آليّك">
     <h2>🎨 خصّصْ آليّك</h2>
-    <p class="rcx-sub">اخترْ لونَه واسمَه وإكسسوارَه — بعضُها يُفتَحُ بالإنجاز!</p>
+    <p class="rcx-sub">اخترْ لونَه واسمَه وملحقاتِه — بعضُها يُفتَحُ بالإنجاز!</p>
     <div class="rcx-preview" id="rcxPrev"></div>
     <div class="rcx-lab">🎨 اللون</div>
     <div class="rcx-colors" id="rcxColors"></div>
     <div class="rcx-lab">✍️ الاسم</div>
     <input class="rcx-name" id="rcxName" maxlength="14" placeholder="سمِّ آليّك (اختياريّ)">
-    <div class="rcx-lab">✨ الإكسسوارات <span style="font-weight:600;color:var(--muted,#6B6B6B);font-size:12px">(أنجزتَ ${earnedCount()} نشاطًا)</span></div>
+    <div class="rcx-lab">✨ الملحقات <span style="font-weight:600;color:var(--muted,#6B6B6B);font-size:12px">(أنجزتَ ${earnedCount()} نشاطًا)</span></div>
     <div class="rcx-accs" id="rcxAccs"></div>
     <div class="rcx-acts">
       <button class="rcx-close" id="rcxClose">إغلاق</button>
@@ -85,7 +85,7 @@ export function openRoboCustom(onSaved) {
   nameEl.value = draft.name;
   nameEl.oninput = () => { draft.name = nameEl.value.trim(); };
 
-  // الإكسسوارات
+  // الملحقات
   const aw = ov.querySelector("#rcxAccs");
   function renderAccs() {
     aw.innerHTML = ROBO_ACCESSORIES.map(a => {

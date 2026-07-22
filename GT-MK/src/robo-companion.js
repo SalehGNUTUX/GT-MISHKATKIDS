@@ -59,7 +59,7 @@ function ensureMounted() {
   refreshLook();
 }
 
-// يُطبِّقُ لونَ الآليِّ المختارَ ويحقنُ الإكسسوارَ المكسوبَ في نسخةِ المرافق. يُستدعى عند التخصيص.
+// يُطبِّقُ لونَ الآليِّ المختارَ ويحقنُ الملحقَ المكسوبَ في نسخةِ المرافق. يُستدعى عند التخصيص.
 export function refreshLook() {
   try { applyRoboColor(); const slot = el && el.querySelector(".rc-acc"); if (slot) slot.innerHTML = accessorySvg(); } catch (e) {}
 }
@@ -123,7 +123,7 @@ function showBubble(text, female) {
 // واجهةٌ عالية المستوى تستعملها صفحات الأنشطة:
 export const robo = {
   mount() { ensureMounted(); return this; },
-  // إعادةُ تطبيقِ التخصيص (لون + إكسسوار) بعدَ تغييرِه في لوحةِ التخصيص.
+  // إعادةُ تطبيقِ التخصيص (لون + ملحق) بعدَ تغييرِه في لوحةِ التخصيص.
   refresh() { refreshLook(); return this; },
   // ترحيبٌ تلقائيٌّ (كالنقر على الآليّ): رسالةٌ متنوّعةٌ تُؤنَّثُ للأنثى، وتُكتَمُ إن كان صوتٌ آخرُ يعمل.
   // يُستعمَل في الفهرس عند أوّل تشغيلٍ للبرنامج.

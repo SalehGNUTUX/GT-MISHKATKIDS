@@ -79,6 +79,9 @@
   @keyframes icpop{0%{transform:scale(1)}35%{transform:scale(1.4) rotate(10deg)}70%{transform:scale(.9) rotate(-5deg)}100%{transform:scale(1)}}
   @media(prefers-reduced-motion:reduce){ .navcard,.navcard .ic{transition:none} .navcard:active .ic{animation:none} }
   /* لوحةُ ألوانٍ لطيفةٍ متنوّعة (تدور لكلّ بطاقة) — تُطبَّق في الوضع الفاتح؛ الداكنُ يوحّدها (dark.css) */
+  .nb{position:absolute;top:10px;inset-inline-end:10px;background:var(--bad,#D65C86);color:#fff;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;z-index:2}
+  @media(prefers-reduced-motion:no-preference){ .nb{animation:nbp 1.4s ease-in-out infinite} }
+  @keyframes nbp{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
   .navcard:nth-child(8n+1){--cc:#FDEBE7;--cb:#F1C7BA;--ik:#E0673F}
   .navcard:nth-child(8n+2){--cc:#E8F3EC;--cb:#BCDFC8;--ik:#4E8C3A}
   .navcard:nth-child(8n+3){--cc:#E7F0FB;--cb:#BBD6EE;--ik:#3F82C4}
@@ -256,6 +259,7 @@
     <a class="navcard" href="puzzles.html"><div class="ic" data-icon="puzzles">🧩</div><div class="t">ألغاز ذكية</div><div class="d">فوازير ومنطق بمستويات — مع تلميح وحل</div></a>
     <a class="navcard" href="quiz.html"><div class="ic" data-icon="quiz">🎯</div><div class="t">اختبارات تعليمية</div><div class="d">اختيار من متعدد بفئاتٍ وأعمار — نتيجة فوريّة</div></a>
     <a class="navcard" href="progress.html"><div class="ic" data-icon="progress">🏆</div><div class="t">تقدّمي</div><div class="d">النجوم والأوسمة وسلسلة الأيّام + شهادة إنجاز</div></a>
+    <div class="navcard" id="roboCustomCard" role="button" tabindex="0" style="cursor:pointer"><span class="nb">🆕 جديد</span><div class="ic" data-icon="robot">🤖</div><div class="t">خصّصْ آليّك</div><div class="d">لونٌ واسمٌ وإكسسواراتٌ تكسبُها بالإنجاز</div></div>
     <a class="navcard" href="print.html"><div class="ic" data-icon="print">🖨️</div><div class="t">المطبوعات</div><div class="d">بطاقات المهام + ملصق شفاء الآليّ (PDF)</div></a>
     <a class="navcard" href="index.html?parent=1"><div class="ic" data-icon="shield">🛡️</div><div class="t">لوحة التحكّم</div><div class="d">تقارير الأبناء · إدارة الحسابات · الإعدادات والأصوات</div></a>
   </div>
@@ -296,7 +300,11 @@ import { openBackupModal, handleIncomingBackup } from "./src/backup.js"; // نا
 handleIncomingBackup((t,ok)=>{ if(!ok){ try{ alert(t); }catch(e){} } }); // نقرُ ملفِّ .json خارجَ التطبيق ⇒ استيرادٌ (بتأكيد)
 import { NOTICES } from "./src/robo-phrases.js"; // تحيّةُ الإقلاعِ المنطوقة
 import { ROBO_SVG, robo } from "./src/robo-companion.js"; // شكلُ الآليّ الرسميّ (بطاقةُ الدخول) + المرافقُ العائم
+import { applyRoboColor } from "./src/robo-custom.js"; // لونُ الآليّ المخصَّص (يسري على بطاقةِ الدخولِ والمرافق)
+import { openRoboCustom } from "./src/robo-custom-ui.js"; // نافذةُ «خصّصْ آليّك»
+applyRoboColor();
 try{ const lr=document.getElementById("loginRobo"); if(lr) lr.innerHTML = ROBO_SVG; }catch(e){}
+{ const rc=document.getElementById("roboCustomCard"); if(rc){ const open=()=>openRoboCustom(); rc.onclick=open; rc.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(); } }; } }
 injectIcons(); // أيقوناتُ SVG لبطاقات الفهرس (تستبدل الإيموجي الاحتياطيّة)
 import { listProfiles, getProfile, getCurrentUser, setCurrentUser, clearCurrentUser, loginProfile, loginGuest, guestEnabled, addProfile, AVATARS, loginParent, isParent, getParentName, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault } from "./src/accounts.js";
 import { confirmChoice } from "./src/confirm-action.js";

@@ -7,6 +7,7 @@ import { speak } from "./speak.js";
 import * as sfx from "./sfx.js";
 import { femaleize, GREETINGS } from "./robo-phrases.js";
 import { isFemale } from "./accounts.js";
+import { applyRoboColor, accessorySvg, getRoboCustom } from "./robo-custom.js";
 
 let el = null, bubble = null, hideT = null, mounted = false;
 
@@ -16,6 +17,8 @@ const STYLE = `
 body.mission-open .robo-comp:not(.moved){bottom:calc(74px + env(safe-area-inset-bottom))}
 .robo-comp svg{width:64px;height:64px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.18))}
 .robo-comp .rc-eye{transform-box:fill-box;transform-origin:center}
+.rc-body{fill:var(--robo-body,#B8C0CC)}
+
 @media (prefers-reduced-motion: no-preference){
   .robo-comp{animation:rc-bob 3.4s ease-in-out infinite}
   .robo-comp .rc-eye{animation:rc-blink 5s ease-in-out infinite}
@@ -35,11 +38,12 @@ body.mission-open .robo-comp:not(.moved){bottom:calc(74px + env(safe-area-inset-
 const SVG = `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="الآليّ">
   <line x1="40" y1="16" x2="40" y2="8" stroke="#8A93A0" stroke-width="2.4"/>
   <circle cx="40" cy="6" r="3.4" fill="#F4C95D"/>
-  <rect x="16" y="16" width="48" height="40" rx="11" fill="#B8C0CC"/>
+  <rect class="rc-body" x="16" y="16" width="48" height="40" rx="11" fill="#B8C0CC"/>
   <circle class="rc-eye" cx="31" cy="34" r="5.2" fill="#3a4250"/>
   <circle class="rc-eye" cx="49" cy="34" r="5.2" fill="#3a4250"/>
   <rect class="rc-mouth" x="31" y="45" width="18" height="5" rx="2.5" fill="#3a4250"/>
   <circle cx="22" cy="62" r="5" fill="#7BB661"/><circle cx="58" cy="62" r="5" fill="#6FB3D6"/>
+  <g class="rc-acc"></g>
 </svg>`;
 // شكلُ الآليّ الرسميّ (نفسُ المرافق) — لإعادة استعماله حيثما لزم (ظهرُ بطاقات الذاكرة… إلخ).
 export const ROBO_SVG = SVG;
@@ -52,6 +56,12 @@ function ensureMounted() {
   bubble = document.createElement("div"); bubble.className = "rc-bubble";
   document.body.appendChild(bubble); document.body.appendChild(el);
   attachRoboInteract(el);
+  refreshLook();
+}
+
+// يُطبِّقُ لونَ الآليِّ المختارَ ويحقنُ الإكسسوارَ المكسوبَ في نسخةِ المرافق. يُستدعى عند التخصيص.
+export function refreshLook() {
+  try { applyRoboColor(); const slot = el && el.querySelector(".rc-acc"); if (slot) slot.innerHTML = accessorySvg(); } catch (e) {}
 }
 
 // السحبُ لتغييرِ الموضع + النقرُ (دون سحب) لرسالةِ ترحيبٍ متنوّعة. الموضعُ يُحفَظُ محلّيًّا.
@@ -113,6 +123,8 @@ function showBubble(text, female) {
 // واجهةٌ عالية المستوى تستعملها صفحات الأنشطة:
 export const robo = {
   mount() { ensureMounted(); return this; },
+  // إعادةُ تطبيقِ التخصيص (لون + إكسسوار) بعدَ تغييرِه في لوحةِ التخصيص.
+  refresh() { refreshLook(); return this; },
   // ترحيبٌ تلقائيٌّ (كالنقر على الآليّ): رسالةٌ متنوّعةٌ تُؤنَّثُ للأنثى، وتُكتَمُ إن كان صوتٌ آخرُ يعمل.
   // يُستعمَل في الفهرس عند أوّل تشغيلٍ للبرنامج.
   hello() { ensureMounted(); greet(); return this; },

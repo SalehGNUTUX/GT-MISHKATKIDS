@@ -54,6 +54,21 @@ export function setStoryVoice(id) { try { localStorage.setItem(STORY_SET_KEY, id
 export function isStoryReadOn() { try { return localStorage.getItem(STORY_ON_KEY) !== "off"; } catch (e) { return true; } }
 export function setStoryReadOn(on) { try { localStorage.setItem(STORY_ON_KEY, on ? "on" : "off"); } catch (e) {} }
 
+// التنقّلُ الصوتيّ للصغار: حين يُفعَّل، أوّلُ نقرةٍ على بطاقةِ الفهرس تَنطِقُ اسمَها (لغيرِ القارئ)،
+// ونقرةٌ ثانيةٌ خلالَ مهلةٍ تَدخُلُها. الافتراض: مُطفأٌ (off) كي يبقى التنقّلُ بنقرةٍ واحدةٍ للأكبر.
+const VNAV_KEY = "tilmithi_voice_nav";
+export function isVoiceNavOn() { try { return localStorage.getItem(VNAV_KEY) === "on"; } catch (e) { return false; } }
+export function setVoiceNavOn(on) { try { localStorage.setItem(VNAV_KEY, on ? "on" : "off"); } catch (e) {} }
+
+// وضعُ الاستماعِ الليليّ: يُعتِمُ الشاشةَ بدفءٍ ويُهدّئُ الألوانَ للاستماعِ قبلَ النوم (قرآن/قصص).
+// الافتراض: مُطفأ. يُفعّلُه الوالدُ/الطفلُ من الفهرس. يُطبَّقُ بصنفٍ على <html> عبر applyNightMode().
+const NIGHT_KEY = "tilmithi_night_mode";
+export function isNightMode() { try { return localStorage.getItem(NIGHT_KEY) === "on"; } catch (e) { return false; } }
+export function setNightMode(on) { try { localStorage.setItem(NIGHT_KEY, on ? "on" : "off"); } catch (e) {} applyNightMode(); }
+export function applyNightMode() { try { document.documentElement.classList.toggle("night-mode", isNightMode()); } catch (e) {} }
+// أثرٌ جانبيٌّ عند الاستيراد: يَسري الوضعُ الليليُّ على كلِّ صفحةٍ تستوردُ tts (قرآن/قصص/…) لا الفهرسَ وحدَه.
+try { applyNightMode(); } catch (e) {}
+
 // إظهارُ التشكيل في عرض النصوص (القصص). الافتراض: مع الشكل (true). إخفاؤه للعرض فقط لا يؤثّر في القراءة.
 const TASHKEEL_KEY = "tilmithi_show_tashkeel";
 export function showTashkeel() { try { return localStorage.getItem(TASHKEEL_KEY) !== "off"; } catch (e) { return true; } }

@@ -143,3 +143,12 @@ html[data-theme="dark"] .qcat{background:#2e2a26 !important;color:var(--primary-
 /* القراءة بالتركيب: المقطعُ المضيءُ (lit) لا يفقدُ تمييزَه + بطاقةُ الخطوة */
 html[data-theme="dark"] .sword.lit{background:#22351f !important;border-color:#8BC36B !important;color:#a8e08a !important}
 html[data-theme="dark"] .gcard .step{background:#2e2a26 !important}
+
+/* ═══ وضعُ الاستماعِ الليليّ (night-mode) ═══
+   يُعتِمُ الشاشةَ بدفءٍ ويُهدّئُ التبايُنَ للاستماعِ قبلَ النوم (قرآن/قصص) دون إجهادِ العين.
+   يُطبَّقُ بصنفٍ على <html> (applyNightMode في sound-prefs) فوقَ أيِّ سمة. طبقةٌ كهرمانيّةٌ خفيفةٌ
+   عبرَ فلترٍ + غشاءٍ ثابتٍ لا يمنعُ التفاعل. يحترمُ من يُطفئُه. */
+html.night-mode body{filter:brightness(.82) sepia(.16) saturate(.9)}
+html.night-mode body::after{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:radial-gradient(circle at 50% 40%, rgba(60,40,10,0) 40%, rgba(40,26,6,.28) 100%);mix-blend-mode:multiply}
+@media(prefers-reduced-motion:no-preference){ html.night-mode body{transition:filter .4s ease} }

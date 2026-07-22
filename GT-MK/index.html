@@ -48,7 +48,7 @@
     .robo-svg.curious{animation:robo-curious 1.4s ease-in-out}
     /* الذراعانِ تتمايلانِ من الكتفِ بتناسقٍ (نفسُ الطورِ فتتّسقُ الحركة)؛ وتلوّحانِ بحماسٍ عند الفرح */
     .robo-arm{transform-box:view-box;animation:robo-arm-sway 3.6s ease-in-out infinite}
-    .arm-l{transform-origin:76px 160px} .arm-r{transform-origin:164px 160px}
+    .arm-l{transform-origin:86px 158px} .arm-r{transform-origin:154px 158px}
     .robo-svg.happy .robo-arm{animation:robo-arm-wave .5s ease-in-out 2}
   }
   @keyframes robo-breathe{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.012)}}
@@ -278,16 +278,17 @@
       <circle cx="98" cy="88" r="11" class="part eye" data-part="العينان"/>
       <circle cx="142" cy="88" r="11" class="part eye" data-part="العينان"/>
       <rect x="98" y="110" width="44" height="11" rx="5" class="part" data-part="الفم"/>
-      <rect x="76" y="138" width="88" height="86" rx="16" class="robo-base"/>
-      <path class="part" data-part="القلب" d="M120 196 l-15 -15 a9 9 0 0 1 13 -12 l2 2 l2 -2 a9 9 0 0 1 13 12 z"/>
+      <!-- الذراعانِ قبلَ الجسدِ: طرفُ الكتفِ يمتدُّ داخلَ الجسدِ فيُخفيه الجسدُ المرسومُ فوقَه -->
       <g class="robo-arm arm-l">
-        <line x1="76" y1="160" x2="52" y2="168" stroke="#8A93A0" stroke-width="6" stroke-linecap="round"/>
+        <line x1="86" y1="158" x2="52" y2="168" stroke="#8A93A0" stroke-width="6" stroke-linecap="round"/>
         <circle cx="46" cy="170" r="11" class="part" data-part="اليدان"/>
       </g>
       <g class="robo-arm arm-r">
-        <line x1="164" y1="160" x2="188" y2="168" stroke="#8A93A0" stroke-width="6" stroke-linecap="round"/>
+        <line x1="154" y1="158" x2="188" y2="168" stroke="#8A93A0" stroke-width="6" stroke-linecap="round"/>
         <circle cx="194" cy="170" r="11" class="part" data-part="اليدان"/>
       </g>
+      <rect x="76" y="138" width="88" height="86" rx="16" class="robo-base"/>
+      <path class="part" data-part="القلب" d="M120 196 l-15 -15 a9 9 0 0 1 13 -12 l2 2 l2 -2 a9 9 0 0 1 13 12 z"/>
       <rect x="92" y="224" width="18" height="40" rx="9" class="part" data-part="الساقان"/>
       <rect x="130" y="224" width="18" height="40" rx="9" class="part" data-part="الساقان"/>
     </svg>

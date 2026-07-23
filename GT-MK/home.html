@@ -167,6 +167,16 @@
   /* زرّ تبديل السمة */
   #themeBtn,.hbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;width:38px;height:38px;font-size:18px;cursor:pointer;font-family:inherit;line-height:1;flex:none;display:inline-flex;align-items:center;justify-content:center;color:var(--ink)}
   .hbtn.on{background:color-mix(in srgb,var(--primary) 18%,var(--card));border-color:var(--primary)}
+  /* لوحةُ التحكّمِ بالصوت (كتمُ صوتِ الآليّ + مستوى صوتِ التطبيق كليًّا) */
+  .sndpop{position:fixed;z-index:80;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 34px rgba(0,0,0,.22);padding:12px 14px;width:min(86vw,250px);display:none}
+  .sndpop.show{display:block}
+  .sndpop .sph{font-weight:800;font-size:14px;margin-bottom:8px;text-align:center}
+  .sndpop .spr{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:9px 0;font-size:13.5px;font-weight:700}
+  .sndpop input[type=range]{flex:1;accent-color:var(--primary);height:6px;cursor:pointer;min-width:0}
+  .sndpop .spv{font-size:12px;font-weight:800;color:var(--muted);min-width:38px;text-align:center;font-variant-numeric:tabular-nums}
+  .sndtgl{border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:999px;padding:5px 13px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;min-width:56px}
+  .sndtgl.on{background:color-mix(in srgb,var(--good,#7BB661) 20%,var(--card));border-color:var(--good,#7BB661);color:var(--good-d,#3f6b2c)}
+  html[data-theme="dark"] .sndtgl.on{color:#9BD6B4}
   /* ===== شاشةُ الدخول (عصريّة، مُتجاوبةٌ مع السمة) ===== */
   #loginOverlay{position:fixed;inset:0;z-index:90;align-items:flex-start;justify-content:center;overflow:auto;padding:24px;
     background:radial-gradient(1200px 600px at 50% -10%, #FFF4EC, #F3EEE3)}
@@ -272,6 +282,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <button id="userChip" style="background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink);display:none"></button>
+      <button id="soundBtn" class="hbtn" title="الصوتُ ومستواه" aria-label="التحكّم بالصوت">🔊</button>
       <button id="nightBtn" class="hbtn" title="وضعُ الاستماعِ الليليّ" aria-label="وضع الاستماع الليليّ">🌜</button>
       <button id="themeBtn" title="الوضع الداكن" aria-label="الوضع الداكن">🌙</button>
     </div>
@@ -347,6 +358,13 @@ import { openRoboCustom } from "./src/robo-custom-ui.js"; // نافذةُ «خص
 import { openParentGuide } from "./src/parent-guide-ui.js"; // دليلُ الوالدِ لكلِّ نشاط
 import { occasionFor } from "./src/occasions.js"; // بانرُ المناسباتِ الإسلاميّة (تحويلٌ هجريٌّ محلّيّ)
 import { isQuranOnlineOn } from "./src/quran-online.js"; // بطاقةُ القرآنِ الكاملِ تظهرُ للأبناءِ فقط إن فعّلَها الوالد
+import NAV_NAMES from "./content/nav-names.js"; // أسماءُ البطاقاتِ المنطوقةُ (لها مقاطعُ عصبيّة) — للتنقّلِ الصوتيّ
+// اضبطْ data-say على كلِّ بطاقةٍ باسمِها المنطوقِ المشكولِ (له مقطعٌ عصبيّ) بدلَ نصِّ العنوانِ الخام.
+document.querySelectorAll(".navcard").forEach(card=>{
+  const href=(card.getAttribute("href")||"").split(/[?#]/)[0];
+  const say=NAV_NAMES[href] || (card.id==="roboCustomCard"?NAV_NAMES.robocustom:"");
+  if(say) card.setAttribute("data-say", say);
+});
 { const qf=document.getElementById("quranFullCard"); if(qf && isQuranOnlineOn()) qf.style.display=""; }
 
 // بانرُ المناسبة: يظهرُ في أيّامِ رمضان/العيد/الأيّامِ الفاضلة، ويُغلَقُ للجلسةِ عند الضغطِ على ×.
@@ -359,7 +377,7 @@ import { isQuranOnlineOn } from "./src/quran-online.js"; // بطاقةُ الق�
     el.querySelector(".oc-x").onclick=()=>{ try{ sessionStorage.setItem("tilmithi_occ_hide",oc.id); }catch(e){} el.style.display="none"; };
   } }
 import { speak } from "./src/speak.js"; // نطقُ اسمِ البطاقةِ في التنقّلِ الصوتيّ
-import { isVoiceNavOn, isNightMode, setNightMode, applyNightMode } from "./src/sound-prefs.js";
+import { isVoiceNavOn, isNightMode, setNightMode, applyNightMode, getVolume, setVolume, isVoiceOn, setVoiceOn, isTonesOn, setTonesOn } from "./src/sound-prefs.js";
 applyRoboColor();
 applyNightMode(); // يُطبَّقُ الوضعُ الليليُّ مبكرًا إن كان مفعَّلًا
 
@@ -367,6 +385,36 @@ applyNightMode(); // يُطبَّقُ الوضعُ الليليُّ مبكرًا
 { const nb=document.getElementById("nightBtn");
   if(nb){ const sync=()=>{ nb.classList.toggle("on",isNightMode()); nb.textContent=isNightMode()?"🌞":"🌜"; nb.title=isNightMode()?"إيقافُ وضعِ الاستماعِ الليليّ":"وضعُ الاستماعِ الليليّ"; };
     sync(); nb.onclick=()=>{ setNightMode(!isNightMode()); sync(); }; } }
+// ── زرُّ الصوت: كتمُ صوتِ الآليّ (ردودُه) + التحكّمُ بمستوى صوتِ التطبيقِ كليًّا ──
+{ const sb=document.getElementById("soundBtn");
+  if(sb){ let pop=null;
+    const muted=()=>getVolume()<=0 || (!isVoiceOn() && !isTonesOn());
+    const syncBtn=()=>{ sb.textContent=muted()?"🔇":"🔊"; sb.classList.toggle("on",!muted()); };
+    syncBtn();
+    function buildPop(){
+      pop=document.createElement("div"); pop.className="sndpop";
+      pop.innerHTML=`<div class="sph">🔊 الصوت</div>
+        <div class="spr"><span>مستوى الصوت</span><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="مستوى الصوت"><span class="spv" id="sndVolV"></span></div>
+        <div class="spr"><span>🗣️ صوتُ الآليّ</span><button class="sndtgl" id="sndVoice"></button></div>
+        <div class="spr"><span>🎵 المؤثّرات</span><button class="sndtgl" id="sndTones"></button></div>`;
+      document.body.appendChild(pop);
+      const vol=pop.querySelector("#sndVol"), volV=pop.querySelector("#sndVolV"), tv=pop.querySelector("#sndVoice"), tt=pop.querySelector("#sndTones");
+      const refresh=()=>{ const v=Math.round(getVolume()*100); vol.value=String(v); volV.textContent=v+"%";
+        tv.textContent=isVoiceOn()?"مُفعّل":"مكتوم"; tv.classList.toggle("on",isVoiceOn());
+        tt.textContent=isTonesOn()?"مُفعّل":"مكتوم"; tt.classList.toggle("on",isTonesOn()); syncBtn(); };
+      vol.oninput=()=>{ setVolume((+vol.value)/100); refresh(); };
+      tv.onclick=()=>{ setVoiceOn(!isVoiceOn()); refresh(); };
+      tt.onclick=()=>{ setTonesOn(!isTonesOn()); refresh(); };
+      pop.__refresh=refresh; refresh();
+    }
+    const place=()=>{ const r=sb.getBoundingClientRect(); pop.style.top=(r.bottom+8)+"px";
+      let left=r.right-pop.offsetWidth; left=Math.max(8,Math.min(left,innerWidth-pop.offsetWidth-8)); pop.style.left=left+"px"; };
+    const toggle=()=>{ if(!pop) buildPop();
+      if(pop.classList.contains("show")){ pop.classList.remove("show"); } else { pop.__refresh(); pop.classList.add("show"); place(); } };
+    sb.onclick=e=>{ e.stopPropagation(); toggle(); };
+    document.addEventListener("click", e=>{ if(pop&&pop.classList.contains("show")&&!pop.contains(e.target)&&e.target!==sb) pop.classList.remove("show"); });
+    addEventListener("resize", ()=>{ if(pop&&pop.classList.contains("show")) place(); });
+  } }
 // التنقّلُ الصوتيّ للصغار (يُفعّلُه الوالدُ من لوحةِ التحكّم): نقرةٌ واحدةٌ تدخلُ البطاقةَ كالمعتاد،
 // ورمزُ 🔊 صغيرٌ في زاويةِ كلِّ بطاقةٍ ينطقُ اسمَها عند النقرِ عليه وحدَه (بلا دخول). فصلٌ نظيفٌ بين «اسمع» و«ادخل».
 function applyVoiceNav(){
@@ -378,7 +426,9 @@ function applyVoiceNav(){
         spk=document.createElement("button"); spk.type="button"; spk.className="vnav-spk";
         spk.textContent="🔊"; spk.title="اسمعِ اسمَ البطاقة"; spk.setAttribute("aria-label","اسمع اسم البطاقة");
         spk.addEventListener("click", e=>{ e.preventDefault(); e.stopPropagation();
-          const t=card.querySelector(".t"); const name=((t?t.textContent:"").replace(/[^؀-ۿ\s]/g," ").replace(/\s+/g," ").trim());
+          // الاسمُ المنطوقُ المشكولُ (له مقطعٌ عصبيّ) إن وُجِد، وإلّا نصُّ العنوانِ مجرّدًا من غيرِ العربيّة.
+          const t=card.querySelector(".t");
+          const name=card.getAttribute("data-say") || ((t?t.textContent:"").replace(/[^؀-ۿ\s]/g," ").replace(/\s+/g," ").trim());
           try{ speak(name,{rate:.85}); }catch(_){}
         });
         card.appendChild(spk);

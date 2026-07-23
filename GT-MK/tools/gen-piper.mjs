@@ -18,6 +18,7 @@ import { PRAISE, TADABBUR } from "../src/islamic.js";
 import { DEEPEN, DEEPEN_FALLBACK } from "../src/think.js"; // أسئلةُ التعميقِ المنطوقة
 import library from "../content/library.js";
 import reading from "../content/reading.js"; // كلماتُ جُمَلِ سلّمِ القراءة (v1.7) — لقراءةِ «بتمهّل» كلمةً كلمةً بالعصبيّ
+import navNames from "../content/nav-names.js"; // أسماءُ بطاقاتِ الفهرسِ المنطوقةُ (v1.7) — للتنقّلِ الصوتيّ للصغار
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PYTHON = process.env.PIPER_PYTHON || join(ROOT, ".piper-venv", "bin", "python");
@@ -59,6 +60,7 @@ const texts = uniq([
   ...allOrientWords("ar"),                   // الاتجاهاتُ والفصولُ وفتراتُ اليوم (20 كلمة، عصبيّ)
   ...allPrayerWords(),                        // أسماءُ الصلواتِ الخمس (عصبيّ)
   ...READING_WORDS,                           // كلماتُ جُمَلِ سلّمِ القراءة (لقراءةِ «بتمهّل» كلمةً كلمةً)
+  ...Object.values(navNames || {}),           // أسماءُ بطاقاتِ الفهرسِ (نطقُ اسمِ البطاقةِ في التنقّلِ الصوتيّ)
 ]);
 // الكلماتُ القصيرةُ (اتجاهات/فصول/فترات/صلوات + كلماتُ القراءة) يُذيَّلُ نصُّ تركيبِها بنقطةٍ لتثبيتِ نطقِ العصبيّ للوحدةِ المنفردة.
 const ORIENT_AR = new Set([...allOrientWords("ar"), ...allPrayerWords(), ...READING_WORDS]);

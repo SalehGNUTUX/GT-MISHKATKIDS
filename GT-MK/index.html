@@ -352,7 +352,7 @@ import { robo } from "./src/robo-companion.js"; // المرافقُ العائم
 import { NOTICES, femaleize } from "./src/robo-phrases.js";
 import { praise, tadabburFor } from "./src/islamic.js";
 import { deepenFor, roboWrongFor } from "./src/think.js";
-import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, getVoiceSet, setVoiceSet, CLIPS, AUTO, getStoryVoice, setStoryVoice, isStoryReadOn, setStoryReadOn } from "./src/sound-prefs.js";
+import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, getVoiceSet, setVoiceSet, CLIPS, AUTO, getStoryVoice, setStoryVoice, isStoryReadOn, setStoryReadOn, isVoiceNavOn, setVoiceNavOn } from "./src/sound-prefs.js";
 import { isQuranOnlineOn, setQuranOnlineOn } from "./src/quran-online.js"; // بوّابةُ الوالدِ للقرآنِ الكاملِ عبرَ الإنترنت
 import { listSets, primeVoices } from "./src/voices.js";
 import { practiceByAccount, clearAccount as clearPracticeAccount } from "./src/practice.js";
@@ -1134,6 +1134,11 @@ async function openDashboard(){
         <span class="muted" style="font-size:12px;flex:1">زرّ «اقرأ القصّة» في القصص وسُلّم القراءة</span>
         <button class="toggle ${isStoryReadOn()?"on":""}" id="storyReadToggle" title="تفعيل/إيقاف قراءة القصص"></button>
       </div>
+      <div class="dom-row">
+        <span style="flex:none;width:110px;font-size:13px">🔊 نطق أسماء البطاقات</span>
+        <span class="muted" style="font-size:12px;flex:1">للصغار غير القارئين: رمزُ 🔊 على كلّ بطاقةٍ في الفهرس ينطقُ اسمَها (الدخولُ بنقرةٍ واحدةٍ كالمعتاد)</span>
+        <button class="toggle ${isVoiceNavOn()?"on":""}" id="voiceNavToggle" title="تفعيل/إيقاف نطق أسماء البطاقات"></button>
+      </div>
       <div class="dom-row"><span style="flex:none;width:110px;font-size:13px">📖 قارئ القصص</span>
         <select class="storyvset" style="${vSelStyle}">${storyOpts()}</select></div>
       <div class="dom-row">
@@ -1256,6 +1261,7 @@ async function openDashboard(){
   }));
   const srt=document.getElementById("storyReadToggle"); if(srt) srt.addEventListener("click",()=>{ const on=!isStoryReadOn(); setStoryReadOn(on); srt.classList.toggle("on",on); });
   const qot=document.getElementById("quranOnlineToggle"); if(qot) qot.addEventListener("click",()=>{ const on=!isQuranOnlineOn(); setQuranOnlineOn(on); qot.classList.toggle("on",on); const r=document.getElementById("quranOnlineOpenRow"); if(r) r.style.display=on?"flex":"none"; });
+  const vnt=document.getElementById("voiceNavToggle"); if(vnt) vnt.addEventListener("click",()=>{ const on=!isVoiceNavOn(); setVoiceNavOn(on); vnt.classList.toggle("on",on); });
   const bkE=document.getElementById("bkExport"); if(bkE) bkE.addEventListener("click",()=>backupExport(bkMsg));
   const bkI=document.getElementById("bkImport"), bkF=document.getElementById("bkFile");
   if(bkI&&bkF){ bkI.addEventListener("click",()=>bkF.click()); bkF.addEventListener("change",()=>{ if(bkF.files&&bkF.files[0]) backupImport(bkF.files[0], bkMsg); bkF.value=""; }); }

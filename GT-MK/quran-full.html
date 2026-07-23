@@ -70,9 +70,11 @@
   .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:8px 13px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
   .tbtn.play{background:var(--primary);color:#fff;border-color:var(--primary)}
   .tbtn.on{background:var(--gold);color:#fff;border-color:var(--gold)}
-  .fszoom{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:999px;padding:2px}
-  .fsbtn{border:none;background:transparent;color:var(--ink);cursor:pointer;font-family:'amiri-quran';border-radius:50%;width:30px;height:30px}
-  .fsbtn.sm{font-size:14px} .fsbtn.lg{font-size:20px}
+  .fszoom{display:inline-flex;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+  .fsbtn{width:34px;height:34px;border-radius:50%;border:none;background:transparent;color:var(--ink);font-family:'amiri-quran',inherit;font-weight:800;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;transition:background .12s,transform .1s}
+  .fsbtn.sm{font-size:15px} .fsbtn.lg{font-size:23px}
+  .fsbtn:hover,.fsbtn:focus-visible{background:var(--primary);color:#fff} .fsbtn:active{background:var(--primary-d);color:#fff;transform:scale(.9)}
+  .fsdiv{width:1px;height:18px;background:var(--line);margin:0 1px}
   .mushaf{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 18px;box-shadow:var(--shadow);text-align:center;margin-top:8px;line-height:2.2}
   .mushaf.f-amiri{font-family:'amiri-quran'} .mushaf.f-amiric{font-family:'amiri-quran-colored'} .mushaf.f-uthmani{font-family:'uthmanic-hafs'}
   html[data-theme="dark"] .mushaf{background:#1c1c24}
@@ -81,6 +83,9 @@
   .ayah.on{background:var(--hl)} html[data-theme="dark"] .ayah.on{background:#3a3520;color:#ffe9a8}
   .bism{display:block;color:var(--primary-d);margin-bottom:10px;cursor:pointer}
   .bism.on{background:var(--hl);border-radius:8px}
+  .contnote{background:#FCEFC7;border:1px solid #E9D08A;border-radius:12px;padding:9px 12px;margin:2px 0 10px;font-size:13px;font-weight:700;color:#7a5a1a;text-align:center;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+  html[data-theme="dark"] .contnote{background:#3a3520;border-color:#5a4f2a;color:#ffe9a8}
+  .cn-btn{border:1px solid currentColor;background:transparent;color:inherit;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}
   .hint{color:var(--muted);font-size:13px;text-align:center;margin-top:14px;line-height:1.7}
   .loading{text-align:center;color:var(--muted);padding:30px;font-size:14px}
   .err{background:#FBEEE9;border:1px solid #F0CBB9;border-radius:14px;padding:14px;color:#9a4a2e;text-align:center;font-size:13.5px;margin-top:10px}
@@ -159,6 +164,7 @@ function renderHizbs(){
 function renderSurahs(hn){
   stopAll();
   const h = hizbList().find(x=>x.n===hn);
+  currentHizb = h; // نحفظُه للرجوعِ ولحسابِ موضعِ الإتمام
   view.innerHTML = `<button class="backstep" id="back">كلُّ الأحزاب</button>
     <div class="stitle"><div class="nm" style="font-family:inherit;font-size:19px">الحزبُ ${hn}</div>
       <div class="meta">يبدأُ من ${shortName(surahMeta(h.startSurah).name)} · الآية ${ayNum(h.startAyah)}</div></div>
@@ -184,7 +190,9 @@ function surahCardHtml(n){
 
 function wireSurahList(host){
   host.addEventListener("click", async e=>{
-    const op=e.target.closest("[data-open]"); if(op){ openSurah(+op.getAttribute("data-open")); return; }
+    const op=e.target.closest("[data-open]"); if(op){ const n=+op.getAttribute("data-open");
+      // إن كان هذا الحزبُ يبدأُ وسطَ هذه السورةِ (تتمّةٌ) فادخُلْها من موضعِ الإتمام لا من البداية.
+      const sa=(currentHizb && n===currentHizb.startSurah)?currentHizb.startAyah:1; openSurah(n, sa); return; }
     const dl=e.target.closest("[data-dl]"); if(dl){ await doDownload(+dl.getAttribute("data-dl"), dl); return; }
     const del=e.target.closest("[data-del]"); if(del){ const n=+del.getAttribute("data-del"); await deleteSurah(n); refreshCard(n); return; }
   });
@@ -215,37 +223,43 @@ const setBasmala=on=>{try{localStorage.setItem(BKEY,on?"on":"off");}catch(e){}};
 
 let surah=null; // {n,name,type,ayahCount,ayahs:[{a,text}]}
 let selIdx=0, repeatAyah=false, repeatSurah=false;
+let currentHizb=null;  // الحزبُ المفتوحُ حاليًّا (للرجوعِ إليه ولحسابِ موضعِ الإتمام)
+let entryAyah=1;       // آيةُ بدءِ السورةِ في هذا الحزب (>1 إن كان الحزبُ يبدأُ وسطَ السورة)
 
-async function openSurah(n){
+const backToList=()=> currentHizb ? renderSurahs(currentHizb.n) : renderHizbs();
+async function openSurah(n, startAyah=1){
   stopAll();
   const m=surahMeta(n);
-  selIdx=0; repeatAyah=false; repeatSurah=false;
+  selIdx=0; repeatAyah=false; repeatSurah=false; entryAyah=(startAyah>1?startAyah:1);
   view.innerHTML=`<button class="backstep" id="back">رجوع</button><div class="loading" id="ld">📖 جارٍ تحميلُ ${shortName(m.name)}… ${isSurahLocal(n)||isAvailableOffline(n)?"":"(عبرَ الإنترنت)"}</div>`;
-  document.getElementById("back").onclick=()=>history.length>1?history.back():renderHizbs();
+  document.getElementById("back").onclick=backToList;
   let ayahs;
   try{ ayahs=await fetchSurahText(n); }
   catch(err){
     view.innerHTML=`<button class="backstep" id="back2">رجوع</button>
       <div class="err">تعذّرَ جلبُ نصِّ السورةِ عبرَ الإنترنت. تأكّدْ من الاتّصالِ وأعِدِ المحاولة.<br>(الفاتحةُ وجزءُ عمّ متوفّرانِ محلّيًّا في «القرآن الكريم».)</div>`;
-    document.getElementById("back2").onclick=renderHizbs; return;
+    document.getElementById("back2").onclick=backToList; return;
   }
   surah={ n:m.n, name:m.name, type:m.type, ayahCount:m.ayahCount, ayahs };
   logEvent("quran_open");
-  renderSurah();
+  renderSurah(true);
 }
 
 function ayahText(ay){ const t=(surah.n!==1 && ay.a===1)?verseNoBism(ay.text):ay.text; return t.replace(/﻿/g,"").trim(); }
 function ayahHtml(ay,i){ return `<span class="ayah" data-i="${i}" data-a="${ay.a}">${ayahText(ay)}<span class="num">﴿${ayNum(ay.a)}﴾</span></span> `; }
 
-function renderSurah(){
+function renderSurah(scroll=false){
   stopAll();
   const f=getFont(); const off=isAvailableOffline(surah.n);
   const availBadge = isSurahLocal(surah.n)?`<span class="badge local">🟢 محلّيّ</span>`: off?`<span class="badge local">🟢 دون إنترنت</span>`:`<span class="badge online">🌐 عبرَ الإنترنت</span>`;
+  // ملاحظةُ الإتمام: إن دخلنا السورةَ من حزبٍ يبدأُ وسطَها (entryAyah>1).
+  const contNote = entryAyah>1 ? `<div class="contnote" id="contNote">📍 تتمّةُ السورةِ من الحزبِ ${currentHizb?currentHizb.n:""} — تبدأُ من الآية ${ayNum(entryAyah)} <button id="fromStart" class="cn-btn">↥ من أوّلِ السورة</button></div>` : "";
   view.innerHTML=`<button class="backstep" id="back">رجوع</button>
     <div class="stitle"><div class="nm">${surah.name}</div>
       <div class="meta">${ayNum(surah.ayahCount)} آية · ${surah.type==="Meccan"?"مكّيّة":"مدنيّة"} · ${availBadge}</div></div>
+    ${contNote}
     <div class="fontbar">${FONTS.map(x=>`<button class="chip ${f===x.id?"on":""}" data-font="${x.id}">${x.label}</button>`).join("")}
-      <span class="fszoom"><button class="fsbtn sm" id="fsMinus" title="تصغير">أ</button><button class="fsbtn lg" id="fsPlus" title="تكبير">أ</button></span></div>
+      <span class="fszoom" role="group" aria-label="حجمُ الخطّ"><button class="fsbtn sm" id="fsMinus" title="تصغيرُ الخطّ" aria-label="تصغيرُ الخطّ">أ</button><span class="fsdiv"></span><button class="fsbtn lg" id="fsPlus" title="تكبيرُ الخطّ" aria-label="تكبيرُ الخطّ">أ</button></span></div>
     <div class="toolbar">
       <button class="tbtn play" id="playAll">▶ اقرأِ السورة</button>
       <button class="tbtn" id="stop">⏹️ إيقاف</button>
@@ -255,7 +269,7 @@ function renderSurah(){
     </div>
     <div class="mushaf ${f}" id="mushaf" style="font-size:${getFS()}px">${(surah.n!==1&&showBasmala())?`<span class="bism" data-bism>${BASMALA} <span class="num">🔊</span></span>`:""}${surah.ayahs.map(ayahHtml).join("")}</div>
     <div class="hint">اضغطْ آيةً لتستمعَ إليها ابتداءً منها. «كرّرِ الآية» يُعيدُها لتحفظَها بإذنِ الله 🌿 ${isSurahLocal(surah.n)?"":"(الصوتُ عبرَ الإنترنت — يُخزَّنُ تلقائيًّا بعدَ سماعِه)"}</div>`;
-  document.getElementById("back").onclick=renderHizbs;
+  document.getElementById("back").onclick=backToList;
   view.querySelector(".fontbar").addEventListener("click",e=>{ const b=e.target.closest("[data-font]"); if(!b)return; setFont(b.getAttribute("data-font")); renderSurah(); });
   const applyFS=()=>{ const mu=document.getElementById("mushaf"); if(mu) mu.style.fontSize=getFS()+"px"; };
   document.getElementById("fsPlus").onclick=()=>{ setFS(getFS()+3); applyFS(); };
@@ -270,6 +284,13 @@ function renderSurah(){
   document.getElementById("repAyah").onclick=e=>{ repeatAyah=!repeatAyah; e.currentTarget.classList.toggle("on",repeatAyah); };
   document.getElementById("repSurah").onclick=e=>{ repeatSurah=!repeatSurah; e.currentTarget.classList.toggle("on",repeatSurah); };
   const bb=document.getElementById("basmala"); if(bb) bb.onclick=()=>{ setBasmala(!showBasmala()); renderSurah(); };
+  // زرُّ «من أوّلِ السورة»: يُلغي وضعَ الإتمامِ ويعرضُها من البداية.
+  const fs=document.getElementById("fromStart"); if(fs) fs.onclick=()=>{ entryAyah=1; renderSurah(); const mu=document.getElementById("mushaf"); if(mu) mu.scrollIntoView({block:"start",behavior:"smooth"}); };
+  // موضعُ الإتمام: انتقلْ إليه وأبرِزْه عندَ أوّلِ فتحٍ من الحزب (لا عندَ إعادةِ الرسمِ بتغييرِ خطٍّ أو بسملة).
+  if(scroll && entryAyah>1){
+    const sp=view.querySelector(`.ayah[data-a="${entryAyah}"]`);
+    if(sp){ selIdx=+sp.getAttribute("data-i"); sp.classList.add("on"); setTimeout(()=>sp.scrollIntoView({block:"center",behavior:"smooth"}),120); }
+  }
 }
 
 /* ===== محرّكُ التشغيلِ والتظليل (نظيرُ quran.html، لكنّ الصوتَ من audioUrl؛ محلّيٌّ أو متدفّق) ===== */

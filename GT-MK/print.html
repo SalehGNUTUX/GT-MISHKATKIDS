@@ -82,10 +82,12 @@
   .tx-cut-h{font-weight:800;font-size:13px;width:100%;color:#555}
   .tx-mk{width:48px;height:48px;border:1.5px dashed #999;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;line-height:1}
   .tx-mk.x{color:#E0566B} .tx-mk.o{color:#4C8BF5}
-  .sl-g{display:grid;border:2px solid #333;border-radius:6px;overflow:hidden;max-width:540px;margin:12px auto}
-  .sl-c{aspect-ratio:1/1;border:1px solid #bbb;position:relative;padding:3px;display:flex}
-  .sl-n{font-weight:800;font-size:14px} .sl-lad,.sl-snk{position:absolute;bottom:2px;left:3px;right:3px;font-size:9px;font-weight:700;line-height:1.1}
-  .sl-lad{color:#2f7d32} .sl-snk{color:#c0392b}
+  .tx-mk.cp{font-size:32px;color:#222} .tx-mk.cpb{font-size:32px;color:#000}
+  /* لوحةُ 8×8 للداما والشطرنج (مربّعاتٌ متبادلةٌ فاتحةٌ/داكنة، خفيفةُ الحبرِ للطباعة) */
+  .chk-board{display:grid;grid-template-columns:repeat(8,1fr);width:100%;max-width:460px;margin:12px auto;aspect-ratio:1/1;border:3px solid #333;border-radius:4px;overflow:hidden}
+  .chk-sq{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:22px}
+  .chk-sq.d{background:#c9b088} .chk-sq.l{background:#f3e8d0}
+  .chk-lab{max-width:460px;margin:2px auto 0;display:flex;justify-content:space-between;font-size:11px;color:#777;padding:0 2px}
   .dt-g{display:grid;gap:42px;width:fit-content;margin:16px auto;padding:10px}
   .dt-d{width:9px;height:9px;background:#333;border-radius:50%}
   .cn-wrap{display:flex;justify-content:center;gap:80px;max-width:440px;margin:0 auto}
@@ -135,7 +137,7 @@
     </details>
   </div>
   <div class="sheet">
-    <div class="hint noprint">🎲 اختَرِ الألعابَ الورقيّةَ التي تريدُها (واحدة/أكثر/الكلّ) من الأعلى، ثمّ «اطبع / احفظ PDF». كلُّ لعبةٍ جاهزةٌ للطباعة واللعبِ مباشرةً — وفيها مكانٌ لأسماء المتنافسين. 🌿</div>
+    <div class="hint noprint">🧩 اختَرِ الألعابَ الورقيّةَ التي تريدُها (واحدة/أكثر/الكلّ) من الأعلى، ثمّ «اطبع / احفظ PDF». كلُّ لعبةٍ جاهزةٌ للطباعة واللعبِ مباشرةً — وفيها مكانٌ لأسماء المتنافسين. 🌿</div>
     <div id="templatesWrap"></div>
     <div id="cardsWrap"><div class="cards" id="cards"></div></div>
     <div id="posterWrap"></div>
@@ -344,16 +346,43 @@ function tplMissing(){
     <p class="tpl-h">اكتبِ العددَ الناقصَ ليصحَّ الجمعُ. لاعبان بالمسائلِ نفسِها؛ أوّلُ من يُكمِلُ بصحّةٍ يفوز!</p>
     <div class="ms-wrap">${col("اللاعب 1")}${col("اللاعب 2")}</div></section>`;
 }
-// 🪜🐍 سُلّمٌ وثعبان — لوحةُ 1–30 بسلالمَ وثعابين؛ نردٌ/عجلةٌ 1–6 وقِطَعٌ (تُقَصُّ أسفلَ الصفحة). مستدامٌ يُعادُ مرارًا.
-function tplSnake(){
-  const N=30, cols=6, LAD={4:14,9:21,17:27}, SNK={12:3,19:7,26:11};
+// لوحةُ 8×8 متبادلةُ الألوانِ (للداما والشطرنج). darkFirst: هل يبدأُ الصفُّ الأوّلُ بمربّعٍ داكن.
+function board8(){
   let cells="";
-  for(let n=1;n<=N;n++){ let x=""; if(LAD[n])x=`<span class="sl-lad">🪜 → ${LAD[n]}</span>`; if(SNK[n])x=`<span class="sl-snk">🐍 → ${SNK[n]}</span>`; cells+=`<div class="sl-c"><span class="sl-n">${n}</span>${x}</div>`; }
-  return `<section class="tpl"><h2>🪜🐍 سُلّمٌ وثعبان</h2>${nameStrip()}
-    <p class="tpl-h">ارمِ نردًا (أو أدِرْ عجلةً 1–6) وحرّكْ قطعتَك بالعددِ الظاهر. إن وقفتَ على 🪜 اصعدْ إلى العددِ المُشار، وإن وقفتَ على 🐍 انزلْ. أوّلُ من يبلغُ ${N} يفوز.</p>
-    <div class="sl-g" style="grid-template-columns:repeat(${cols},1fr)">${cells}</div>
-    <p class="tpl-h" style="margin-top:10px">✂️ قِطَعُ اللاعبين (تُقَصُّ):</p>
-    <div class="tx-cut"><div class="tx-mk x">🔴</div><div class="tx-mk o">🔵</div><div class="tx-mk x">🟢</div><div class="tx-mk o">🟡</div></div></section>`;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){ const dark=(r+c)%2===1; cells+=`<div class="chk-sq ${dark?"d":"l"}"></div>`; }
+  return `<div class="chk-board">${cells}</div>
+    <div class="chk-lab"><span>أ</span><span>ب</span><span>ج</span><span>د</span><span>هـ</span><span>و</span><span>ز</span><span>ح</span></div>`;
+}
+// ♟️ الشطرنج — لوحةُ 8×8 + قطعُ الطرفَينِ للقصّ + قوانينُ الحركةِ مختصرة. لعبةُ مهارةٍ وتخطيطٍ (بديلُ ألعابِ النرد).
+function tplChess(){
+  // 16 قطعةً لكلِّ طرف: مَلِك، وزير، رُخّان، فِيلان، حِصانان، 8 بيادق. رموزٌ يونيكود (بيضاءُ مفرَّغة/سوداءُ مصمتة).
+  const set=(k,q,r,b,n,p)=>`<div class="tx-mk cp">${k}</div><div class="tx-mk cp">${q}</div>`+`<div class="tx-mk cp">${r}</div>`.repeat(2)+`<div class="tx-mk cp">${b}</div>`.repeat(2)+`<div class="tx-mk cp">${n}</div>`.repeat(2)+`<div class="tx-mk cp">${p}</div>`.repeat(8);
+  return `<section class="tpl"><h2>♟️ الشطرنج — لوحةٌ وقطعٌ للقصّ</h2>${nameStrip()}
+    <p class="tpl-h">لعبةُ مهارةٍ وتخطيطٍ لا حظَّ فيها. لاعبان: الأبيضُ يبدأ. الهدفُ: تهديدُ مَلِكِ الخصمِ تهديدًا لا مَهرَبَ منه («كِش مات»).</p>
+    ${board8()}
+    <div class="tx-cut"><div class="tx-cut-h">قِطَعُ اللاعبِ الأوّل (بيضاء) ✂️</div>${set("♔","♕","♖","♗","♘","♙")}</div>
+    <div class="tx-cut"><div class="tx-cut-h">قِطَعُ اللاعبِ الثاني (سوداء) ✂️</div>${set("♚","♛","♜","♝","♞","♟")}</div>
+    <p class="tpl-h" style="margin-top:12px;text-align:right">📜 حركةُ القِطَع:
+      ♙ <b>البيدق</b>: خطوةٌ للأمام (خطوتانِ في أوّلِ حركةٍ له)، ويأكلُ قُطريًّا. ·
+      ♖ <b>الرُّخّ</b>: مستقيمٌ أفقيًّا ورأسيًّا. ·
+      ♗ <b>الفيل</b>: قُطريًّا فقط. ·
+      ♘ <b>الحصان</b>: على شكلِ حرفِ L (يقفزُ فوقَ القِطَع). ·
+      ♕ <b>الوزير</b>: كلُّ الاتجاهات. ·
+      ♔ <b>المَلِك</b>: خطوةٌ واحدةٌ في أيِّ اتجاه.
+      <br>🪧 <b>الترتيبُ الأوّل:</b> صفُّ البيادقِ أمامًا؛ وخلفَه: رُخّ، حصان، فيل، ثمّ الوزيرُ على لونِه والمَلِكُ بجانبِه، ثمّ فيل، حصان، رُخّ.</p></section>`;
+}
+// ♛ الداما — لوحةُ 8×8 + أقراصُ الطرفَينِ للقصّ + القوانين. لعبةُ مهارةٍ لا حظَّ فيها (بديلُ ألعابِ النرد).
+function tplDama(){
+  const discs=(cls)=>`<div class="tx-mk ${cls}">●</div>`.repeat(12);
+  return `<section class="tpl"><h2>♛ الدَّامَة — لوحةٌ وأقراصٌ للقصّ</h2>${nameStrip()}
+    <p class="tpl-h">لعبةُ مهارةٍ وتخطيطٍ لا حظَّ فيها. لاعبان، لكلٍّ 12 قرصًا على المربّعاتِ الداكنة. أوّلُ من يأسِرُ كلَّ أقراصِ خصمِه (أو يمنعُه من الحركة) يفوز.</p>
+    ${board8()}
+    <div class="tx-cut"><div class="tx-cut-h">أقراصُ اللاعبِ الأوّل (حمراء) ✂️</div>${discs("x")}</div>
+    <div class="tx-cut"><div class="tx-cut-h">أقراصُ اللاعبِ الثاني (زرقاء) ✂️</div>${discs("o")}</div>
+    <p class="tpl-h" style="margin-top:12px;text-align:right">📜 القوانين:
+      • تتحرّكُ الأقراصُ قُطريًّا خطوةً واحدةً للأمامِ على المربّعاتِ الداكنةِ فقط. ·
+      • <b>الأسْر:</b> إن جاورَكَ قرصُ الخصمِ وخلفَه مربّعٌ فارغٌ، اقفِزْ فوقَه قُطريًّا لتأسِرَه (ويجوزُ الأسرُ المتتابعُ في دورٍ واحد). ·
+      • <b>التتويج:</b> إذا بلغَ قرصُك آخرَ صفٍّ عندَ الخصمِ صارَ «دامَة» (ضَعْ فوقَه قرصًا ثانيًا علامةً)، فيتحرّكُ ويأسِرُ للأمامِ وللخلفِ قُطريًّا.</p></section>`;
 }
 // ▪️ مربّعاتُ النقاط — شبكةُ نقاطٍ؛ لاعبان يَصِلانِ نقطتين، ومَن يُغلِقُ مربّعًا يملكُه. كلاسيكيٌّ للتفكيرِ الاستراتيجيّ.
 function tplDots(){
@@ -365,7 +394,8 @@ function tplDots(){
 }
 const TEMPLATES=[
   {id:"t_xo",label:"⭕ دائرة وعلامة",fn:tplXO},
-  {id:"t_snake",label:"🪜 سُلّمٌ وثعبان",fn:tplSnake},
+  {id:"t_chess",label:"♟️ الشطرنج (لوحة وقطع)",fn:tplChess},
+  {id:"t_dama",label:"♛ الدَّامَة (لوحة وأقراص)",fn:tplDama},
   {id:"t_dots",label:"▪️ مربّعاتُ النقاط",fn:tplDots},
   {id:"t_ws",label:"🔤 شبكة الكلمات",fn:tplWordSearch},
   {id:"t_hunt",label:"🔎 صيد الحرف/الرقم",fn:tplHunt},

@@ -181,6 +181,14 @@ build_apk() {
 NODE
     step "حُقِنت intent-filters لاستقبالِ .json (json + content/file + octet-stream/text·pathPattern لواتساب)"
   fi
+  # مزامنةُ نسخةِ أندرويد من package.json (Capacitor لا يزامنُها تلقائيًّا فتبقى "1.0"). android/ مُولَّدٌ فيُعادُ كلَّ بناء.
+  local gradle="$ANDROID/app/build.gradle"
+  if [ -f "$gradle" ]; then
+    local vcode; vcode="$(echo "$VERSION" | awk -F. '{printf "%d", ($1*10000)+($2*100)+$3}')"
+    sed -i -E "s/versionName \"[^\"]*\"/versionName \"$VERSION\"/" "$gradle"
+    sed -i -E "s/versionCode [0-9]+/versionCode $vcode/" "$gradle"
+    step "ضُبِطت نسخةُ أندرويد: versionName $VERSION · versionCode $vcode"
+  fi
   [ -n "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}" ] || wrn "ANDROID_HOME غير مضبوط — قد يفشل gradlew"
   local apk="$ANDROID/app/build/outputs/apk/debug/app-debug.apk"
   rm -f "$apk"  # لئلّا يُنسَخَ APK قديمٌ إن فشل البناء

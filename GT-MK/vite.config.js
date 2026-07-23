@@ -24,6 +24,7 @@ export default defineConfig({
         record: "record.html",
         progress: "progress.html",
         quran: "quran.html",
+        "quran-full": "quran-full.html",
         lang: "lang.html",
         clock: "clock.html",
       },
@@ -62,6 +63,17 @@ export default defineConfig({
           urlPattern: ({ url }) => url.pathname.includes("/quran/husary/"),
           handler: "CacheFirst",
           options: { cacheName: "quran-husary", expiration: { maxEntries: 1200 }, cacheableResponse: { statuses: [0, 200] } },
+        }, {
+          // القرآنُ الكاملُ عبرَ الإنترنت (استثناءٌ مأذون): تلاوةُ الحصري تُخبَّأُ عندَ الاستماع/التنزيل
+          // فتعملُ دونَ إنترنتٍ بعدَه. لا يُحمَّلُ مسبقًا (خارجُ globPatterns لأنّه نطاقٌ خارجيّ).
+          urlPattern: ({ url }) => url.hostname.includes("everyayah.com"),
+          handler: "CacheFirst",
+          options: { cacheName: "quran-online-audio", expiration: { maxEntries: 6300 }, cacheableResponse: { statuses: [0, 200] } },
+        }, {
+          // نصُّ السورِ (العثمانيّ) من alquran.cloud — يُخبَّأُ بعدَ أوّلِ فتحٍ فيُقرأُ لاحقًا دونَ إنترنت.
+          urlPattern: ({ url }) => url.hostname.includes("alquran.cloud"),
+          handler: "StaleWhileRevalidate",
+          options: { cacheName: "quran-online-text", expiration: { maxEntries: 260 }, cacheableResponse: { statuses: [0, 200] } },
         }],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // يتولّى الإصدارُ الجديد السيطرةَ فورًا عند التحديث (يمنع تقديمَ مقاطع/كود قديمٍ مُخبَّأ بعد إعادة البناء).

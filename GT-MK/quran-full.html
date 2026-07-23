@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<script>(function(){try{var t=localStorage.getItem('tilmithi_theme');if(t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<style id="theme-crit">html[data-theme="dark"]{--bg:#15151b;--card:#23232c;--ink:#ECE7DD;--muted:#A39E94;--line:#34343f;--primary-d:#E8987E;--shadow:0 6px 20px rgba(0,0,0,.45)}html[data-theme="dark"] body{background:var(--bg);color:var(--ink)}</style>
+<link rel="icon" type="image/png" href="icon-192.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#1F7A5E" />
+<title>مِشكاة — القرآن الكامل (عبر الإنترنت)</title>
+<style>
+  @font-face{font-family:'amiri-quran';src:url('fonts/amiri-quran.ttf') format('truetype');font-display:swap}
+  @font-face{font-family:'amiri-quran-colored';src:url('fonts/amiri-quran-colored.ttf') format('truetype');font-display:swap}
+  @font-face{font-family:'uthmanic-hafs';src:url('fonts/uthmanic-hafs.otf') format('opentype');font-display:swap}
+  :root{
+    --bg:#FBF7EF; --card:#FFFFFF; --ink:#2B2B2B; --muted:#6B6B6B; --line:#ECE6DA;
+    --primary:#1F7A5E; --primary-d:#155C46; --gold:#C99B3B; --hl:#FCEFC7;
+    --shadow:0 6px 20px rgba(0,0,0,.07);
+    font-family:"Noto Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button,a,.scard,.ayah,.hcard{touch-action:manipulation}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:680px;margin:0 auto;padding:16px 16px 56px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 10px}
+  header h1{font-size:19px;margin:0}
+  header .net{font-size:12px;color:var(--muted);font-weight:700}
+  .topbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink);font-family:inherit}
+  .iconbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;width:38px;height:38px;font-size:17px;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .backstep{background:var(--card);border:1.5px solid var(--primary);color:var(--primary-d);border-radius:12px;padding:8px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px}
+  .backstep::before{content:"↩ "}
+  /* بوّابةُ الوالد */
+  .gate{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 20px;text-align:center;box-shadow:var(--shadow);margin-top:20px}
+  .gate .big{font-size:46px}
+  .gate h2{margin:8px 0 6px;font-size:19px}
+  .gate p{color:var(--muted);font-size:14px;line-height:1.7;margin:0 auto;max-width:440px}
+  .gate a.cta{display:inline-block;margin-top:14px;background:var(--primary);color:#fff;text-decoration:none;border-radius:13px;padding:11px 20px;font-weight:800}
+  /* شبكةُ الأحزاب */
+  .hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px}
+  .hcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px;cursor:pointer;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
+  .hcard:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.12)}
+  .hcard .hn{font-weight:800;color:var(--primary-d);font-size:15px}
+  .hcard .hs{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .hcard .hb{margin-top:6px;font-size:11px;color:var(--gold);font-weight:700}
+  /* قائمةُ السور */
+  .slist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px;margin-top:4px}
+  .scard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px 12px 10px;box-shadow:var(--shadow)}
+  .scard .nm{font-weight:800;font-size:15px;cursor:pointer}
+  .scard .meta{font-size:12px;color:var(--muted);margin-top:2px}
+  .scard .badge{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:1px 8px;margin-top:7px}
+  .scard .badge.local{background:#E7F4EC;color:#2c7a4e}
+  .scard .badge.online{background:#EAF0FB;color:#3f6fb0}
+  html[data-theme="dark"] .scard .badge.local{background:#1e3a2a;color:#8fd0b6}
+  html[data-theme="dark"] .scard .badge.online{background:#22304a;color:#9fc0ea}
+  .scard .dl{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+  .scard .dlbtn{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:5px 9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+  .scard .dlbtn.busy{opacity:.7;pointer-events:none}
+  .scard .dlbar{height:5px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:6px;display:none}
+  .scard .dlbar i{display:block;height:100%;width:0;background:var(--primary);transition:width .2s}
+  /* المصحف (نفسُ لغةِ quran.html) */
+  .stitle{text-align:center;margin:2px 0 10px}
+  .stitle .nm{font-family:'amiri-quran';font-size:24px;color:var(--primary-d)}
+  .stitle .meta{font-size:12.5px;color:var(--muted)}
+  .fontbar,.toolbar{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:6px 0}
+  .chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+  .chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:8px 13px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  .tbtn.play{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .tbtn.on{background:var(--gold);color:#fff;border-color:var(--gold)}
+  .fszoom{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:999px;padding:2px}
+  .fsbtn{border:none;background:transparent;color:var(--ink);cursor:pointer;font-family:'amiri-quran';border-radius:50%;width:30px;height:30px}
+  .fsbtn.sm{font-size:14px} .fsbtn.lg{font-size:20px}
+  .mushaf{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 18px;box-shadow:var(--shadow);text-align:center;margin-top:8px;line-height:2.2}
+  .mushaf.f-amiri{font-family:'amiri-quran'} .mushaf.f-amiric{font-family:'amiri-quran-colored'} .mushaf.f-uthmani{font-family:'uthmanic-hafs'}
+  html[data-theme="dark"] .mushaf{background:#1c1c24}
+  .ayah{cursor:pointer;border-radius:8px;padding:0 2px;transition:background .2s}
+  .ayah .num{color:var(--gold);font-size:.72em;margin:0 3px}
+  .ayah.on{background:var(--hl)} html[data-theme="dark"] .ayah.on{background:#3a3520;color:#ffe9a8}
+  .bism{display:block;color:var(--primary-d);margin-bottom:10px;cursor:pointer}
+  .bism.on{background:var(--hl);border-radius:8px}
+  .hint{color:var(--muted);font-size:13px;text-align:center;margin-top:14px;line-height:1.7}
+  .loading{text-align:center;color:var(--muted);padding:30px;font-size:14px}
+  .err{background:#FBEEE9;border:1px solid #F0CBB9;border-radius:14px;padding:14px;color:#9a4a2e;text-align:center;font-size:13.5px;margin-top:10px}
+  html[data-theme="dark"] .err{background:#3a241c;border-color:#5a3626;color:#e6a488}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>📖 القرآن الكامل</h1><div class="net" id="netState"></div></div>
+    <span style="display:flex;gap:8px">
+      <button class="iconbtn" id="themeBtn" title="الوضع الداكن" aria-label="الوضع الداكن">🌙</button>
+      <a class="topbtn" href="home.html">🏠 الفهرس</a>
+    </span>
+  </header>
+  <div id="view"></div>
+</div>
+
+<script type="module">
+import { wireThemeToggle } from "./src/theme.js";
+wireThemeToggle(document.getElementById("themeBtn"));
+import { logEvent, recordMastery } from "./src/progress.js";
+import { robo } from "./src/robo-companion.js";
+import { NOTICES } from "./src/robo-phrases.js";
+import {
+  isQuranOnlineOn, hizbList, surahMeta, isSurahLocal, isAvailableOffline,
+  audioUrl, BASMALA_AUDIO, fetchSurahText, downloadSurah, deleteSurah,
+} from "./src/quran-online.js";
+robo.mount();
+
+const view = document.getElementById("view");
+const netEl = document.getElementById("netState");
+const ayNum = n => String(n);
+const BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+const stripDia = s => String(s).replace(/[ً-ْٰـ]/g, "").replace(/ٱ/g, "ا");
+const BASM_NORM = "بسم الله الرحمن الرحيم";
+function verseNoBism(text){ const t=String(text).split(/\s+/); return (t.length>=4 && stripDia(t.slice(0,4).join(" "))===BASM_NORM) ? t.slice(4).join(" ") : text; }
+const shortName = nm => String(nm).replace(/^سُورَةُ\s*/, "");
+
+function updateNet(){ netEl.textContent = navigator.onLine ? "🌐 متّصلٌ بالإنترنت" : "📴 دون إنترنت — المتوفّرُ محلّيًّا فقط"; }
+addEventListener("online", updateNet); addEventListener("offline", updateNet); updateNet();
+
+/* ===== بوّابةُ الوالد ===== */
+if(!isQuranOnlineOn()){
+  view.innerHTML = `<div class="gate">
+    <div class="big">🔒</div>
+    <h2>القرآنُ الكاملُ عبرَ الإنترنت</h2>
+    <p>هذه الميزةُ تجلبُ نصَّ القرآنِ كاملًا وتلاوةَ الشيخِ الحصريِّ <b>عبرَ الإنترنت</b> (مع إمكانِ تنزيلِ كلِّ سورةٍ للاستماعِ دونَ اتّصال).
+    وهي <b>مُطفأةٌ افتراضيًّا</b>؛ يُفعّلُها الوالدُ من <b>لوحةِ التحكّم ← الإعدادات</b>. أمّا الفاتحةُ وجزءُ عمّ فمتوفّرانِ محلّيًّا دائمًا في «القرآن الكريم».</p>
+    <a class="cta" href="index.html?parent=1#sec-quranonline">🛡️ لوحةُ التحكّم</a>
+  </div>`;
+} else {
+  renderHizbs();
+}
+
+/* ===== شبكةُ الأحزاب (60) ===== */
+function renderHizbs(){
+  stopAll();
+  const H = hizbList();
+  view.innerHTML = `<div class="hint" style="margin:0 0 12px">القرآنُ في <b>60 حزبًا</b>. اختَرْ حزبًا لتظهرَ سورُه، ثمّ سورةً للاستماعِ والحفظ. 🟢 محلّيّ · 🌐 عبرَ الإنترنت.</div>
+    <div class="hgrid">${H.map(h=>{
+      const names = h.surahs.map(n=>shortName(surahMeta(n).name)).join(" · ");
+      const anyLocal = h.surahs.some(isSurahLocal);
+      return `<div class="hcard" data-h="${h.n}">
+        <div class="hn">الحزبُ ${h.n}</div>
+        <div class="hs">${names}</div>
+        ${anyLocal?`<div class="hb">🟢 فيه سورٌ محلّيّة</div>`:""}
+      </div>`;
+    }).join("")}</div>`;
+  view.querySelector(".hgrid").addEventListener("click", e=>{ const c=e.target.closest("[data-h]"); if(c) renderSurahs(+c.getAttribute("data-h")); });
+}
+
+/* ===== سورُ حزبٍ مُعيَّن ===== */
+function renderSurahs(hn){
+  stopAll();
+  const h = hizbList().find(x=>x.n===hn);
+  view.innerHTML = `<button class="backstep" id="back">كلُّ الأحزاب</button>
+    <div class="stitle"><div class="nm" style="font-family:inherit;font-size:19px">الحزبُ ${hn}</div>
+      <div class="meta">يبدأُ من ${shortName(surahMeta(h.startSurah).name)} · الآية ${ayNum(h.startAyah)}</div></div>
+    <div class="slist" id="slist">${h.surahs.map(n=>surahCardHtml(n)).join("")}</div>`;
+  document.getElementById("back").onclick = renderHizbs;
+  wireSurahList(document.getElementById("slist"));
+}
+
+function surahCardHtml(n){
+  const m = surahMeta(n);
+  const local = isSurahLocal(n), off = isAvailableOffline(n);
+  const badge = local ? `<span class="badge local">🟢 محلّيّ</span>`
+    : off ? `<span class="badge local">🟢 منزَّلٌ (دون إنترنت)</span>`
+    : `<span class="badge online">🌐 عبرَ الإنترنت</span>`;
+  const dl = local ? "" : (off
+    ? `<div class="dl"><button class="dlbtn" data-del="${n}">🗑️ حذفُ التنزيل</button></div>`
+    : `<div class="dl"><button class="dlbtn" data-dl="${n}">⬇️ نزّلْ للاستماعِ دون إنترنت</button></div><div class="dlbar" id="bar-${n}"><i></i></div>`);
+  return `<div class="scard" data-card="${n}">
+    <div class="nm" data-open="${n}">${shortName(m.name)}</div>
+    <div class="meta">سورةٌ ${m.n} · ${ayNum(m.ayahCount)} آية · ${m.type==="Meccan"?"مكّيّة":"مدنيّة"}</div>
+    ${badge}${dl}</div>`;
+}
+
+function wireSurahList(host){
+  host.addEventListener("click", async e=>{
+    const op=e.target.closest("[data-open]"); if(op){ openSurah(+op.getAttribute("data-open")); return; }
+    const dl=e.target.closest("[data-dl]"); if(dl){ await doDownload(+dl.getAttribute("data-dl"), dl); return; }
+    const del=e.target.closest("[data-del]"); if(del){ const n=+del.getAttribute("data-del"); await deleteSurah(n); refreshCard(n); return; }
+  });
+}
+function refreshCard(n){ const card=view.querySelector(`.scard[data-card="${n}"]`); if(card) card.outerHTML = surahCardHtml(n); }
+async function doDownload(n, btn){
+  if(!navigator.onLine){ alert("لا يوجدُ اتّصالٌ بالإنترنت. صِلِ الإنترنتَ للتنزيل."); return; }
+  const bar=document.getElementById("bar-"+n); const fill=bar?bar.querySelector("i"):null;
+  btn.classList.add("busy"); btn.textContent="⏳ يُنزّل…"; if(bar) bar.style.display="block";
+  try{
+    await downloadSurah(n, (done,total)=>{ if(fill) fill.style.width=Math.round(done/total*100)+"%"; btn.textContent=`⏳ ${done}/${total}`; });
+    try{ robo.cheer("أحسنت! نُزِّلَتِ السورةُ، تستطيعُ سماعَها الآنَ دونَ إنترنت."); }catch(_){}
+  }catch(err){ if(bar) bar.style.display="none"; btn.classList.remove("busy"); btn.textContent="⚠️ تعذّرَ التنزيل — أعِدِ المحاولة"; return; }
+  refreshCard(n);
+}
+
+/* ===== قارئُ السورة ===== */
+const FONTS=[{id:"f-amiri",label:"أميري"},{id:"f-amiric",label:"أميري ملوّن"},{id:"f-uthmani",label:"عثماني"}];
+const FKEY="tilmithi_quran_font", FSKEY="tilmithi_quran_fs";
+const getFont=()=>{try{return localStorage.getItem(FKEY)||"f-amiri";}catch(e){return "f-amiri";}};
+const setFont=f=>{try{localStorage.setItem(FKEY,f);}catch(e){}};
+const clampFS=px=>Math.max(20,Math.min(48,px));
+const getFS=()=>{try{const v=parseInt(localStorage.getItem(FSKEY)||"30",10);return clampFS(isNaN(v)?30:v);}catch(e){return 30;}};
+const setFS=px=>{try{localStorage.setItem(FSKEY,String(clampFS(px)));}catch(e){}};
+const BKEY="tilmithi_quran_basmala";
+const showBasmala=()=>{try{return localStorage.getItem(BKEY)!=="off";}catch(e){return true;}};
+const setBasmala=on=>{try{localStorage.setItem(BKEY,on?"on":"off");}catch(e){}};
+
+let surah=null; // {n,name,type,ayahCount,ayahs:[{a,text}]}
+let selIdx=0, repeatAyah=false, repeatSurah=false;
+
+async function openSurah(n){
+  stopAll();
+  const m=surahMeta(n);
+  selIdx=0; repeatAyah=false; repeatSurah=false;
+  view.innerHTML=`<button class="backstep" id="back">رجوع</button><div class="loading" id="ld">📖 جارٍ تحميلُ ${shortName(m.name)}… ${isSurahLocal(n)||isAvailableOffline(n)?"":"(عبرَ الإنترنت)"}</div>`;
+  document.getElementById("back").onclick=()=>history.length>1?history.back():renderHizbs();
+  let ayahs;
+  try{ ayahs=await fetchSurahText(n); }
+  catch(err){
+    view.innerHTML=`<button class="backstep" id="back2">رجوع</button>
+      <div class="err">تعذّرَ جلبُ نصِّ السورةِ عبرَ الإنترنت. تأكّدْ من الاتّصالِ وأعِدِ المحاولة.<br>(الفاتحةُ وجزءُ عمّ متوفّرانِ محلّيًّا في «القرآن الكريم».)</div>`;
+    document.getElementById("back2").onclick=renderHizbs; return;
+  }
+  surah={ n:m.n, name:m.name, type:m.type, ayahCount:m.ayahCount, ayahs };
+  logEvent("quran_open");
+  renderSurah();
+}
+
+function ayahText(ay){ const t=(surah.n!==1 && ay.a===1)?verseNoBism(ay.text):ay.text; return t.replace(/﻿/g,"").trim(); }
+function ayahHtml(ay,i){ return `<span class="ayah" data-i="${i}" data-a="${ay.a}">${ayahText(ay)}<span class="num">﴿${ayNum(ay.a)}﴾</span></span> `; }
+
+function renderSurah(){
+  stopAll();
+  const f=getFont(); const off=isAvailableOffline(surah.n);
+  const availBadge = isSurahLocal(surah.n)?`<span class="badge local">🟢 محلّيّ</span>`: off?`<span class="badge local">🟢 دون إنترنت</span>`:`<span class="badge online">🌐 عبرَ الإنترنت</span>`;
+  view.innerHTML=`<button class="backstep" id="back">رجوع</button>
+    <div class="stitle"><div class="nm">${surah.name}</div>
+      <div class="meta">${ayNum(surah.ayahCount)} آية · ${surah.type==="Meccan"?"مكّيّة":"مدنيّة"} · ${availBadge}</div></div>
+    <div class="fontbar">${FONTS.map(x=>`<button class="chip ${f===x.id?"on":""}" data-font="${x.id}">${x.label}</button>`).join("")}
+      <span class="fszoom"><button class="fsbtn sm" id="fsMinus" title="تصغير">أ</button><button class="fsbtn lg" id="fsPlus" title="تكبير">أ</button></span></div>
+    <div class="toolbar">
+      <button class="tbtn play" id="playAll">▶ اقرأِ السورة</button>
+      <button class="tbtn" id="stop">⏹️ إيقاف</button>
+      <button class="tbtn ${repeatAyah?"on":""}" id="repAyah">🔁 كرّرِ الآية</button>
+      <button class="tbtn ${repeatSurah?"on":""}" id="repSurah">🔁 كرّرِ السورة</button>
+      ${surah.n!==1?`<button class="tbtn ${showBasmala()?"on":""}" id="basmala">🕌 البسملة</button>`:""}
+    </div>
+    <div class="mushaf ${f}" id="mushaf" style="font-size:${getFS()}px">${(surah.n!==1&&showBasmala())?`<span class="bism" data-bism>${BASMALA} <span class="num">🔊</span></span>`:""}${surah.ayahs.map(ayahHtml).join("")}</div>
+    <div class="hint">اضغطْ آيةً لتستمعَ إليها ابتداءً منها. «كرّرِ الآية» يُعيدُها لتحفظَها بإذنِ الله 🌿 ${isSurahLocal(surah.n)?"":"(الصوتُ عبرَ الإنترنت — يُخزَّنُ تلقائيًّا بعدَ سماعِه)"}</div>`;
+  document.getElementById("back").onclick=renderHizbs;
+  view.querySelector(".fontbar").addEventListener("click",e=>{ const b=e.target.closest("[data-font]"); if(!b)return; setFont(b.getAttribute("data-font")); renderSurah(); });
+  const applyFS=()=>{ const mu=document.getElementById("mushaf"); if(mu) mu.style.fontSize=getFS()+"px"; };
+  document.getElementById("fsPlus").onclick=()=>{ setFS(getFS()+3); applyFS(); };
+  document.getElementById("fsMinus").onclick=()=>{ setFS(getFS()-3); applyFS(); };
+  view.querySelector("#mushaf").addEventListener("click",e=>{
+    if(e.target.closest("[data-bism]")){ playAll(0); return; }
+    const sp=e.target.closest(".ayah"); if(!sp)return; selIdx=+sp.getAttribute("data-i");
+    if(repeatAyah) playSingle(selIdx); else playFrom(selIdx);
+  });
+  document.getElementById("playAll").onclick=()=>playAll(0);
+  document.getElementById("stop").onclick=stopAll;
+  document.getElementById("repAyah").onclick=e=>{ repeatAyah=!repeatAyah; e.currentTarget.classList.toggle("on",repeatAyah); };
+  document.getElementById("repSurah").onclick=e=>{ repeatSurah=!repeatSurah; e.currentTarget.classList.toggle("on",repeatSurah); };
+  const bb=document.getElementById("basmala"); if(bb) bb.onclick=()=>{ setBasmala(!showBasmala()); renderSurah(); };
+}
+
+/* ===== محرّكُ التشغيلِ والتظليل (نظيرُ quran.html، لكنّ الصوتَ من audioUrl؛ محلّيٌّ أو متدفّق) ===== */
+const player=new Audio(); player.preload="auto";
+let announceDone=false, seq=[], seqPos=0, mode="idle";
+function clearHL(){ view.querySelectorAll(".ayah.on,.bism.on").forEach(x=>x.classList.remove("on")); }
+function hlAyah(i){ clearHL(); const sp=view.querySelector(`.ayah[data-i="${i}"]`); if(sp){ sp.classList.add("on"); sp.scrollIntoView({block:"center",behavior:"smooth"}); } }
+function hlBism(){ clearHL(); const b=view.querySelector(".bism"); if(b) b.classList.add("on"); }
+function stopAll(){ mode="idle"; seq=[]; player.onended=null; try{ player.pause(); }catch(e){} clearHL(); }
+const srcOf=st=> st.bism ? BASMALA_AUDIO : audioUrl(surah.n, surah.ayahs[st.ayah].a);
+function runSeq(){
+  if(mode!=="seq")return;
+  if(seqPos>=seq.length){
+    if(repeatSurah && seq.some(s=>!s.bism)){ seqPos=0; runSeq(); return; }
+    mode="idle"; clearHL();
+    const last=seq[seq.length-1];
+    if(announceDone && last && !last.bism && last.ayah===surah.ayahs.length-1){ logEvent("quran_listen"); recordMastery("S:"+surah.n,true); try{ robo.cheer(NOTICES.quranSurahDone); }catch(e){} }
+    return;
+  }
+  const st=seq[seqPos];
+  if(st.bism) hlBism(); else { selIdx=st.ayah; hlAyah(st.ayah); }
+  player.onended=()=>{ if(mode!=="seq")return; if(seq.length===1 && !seq[0].bism && repeatAyah){ runSeq(); return; } seqPos++; runSeq(); };
+  player.onerror=player.onended;
+  player.src=srcOf(st); try{ player.currentTime=0; }catch(e){}
+  const p=player.play(); if(p&&p.catch) p.catch(()=>{});
+}
+function playSingle(i){ mode="seq"; announceDone=false; seq=[{ayah:i}]; seqPos=0; selIdx=i; runSeq(); }
+function playFrom(i){ mode="seq"; announceDone=true; seq=[]; for(let k=i;k<surah.ayahs.length;k++) seq.push({ayah:k}); seqPos=0; if(seq.length){ selIdx=i; runSeq(); } }
+function playAll(from){ mode="seq"; announceDone=true; seq=[]; if(from===0 && surah.n!==1 && showBasmala()) seq.push({bism:true}); for(let i=from;i<surah.ayahs.length;i++) seq.push({ayah:i}); seqPos=0; runSeq(); }
+</script>
+</body>
+</html>

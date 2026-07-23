@@ -353,6 +353,7 @@ import { NOTICES, femaleize } from "./src/robo-phrases.js";
 import { praise, tadabburFor } from "./src/islamic.js";
 import { deepenFor, roboWrongFor } from "./src/think.js";
 import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, getVoiceSet, setVoiceSet, CLIPS, AUTO, getStoryVoice, setStoryVoice, isStoryReadOn, setStoryReadOn } from "./src/sound-prefs.js";
+import { isQuranOnlineOn, setQuranOnlineOn } from "./src/quran-online.js"; // بوّابةُ الوالدِ للقرآنِ الكاملِ عبرَ الإنترنت
 import { listSets, primeVoices } from "./src/voices.js";
 import { practiceByAccount, clearAccount as clearPracticeAccount } from "./src/practice.js";
 import { verifyParentPassword, markParentAuthed, isParentAuthed, isParent, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser, addProfile, updateProfile, AVATARS, isFemale } from "./src/accounts.js";
@@ -1141,6 +1142,22 @@ async function openDashboard(){
       </div>
     </div>
 
+    <div class="sec" id="sec-quranonline" style="scroll-margin-top:12px"><h3>🌐 القرآن الكامل عبر الإنترنت</h3>
+      <div class="muted" style="font-size:12.5px;line-height:1.7;margin-bottom:8px">
+        هذه أوّلُ ميزةٍ تعملُ <b>عبرَ الإنترنت</b> في التطبيق (بقيّةُ البرنامجِ محلّيٌّ 100%). تُتيحُ نصَّ القرآنِ كاملًا وتلاوةَ الشيخِ الحصريِّ في <b>60 حزبًا</b>، مع تنزيلِ كلِّ سورةٍ للاستماعِ دونَ اتّصال.
+        <b>مُطفأةٌ افتراضيًّا</b>؛ فعِّلْها متى شئتَ لأبنائك. <b>لا تمَسُّ</b> الفاتحةَ وجزءَ عمّ المحلّيَّينِ في «القرآن الكريم» (يبقيانِ يعملانِ دونَ إنترنتٍ كما هما).
+      </div>
+      <div class="dom-row">
+        <span style="flex:none;width:210px;font-size:13px">📖 تفعيلُ القرآنِ الكاملِ (إنترنت)</span>
+        <span class="muted" style="font-size:12px;flex:1">تظهرُ بطاقتُه في الفهرسِ للأبناء</span>
+        <button class="toggle ${isQuranOnlineOn()?"on":""}" id="quranOnlineToggle" title="تفعيل/إيقاف القرآن الكامل عبر الإنترنت"></button>
+      </div>
+      <div class="dom-row" id="quranOnlineOpenRow" style="display:${isQuranOnlineOn()?"flex":"none"}">
+        <span class="muted" style="font-size:12px;flex:1">افتحِ الصفحةَ لتصفُّحِ الأحزابِ وتنزيلِ السور</span>
+        <a class="topbtn" href="quran-full.html" style="text-decoration:none;font-size:13px">🌐 فتحُ القرآنِ الكامل</a>
+      </div>
+    </div>
+
     <div class="sec"><h3>سجلّ الجلسات (${AR(logTotal)})</h3>
       <div class="muted" style="font-size:12px;margin-bottom:6px">مطويّةٌ لكلِّ حساب. يمكنك حذف أيّ تسجيلٍ على حدة (مع مهلة تراجع).</div>
       <div id="logHost">${ logGroups.length ? logGroups.map(g=>`
@@ -1238,6 +1255,7 @@ async function openDashboard(){
     const show=d.style.display==="none"; d.style.display=show?"block":"none"; b.textContent=show?"تفاصيل ▴":"تفاصيل ▾";
   }));
   const srt=document.getElementById("storyReadToggle"); if(srt) srt.addEventListener("click",()=>{ const on=!isStoryReadOn(); setStoryReadOn(on); srt.classList.toggle("on",on); });
+  const qot=document.getElementById("quranOnlineToggle"); if(qot) qot.addEventListener("click",()=>{ const on=!isQuranOnlineOn(); setQuranOnlineOn(on); qot.classList.toggle("on",on); const r=document.getElementById("quranOnlineOpenRow"); if(r) r.style.display=on?"flex":"none"; });
   const bkE=document.getElementById("bkExport"); if(bkE) bkE.addEventListener("click",()=>backupExport(bkMsg));
   const bkI=document.getElementById("bkImport"), bkF=document.getElementById("bkFile");
   if(bkI&&bkF){ bkI.addEventListener("click",()=>bkF.click()); bkF.addEventListener("change",()=>{ if(bkF.files&&bkF.files[0]) backupImport(bkF.files[0], bkMsg); bkF.value=""; }); }

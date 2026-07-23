@@ -1,6 +1,6 @@
 // src/sfx.js — مؤثّرات صوتية صغيرة عبر Web Audio (بلا ملفات صوتية، آمنة للخصوصية وخفيفة).
 // نغماتٌ لطيفة مناسبة للأطفال. تحترم مفتاح الصوت العامّ.
-import { isTonesOn } from "./sound-prefs.js";
+import { isTonesOn, getVolume } from "./sound-prefs.js";
 
 let ctx = null;
 function ac() {
@@ -20,12 +20,13 @@ function haptic(pattern) {
 function play(notes) {
   if (!isTonesOn()) return;
   const c = ac(); if (!c) return;
+  const vol = getVolume(); if (vol <= 0) return;   // مستوى الصوت العامّ (0 = كتم)
   const now = c.currentTime;
   for (const n of notes) {
     const o = c.createOscillator(), g = c.createGain();
     o.type = n.type || "sine";
     o.frequency.value = n.f;
-    const start = now + (n.t || 0), peak = (n.g != null ? n.g : 0.18), end = start + (n.d || 0.18);
+    const start = now + (n.t || 0), peak = (n.g != null ? n.g : 0.18) * vol, end = start + (n.d || 0.18);
     g.gain.setValueAtTime(0.0001, start);
     g.gain.exponentialRampToValueAtTime(peak, start + 0.02);
     g.gain.exponentialRampToValueAtTime(0.0001, end);

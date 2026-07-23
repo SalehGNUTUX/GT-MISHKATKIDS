@@ -57,7 +57,7 @@
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   button,a,input,textarea,select,.region,.toggle,.chip,.capbtn,[onclick]{touch-action:manipulation}
-  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden}
   .wrap{max-width:860px;margin:0 auto;padding:18px 16px 56px}
   header{text-align:center;padding:10px 0 6px}
   header h1{font-size:26px;margin:0}
@@ -146,13 +146,13 @@
   html[data-theme="dark"] .occ.sacred{background:#241f30;border-color:#443a5a;color:#c3b3e6}
   .daily{display:block;text-decoration:none;color:inherit;background:linear-gradient(135deg,#FFF6EE,#FBEEE3);border:1px solid #F0DCCB;border-radius:16px;padding:12px 16px;box-shadow:var(--shadow);margin:6px 0 16px}
   .daily.done{background:#EEF6E9;border-color:#CDE6BE}
-  .daily .dh{font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px}
-  .daily .dt{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  /* صفٌّ علويّ: حلقةُ الهدفِ + العنوان + شعلةُ السلسلة (متجاوبٌ: العنوانُ يتمدّدُ ويلتفّ، والحلقةُ والشعلةُ تبقيان) */
+  .daily .dtop{display:flex;align-items:center;gap:10px}
+  .daily .dh{flex:1;min-width:0;font-weight:800;font-size:15px;line-height:1.4}
+  .daily .dt{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
   .daily .dchip{font-size:13px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:#666}
   .daily .dchip.ok{background:#EAF4E3;border-color:#CDE6BE;color:#3f6b2c}
   /* حلقةُ الهدفِ اليوميّ + شعلةُ السلسلة (تحفيزٌ بصريّ) */
-  .daily .drow{display:flex;align-items:center;gap:12px}
-  .daily .dmain{flex:1;min-width:0}
   .dgoal{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;
     background:conic-gradient(var(--good,#7BB661) var(--pg,0deg), #E6DFD2 0);position:relative}
   html[data-theme="dark"] .dgoal{background:conic-gradient(var(--good,#7BB661) var(--pg,0deg), #3a3a44 0)}
@@ -370,10 +370,10 @@ applyNightMode(); // يُطبَّقُ الوضعُ الليليُّ مبكرًا
 // التنقّلُ الصوتيّ للصغار (يُفعّلُه الوالدُ من لوحةِ التحكّم): نقرةٌ واحدةٌ تدخلُ البطاقةَ كالمعتاد،
 // ورمزُ 🔊 صغيرٌ في زاويةِ كلِّ بطاقةٍ ينطقُ اسمَها عند النقرِ عليه وحدَه (بلا دخول). فصلٌ نظيفٌ بين «اسمع» و«ادخل».
 function applyVoiceNav(){
-  const on=isVoiceNavOn();
+  const on=isVoiceNavOn() && !isParent(); // ميزةٌ للصغارِ فقط — لا تظهرُ في قسمِ الوالدَين
   document.querySelectorAll(".navcard").forEach(card=>{
     let spk=card.querySelector(".vnav-spk");
-    if(on){
+    if(on && !card.closest("#parentHub")){
       if(!spk){
         spk=document.createElement("button"); spk.type="button"; spk.className="vnav-spk";
         spk.textContent="🔊"; spk.title="اسمعِ اسمَ البطاقة"; spk.setAttribute("aria-label","اسمع اسم البطاقة");
@@ -461,6 +461,7 @@ function setupView(){
     hub.style.display="none"; hub.innerHTML="";
     comp.style.display="";
   }
+  applyVoiceNav(); // بعدَ تحديدِ قسمِ الطفل/الوالد: السمّاعاتُ للصغارِ فقط (تُزال في قسمِ الوالد)
 }
 
 function renderLogin(){
@@ -565,10 +566,8 @@ const _pct = _totN ? Math.round(_doneN/_totN*100) : 0;
 const _ring = `<div class="dgoal" style="--pg:${_pct*3.6}deg" title="هدفُ اليوم"><span>${_doneN}/${_totN}</span></div>`;
 const _flame = _st.streak>0 ? `<span class="dstreak" title="أيّامٌ متتاليةٌ من التعلّم">🔥 ${_st.streak} ${_st.streak===1?"يوم":"أيّام"}</span>` : "";
 // الكتلةُ كلُّها تُفضي إلى صفحةِ المهامّ (progress.html)؛ الشِّاراتُ حالةٌ فقط، والبدءُ من صفحةِ المهامّ.
-_dailyEl.innerHTML = `<div class="drow">${_ring}<div class="dmain">
-    <div class="dh">${_dm.complete?"🎉 أكملتَ مهمّة اليوم! أحسنت.":`✨ مهمّة اليوم — بقيَ ${_rem} من ${_dm.tasks.length} (اضغط لمتابعتها)`}</div>
-    <div class="dt">${_dm.tasks.map(t=>`<span class="dchip ${t.done?"ok":""}">${t.ic} ${t.label}${t.done?" ✅":""}</span>`).join("")}</div>
-  </div>${_flame}</div>`;
+_dailyEl.innerHTML = `<div class="dtop">${_ring}<div class="dh">${_dm.complete?"🎉 أكملتَ مهمّة اليوم! أحسنت.":`✨ مهمّة اليوم — بقيَ ${_rem} من ${_dm.tasks.length} (اضغط لمتابعتها)`}</div>${_flame}</div>
+  <div class="dt">${_dm.tasks.map(t=>`<span class="dchip ${t.done?"ok":""}">${t.ic} ${t.label}${t.done?" ✅":""}</span>`).join("")}</div>`;
 </script>
 </body>
 </html>

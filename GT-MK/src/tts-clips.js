@@ -5,7 +5,7 @@
 // شُغِّل بدل مقطع espeak — لإصلاح ما يعجز عنه المحرّك (كالسكون على الحروف الشديدة ب ج د ض، والهمزة).
 import manifest from "./tts-manifest.json";
 import custom from "./tts-custom.json";
-import { getVoiceSet, CLIPS, AUTO, getStoryVoice } from "./sound-prefs.js";
+import { getVoiceSet, CLIPS, AUTO, getStoryVoice, getVolume } from "./sound-prefs.js";
 import { deviceURL, deviceAnyURL } from "./voices.js";
 import { allForms } from "./syl.js";
 import letters from "../content/letters.js";
@@ -70,7 +70,7 @@ function srcFor(text) {
 }
 // مصدرُ صوتِ النصّ من مجموعةٍ بعينها (لقارئ القصص: نختار المجموعةَ صراحةً لا بالتصنيف).
 function srcForSet(text, setId) { return resolve(String(text).trim(), setId); }
-function audioFor(url) { return cache[url] || (cache[url] = new Audio(url)); }
+function audioFor(url) { const a = cache[url] || (cache[url] = new Audio(url)); try { a.volume = getVolume(); } catch (e) {} return a; } // مستوى الصوت العامّ
 
 export function playClip(text) {
   const url = srcFor(text);

@@ -22,7 +22,7 @@
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   button,a,input,textarea,select,.region,.toggle,.chip,.capbtn,[onclick]{touch-action:manipulation}
-  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden}
   .wrap{max-width:640px;margin:0 auto;padding:16px 16px 48px}
   header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 12px}
   header h1{font-size:22px;margin:0}
@@ -72,7 +72,7 @@
   .cert .cline{font-size:15px;color:#5a5346}
   .cert .cdate{font-size:13px;color:var(--muted);margin-top:8px}
   .namefield{display:flex;gap:8px;margin:8px 2px}
-  .namefield input{flex:1;font-family:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+  .namefield input{flex:1;min-width:0;font-family:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
   .btn{background:var(--primary);color:#fff;border:none;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
   .btn:hover{background:var(--primary-d)}
   .btn.ghost{background:var(--card);border:1px solid var(--line);color:var(--ink)}

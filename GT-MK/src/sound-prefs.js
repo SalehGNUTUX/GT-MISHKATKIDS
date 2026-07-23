@@ -20,6 +20,12 @@ export function setTonesOn(on) { try { localStorage.setItem(T_KEY, on ? "on" : "
 export function isVoiceOn() { try { return localStorage.getItem(V_KEY) !== "off"; } catch (e) { return true; } }
 export function setVoiceOn(on) { try { localStorage.setItem(V_KEY, on ? "on" : "off"); } catch (e) {} }
 
+// مستوى الصوت العامّ للتطبيق (0..1): يُطبَّق على كلِّ المقاطع والنطق والمؤثّرات (getVolume في كلِّ مسارِ تشغيل).
+// الافتراض: 1 (أقصى). 0 = كتمٌ فعليّ. مستقلٌّ عن مفاتيح التشغيل/الإيقاف.
+const VOL_KEY = "tilmithi_volume_v1";
+export function getVolume() { try { const v = parseFloat(localStorage.getItem(VOL_KEY)); return isNaN(v) ? 1 : Math.max(0, Math.min(1, v)); } catch (e) { return 1; } }
+export function setVolume(v) { try { localStorage.setItem(VOL_KEY, String(Math.max(0, Math.min(1, v)))); } catch (e) {} }
+
 // مِفتاحٌ رئيسيّ سريع (للشريط العلويّ): هل أيُّ صوتٍ مُفعَّل؟ وكتمُ/تشغيلُ الطبقتين معًا.
 export function isSoundOn() { return isTonesOn() || isVoiceOn(); }
 export function toggleSound() { const next = !isSoundOn(); setTonesOn(next); setVoiceOn(next); return next; }

@@ -3,7 +3,7 @@
 //
 // مهمّ: الأصوات تُحمَّل بشكلٍ غير متزامن (خاصّةً على Chrome/لينُكس عبر speech-dispatcher).
 // لذلك نؤجّل أوّل نطقٍ حتى تجهز الأصوات، ونختار الصوت العربيّ صراحةً (وإلّا قد لا يصدر شيء).
-import { isVoiceOn } from "./sound-prefs.js";
+import { isVoiceOn, getVolume } from "./sound-prefs.js";
 import { playClip, playClipAsync } from "./tts-clips.js";
 import { primeVoices } from "./voices.js";
 
@@ -40,6 +40,7 @@ function doSpeak(text, opts) {
     u.lang = opts.lang || (arVoice && arVoice.lang) || "ar";
     u.rate = opts.rate != null ? opts.rate : 0.8;   // أبطأ قليلًا ليناسب الصغار
     u.pitch = opts.pitch != null ? opts.pitch : 1;
+    u.volume = getVolume();   // مستوى الصوت العامّ للتطبيق
     if (arVoice) u.voice = arVoice;                 // تعيينٌ صريحٌ ضروريّ (لا نتركه للافتراضيّ)
     if (opts.onend) { u.onend = () => fire(opts); u.onerror = () => fire(opts); } // إشعارٌ بانتهاء النطق
     if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();

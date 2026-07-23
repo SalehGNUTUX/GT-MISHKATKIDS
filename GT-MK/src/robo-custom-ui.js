@@ -3,6 +3,7 @@
 import { ROBO_SVG, robo } from "./robo-companion.js";
 import { getRoboCustom, setRoboCustom, ROBO_COLORS, ROBO_ACCESSORIES, isAccessoryUnlocked, earnedCount, accessorySvg } from "./robo-custom.js";
 import * as sfx from "./sfx.js";
+import { NOTICES } from "./robo-phrases.js";
 
 let mounted = false;
 const STYLE = `
@@ -110,10 +111,7 @@ export function openRoboCustom(onSaved) {
     setRoboCustom({ color: draft.color, name: draft.name, accessory: draft.accessory });
     try { robo.refresh(); } catch (e) {}
     try { sfx.success(); } catch (e) {}
-    try {
-      const nm = draft.name ? `اسمي ${draft.name} الآن! شكرًا لك.` : "شكرًا! أعجبني شكلي الجديد.";
-      robo.say(nm, "happy");
-    } catch (e) {}
+    try { robo.say(NOTICES.roboCustomized, "happy"); } catch (e) {} // عبارةٌ ثابتةٌ لها مقطعٌ عصبيّ (الاسمُ يظهرُ مرئيًّا)
     if (typeof onSaved === "function") { try { onSaved(getRoboCustom()); } catch (e) {} }
     close();
   };

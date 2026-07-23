@@ -17,6 +17,7 @@ import { REACTIONS, GAME_REACTIONS, GAME_INTROS, NOTICES, GREETINGS, femaleize }
 import { PRAISE, TADABBUR } from "../src/islamic.js";
 import { DEEPEN, DEEPEN_FALLBACK } from "../src/think.js"; // أسئلةُ التعميقِ المنطوقة
 import library from "../content/library.js";
+import reading from "../content/reading.js"; // كلماتُ جُمَلِ سلّمِ القراءة (v1.7) — لقراءةِ «بتمهّل» كلمةً كلمةً بالعصبيّ
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PYTHON = process.env.PIPER_PYTHON || join(ROOT, ".piper-venv", "bin", "python");
@@ -45,6 +46,8 @@ const roboDirected = uniq([
   ...Object.values(DEEPEN || {}), DEEPEN_FALLBACK,   // أسئلةُ التعميقِ العامّةُ بحسبِ المجال + احتياطُها
   ...Object.values(TADABBUR || {}),                  // عباراتُ التدبّرِ في بطاقةِ الشفاء
 ]);
+// كلماتُ جُمَلِ سلّمِ القراءة (تُنطَقُ منفردةً في «بتمهّل»).
+const READING_WORDS = uniq((reading.sentences || []).flatMap(s => s.words || []));
 const texts = uniq([
   ...SENTENCE_UNITS.flatMap(u => u.items),   // جُمَل القراءة + ردود الآلي + الإشعارات + نصوص قصّة الأرقام + القصص
   ...(stories.stories || []).flatMap(s => [s.title, s.lesson, ...(s.pages || []).map(p => p.text)]),
@@ -55,9 +58,10 @@ const texts = uniq([
   QIBLA_AR,                                  // «اتّجاهُ القِبلة» (نقرُ مؤشّرِ القبلةِ في البوصلة)
   ...allOrientWords("ar"),                   // الاتجاهاتُ والفصولُ وفتراتُ اليوم (20 كلمة، عصبيّ)
   ...allPrayerWords(),                        // أسماءُ الصلواتِ الخمس (عصبيّ)
+  ...READING_WORDS,                           // كلماتُ جُمَلِ سلّمِ القراءة (لقراءةِ «بتمهّل» كلمةً كلمةً)
 ]);
-// الكلماتُ القصيرةُ (اتجاهات/فصول/فترات/صلوات) يُذيَّلُ نصُّ تركيبِها بنقطةٍ لتثبيتِ نطقِ العصبيّ للوحدةِ المنفردة.
-const ORIENT_AR = new Set([...allOrientWords("ar"), ...allPrayerWords()]);
+// الكلماتُ القصيرةُ (اتجاهات/فصول/فترات/صلوات + كلماتُ القراءة) يُذيَّلُ نصُّ تركيبِها بنقطةٍ لتثبيتِ نطقِ العصبيّ للوحدةِ المنفردة.
+const ORIENT_AR = new Set([...allOrientWords("ar"), ...allPrayerWords(), ...READING_WORDS]);
 
 const setHash = sha(SET.id);
 const setDir = join(OUTDIR, setHash);

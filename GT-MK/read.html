@@ -95,6 +95,7 @@ import DATA from "./content/reading.js";
 import { logEvent, recordMastery } from "./src/progress.js";
 import { speak } from "./src/speak.js";
 import { playSpelled, cancelSpell } from "./src/spell.js";
+import { playClipForSetAsync } from "./src/tts-clips.js"; // لقراءةِ «بتمهّل» كلمةً كلمةً بالعصبيّ (kareem)
 import { sylRows } from "./src/syl.js";
 import { robo } from "./src/robo-companion.js";
 import { attachReader } from "./src/reader-recorder.js";
@@ -170,6 +171,22 @@ function renderWord(){
 }
 
 /* ===== الدرجة 3: اقرأ الجملة ===== */
+// «بتمهّل»: قراءةُ الجملةِ كلمةً كلمةً بالنموذجِ العصبيِّ (kareem) ببطءٍ مع إبرازِ الكلمةِ الجارية.
+// (النطقُ البشريُّ يقرأُ العبارةَ دفعةً واحدةً ولا يفصلُ الكلمات؛ فالعصبيُّ يوفّرُ مقطعًا لكلِّ كلمة.)
+let _slowToken=0;
+async function slowReadNeural(words, tiles){
+  const my=++_slowToken;
+  for(let i=0;i<words.length;i++){
+    if(my!==_slowToken) return;                              // أُلغِيَ (زرٌّ آخر/جملةٌ جديدة)
+    tiles.forEach((t,j)=>t.classList.toggle("lit", j===i));  // أبرِزِ الكلمةَ الجاريةَ وحدَها
+    const ok=await playClipForSetAsync(words[i], "tts-kareem"); // مقطعُ الكلمةِ العصبيّ
+    if(my!==_slowToken) return;
+    if(!ok){ try{ speak(words[i]); }catch(e){} await delay(650); } // احتياطٌ إن غابَ المقطع
+    await delay(520);                                        // مهلةٌ بين الكلمات (بتمهّل)
+  }
+  if(my===_slowToken) tiles.forEach(t=>t.classList.add("lit")); // إبرازُ الجملةِ كاملةً في النهاية
+}
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
 let si=0, sLast=-1;
 function startSent(){ nextSent(); }
 function nextSent(){ let n; do{ n=rand(SENT.length); }while(n===sLast && SENT.length>1); si=sLast=n; renderSent(); }
@@ -190,9 +207,9 @@ function renderSent(){
     const act=b.getAttribute("data-act");
     if(act==="slow"){
       const tiles=view.querySelectorAll("#sent .sword"); tiles.forEach(t=>t.classList.remove("lit"));
-      playSpelled(s.text, { units:s.words, gap:320, onUnit:(u,i)=>{ if(tiles[i]) tiles[i].classList.add("lit"); } });
-    } else if(act==="read"){ view.querySelectorAll(".sword").forEach(x=>x.classList.add("lit")); speak(s.text); stars++; logEvent("read_practice"); recordMastery("R:"+s.text,true); robo.applaud(); const p=document.querySelector(".pill b"); if(p)p.textContent=stars; }
-    else { cancelSpell(); nextSent(); } });
+      slowReadNeural(s.words, tiles);
+    } else if(act==="read"){ _slowToken++; view.querySelectorAll(".sword").forEach(x=>x.classList.add("lit")); speak(s.text); stars++; logEvent("read_practice"); recordMastery("R:"+s.text,true); robo.applaud(); const p=document.querySelector(".pill b"); if(p)p.textContent=stars; }
+    else { _slowToken++; cancelSpell(); nextSent(); } });
 }
 
 renderMenu();

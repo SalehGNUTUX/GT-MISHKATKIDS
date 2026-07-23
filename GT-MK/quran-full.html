@@ -217,7 +217,7 @@ async function doDownload(n, btn){
   btn.classList.add("busy"); btn.textContent="⏳ يُنزّل…"; if(bar) bar.style.display="block";
   try{
     await downloadSurah(n, (done,total)=>{ if(fill) fill.style.width=Math.round(done/total*100)+"%"; btn.textContent=`⏳ ${done}/${total}`; });
-    try{ robo.cheer("أحسنت! نُزِّلَتِ السورةُ، تستطيعُ سماعَها الآنَ دونَ إنترنت."); }catch(_){}
+    try{ robo.cheer(NOTICES.quranSurahDownloaded); }catch(_){}
   }catch(err){ if(bar) bar.style.display="none"; btn.classList.remove("busy"); btn.textContent="⚠️ تعذّرَ التنزيل — أعِدِ المحاولة"; return; }
   refreshCard(n);
 }

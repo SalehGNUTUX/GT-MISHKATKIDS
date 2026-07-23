@@ -87,6 +87,17 @@
   html[data-theme="dark"] .contnote{background:#3a3520;border-color:#5a4f2a;color:#ffe9a8}
   .cn-btn{border:1px solid currentColor;background:transparent;color:inherit;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}
   .hint{color:var(--muted);font-size:13px;text-align:center;margin-top:14px;line-height:1.7}
+  /* المشغّلُ العائم (شريطٌ سفليٌّ ثابت): تمرير + تشغيل/إيقاف + حفظُ موضعِ التوقّف */
+  .qplayer{position:fixed;left:0;right:0;bottom:0;z-index:80;background:var(--card);border-top:1px solid var(--line);
+    box-shadow:0 -4px 16px rgba(0,0,0,.14);padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
+  .qp-row{display:flex;align-items:center;gap:8px;max-width:680px;margin:0 auto}
+  .qp-btn{border:none;background:var(--bg);color:var(--ink);border-radius:50%;width:38px;height:38px;font-size:15px;cursor:pointer;font-family:inherit;flex:none;display:flex;align-items:center;justify-content:center}
+  .qp-btn:active{transform:scale(.92)}
+  .qp-btn.qp-play{background:var(--primary);color:#fff;width:46px;height:46px;font-size:19px}
+  .qp-seek{flex:1;accent-color:var(--primary);height:6px;cursor:pointer;min-width:60px}
+  .qp-pos{font-size:12px;color:var(--muted);font-weight:800;flex:none;min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
+  .qp-title{text-align:center;font-size:12px;color:var(--primary-d);font-weight:700;margin-top:3px}
+  body.qp-open .wrap{padding-bottom:110px}
   .loading{text-align:center;color:var(--muted);padding:30px;font-size:14px}
   .err{background:#FBEEE9;border:1px solid #F0CBB9;border-radius:14px;padding:14px;color:#9a4a2e;text-align:center;font-size:13.5px;margin-top:10px}
   html[data-theme="dark"] .err{background:#3a241c;border-color:#5a3626;color:#e6a488}
@@ -145,7 +156,7 @@ function boot(){
 
 /* ===== شبكةُ الأحزاب (60) ===== */
 function renderHizbs(){
-  stopAll();
+  stopAll(); surah=null; hidePlayer();
   const H = hizbList();
   view.innerHTML = `<div class="hint" style="margin:0 0 12px">القرآنُ في <b>60 حزبًا</b>. اختَرْ حزبًا لتظهرَ سورُه، ثمّ سورةً للاستماعِ والحفظ. 🟢 محلّيّ · 🌐 عبرَ الإنترنت.</div>
     <div class="hgrid">${H.map(h=>{
@@ -162,7 +173,7 @@ function renderHizbs(){
 
 /* ===== سورُ حزبٍ مُعيَّن ===== */
 function renderSurahs(hn){
-  stopAll();
+  stopAll(); surah=null; hidePlayer();
   const h = hizbList().find(x=>x.n===hn);
   currentHizb = h; // نحفظُه للرجوعِ ولحسابِ موضعِ الإتمام
   view.innerHTML = `<button class="backstep" id="back">كلُّ الأحزاب</button>
@@ -224,13 +235,16 @@ const setBasmala=on=>{try{localStorage.setItem(BKEY,on?"on":"off");}catch(e){}};
 let surah=null; // {n,name,type,ayahCount,ayahs:[{a,text}]}
 let selIdx=0, repeatAyah=false, repeatSurah=false;
 let currentHizb=null;  // الحزبُ المفتوحُ حاليًّا (للرجوعِ إليه ولحسابِ موضعِ الإتمام)
-let entryAyah=1;       // آيةُ بدءِ السورةِ في هذا الحزب (>1 إن كان الحزبُ يبدأُ وسطَ السورة)
+let entryAyah=1;       // آيةُ البدءِ (تتمّةُ الحزبِ أو استئنافُ آخرِ موضع، >1)
+let resumeMode=false;  // هل البدءُ استئنافٌ لآخرِ موضعِ توقّفٍ محفوظ؟ (يميّزُ ملاحظةَ العرض)
 
 const backToList=()=> currentHizb ? renderSurahs(currentHizb.n) : renderHizbs();
 async function openSurah(n, startAyah=1){
   stopAll();
   const m=surahMeta(n);
-  selIdx=0; repeatAyah=false; repeatSurah=false; entryAyah=(startAyah>1?startAyah:1);
+  selIdx=0; repeatAyah=false; repeatSurah=false; entryAyah=(startAyah>1?startAyah:1); resumeMode=false;
+  // إن لم يكنْ دخولًا من تتمّةِ حزبٍ، وكان ثمّةَ موضعُ توقّفٍ محفوظٌ لهذه السورة، فاستأنِفْ منه.
+  if(entryAyah===1){ const pv=getPos(); if(pv && pv.s===n && pv.a>1 && pv.a<=m.ayahCount){ entryAyah=pv.a; resumeMode=true; } }
   view.innerHTML=`<button class="backstep" id="back">رجوع</button><div class="loading" id="ld">📖 جارٍ تحميلُ ${shortName(m.name)}… ${isSurahLocal(n)||isAvailableOffline(n)?"":"(عبرَ الإنترنت)"}</div>`;
   document.getElementById("back").onclick=backToList;
   let ayahs;
@@ -252,8 +266,10 @@ function renderSurah(scroll=false){
   stopAll();
   const f=getFont(); const off=isAvailableOffline(surah.n);
   const availBadge = isSurahLocal(surah.n)?`<span class="badge local">🟢 محلّيّ</span>`: off?`<span class="badge local">🟢 دون إنترنت</span>`:`<span class="badge online">🌐 عبرَ الإنترنت</span>`;
-  // ملاحظةُ الإتمام: إن دخلنا السورةَ من حزبٍ يبدأُ وسطَها (entryAyah>1).
-  const contNote = entryAyah>1 ? `<div class="contnote" id="contNote">📍 تتمّةُ السورةِ من الحزبِ ${currentHizb?currentHizb.n:""} — تبدأُ من الآية ${ayNum(entryAyah)} <button id="fromStart" class="cn-btn">↥ من أوّلِ السورة</button></div>` : "";
+  // ملاحظةُ البدء: إمّا استئنافُ آخرِ موضعِ توقّفٍ محفوظ، وإمّا تتمّةُ حزبٍ يبدأُ وسطَ السورة.
+  const contNote = entryAyah>1
+    ? `<div class="contnote" id="contNote">${resumeMode ? `🔖 استئنافٌ من آخرِ موضعِ توقّفٍ — الآية ${ayNum(entryAyah)}` : `📍 تتمّةُ السورةِ من الحزبِ ${currentHizb?currentHizb.n:""} — تبدأُ من الآية ${ayNum(entryAyah)}`} <button id="fromStart" class="cn-btn">↥ من أوّلِ السورة</button></div>`
+    : "";
   view.innerHTML=`<button class="backstep" id="back">رجوع</button>
     <div class="stitle"><div class="nm">${surah.name}</div>
       <div class="meta">${ayNum(surah.ayahCount)} آية · ${surah.type==="Meccan"?"مكّيّة":"مدنيّة"} · ${availBadge}</div></div>
@@ -285,41 +301,91 @@ function renderSurah(scroll=false){
   document.getElementById("repSurah").onclick=e=>{ repeatSurah=!repeatSurah; e.currentTarget.classList.toggle("on",repeatSurah); };
   const bb=document.getElementById("basmala"); if(bb) bb.onclick=()=>{ setBasmala(!showBasmala()); renderSurah(); };
   // زرُّ «من أوّلِ السورة»: يُلغي وضعَ الإتمامِ ويعرضُها من البداية.
-  const fs=document.getElementById("fromStart"); if(fs) fs.onclick=()=>{ entryAyah=1; renderSurah(); const mu=document.getElementById("mushaf"); if(mu) mu.scrollIntoView({block:"start",behavior:"smooth"}); };
-  // موضعُ الإتمام: انتقلْ إليه وأبرِزْه عندَ أوّلِ فتحٍ من الحزب (لا عندَ إعادةِ الرسمِ بتغييرِ خطٍّ أو بسملة).
+  const fs=document.getElementById("fromStart"); if(fs) fs.onclick=()=>{ entryAyah=1; resumeMode=false; selIdx=0; renderSurah(); const mu=document.getElementById("mushaf"); if(mu) mu.scrollIntoView({block:"start",behavior:"smooth"}); };
+  // موضعُ البدء (تتمّةُ حزبٍ أو استئناف): انتقلْ إليه وأبرِزْه عندَ أوّلِ فتحٍ (لا عندَ إعادةِ الرسمِ بخطٍّ/بسملة).
   if(scroll && entryAyah>1){
     const sp=view.querySelector(`.ayah[data-a="${entryAyah}"]`);
     if(sp){ selIdx=+sp.getAttribute("data-i"); sp.classList.add("on"); setTimeout(()=>sp.scrollIntoView({block:"center",behavior:"smooth"}),120); }
   }
+  updatePlayerUI(); // إظهارُ المشغّلِ العائمِ وضبطُه على الموضعِ الحاليّ
 }
 
 /* ===== محرّكُ التشغيلِ والتظليل (نظيرُ quran.html، لكنّ الصوتَ من audioUrl؛ محلّيٌّ أو متدفّق) ===== */
 const player=new Audio(); player.preload="auto";
 let announceDone=false, seq=[], seqPos=0, mode="idle";
 function clearHL(){ view.querySelectorAll(".ayah.on,.bism.on").forEach(x=>x.classList.remove("on")); }
-function hlAyah(i){ clearHL(); const sp=view.querySelector(`.ayah[data-i="${i}"]`); if(sp){ sp.classList.add("on"); sp.scrollIntoView({block:"center",behavior:"smooth"}); } }
+function hlAyah(i,smooth=true){ clearHL(); const sp=view.querySelector(`.ayah[data-i="${i}"]`); if(sp){ sp.classList.add("on"); sp.scrollIntoView({block:"center",behavior:smooth?"smooth":"auto"}); } }
 function hlBism(){ clearHL(); const b=view.querySelector(".bism"); if(b) b.classList.add("on"); }
-function stopAll(){ mode="idle"; seq=[]; player.onended=null; try{ player.pause(); }catch(e){} clearHL(); }
+function stopAll(){ mode="idle"; seq=[]; player.onended=null; try{ player.pause(); }catch(e){} clearHL(); updatePlayBtn(); }
 const srcOf=st=> st.bism ? BASMALA_AUDIO : audioUrl(surah.n, surah.ayahs[st.ayah].a);
 function runSeq(){
   if(mode!=="seq")return;
   if(seqPos>=seq.length){
     if(repeatSurah && seq.some(s=>!s.bism)){ seqPos=0; runSeq(); return; }
-    mode="idle"; clearHL();
+    mode="idle"; clearHL(); updatePlayBtn();
     const last=seq[seq.length-1];
     if(announceDone && last && !last.bism && last.ayah===surah.ayahs.length-1){ logEvent("quran_listen"); recordMastery("S:"+surah.n,true); try{ robo.cheer(NOTICES.quranSurahDone); }catch(e){} }
     return;
   }
   const st=seq[seqPos];
-  if(st.bism) hlBism(); else { selIdx=st.ayah; hlAyah(st.ayah); }
+  if(st.bism) hlBism(); else { selIdx=st.ayah; hlAyah(st.ayah); savePos(surah.n, surah.ayahs[st.ayah].a); }
+  updatePlayerUI();
   player.onended=()=>{ if(mode!=="seq")return; if(seq.length===1 && !seq[0].bism && repeatAyah){ runSeq(); return; } seqPos++; runSeq(); };
   player.onerror=player.onended;
   player.src=srcOf(st); try{ player.currentTime=0; }catch(e){}
   const p=player.play(); if(p&&p.catch) p.catch(()=>{});
+  updatePlayBtn();
 }
 function playSingle(i){ mode="seq"; announceDone=false; seq=[{ayah:i}]; seqPos=0; selIdx=i; runSeq(); }
 function playFrom(i){ mode="seq"; announceDone=true; seq=[]; for(let k=i;k<surah.ayahs.length;k++) seq.push({ayah:k}); seqPos=0; if(seq.length){ selIdx=i; runSeq(); } }
 function playAll(from){ mode="seq"; announceDone=true; seq=[]; if(from===0 && surah.n!==1 && showBasmala()) seq.push({bism:true}); for(let i=from;i<surah.ayahs.length;i++) seq.push({ayah:i}); seqPos=0; runSeq(); }
+
+/* ===== المشغّلُ العائم: تمرير (seek بالآيات) + تشغيل/إيقاف + حفظُ موضعِ التوقّف ===== */
+const POS_KEY="tilmithi_quranfull_pos"; // { s: رقمُ السورة, a: رقمُ الآية } — آخرُ موضعِ استماع
+function savePos(s,a){ try{ localStorage.setItem(POS_KEY, JSON.stringify({s,a})); }catch(e){} }
+function getPos(){ try{ return JSON.parse(localStorage.getItem(POS_KEY)||"null"); }catch(e){ return null; } }
+let playerBar=null;
+function ensurePlayerBar(){
+  if(playerBar) return playerBar;
+  playerBar=document.createElement("div"); playerBar.className="qplayer"; playerBar.style.display="none";
+  playerBar.innerHTML=`<div class="qp-row">
+      <button class="qp-btn" id="qpPrev" title="الآيةُ السابقة" aria-label="الآية السابقة">⏮</button>
+      <button class="qp-btn qp-play" id="qpPlay" title="تشغيل/إيقاف" aria-label="تشغيل أو إيقاف">▶</button>
+      <button class="qp-btn" id="qpNext" title="الآيةُ التالية" aria-label="الآية التالية">⏭</button>
+      <input type="range" class="qp-seek" id="qpSeek" min="1" max="1" value="1" aria-label="تمريرُ الآيات">
+      <span class="qp-pos" id="qpPos">0 / 0</span>
+    </div>
+    <div class="qp-title" id="qpTitle"></div>`;
+  document.body.appendChild(playerBar);
+  playerBar.querySelector("#qpPlay").onclick=togglePlay;
+  playerBar.querySelector("#qpPrev").onclick=()=>{ if(surah && selIdx>0) playFrom(selIdx-1); };
+  playerBar.querySelector("#qpNext").onclick=()=>{ if(surah && selIdx<surah.ayahs.length-1) playFrom(selIdx+1); };
+  const seek=playerBar.querySelector("#qpSeek");
+  seek.oninput=()=>{ if(!surah)return; const idx=Math.max(0,Math.min(surah.ayahs.length-1,(+seek.value)-1)); selIdx=idx; hlAyah(idx,false); const pos=document.getElementById("qpPos"); if(pos) pos.textContent=surah.ayahs[idx].a+" / "+surah.ayahCount; savePos(surah.n, surah.ayahs[idx].a); };
+  seek.onchange=()=>{ if(!surah)return; playFrom(Math.max(0,Math.min(surah.ayahs.length-1,(+seek.value)-1))); }; // إفلاتُ المؤشّرِ ⇒ ابدأِ التلاوةَ من هناك
+  return playerBar;
+}
+function playerActive(){ return mode==="seq" && !player.paused; }
+function updatePlayBtn(){ const b=playerBar&&playerBar.querySelector("#qpPlay"); if(b) b.textContent=playerActive()?"⏸":"▶"; }
+function updatePlayerUI(){
+  ensurePlayerBar();
+  if(!surah){ playerBar.style.display="none"; document.body.classList.remove("qp-open"); return; }
+  playerBar.style.display=""; document.body.classList.add("qp-open");
+  const cur=(surah.ayahs[selIdx]?surah.ayahs[selIdx].a:1);
+  const seek=playerBar.querySelector("#qpSeek"), pos=playerBar.querySelector("#qpPos"), title=playerBar.querySelector("#qpTitle");
+  if(seek){ seek.max=String(surah.ayahCount); seek.value=String(cur); }
+  if(pos) pos.textContent=cur+" / "+surah.ayahCount;
+  if(title) title.textContent=shortName(surah.name);
+  updatePlayBtn();
+}
+function hidePlayer(){ if(playerBar){ playerBar.style.display="none"; } document.body.classList.remove("qp-open"); }
+// تشغيل/إيقاف: إن كان يعملُ فأوقِفْه مؤقّتًا (يبقى الموضع)؛ إن كان متوقّفًا فاستأنِفْ؛ وإلّا ابدأْ من الموضعِ الحاليّ.
+function togglePlay(){
+  if(!surah) return;
+  if(mode==="seq" && !player.paused){ try{ player.pause(); }catch(e){} updatePlayBtn(); return; }
+  if(mode==="seq" && player.paused && seq.length){ const p=player.play(); if(p&&p.catch) p.catch(()=>{}); updatePlayBtn(); return; }
+  playFrom(selIdx);
+}
 
 boot(); // الإقلاع بعدَ تعريفِ كلِّ الدوالِّ والمتغيّرات
 </script>

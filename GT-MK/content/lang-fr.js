@@ -34,7 +34,7 @@ export default {
     { ch: "A", name: "a",         word: "Avion",   emoji: "✈️" },
     { ch: "B", name: "bé",        word: "Ballon",  emoji: "🎈" },
     { ch: "C", name: "cé",        word: "Chat",    emoji: "🐱" },
-    { ch: "D", name: "dé",        word: "Dé",      emoji: "🎲" },
+    { ch: "D", name: "dé",        word: "Dauphin", emoji: "🐬" },
     { ch: "E", name: "euh",       word: "Étoile",  emoji: "⭐" },
     { ch: "F", name: "effe",      word: "Fleur",   emoji: "🌸" },
     { ch: "G", name: "gé",        word: "Gâteau",  emoji: "🍰" },

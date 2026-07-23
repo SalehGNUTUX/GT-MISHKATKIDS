@@ -123,17 +123,19 @@ const shortName = nm => String(nm).replace(/^سُورَةُ\s*/, "");
 function updateNet(){ netEl.textContent = navigator.onLine ? "🌐 متّصلٌ بالإنترنت" : "📴 دون إنترنت — المتوفّرُ محلّيًّا فقط"; }
 addEventListener("online", updateNet); addEventListener("offline", updateNet); updateNet();
 
-/* ===== بوّابةُ الوالد ===== */
-if(!isQuranOnlineOn()){
-  view.innerHTML = `<div class="gate">
-    <div class="big">🔒</div>
-    <h2>القرآنُ الكاملُ عبرَ الإنترنت</h2>
-    <p>هذه الميزةُ تجلبُ نصَّ القرآنِ كاملًا وتلاوةَ الشيخِ الحصريِّ <b>عبرَ الإنترنت</b> (مع إمكانِ تنزيلِ كلِّ سورةٍ للاستماعِ دونَ اتّصال).
-    وهي <b>مُطفأةٌ افتراضيًّا</b>؛ يُفعّلُها الوالدُ من <b>لوحةِ التحكّم ← الإعدادات</b>. أمّا الفاتحةُ وجزءُ عمّ فمتوفّرانِ محلّيًّا دائمًا في «القرآن الكريم».</p>
-    <a class="cta" href="index.html?parent=1#sec-quranonline">🛡️ لوحةُ التحكّم</a>
-  </div>`;
-} else {
-  renderHizbs();
+/* ===== بوّابةُ الوالد + الإقلاع (يُستدعى في نهايةِ السكربتِ بعدَ تعريفِ محرّكِ التشغيل، تفاديًا لمنطقةِ TDZ) ===== */
+function boot(){
+  if(!isQuranOnlineOn()){
+    view.innerHTML = `<div class="gate">
+      <div class="big">🔒</div>
+      <h2>القرآنُ الكريمُ كاملًا عبرَ الإنترنت</h2>
+      <p>هذه الميزةُ تجلبُ نصَّ القرآنِ كاملًا وتلاوةَ الشيخِ الحصريِّ <b>عبرَ الإنترنت</b> (مع إمكانِ تنزيلِ كلِّ سورةٍ للاستماعِ دونَ اتّصال).
+      وهي <b>مُطفأةٌ افتراضيًّا</b>؛ يُفعّلُها الوالدُ من <b>لوحةِ التحكّم ← الإعدادات</b>. أمّا الفاتحةُ وجزءُ عمّ فمتوفّرانِ محلّيًّا دائمًا في «القرآن الكريم».</p>
+      <a class="cta" href="index.html?parent=1#sec-quranonline">🛡️ لوحةُ التحكّم</a>
+    </div>`;
+  } else {
+    renderHizbs();
+  }
 }
 
 /* ===== شبكةُ الأحزاب (60) ===== */
@@ -297,6 +299,8 @@ function runSeq(){
 function playSingle(i){ mode="seq"; announceDone=false; seq=[{ayah:i}]; seqPos=0; selIdx=i; runSeq(); }
 function playFrom(i){ mode="seq"; announceDone=true; seq=[]; for(let k=i;k<surah.ayahs.length;k++) seq.push({ayah:k}); seqPos=0; if(seq.length){ selIdx=i; runSeq(); } }
 function playAll(from){ mode="seq"; announceDone=true; seq=[]; if(from===0 && surah.n!==1 && showBasmala()) seq.push({bism:true}); for(let i=from;i<surah.ayahs.length;i++) seq.push({ayah:i}); seqPos=0; runSeq(); }
+
+boot(); // الإقلاع بعدَ تعريفِ كلِّ الدوالِّ والمتغيّرات
 </script>
 </body>
 </html>

@@ -43,7 +43,10 @@ export async function fetchSurahText(n) {
     const s = LOCAL_QURAN.surahs.find(x => x.n === n);
     if (s) return s.ayahs.map(x => ({ a: x.a, text: String(x.text).replace(/﻿/g, "").trim() }));
   }
-  const j = await (await fetch(textApi(n))).json();
+  // للسورِ المنزَّلة: اقرأِ النصَّ من التخبئةِ أوّلًا (يعملُ دونَ إنترنت)، ثمّ من الشبكة.
+  let j = null;
+  try { const c = await caches.open("quran-online-text"); const hit = await c.match(textApi(n)); if (hit) j = await hit.json(); } catch (e) {}
+  if (!j) j = await (await fetch(textApi(n))).json();
   if (!j || !j.data || !j.data.ayahs) throw new Error("تعذّرَ جلبُ نصِّ السورة");
   return j.data.ayahs.map(x => ({ a: x.numberInSurah, text: String(x.text).replace(/﻿/g, "").trim() }));
 }
@@ -54,7 +57,9 @@ export async function fetchSurahText(n) {
 export async function downloadSurah(n, onProgress) {
   if (LOCAL_SURAHS.has(n)) return true; // مضمَّنٌ أصلًا
   const meta = surahMeta(n); const total = meta.ayahCount;
-  try { await fetch(textApi(n)); } catch (e) {}
+  // (1) النصّ: يُجلَبُ ويُخبَّأُ صراحةً كي يُقرأَ دونَ إنترنت (لا يعتمدُ على عاملِ الخدمةِ وحدَه).
+  try { const resp = await fetch(textApi(n)); const c = await caches.open("quran-online-text"); await c.put(textApi(n), resp.clone()); } catch (e) {}
+  // (2) الصوت: تلاوةُ كلِّ آية (يُخبّئُها عاملُ الخدمةِ عبرَ CacheFirst).
   let done = 0;
   for (let a = 1; a <= total; a++) {
     try { await fetch(audioUrl(n, a), { mode: "no-cors" }); } catch (e) {}
@@ -72,5 +77,6 @@ export async function deleteSurah(n) {
     const meta = surahMeta(n);
     for (let a = 1; a <= meta.ayahCount; a++) { try { await c.delete(audioUrl(n, a)); } catch (e) {} }
   } catch (e) {}
+  try { const ct = await caches.open("quran-online-text"); await ct.delete(textApi(n)); } catch (e) {} // + النصُّ المخبَّأ
   const s = dlSet(); s.delete(n); saveDl(s);
 }

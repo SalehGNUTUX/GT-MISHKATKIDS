@@ -79,6 +79,17 @@
   .dm-p{width:76%;height:76%;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.4),inset 0 -3px 6px rgba(0,0,0,.28);transition:transform .1s}
   .dm-p:active{transform:scale(.92)}
   .dm-dot{position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(46,160,70,.7);animation:dtpop .18s ease-out}
+  /* ♟️ الشطرنج */
+  .ch-board{display:grid;justify-content:center;gap:0;border:3px solid #5a4632;border-radius:6px;overflow:hidden;margin:8px auto;width:fit-content}
+  .ch-sq{position:relative;display:flex;align-items:center;justify-content:center;box-sizing:border-box;cursor:pointer}
+  .ch-sq.d{background:#b58863} .ch-sq.l{background:#f0d9b5}
+  .ch-sq.sel{box-shadow:0 0 0 3px var(--gold) inset}
+  .ch-sq.last{box-shadow:0 0 0 3px rgba(255,235,120,.7) inset}
+  .ch-sq.chk{box-shadow:0 0 0 3px #E0566B inset;background:#f0a0a0}
+  .ch-p{line-height:1;user-select:none}
+  .ch-p.w{color:#fbf6e9;text-shadow:0 0 1px #333,0 0 2px #000,0 1px 1px #000}
+  .ch-p.b{color:#232323;text-shadow:0 0 1px rgba(255,255,255,.35)}
+  .ch-dot{position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(46,160,70,.65);animation:dtpop .18s ease-out}
   .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
   .gsec{font-size:16px;font-weight:800;margin:16px 2px 8px;color:var(--ink);border-bottom:2px solid var(--line);padding-bottom:4px}
   .ccard{position:relative;background:var(--card);border:2px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:20px 14px;text-align:center;cursor:pointer;transition:transform .12s,border-color .15s}
@@ -365,6 +376,7 @@ const GAMES = [
   { id:"dots",   ic:"▪️", t:"مربّعاتُ النقاط", d:"صِلِ النقاطَ وأغلِقِ المربّعات", vs:1, cat:"fun" },
   { id:"four",   ic:"⭕", t:"أربعةٌ على التوالي", d:"أسقِطْ قرصَكَ وصُفَّ أربعةً", vs:1, cat:"fun" },
   { id:"dama",   ic:"♛", t:"الدَّامة", d:"حرّكْ قُطريًّا واقفِزْ لتأسِرَ أقراصَ الخصم", vs:1, nw:1, cat:"fun" },
+  { id:"chess",  ic:"♟️", t:"الشطرنج", d:"هدّدْ مَلِكَ الخصمِ «كِش مات» — مهارةٌ وتخطيط", vs:1, nw:1, cat:"fun" },
   { id:"print",  ic:"🖨️", t:"ألعاب/أنشطة للطباعة", d:"ألعابٌ تُلعَبُ على الورق + أنشطةٌ حسّيّة", cat:"tool" },
 ];
 // الترفيهيّةُ أوّلًا (طلبُ المستخدم): يفتحُ الطفلُ الصفحةَ فيجدُ ما يُمتِعُه في البداية.
@@ -411,7 +423,7 @@ function renderMenu(){
   view.querySelectorAll(".menu").forEach(m=>m.addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); }));
 }
 function open(id){ if(id!=="print") document.body.classList.add("ingame"); // شاشةٌ مخصّصةٌ للّعبة: يُطوى رأسُ الصفحةِ وشريطُ التنقّل
-  ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,dots:startDots,four:startF4,dama:startDama,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,clock:startClock,print:()=>location.assign("print.html")})[id](); }
+  ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,dots:startDots,four:startF4,dama:startDama,chess:startChess,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,clock:startClock,print:()=>location.assign("print.html")})[id](); }
 
 /* ===================== 🕐 تحدّي الساعة (v1.5 · versus مشترَك) ===================== */
 function startClock(){
@@ -1150,6 +1162,138 @@ function renderDama(){ const cur=dm_ps[dm_turn];
   if(bd && !dm_done && cur && !cur.cpu) bd.addEventListener("click",e=>{ const sq=e.target.closest("[data-i]"); if(!sq)return; const i=+sq.getAttribute("data-i");
     if(tg.has(i)) dmTap(i); else dmSelect(i); });
   dmCancelT(); if(dm_timed && !dm_done && cur && !cur.cpu) dmArmT(); }
+
+/* ===================== ♟️ الشطرنج (v1.8 · محرّكٌ كاملٌ محلّيّ) =====================
+   قواعدُ كاملة: حركةُ كلِّ القطع + كِشّ + كِش مات + تعادلُ الجمود + تبييت + أخذٌ بالتجاوز + ترقية (وزيرٌ تلقائيًّا).
+   الأبيضُ = اللاعبُ 0 (أسفل، يتقدّمُ لأعلى) ويبدأُ دائمًا. آليٌّ بمينيماك + قطعِ ألفا-بيتا بثلاثِ أعماق. */
+let ch_ps=[], ch_b=[], ch_turn=0, ch_sel=-1, ch_lock=false, ch_done=false, ch_result="";
+let ch_diff="medium", ch_timed=false, ch_raf=null, ch_last=null;
+let ch_castle=[[true,true],[true,true]], ch_ep=-1;   // [player][kingside,queenside] · مربّعُ الأخذِ بالتجاوز
+const CH_N=8, CH_MS=25000;
+const chI=(r,c)=>r*CH_N+c, chRC=i=>[Math.floor(i/CH_N), i%CH_N], chIn=(r,c)=>r>=0&&r<CH_N&&c>=0&&c<CH_N;
+const CH_GLYPH={P:"♟",N:"♞",B:"♝",R:"♜",Q:"♛",K:"♚"}, CH_VAL={P:100,N:320,B:330,R:500,Q:900,K:20000};
+function chCancelT(){ if(ch_raf){ cancelAnimationFrame(ch_raf); ch_raf=null; } }
+function chArmT(){ const t0=Date.now(); chCancelT();
+  const tick=()=>{ if(!vsRun){ chCancelT(); return; }
+    const left=CH_MS-(Date.now()-t0), bar=document.getElementById("chtbar");
+    if(bar) bar.style.width=Math.max(0,left/CH_MS*100)+"%";
+    if(left<=0){ if(!ch_lock&&!ch_done&&ch_ps[ch_turn]&&!ch_ps[ch_turn].cpu){ const ms=chLegal(ch_b,ch_turn,ch_castle,ch_ep);
+        if(ms.length){ const m=ms[Math.floor(Math.random()*ms.length)]; sfx.nope(); dtSay(); chDoMove(m); } }
+      chCancelT(); return; }
+    ch_raf=requestAnimationFrame(tick); }; tick(); }
+function chInit(){ const b=Array(64).fill(null), back=["R","N","B","Q","K","B","N","R"];
+  for(let c=0;c<8;c++){ b[chI(0,c)]={p:1,t:back[c]}; b[chI(1,c)]={p:1,t:"P"}; b[chI(7,c)]={p:0,t:back[c]}; b[chI(6,c)]={p:0,t:"P"}; }
+  return b; }
+// هل المربّعُ sq مُهدَّدٌ من اللاعبِ by؟
+function chAttacked(b, sq, by){ const [tr,tc]=chRC(sq);
+  for(const dc of [-1,1]){ const pr=tr+(by===0?1:-1), pc=tc+dc; if(chIn(pr,pc)){ const x=b[chI(pr,pc)]; if(x&&x.p===by&&x.t==="P") return true; } } // بيادق
+  for(const [dr,dc] of [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]){ const r=tr+dr,c=tc+dc; if(chIn(r,c)){ const x=b[chI(r,c)]; if(x&&x.p===by&&x.t==="N") return true; } }
+  for(const [dr,dc] of [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]){ const r=tr+dr,c=tc+dc; if(chIn(r,c)){ const x=b[chI(r,c)]; if(x&&x.p===by&&x.t==="K") return true; } }
+  for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){ let r=tr+dr,c=tc+dc; while(chIn(r,c)){ const x=b[chI(r,c)]; if(x){ if(x.p===by&&(x.t==="R"||x.t==="Q")) return true; break; } r+=dr; c+=dc; } }
+  for(const [dr,dc] of [[-1,-1],[-1,1],[1,-1],[1,1]]){ let r=tr+dr,c=tc+dc; while(chIn(r,c)){ const x=b[chI(r,c)]; if(x){ if(x.p===by&&(x.t==="B"||x.t==="Q")) return true; break; } r+=dr; c+=dc; } }
+  return false; }
+function chKingSq(b,p){ for(let i=0;i<64;i++){ const x=b[i]; if(x&&x.p===p&&x.t==="K") return i; } return -1; }
+function chInCheck(b,p){ const k=chKingSq(b,p); return k>=0 && chAttacked(b,k,(p+1)%2); }
+// حركاتٌ شبهُ شرعيّةٍ لقرصٍ (بلا فحصِ الكِشّ). كلُّ حركة: {from,to,cap,ep?,castle?,promo?,dbl?}
+function chPseudo(b, i, castle, ep){ const pc=b[i]; if(!pc) return []; const [r,c]=chRC(i), p=pc.p, out=[];
+  const add=(tr,tc)=>{ if(!chIn(tr,tc)) return false; const t=b[chI(tr,tc)]; if(t&&t.p===p) return false; out.push({from:i,to:chI(tr,tc),cap:t?chI(tr,tc):-1}); return !t; };
+  if(pc.t==="P"){ const dir=p===0?-1:1, startRow=p===0?6:1, promoRow=p===0?0:7;
+    if(chIn(r+dir,c) && !b[chI(r+dir,c)]){ out.push({from:i,to:chI(r+dir,c),cap:-1,promo:r+dir===promoRow});
+      if(r===startRow && !b[chI(r+2*dir,c)]) out.push({from:i,to:chI(r+2*dir,c),cap:-1,dbl:true}); }
+    for(const dc of [-1,1]){ const tr=r+dir,tc=c+dc; if(!chIn(tr,tc)) continue; const t=b[chI(tr,tc)];
+      if(t && t.p!==p) out.push({from:i,to:chI(tr,tc),cap:chI(tr,tc),promo:tr===promoRow});
+      else if(chI(tr,tc)===ep) out.push({from:i,to:chI(tr,tc),cap:chI(r,tc),ep:true}); }
+  } else if(pc.t==="N"){ for(const [dr,dc] of [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]) add(r+dr,c+dc);
+  } else if(pc.t==="K"){ for(const [dr,dc] of [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]) add(r+dr,c+dc);
+    if(castle[p][0] && !b[chI(r,5)]&&!b[chI(r,6)] && b[chI(r,7)]&&b[chI(r,7)].t==="R"&&b[chI(r,7)].p===p) out.push({from:i,to:chI(r,6),cap:-1,castle:"K"});
+    if(castle[p][1] && !b[chI(r,3)]&&!b[chI(r,2)]&&!b[chI(r,1)] && b[chI(r,0)]&&b[chI(r,0)].t==="R"&&b[chI(r,0)].p===p) out.push({from:i,to:chI(r,2),cap:-1,castle:"Q"});
+  } else { const dirs=pc.t==="R"?[[-1,0],[1,0],[0,-1],[0,1]]:pc.t==="B"?[[-1,-1],[-1,1],[1,-1],[1,1]]:[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]];
+    for(const [dr,dc] of dirs){ let tr=r+dr,tc=c+dc; while(add(tr,tc)){ tr+=dr; tc+=dc; } } }
+  return out; }
+// تطبيقُ حركةٍ ⇒ {b, castle, ep} جديدة (بلا مساسِ الأصل).
+function chApply(b, m, castle, ep){ const nb=b.map(x=>x?{...x}:null), nc=[castle[0].slice(),castle[1].slice()]; let nep=-1;
+  const pc=nb[m.from], [fr,fc]=chRC(m.from), [tr,tc]=chRC(m.to);
+  if(m.cap>=0) nb[m.cap]=null;
+  nb[m.to]=pc; nb[m.from]=null;
+  if(m.promo) nb[m.to]={p:pc.p,t:"Q"};                                   // ترقيةٌ تلقائيّةٌ لوزير
+  if(m.castle==="K"){ nb[chI(tr,5)]=nb[chI(tr,7)]; nb[chI(tr,7)]=null; }  // تبييتُ الملك
+  if(m.castle==="Q"){ nb[chI(tr,3)]=nb[chI(tr,0)]; nb[chI(tr,0)]=null; }
+  if(pc.t==="K") nc[pc.p]=[false,false];
+  if(pc.t==="R"){ if(fc===7) nc[pc.p][0]=false; if(fc===0) nc[pc.p][1]=false; }
+  if(m.cap>=0){ const [,cc]=chRC(m.cap); if(cc===7) nc[(pc.p+1)%2][0]=false; if(cc===0) nc[(pc.p+1)%2][1]=false; }
+  if(m.dbl) nep=chI((fr+tr)/2, fc);
+  return {b:nb, castle:nc, ep:nep}; }
+// حركاتٌ شرعيّةٌ (لا تُبقي الملكَ في كِشّ + تبييتٌ لا يعبرُ كِشًّا).
+function chLegal(b, p, castle, ep){ const out=[];
+  for(let i=0;i<64;i++){ if(!b[i]||b[i].p!==p) continue;
+    for(const m of chPseudo(b,i,castle,ep)){
+      if(m.castle){ const [r]=chRC(i), mid=m.castle==="K"?chI(r,5):chI(r,3);
+        if(chInCheck(b,p) || chAttacked(b,mid,(p+1)%2)) continue; }
+      const res=chApply(b,m,castle,ep); if(!chInCheck(res.b,p)) out.push(m); } }
+  return out; }
+function chStartTurn(){ return 0; } // الأبيضُ يبدأُ دائمًا
+function startChess(){ chCancelT(); vsSetup({ say:GI.chess, soloOk:true,
+  diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>ch_diff, setDiff:v=>{ch_diff=v;},
+  toggle:{ label:"⏱️ اللعبُ ضدّ الوقت", get:()=>ch_timed, set:v=>{ch_timed=v;} }, start:newChess }); try{speak(GI.chess);}catch(e){} }
+function newChess(){ vsRun=true; ch_b=chInit(); ch_castle=[[true,true],[true,true]]; ch_ep=-1; ch_ps=vsMakePlayers();
+  if(ch_ps.length<2){ const me=ch_ps[0]; ch_ps=[{...me,name:me.name+" ♙",avatar:"♙",color:VS_COLA},{...me,name:me.name+" ♟",avatar:"♟",color:VS_COLB}]; } // «وحدي» = بالطرفين
+  ch_ps.forEach(p=>p.score=0);
+  ch_turn=chStartTurn(); ch_sel=-1; ch_lock=false; ch_done=false; ch_result=""; ch_last=null;
+  renderChess(); if(ch_ps[ch_turn].cpu) setTimeout(chAI, 500); }
+function chDoMove(m){ if(ch_lock||ch_done) return; chCancelT();
+  const res=chApply(ch_b,m,ch_castle,ch_ep); ch_b=res.b; ch_castle=res.castle; ch_ep=res.ep; ch_last={from:m.from,to:m.to};
+  if(m.cap>=0||m.castle) sfx.success(); else sfx.tap();
+  ch_sel=-1;
+  const foe=(ch_turn+1)%2, foeMoves=chLegal(ch_b,foe,ch_castle,ch_ep);
+  if(!foeMoves.length){ ch_done=true;
+    if(chInCheck(ch_b,foe)){ ch_result="mate"; ch_ps[ch_turn].score++; } else ch_result="stalemate";
+    renderChess(); vsEndRound(ch_ps,{ game:"الشطرنج", diff:ch_diff, onAgain:newChess, onExit:startChess }); return; }
+  ch_turn=foe; renderChess();
+  if(ch_ps[ch_turn].cpu) setTimeout(chAI, 420); }
+// تقييمٌ ماديٌّ (موجبٌ لصالحِ الأبيض 0).
+function chEval(b){ let s=0; for(let i=0;i<64;i++){ const pc=b[i]; if(!pc)continue; s+= pc.p===0? CH_VAL[pc.t] : -CH_VAL[pc.t]; } return s; }
+function chSearch(b, p, castle, ep, depth, alpha, beta){
+  const moves=chLegal(b,p,castle,ep);
+  if(!moves.length) return chInCheck(b,p) ? (p===0? -1e6-depth : 1e6+depth) : 0;   // مات/تعادل
+  if(depth<=0) return chEval(b);
+  moves.sort((a,z)=>(z.cap>=0?1:0)-(a.cap>=0?1:0));   // الأسرُ أوّلًا (قطعٌ أكفأ)
+  let best = p===0? -1e9 : 1e9;
+  for(const m of moves){ const res=chApply(b,m,castle,ep);
+    const v=chSearch(res.b,(p+1)%2,res.castle,res.ep,depth-1,alpha,beta);
+    if(p===0){ if(v>best) best=v; if(best>alpha) alpha=best; } else { if(v<best) best=v; if(best<beta) beta=best; }
+    if(beta<=alpha) break; }
+  return best; }
+function chAI(){ if(ch_done) return; const me=ch_turn, moves=chLegal(ch_b,me,ch_castle,ch_ep); if(!moves.length) return;
+  if(ch_diff==="easy" && Math.random()<0.45){ return chDoMove(moves[Math.floor(Math.random()*moves.length)]); } // سهل: أحيانًا عشوائيّ
+  const depth = ch_diff==="easy"?1 : ch_diff==="medium"?2 : 3;
+  moves.sort((a,z)=>(z.cap>=0?1:0)-(a.cap>=0?1:0));
+  let bestMove=moves[0], bestV = me===0? -1e9 : 1e9;
+  for(const m of moves){ const res=chApply(ch_b,m,ch_castle,ch_ep);
+    const v=chSearch(res.b,(me+1)%2,res.castle,res.ep,depth-1,-1e9,1e9) + (Math.random()*10-5); // تنويعٌ خفيف
+    if(me===0? v>bestV : v<bestV){ bestV=v; bestMove=m; } }
+  chDoMove(bestMove); }
+function chSelect(i){ if(ch_done||ch_lock) return; const cur=ch_ps[ch_turn]; if(cur.cpu) return;
+  const pc=ch_b[i]; if(pc&&pc.p===ch_turn){ ch_sel=(ch_sel===i?-1:i); renderChess(); } }
+function chTap(to){ if(ch_sel<0) return; const m=chLegal(ch_b,ch_turn,ch_castle,ch_ep).find(x=>x.from===ch_sel&&x.to===to); if(m) chDoMove(m); }
+function renderChess(){ const cur=ch_ps[ch_turn];
+  const S=Math.min(42, Math.floor(Math.min(innerWidth-36,368)/CH_N));
+  const legal=(ch_sel>=0&&cur&&!cur.cpu)?chLegal(ch_b,ch_turn,ch_castle,ch_ep).filter(m=>m.from===ch_sel):[];
+  const tg=new Set(legal.map(m=>m.to));
+  const check=chInCheck(ch_b,ch_turn), kingSq=check?chKingSq(ch_b,ch_turn):-1;
+  let cells="";
+  for(let r=0;r<CH_N;r++)for(let c=0;c<CH_N;c++){ const i=chI(r,c), dark=(r+c)%2===1, pc=ch_b[i];
+    const sel=i===ch_sel?" sel":"", tgt=tg.has(i)?" tgt":"", last=(ch_last&&(i===ch_last.from||i===ch_last.to))?" last":"", chk=i===kingSq?" chk":"";
+    cells+=`<div class="ch-sq ${dark?"d":"l"}${sel}${tgt}${last}${chk}" data-i="${i}" style="width:${S}px;height:${S}px">${pc?`<span class="ch-p ${pc.p===0?"w":"b"}" style="font-size:${Math.round(S*.74)}px">${CH_GLYPH[pc.t]}</span>`:(tg.has(i)?`<span class="ch-dot"></span>`:"")}</div>`; }
+  const status = ch_done ? (ch_result==="mate"?"👑 كِش مات!":"🤝 تعادلٌ (لا حركة)") : (check?"⚠️ كِش! احمِ مَلِكَك":"");
+  view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">♟️ الشطرنج — «كِش مات» يفوز!${status?" · "+status:""}</div></div>`
+    + vsScoreHtml(ch_ps) + (ch_done?"":vsTurnHtml(cur))
+    + ((ch_timed && !ch_done && cur && !cur.cpu)?`<div class="hubar" style="max-width:${S*CH_N}px;margin:6px auto"><span id="chtbar"></span></div>`:"")
+    + `<div class="ch-board" style="grid-template-columns:repeat(${CH_N},${S}px)">${cells}</div>`;
+  wireBack();
+  const bd=view.querySelector(".ch-board");
+  if(bd && !ch_done && cur && !cur.cpu) bd.addEventListener("click",e=>{ const sq=e.target.closest("[data-i]"); if(!sq)return; const i=+sq.getAttribute("data-i");
+    if(tg.has(i)) chTap(i); else chSelect(i); });
+  chCancelT(); if(ch_timed && !ch_done && cur && !cur.cpu) chArmT(); }
 
 /* ===================== 🔢 تحدّي الأعداد (تناوبٌ · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
 let nc_diff="easy", nc_ps=[], nc_turn=0, nc_q=null, nc_lock=false, nc_aiPick=null; const NC_TARGET=5;

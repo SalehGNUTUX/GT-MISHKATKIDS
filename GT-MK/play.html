@@ -69,6 +69,16 @@
   @keyframes dtblink{0%,100%{opacity:1;filter:brightness(1)}50%{opacity:.35;filter:brightness(1.6)}}
   .dt-box{position:absolute;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;animation:dtpop .18s ease-out}
   @keyframes dtpop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+  /* ♛ الدَّامة */
+  .dm-board{display:grid;justify-content:center;gap:0;border:3px solid #5a4632;border-radius:6px;overflow:hidden;margin:8px auto;width:fit-content}
+  .dm-sq{position:relative;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+  .dm-sq.d{background:#c9b088} .dm-sq.l{background:#f3e8d0}
+  .dm-sq.sel{box-shadow:0 0 0 3px var(--gold) inset}
+  .dm-sq.tgt{cursor:pointer}
+  .dm-sq.last .dm-p{box-shadow:0 0 0 3px #fff,0 1px 3px rgba(0,0,0,.4)}
+  .dm-p{width:76%;height:76%;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.4),inset 0 -3px 6px rgba(0,0,0,.28);transition:transform .1s}
+  .dm-p:active{transform:scale(.92)}
+  .dm-dot{position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(46,160,70,.7);animation:dtpop .18s ease-out}
   .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
   .gsec{font-size:16px;font-weight:800;margin:16px 2px 8px;color:var(--ink);border-bottom:2px solid var(--line);padding-bottom:4px}
   .ccard{position:relative;background:var(--card);border:2px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:20px 14px;text-align:center;cursor:pointer;transition:transform .12s,border-color .15s}
@@ -354,6 +364,7 @@ const GAMES = [
   { id:"xo",     ic:"⭕", t:"دائرةٌ وعلامة", d:"ثلاثةٌ في خطٍّ ضدّ الآليّ", vs:1, cat:"fun" },
   { id:"dots",   ic:"▪️", t:"مربّعاتُ النقاط", d:"صِلِ النقاطَ وأغلِقِ المربّعات", vs:1, cat:"fun" },
   { id:"four",   ic:"⭕", t:"أربعةٌ على التوالي", d:"أسقِطْ قرصَكَ وصُفَّ أربعةً", vs:1, cat:"fun" },
+  { id:"dama",   ic:"♛", t:"الدَّامة", d:"حرّكْ قُطريًّا واقفِزْ لتأسِرَ أقراصَ الخصم", vs:1, nw:1, cat:"fun" },
   { id:"print",  ic:"🖨️", t:"ألعاب/أنشطة للطباعة", d:"ألعابٌ تُلعَبُ على الورق + أنشطةٌ حسّيّة", cat:"tool" },
 ];
 // الترفيهيّةُ أوّلًا (طلبُ المستخدم): يفتحُ الطفلُ الصفحةَ فيجدُ ما يُمتِعُه في البداية.
@@ -400,7 +411,7 @@ function renderMenu(){
   view.querySelectorAll(".menu").forEach(m=>m.addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); }));
 }
 function open(id){ if(id!=="print") document.body.classList.add("ingame"); // شاشةٌ مخصّصةٌ للّعبة: يُطوى رأسُ الصفحةِ وشريطُ التنقّل
-  ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,dots:startDots,four:startF4,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,clock:startClock,print:()=>location.assign("print.html")})[id](); }
+  ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,dots:startDots,four:startF4,dama:startDama,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,clock:startClock,print:()=>location.assign("print.html")})[id](); }
 
 /* ===================== 🕐 تحدّي الساعة (v1.5 · versus مشترَك) ===================== */
 function startClock(){
@@ -1037,6 +1048,108 @@ function renderDots(){
   if(w && !dt_done && cur && !cur.cpu) w.addEventListener("click", e=>{ const l=e.target.closest(".dt-ln:not(.on)"); if(l) dotsPlay(l.dataset.k,+l.dataset.r,+l.dataset.c); });
   dtCancelT(); if(dt_timed && !dt_done && cur && !cur.cpu) dtArmT();   // «ضدّ الوقت»: عدّادٌ لدورِ اللاعبِ البشريّ
 }
+
+/* ===================== ♛ الدَّامة (v1.8 · لعبةُ مهارةٍ تنافسيّة) =====================
+   لوحةُ 8×8 على المربّعاتِ الداكنة، 12 قرصًا لكلِّ لاعب. حركةٌ قُطريّةٌ للأمام، وأسرٌ بالقفزِ فوقَ
+   قرصِ الخصم (قفزٌ متتابعٌ إن أمكن). الترقيةُ إلى «دامة» عند بلوغِ الصفِّ الأخيرِ فتأسرُ في الاتجاهَين.
+   من أسَرَ كلَّ الأقراصِ أو مَنَعَ الحركةَ فاز. آليٌّ بثلاثِ صعوبات + versus + «ضدّ الوقت». */
+let dm_ps=[], dm_b=[], dm_turn=0, dm_sel=-1, dm_lock=false, dm_done=false, dm_win=null;
+let dm_diff="medium", dm_timed=true, dm_raf=null, dm_chain=false, dm_last=null;
+const DM_N=8, DM_MS=18000;
+const dmI=(r,c)=>r*DM_N+c, dmRC=i=>[Math.floor(i/DM_N), i%DM_N], dmIn=(r,c)=>r>=0&&r<DM_N&&c>=0&&c<DM_N;
+function dmCancelT(){ if(dm_raf){ cancelAnimationFrame(dm_raf); dm_raf=null; } }
+function dmArmT(){ const t0=Date.now(); dmCancelT();
+  const tick=()=>{ if(!vsRun){ dmCancelT(); return; }
+    const left=DM_MS-(Date.now()-t0), bar=document.getElementById("dmtbar");
+    if(bar) bar.style.width=Math.max(0,left/DM_MS*100)+"%";
+    if(left<=0){ if(!dm_lock&&!dm_done&&dm_ps[dm_turn]&&!dm_ps[dm_turn].cpu){
+        const acts=dmActions(dm_b, dm_turn, dm_chain?dm_sel:-1);
+        if(acts.length){ const a=acts[Math.floor(Math.random()*acts.length)]; sfx.nope(); dtSay(); dmDoMove(a.from,a.to,a.cap,false); } }
+      dmCancelT(); return; }
+    dm_raf=requestAnimationFrame(tick); }; tick(); }
+function dmInit(){ const b=Array(DM_N*DM_N).fill(null);
+  for(let r=0;r<DM_N;r++)for(let c=0;c<DM_N;c++){ if((r+c)%2!==1) continue;
+    if(r<3) b[dmI(r,c)]={p:1,k:false}; else if(r>4) b[dmI(r,c)]={p:0,k:false}; }
+  return b; }
+// قفزاتُ قرصٍ (أسرٌ) وخطواتُه البسيطة على لوحةٍ ما. القرصُ العاديُّ يتقدّمُ فقط؛ «الدامة» في كلِّ اتجاه.
+function dmJumps(b,i){ const [r,c]=dmRC(i), pc=b[i]; if(!pc) return [];
+  const dirs=pc.k?[[-1,-1],[-1,1],[1,-1],[1,1]]:(pc.p===0?[[-1,-1],[-1,1]]:[[1,-1],[1,1]]);
+  const out=[]; for(const [dr,dc] of dirs){ const mr=r+dr,mc=c+dc,lr=r+2*dr,lc=c+2*dc;
+    if(dmIn(lr,lc)&&b[dmI(mr,mc)]&&b[dmI(mr,mc)].p!==pc.p&&b[dmI(lr,lc)]==null) out.push({to:dmI(lr,lc),cap:dmI(mr,mc)}); }
+  return out; }
+function dmSteps(b,i){ const [r,c]=dmRC(i), pc=b[i]; if(!pc) return [];
+  const dirs=pc.k?[[-1,-1],[-1,1],[1,-1],[1,1]]:(pc.p===0?[[-1,-1],[-1,1]]:[[1,-1],[1,1]]);
+  const out=[]; for(const [dr,dc] of dirs){ const nr=r+dr,nc=c+dc; if(dmIn(nr,nc)&&b[dmI(nr,nc)]==null) out.push({to:dmI(nr,nc)}); }
+  return out; }
+// كلُّ الحركاتِ الأوّليّةِ للاعبِ p. onlyPiece>=0 ⇒ أثناءَ سلسلةِ قفزٍ لقرصٍ واحد (قفزاتٌ فقط).
+function dmActions(b,p,onlyPiece){ const acts=[];
+  if(onlyPiece>=0){ dmJumps(b,onlyPiece).forEach(j=>acts.push({from:onlyPiece,to:j.to,cap:j.cap})); return acts; }
+  for(let i=0;i<b.length;i++) if(b[i]&&b[i].p===p){ dmJumps(b,i).forEach(j=>acts.push({from:i,to:j.to,cap:j.cap})); dmSteps(b,i).forEach(s=>acts.push({from:i,to:s.to,cap:null})); }
+  return acts; }
+function dmHasMoves(b,p){ for(let i=0;i<b.length;i++) if(b[i]&&b[i].p===p&&(dmJumps(b,i).length||dmSteps(b,i).length)) return true; return false; }
+function dmCount(b,p){ let n=0; for(const x of b) if(x&&x.p===p) n++; return n; }
+function startDama(){ dmCancelT(); vsSetup({ say:GI.dama, soloOk:true,
+  diffs:[{v:"easy",label:"سهل"},{v:"medium",label:"متوسّط"},{v:"hard",label:"صعب"}], getDiff:()=>dm_diff, setDiff:v=>{dm_diff=v;},
+  toggle:{ label:"⏱️ اللعبُ ضدّ الوقت", get:()=>dm_timed, set:v=>{dm_timed=v;} }, start:newDama }); try{speak(GI.dama);}catch(e){} }
+function newDama(){ vsRun=true; dm_b=dmInit(); dm_ps=vsMakePlayers();
+  if(dm_ps.length<2){ const me=dm_ps[0]; dm_ps=[{...me,name:me.name+" 🔴",avatar:"🔴",color:VS_COLA},{...me,name:me.name+" 🔵",avatar:"🔵",color:VS_COLB}]; } // «وحدي» = بالطرفين
+  dm_ps.forEach(p=>p.score=0);
+  dm_turn=vsStartIndex(dm_ps); dm_sel=-1; dm_chain=false; dm_lock=false; dm_done=false; dm_win=null; dm_last=null;
+  renderDama(); if(dm_ps[dm_turn].cpu) setTimeout(dmAI,650); }
+// تنفيذُ حركةٍ (قد تكونُ قفزةً مع سلسلة). isAI ⇒ يُكمِلُ الآليُّ السلسلةَ تلقائيًّا.
+function dmDoMove(from,to,cap,isAI){ if(dm_lock||dm_done) return; dmCancelT();
+  const pc=dm_b[to]=dm_b[from]; dm_b[from]=null; dm_last=to;
+  const captured=cap!=null; if(captured){ dm_b[cap]=null; sfx.success(); } else sfx.tap();
+  const [tr]=dmRC(to); let promoted=false;
+  if(!pc.k && ((pc.p===0&&tr===0)||(pc.p===1&&tr===DM_N-1))){ pc.k=true; promoted=true; }
+  const more=captured && !promoted && dmJumps(dm_b,to).length;   // سلسلةُ قفزٍ متتابعة (نفسُ القرص)
+  if(more){ dm_chain=true; dm_sel=to; renderDama();
+    if(isAI){ const j=dmJumps(dm_b,to)[0]; setTimeout(()=>dmDoMove(to,j.to,j.cap,true),520); }
+    return; }
+  dm_chain=false; dm_sel=-1;
+  const foe=(pc.p+1)%dm_ps.length;
+  if(dmCount(dm_b,foe)===0 || !dmHasMoves(dm_b,foe)){ dm_done=true; dm_win=pc.p; dm_ps[pc.p].score++; renderDama();
+    vsEndRound(dm_ps,{ game:"الدَّامة", diff:dm_diff, onAgain:newDama, onExit:startDama }); return; }
+  dm_turn=foe; renderDama();
+  if(dm_ps[dm_turn].cpu) setTimeout(dmAI,650); }
+// تقييمُ اللوحةِ لصالحِ me (مادّةٌ + قيمةُ الدامةِ + تقدّمٌ للأمام).
+function dmEval(b,me){ let s=0; for(let i=0;i<b.length;i++){ const pc=b[i]; if(!pc)continue; const [r]=dmRC(i);
+    let v=pc.k?18:10; if(!pc.k) v+=(pc.p===0?(DM_N-1-r):r)*0.5; s+=(pc.p===me?v:-v); } return s; }
+function dmAI(){ if(dm_done) return; const me=dm_turn, foe=(me+1)%dm_ps.length;
+  let pool=dmActions(dm_b,me,dm_chain?dm_sel:-1);
+  const jumps=pool.filter(a=>a.cap!=null);
+  if(dm_diff!=="easy" && jumps.length) pool=jumps;   // الأسرُ مُفضَّلٌ (متوسّط/صعب)
+  if(!pool.length) return;
+  if(dm_diff==="easy"){ const a=pool[Math.floor(Math.random()*pool.length)]; return dmDoMove(a.from,a.to,a.cap,true); }
+  const scored=pool.map(a=>{ const nb=dm_b.map(x=>x?{...x}:null); nb[a.to]=nb[a.from]; nb[a.from]=null; if(a.cap!=null) nb[a.cap]=null;
+    const [tr]=dmRC(a.to); if(!nb[a.to].k&&((me===0&&tr===0)||(me===1&&tr===DM_N-1))) nb[a.to].k=true;
+    let sc=dmEval(nb,me);
+    if(dm_diff==="hard"){ let bad=0; for(let i=0;i<nb.length;i++) if(nb[i]&&nb[i].p===foe&&dmJumps(nb,i).length){ bad=12; break; } sc-=bad*0.9; } // تجنّبْ إهداءَ أسر
+    return {a,sc}; });
+  scored.sort((x,y)=>y.sc-x.sc);
+  let a; if(dm_diff==="hard") a=scored[0].a; else { const top=scored.slice(0,Math.max(1,Math.ceil(scored.length/2))); a=top[Math.floor(Math.random()*top.length)].a; }
+  dmDoMove(a.from,a.to,a.cap,true); }
+function dmSelect(i){ if(dm_done||dm_lock) return; const cur=dm_ps[dm_turn]; if(cur.cpu||dm_chain) return;
+  const pc=dm_b[i]; if(pc&&pc.p===dm_turn){ dm_sel=(dm_sel===i?-1:i); renderDama(); } }
+function dmTap(to){ if(dm_sel<0) return; const j=dmJumps(dm_b,dm_sel).find(x=>x.to===to);
+  if(j){ dmDoMove(dm_sel,to,j.cap,false); return; }
+  if(dm_chain) return; const s=dmSteps(dm_b,dm_sel).find(x=>x.to===to); if(s) dmDoMove(dm_sel,to,null,false); }
+function renderDama(){ const cur=dm_ps[dm_turn];
+  const S=Math.min(44, Math.floor(Math.min(innerWidth-36,368)/DM_N));
+  const tg=(dm_sel>=0&&cur&&!cur.cpu)?new Set([...dmJumps(dm_b,dm_sel).map(j=>j.to), ...(dm_chain?[]:dmSteps(dm_b,dm_sel).map(s=>s.to))]):new Set();
+  let cells="";
+  for(let r=0;r<DM_N;r++)for(let c=0;c<DM_N;c++){ const i=dmI(r,c), dark=(r+c)%2===1, pc=dm_b[i];
+    const sel=i===dm_sel?" sel":"", tgt=tg.has(i)?" tgt":"", last=i===dm_last?" last":"";
+    cells+=`<div class="dm-sq ${dark?"d":"l"}${sel}${tgt}${last}" data-i="${i}" style="width:${S}px;height:${S}px">${pc?`<span class="dm-p" style="background:${dm_ps[pc.p].color}">${pc.k?"♛":""}</span>`:(tg.has(i)?`<span class="dm-dot"></span>`:"")}</div>`; }
+  view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">♛ الدَّامة — حرّكْ قُطريًّا واقفِزْ لتأسِر!</div></div>`
+    + vsScoreHtml(dm_ps) + (dm_done?"":vsTurnHtml(cur))
+    + ((dm_timed && !dm_done && cur && !cur.cpu)?`<div class="hubar" style="max-width:${S*DM_N}px;margin:6px auto"><span id="dmtbar"></span></div>`:"")
+    + `<div class="dm-board" style="grid-template-columns:repeat(${DM_N},${S}px)">${cells}</div>`;
+  wireBack();
+  const bd=view.querySelector(".dm-board");
+  if(bd && !dm_done && cur && !cur.cpu) bd.addEventListener("click",e=>{ const sq=e.target.closest("[data-i]"); if(!sq)return; const i=+sq.getAttribute("data-i");
+    if(tg.has(i)) dmTap(i); else dmSelect(i); });
+  dmCancelT(); if(dm_timed && !dm_done && cur && !cur.cpu) dmArmT(); }
 
 /* ===================== 🔢 تحدّي الأعداد (تناوبٌ · ضدّ الآليّ بثلاث صعوبات/الحسابات) ===================== */
 let nc_diff="easy", nc_ps=[], nc_turn=0, nc_q=null, nc_lock=false, nc_aiPick=null; const NC_TARGET=5;

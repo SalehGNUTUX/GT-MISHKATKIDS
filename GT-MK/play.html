@@ -78,7 +78,7 @@
   .dm-sq.last .dm-p{box-shadow:0 0 0 3px #fff,0 1px 3px rgba(0,0,0,.4)}
   .dm-p{width:76%;height:76%;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.4),inset 0 -3px 6px rgba(0,0,0,.28);transition:transform .1s}
   .dm-p:active{transform:scale(.92)}
-  .dm-dot{position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(46,160,70,.7);animation:dtpop .18s ease-out}
+  .dm-dot{position:absolute;width:34%;height:34%;border-radius:50%;background:radial-gradient(circle,#8dffa6,#25c246);box-shadow:0 0 8px 2px rgba(120,255,150,.95),0 0 0 2px rgba(255,255,255,.6);animation:dtpop .18s ease-out}
   /* ♟️ الشطرنج */
   .ch-board{display:grid;justify-content:center;gap:0;border:3px solid #5a4632;border-radius:6px;overflow:hidden;margin:8px auto;width:fit-content}
   .ch-sq{position:relative;display:flex;align-items:center;justify-content:center;box-sizing:border-box;cursor:pointer}
@@ -86,10 +86,11 @@
   .ch-sq.sel{box-shadow:0 0 0 3px var(--gold) inset}
   .ch-sq.last{box-shadow:0 0 0 3px rgba(255,235,120,.7) inset}
   .ch-sq.chk{box-shadow:0 0 0 3px #E0566B inset;background:#f0a0a0}
+  .ch-sq.capt{box-shadow:0 0 0 3px rgba(214,86,107,.85) inset}   /* مربّعُ أسرٍ (عليه قطعةُ خصمٍ يمكنُ أخذُها) */
   .ch-p{line-height:1;user-select:none}
   .ch-p.w{color:#fbf6e9;text-shadow:0 0 1px #333,0 0 2px #000,0 1px 1px #000}
   .ch-p.b{color:#232323;text-shadow:0 0 1px rgba(255,255,255,.35)}
-  .ch-dot{position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(46,160,70,.65);animation:dtpop .18s ease-out}
+  .ch-dot{position:absolute;width:34%;height:34%;border-radius:50%;background:radial-gradient(circle,#8dffa6,#25c246);box-shadow:0 0 8px 2px rgba(120,255,150,.95),0 0 0 2px rgba(255,255,255,.6);animation:dtpop .18s ease-out}
   .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
   .gsec{font-size:16px;font-weight:800;margin:16px 2px 8px;color:var(--ink);border-bottom:2px solid var(--line);padding-bottom:4px}
   .ccard{position:relative;background:var(--card);border:2px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:20px 14px;text-align:center;cursor:pointer;transition:transform .12s,border-color .15s}
@@ -1282,7 +1283,7 @@ function renderChess(){ const cur=ch_ps[ch_turn];
   const check=chInCheck(ch_b,ch_turn), kingSq=check?chKingSq(ch_b,ch_turn):-1;
   let cells="";
   for(let r=0;r<CH_N;r++)for(let c=0;c<CH_N;c++){ const i=chI(r,c), dark=(r+c)%2===1, pc=ch_b[i];
-    const sel=i===ch_sel?" sel":"", tgt=tg.has(i)?" tgt":"", last=(ch_last&&(i===ch_last.from||i===ch_last.to))?" last":"", chk=i===kingSq?" chk":"";
+    const isT=tg.has(i), sel=i===ch_sel?" sel":"", tgt=isT?(pc?" tgt capt":" tgt"):"", last=(ch_last&&(i===ch_last.from||i===ch_last.to))?" last":"", chk=i===kingSq?" chk":"";
     cells+=`<div class="ch-sq ${dark?"d":"l"}${sel}${tgt}${last}${chk}" data-i="${i}" style="width:${S}px;height:${S}px">${pc?`<span class="ch-p ${pc.p===0?"w":"b"}" style="font-size:${Math.round(S*.74)}px">${CH_GLYPH[pc.t]}</span>`:(tg.has(i)?`<span class="ch-dot"></span>`:"")}</div>`; }
   const status = ch_done ? (ch_result==="mate"?"👑 كِش مات!":"🤝 تعادلٌ (لا حركة)") : (check?"⚠️ كِش! احمِ مَلِكَك":"");
   view.innerHTML = backBar()+`<div class="clue" style="padding:10px"><div class="say">♟️ الشطرنج — «كِش مات» يفوز!${status?" · "+status:""}</div></div>`

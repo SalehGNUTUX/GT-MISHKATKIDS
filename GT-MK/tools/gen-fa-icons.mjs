@@ -20,6 +20,8 @@ const MAP = {
   backup: "floppy-disk", clock: "clock", trophy: "trophy", compass: "compass", leaf: "leaf", sun: "sun", sound: "volume-high",
   // v1.7: دليلُ الوالد
   book: "book",
+  // v1.8: الدَّامةُ التنافسيّة
+  dama: "chess-board",
   // أيقوناتٌ أُضيفت بعدَ تدقيقِ v1.6 (كانت إيموجي خامًا في بطاقاتِ الألعاب)
   hunt: "magnifying-glass", bolt: "bolt", circledot: "circle-dot", dots: "table-cells-large", paw: "paw", globe: "globe", stopwatch: "stopwatch",
   // تدقيقُ v1.6 الآليّ (npm run check:icons) — رموزٌ كانت خامّةً في مظاهرِ الذاكرةِ والأوسمةِ والمهامّ
@@ -52,7 +54,7 @@ const EMOJI = {
   "✂️": "crafts", "🧠": "brain", "🚂": "train", "🧺": "pins", "🧱": "blocks", "🎣": "fish",
   "🧩": "puzzles", "🌀": "maze", "🎡": "wheel", "🖨️": "print", "📑": "index", "🔤": "basics",
   "🎙️": "mic", "🔗": "link", "🌟": "star", "🕌": "mosque", "🔬": "microscope", "🤝": "handshake",
-  "🕐": "clock", "🏆": "trophy", "🧭": "compass", "🍂": "leaf", "🌅": "sun", "🔊": "sound", "💾": "backup", "📘": "book",
+  "🕐": "clock", "🏆": "trophy", "🧭": "compass", "🍂": "leaf", "🌅": "sun", "🔊": "sound", "💾": "backup", "📘": "book", "♛": "dama",
   "🔎": "hunt", "⚡": "bolt", "⭕": "circledot", "▪️": "dots", "🐾": "paw", "🌍": "globe", "⏱️": "stopwatch",
   "🧮": "abacus", "😀": "smile", "🚀": "rocket", "🌸": "flower", "🌱": "seedling", "🔥": "fire", "🎲": "dice", "👯": "duo",
   "🐶": "animals", "🍕": "food", "🌿": "nature", "🐠": "fish", "⭐": "star", "🧐": "find", "💭": "sentences", "ﹷ": "spellcheck",

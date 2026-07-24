@@ -5,7 +5,7 @@ export default {
   "index.html":       "عَلِّمِ الآلِيَّ",
   "quran.html":       "القُرْآنُ الكَرِيم",
   "quran-full.html":  "القُرْآنُ الكَرِيمُ كامِلًا",
-  "basics.html":      "الأَساسِيَّات",
+  "basics.html":      "الأَساسِيَّاتُ",
   "read.html":        "سُلَّمُ القِراءَة",
   "math.html":        "أَرْقامٌ وَهَنْدَسَة",
   "lang.html":        "لُغاتٌ أَجْنَبِيَّة",
@@ -16,6 +16,7 @@ export default {
   "puzzles.html":     "أَلْغازٌ ذَكِيَّة",
   "quiz.html":        "اِخْتِباراتٌ تَعْلِيمِيَّة",
   "progress.html":    "تَقَدُّمِي",
-  "print.html":       "المَطْبُوعات",
+  "print.html":       "المَطْبُوعاتُ",
   "robocustom":       "خَصِّصْ آلِيَّك",
+  "dashboard":        "لَوْحَةُ التَّحَكُّم",
 };

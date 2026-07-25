@@ -544,7 +544,7 @@ function renderParentLogin(){
     <input id="ppw" type="password" autocomplete="off" placeholder="كلمة المرور" style="${inStyle}">
     <div id="ppwBad" style="color:#B5482F;font-size:13px;min-height:18px"></div>
     <div style="display:flex;gap:8px;justify-content:center"><button id="pgo" style="background:#7BB661;color:#fff;border:none;border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;font-family:inherit">دخول</button>
-    <button id="pback" style="background:var(--card);border:1px solid #ECE6DA;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div>
+    <button id="pback" style="background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div>
     <button id="pforgot" style="margin-top:12px;background:none;border:none;color:#6B6B6B;font-size:13px;cursor:pointer;font-family:inherit;text-decoration:underline">نسيتُ كلمة المرور</button>
     ${isDefaultParentPassword()?'<p style="color:#6B6B6B;font-size:12px;margin-top:8px">الافتراضيّة: <b>admin</b> — غيّرها من لوحة التحكّم.</p>':''}</div>`;
   const inp=document.getElementById("ppw"); inp.focus();
@@ -563,10 +563,10 @@ function renderParentRecover(){
       <input id="rNew" type="password" placeholder="كلمة مرور جديدة (فارغ = admin)" style="${inStyle}">
       <div id="rBad" style="color:#B5482F;font-size:13px;min-height:18px"></div>
       <div style="display:flex;gap:8px;justify-content:center"><button id="rGo" style="background:#7BB661;color:#fff;border:none;border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;font-family:inherit">تأكيد</button>
-      <button id="rBack" style="background:var(--card);border:1px solid #ECE6DA;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div>`
+      <button id="rBack" style="background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div>`
     :`<p style="color:#6B6B6B;font-size:13px;margin:6px 0 10px">لا سؤال أمنيّ مضبوط. يمكنك إعادة التعيين إلى «admin».</p>
       <div style="display:flex;gap:8px;justify-content:center"><button id="rReset" style="background:#E07A5F;color:#fff;border:none;border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;font-family:inherit">إعادة إلى admin</button>
-      <button id="rBack" style="background:var(--card);border:1px solid #ECE6DA;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div>`}</div>`;
+      <button id="rBack" style="background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div>`}</div>`;
   document.getElementById("rBack").onclick=renderParentLogin;
   if(sq){ document.getElementById("rGo").onclick=()=>{
       if(verifySecurityAnswer(document.getElementById("rAns").value)){ const np=document.getElementById("rNew").value; changeParentPassword(np||undefined); if(loginParent(np||"admin")) enter(); }
@@ -580,7 +580,7 @@ function selectProfile(id){
     <input id="cpw" type="password" placeholder="كلمة المرور" style="width:200px;padding:9px;border:1px solid #ECE6DA;border-radius:10px;font-family:inherit;margin:12px 0;text-align:center">
     <div id="cpwBad" style="color:#B5482F;font-size:13px;min-height:18px"></div>
     <div style="display:flex;gap:8px;justify-content:center"><button id="cgo" style="background:#7BB661;color:#fff;border:none;border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;font-family:inherit">دخول</button>
-    <button id="cback" style="background:var(--card);border:1px solid #ECE6DA;border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div></div>`;
+    <button id="cback" style="background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 16px;cursor:pointer;font-family:inherit">رجوع</button></div></div>`;
   const inp=document.getElementById("cpw"); inp.focus();
   const go=()=>{ if(loginProfile(id, inp.value)) enter(); else { document.getElementById("cpwBad").textContent="كلمة مرور غير صحيحة."; inp.value=""; inp.focus(); } };
   document.getElementById("cgo").onclick=go; inp.addEventListener("keydown",e=>{ if(e.key==="Enter") go(); });

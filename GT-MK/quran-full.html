@@ -127,6 +127,7 @@ import {
   isQuranOnlineOn, hizbList, surahMeta, isSurahLocal, isAvailableOffline,
   audioUrl, BASMALA_AUDIO, fetchSurahText, downloadSurah, deleteSurah,
 } from "./src/quran-online.js";
+import { confirmWithPassword, undoable } from "./src/confirm-action.js";
 robo.mount();
 
 const view = document.getElementById("view");
@@ -206,8 +207,15 @@ function wireSurahList(host){
     const op=e.target.closest("[data-open]"); if(op){ const n=+op.getAttribute("data-open");
       // إن كان هذا الحزبُ يبدأُ وسطَ هذه السورةِ (تتمّةٌ) فادخُلْها من موضعِ الإتمام لا من البداية.
       const sa=(currentHizb && n===currentHizb.startSurah)?currentHizb.startAyah:1; openSurah(n, sa); return; }
-    const dl=e.target.closest("[data-dl]"); if(dl){ await doDownload(+dl.getAttribute("data-dl"), dl); return; }
-    const del=e.target.closest("[data-del]"); if(del){ const n=+del.getAttribute("data-del"); await deleteSurah(n); refreshCard(n); return; }
+    const dl=e.target.closest("[data-dl]"); if(dl){ const n=+dl.getAttribute("data-dl"); const nm=shortName(surahMeta(n).name);
+      if(!navigator.onLine){ alert("لا يوجدُ اتّصالٌ بالإنترنت. صِلِ الإنترنتَ للتنزيل."); return; }
+      if(!(await confirmWithPassword(`تنزيلُ سورةِ ${nm} للاستماعِ إليها دونَ إنترنت؟`))) return;
+      undoable(`سيبدأُ تنزيلُ سورةِ ${nm}…`, ()=>{ doDownload(n, dl); });
+      return; }
+    const del=e.target.closest("[data-del]"); if(del){ const n=+del.getAttribute("data-del"); const nm=shortName(surahMeta(n).name);
+      if(!(await confirmWithPassword(`حذفُ تنزيلِ سورةِ ${nm}؟ ستحتاجُ الإنترنتَ للاستماعِ إليها مجدّدًا.`))) return;
+      undoable(`سيُحذَفُ تنزيلُ سورةِ ${nm}`, async ()=>{ await deleteSurah(n); refreshCard(n); });
+      return; }
   });
 }
 function refreshCard(n){ const card=view.querySelector(`.scard[data-card="${n}"]`); if(card) card.outerHTML = surahCardHtml(n); }

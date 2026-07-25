@@ -101,6 +101,19 @@
   .wp .ring{width:64px;height:64px;border:2px dashed #B9C0A8;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;opacity:.35;margin:0 auto}
   .wp .n{font-size:13px;margin-top:3px}
 
+  /* معاينةُ الهاتف فقط (لا تؤثّرُ في PDF فهو يُنقَّطُ بعرضِ A4=794 عبرَ html2canvas، ولا في طباعةِ الحاسوب):
+     الشبكاتُ ذاتُ العمودَين (1fr 1fr) لا تنكمشُ دونَ محتواها على الشاشةِ الضيّقةِ فتخرجُ عن الورقةِ وتُزيحُ الصفحة.
+     نجعلُها عمودًا واحدًا ونُقلّلُ الفجواتِ الكبيرةَ ونمنعُ التمريرَ الأفقيّ. */
+  @media (max-width:640px){
+    body{overflow-x:hidden}
+    .sheet{padding:0 12px}
+    .tx-wrap,.tb-wrap,.ms-wrap{grid-template-columns:1fr;max-width:360px}
+    .cn-wrap{gap:28px;max-width:100%} .cn-c{font-size:26px}
+    .tx-row{gap:10px} .tx-mini{width:46%;min-width:0}
+    .dt-g{gap:26px}
+    .tm-g,.ws-g,.hs-g,.chk-board,.chk-lab,.poster svg{max-width:100%}
+    .tpl{padding:14px}
+  }
   @media print{
     .noprint{display:none !important}
     body{background:#fff}

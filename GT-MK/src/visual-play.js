@@ -5,7 +5,7 @@
 import { robo } from "./robo-companion.js";
 import { logEvent } from "./progress.js";
 import { speak } from "./speak.js";
-import { GAME_INTROS as GI } from "./robo-phrases.js";
+import { GAME_INTROS as GI, NOTICES } from "./robo-phrases.js";
 import { vsSetup, vsMakePlayers, vsScoreHtml, vsTurnHtml, vsEndRound, vsStartIndex, vP, GAME as GR, sfx } from "./versus.js";
 
 let ctx = null;          // { view, backBar, wireBack }
@@ -171,3 +171,110 @@ function odEnd() {
   logEvent("oddone_win");
   vsEndRound(OD.ps, { game: "جِدِ المختلف", diff: ({ easy: "سهل", medium: "متوسّط", hard: "صعب" }[OD.diff] || ""), onAgain: newOddOne, onExit: startOddOne });
 }
+
+/* ======================================================================
+   🧩 بازلُ الصور — من صورِ القصصِ المصوّرةِ نفسِها: لوحاتُ «رحلةِ الأرقام» (webp) ورسومُ STORY_ART (SVG).
+   اضغطْ قطعتَين لتتبادلا مكانَيهما (أيسرُ للأصابعِ الصغيرة من السحب). 2×2 · 3×3 · 4×4.
+   المصادرُ تُحمَّلُ عند الطلبِ فقط (import ديناميكيّ) فلا يثقلُ play.html.
+   ====================================================================== */
+const JG = { n: 2, pics: null, pic: null, order: [], sel: -1, moves: 0, done: false, last: null, peek: false };
+let jgStyled = false;
+function jgStyle() {
+  if (jgStyled) return; jgStyled = true;
+  const st = document.createElement("style");
+  st.textContent = `
+  .jg-chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:4px 0}
+  .jg-chip{background:var(--card,#fff);border:1px solid var(--line,#ECE6DA);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted,#6B6B6B)}
+  .jg-chip.on{background:var(--primary,#E07A5F);border-color:var(--primary,#E07A5F);color:#fff;font-weight:700}
+  .jg-prompt{text-align:center;font-size:16px;font-weight:700;margin:6px 4px}
+  .jg-tools{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:6px 0}
+  .jg-tools button{background:var(--card,#fff);border:1px solid var(--line,#ECE6DA);border-radius:12px;padding:9px 16px;font-size:15px;cursor:pointer;font-family:inherit;color:var(--ink,#2B2B2B)}
+  .jg-board{display:grid;gap:3px;width:min(100%,440px);margin:6px auto;background:var(--line,#ECE6DA);border:3px solid var(--line,#ECE6DA);border-radius:14px;overflow:hidden;direction:ltr;transition:gap .5s,border-color .5s}
+  .jg-board.done{gap:0;border-color:#4f8a3a}
+  .jg-t{border:0;padding:0;margin:0;cursor:pointer;background-repeat:no-repeat;position:relative;transition:transform .15s,outline-color .2s;outline:3px solid transparent;outline-offset:-3px}
+  .jg-t.sel{outline-color:var(--primary,#E07A5F);transform:scale(.93);z-index:1}
+  .jg-t.in::after{content:"";position:absolute;inset:auto 4px 4px auto;width:7px;height:7px;border-radius:50%;background:#4f8a3a;opacity:.8}
+  .jg-board.done .jg-t::after{display:none}
+  .jg-t.swap{animation:jgSwap .3s}
+  @keyframes jgSwap{50%{transform:scale(.88)}}
+  @media (prefers-reduced-motion:reduce){.jg-t.swap{animation:none}.jg-board{transition:none}}
+  .jg-peek{width:min(60%,220px);margin:4px auto;display:block;border-radius:10px;border:2px solid var(--line,#ECE6DA)}
+  .jg-info{text-align:center;font-size:14px;color:var(--muted,#6B6B6B);margin:2px 0}
+  .jg-done{text-align:center;font-size:17px;margin:6px}
+  .jg-done a{color:var(--primary-d,#B5482F);font-weight:700}`;
+  document.head.appendChild(st);
+}
+async function jgLoadPics() {
+  if (JG.pics) return JG.pics;
+  const [{ default: data }, { STORY_ART }] = await Promise.all([import("../content/stories.js"), import("./story-art.js")]);
+  const list = [], seen = new Set();
+  for (const s of (data.stories || data)) for (const pg of (s.pages || [])) {
+    const key = pg.img || pg.art; if (!key || seen.has(key)) continue; seen.add(key);
+    if (pg.img) list.push({ key, url: pg.img, ar: 792 / 600, story: s.id, title: s.title });
+    else if (STORY_ART[pg.art]) list.push({ key, url: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(STORY_ART[pg.art]), ar: 320 / 200, story: s.id, title: s.title });
+  }
+  return (JG.pics = list);
+}
+export async function startJigsaw() {
+  stopVisualPlay(); jgStyle();
+  ctx.view.innerHTML = ctx.backBar() + `<div class="jg-info">… تحميلُ الصور</div>`; ctx.wireBack();
+  const pics = await jgLoadPics();
+  if (!pics.length) { ctx.view.innerHTML = ctx.backBar() + `<div class="jg-info">لا صورَ متاحة.</div>`; ctx.wireBack(); return; }
+  jgNew();
+  try { robo.say(NOTICES.jigsawIntro, "ask"); } catch (e) {}
+}
+function jgNew() {
+  // رسومُ SVG فيها مساحاتٌ سادةٌ واسعة: في 3×3 و4×4 تتشابهُ قطعٌ كثيرةٌ تمامًا فيُرتِّبُها الطفلُ صحيحةً بالعين
+  // ولا تُحتسَب. لذا الأحجامُ الكبيرةُ من اللوحاتِ المصوّرةِ الغنيّةِ بالتفاصيلِ وحدَها، وSVG لـ2×2 فقط.
+  const fit = JG.n >= 3 ? JG.pics.filter(p => !p.url.startsWith("data:")) : JG.pics;
+  const pool = (fit.length ? fit : JG.pics).filter(p => p.key !== JG.last);
+  JG.pic = pick(pool.length ? pool : JG.pics); JG.last = JG.pic.key;
+  const N = JG.n * JG.n;
+  // خلطٌ يضمنُ ألّا تبدأَ محلولةً ولا تبقى قطعةٌ واحدةٌ فقط في غيرِ مكانِها
+  do { JG.order = shuffleArr(Array.from({ length: N }, (_, i) => i)); } while (JG.order.filter((v, i) => v !== i).length < Math.min(N, 3));
+  JG.sel = -1; JG.moves = 0; JG.done = false; JG.peek = false;
+  jgRender();
+}
+const shuffleArr = a => { for (let k = a.length - 1; k > 0; k--) { const j = rand(k + 1); [a[k], a[j]] = [a[j], a[k]]; } return a; };
+function jgTileStyle(piece) {
+  const n = JG.n, r = Math.floor(piece / n), c = piece % n, pos = v => n === 1 ? 0 : (v / (n - 1)) * 100;
+  return `background-image:url('${JG.pic.url}');background-size:${n * 100}% ${n * 100}%;background-position:${pos(c)}% ${pos(r)}%`;
+}
+function jgRender() {
+  const { view, backBar, wireBack } = ctx, n = JG.n;
+  const chip = (v, t) => `<button class="jg-chip${JG.n === v ? " on" : ""}" data-n="${v}">${t}</button>`;
+  const inPlace = JG.order.filter((v, i) => v === i).length;
+  view.innerHTML = backBar()
+    + `<div class="jg-chips">${chip(2, "سهل · 4 قطع")}${chip(3, "متوسّط · 9")}${chip(4, "صعب · 16")}</div>`
+    + `<div class="jg-prompt">${JG.done ? "🎉 اكتملتِ الصورة!" : "اضغطْ قطعتَين لتتبادلا مكانَيهما — رتِّبِ الصورة"}</div>`
+    + `<div class="jg-board${JG.done ? " done" : ""}" id="jgb" style="grid-template-columns:repeat(${n},1fr);aspect-ratio:${JG.pic.ar}">`
+    + JG.order.map((piece, i) => `<button class="jg-t${piece === i && !JG.done ? " in" : ""}${i === JG.sel ? " sel" : ""}" data-i="${i}" aria-label="قطعة" style="${jgTileStyle(piece)}"></button>`).join("")
+    + `</div>`
+    + (JG.done
+      ? `<div class="jg-done">من قصّةِ «${esc(JG.pic.title)}» — <a href="stories.html?story=${encodeURIComponent(JG.pic.story)}">اقرأِ القصّة 📖</a></div>`
+      : `<div class="jg-info">الحركات: <b>${JG.moves}</b> · في مكانِها: <b>${inPlace}</b> من ${n * n}</div>`
+        + (JG.peek ? `<img class="jg-peek" src="${JG.pic.url}" alt="الصورةُ كاملة">` : ""))
+    + `<div class="jg-tools">`
+    + (JG.done ? "" : `<button id="jgpeek">${JG.peek ? "🙈 أخفِ الصورة" : "👀 الصورة"}</button>`)
+    + `<button id="jgnext">🔀 صورةٌ أخرى</button></div>`;
+  wireBack();
+  view.querySelectorAll(".jg-chip[data-n]").forEach(b => b.onclick = () => { JG.n = +b.dataset.n; jgNew(); });
+  view.querySelector("#jgnext").onclick = jgNew;
+  const pk = view.querySelector("#jgpeek"); if (pk) pk.onclick = () => { JG.peek = !JG.peek; jgRender(); };
+  view.querySelector("#jgb").addEventListener("click", e => { const t = e.target.closest("[data-i]"); if (t) jgTap(+t.dataset.i); });
+}
+function jgTap(i) {
+  if (JG.done) return;
+  if (JG.sel < 0) { JG.sel = i; sfx.tap(); jgRender(); return; }
+  if (JG.sel === i) { JG.sel = -1; jgRender(); return; }      // نقرٌ ثانٍ على المختارةِ يُلغي الاختيار
+  const a = JG.sel, o = JG.order; [o[a], o[i]] = [o[i], o[a]]; JG.sel = -1; JG.moves++;
+  const fixed = (o[a] === a) + (o[i] === i);
+  if (o.every((v, k) => v === k)) { JG.done = true; jgRender(); sfx.success();
+    logEvent("jigsaw_done", { n: JG.n, moves: JG.moves });
+    try { robo.cheer(NOTICES.jigsawDone); } catch (e) {}
+    return; }
+  if (fixed) sfx.success(); else sfx.tap();
+  jgRender();
+  for (const k of [a, i]) document.querySelector(`#jgb [data-i="${k}"]`)?.classList.add("swap");
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

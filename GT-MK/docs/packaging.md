@@ -66,6 +66,7 @@ bash scripts/build-packages.sh <هدف>   # build|icons|appimage|deb|rpm|linux|a
 - **RPM:** `fpm` المرفقُ في electron-builder (1.9.3) **لا يوافق `rpmbuild` الحديث (4.20+)** فيفشل توليدُه؛ لذا نبني DEB ثمّ نحوّله RPM بـ`alien` (`rpm_from_deb`، يتطلّب `alien`+`fakeroot`).
 - **Capacitor `--no-save` يَحذِفُ سابقَه:** `npm install --no-save @capacitor/assets` حذفَ حزمَ Capacitor المثبّتةَ سابقًا بـ`--no-save` (لأنّها غيرُ مذكورةٍ في `package.json`) فانهارَ بناءُ APK بخطأ `Could not resolve project :capacitor-android`. **الحلّ:** Capacitor في `package.json`؛ و`assets --no-save` بعده لا يَضرُّها. حافِظْ على **توافقِ إصدارات Capacitor** (`core`/`cli`/`android` نفسُ الـmajor).
 - **نسخةٌ قديمةٌ زائفةُ النجاح:** `build_apk` يَحذِفُ `app-debug.apk` قبل `gradlew` لئلّا يُنسَخَ APK قديمٌ ويُبلَّغَ نجاحًا عند فشلِ gradle.
+- **فشلٌ يُعلَنُ نجاحًا (لينكس):** `build_linux` يقرأُ رمزَ electron-builder من `PIPESTATUS` ويتحقّقُ بحزمِ **الإصدارِ الجاري** لا بأيِّ حزمةٍ في المجلّد (وقعَ مع امتلاءِ القرص). **نظّفْ `release/` من الإصداراتِ المنشورة** قبلَ التحزيم — تحتاجُ ~2 غ.ب حرّة.
 - **مسارٌ بأحرفٍ عربيّةٍ ومسافات:** يعملُ مع electron-builder/Capacitor، لكنّ بعضَ الأدوات حسّاسة — راقِبْ.
 
 ## متطلّباتُ جهاز التحزيم
@@ -78,6 +79,13 @@ bash scripts/build-packages.sh <هدف>   # build|icons|appimage|deb|rpm|linux|a
 الدفعُ إلى `main` → Actions يبني (`npm ci && npm run build` داخل `GT-MK/`, Node 20) ويجمّع
 `_site/` (الموقعُ الرسميُّ على `/` + التطبيقُ على `/app/`) → Pages. **لا تَبْنِ يدويًّا للنشر؛ ادفعْ فقط**،
 و**لا ترفعْ حتى يَختبرَ المستخدمُ ويقولَ «ارفع و انشر»**.
+
+## التحديثُ من داخلِ التطبيق (v1.8)
+
+- **Linux:** `electron/updates.cjs` + `preload.cjs` (ضمنَ `files: electron/**/*`). يكشفُ صيغةَ التثبيتِ (AppImage/DEB/RPM — **اسمُ الحزمةِ في dpkg/rpm `tilmithi`**) ويجلبُ حزمةً من الصيغةِ نفسِها. **يشترطُ أن تحملَ أسماءُ الأصولِ الامتدادَ والمعماريّة** (`*-x86_64.AppImage` · `*-amd64.deb` · `*-x86_64.rpm`) — لا تغيّرْ `artifactName`.
+- **Android:** `build_apk` يَحقِنُ `REQUEST_INSTALL_PACKAGES` ويَنسخُ `scripts/android/MishkatUpdaterPlugin.java` ويكتبُ `MainActivity` يسجّلُه. أصلُ الإصدارِ يجبُ أن ينتهيَ بـ`.apk` (يُرفَعُ باسم `GT-MISHKATKIDS-<v>.apk`). **`versionCode` يزدادُ مع الإصدار** (محسوبٌ من الرقم) وإلّا رفضَ أندرويد التحديث.
+- **المفتاح:** debug من `~/.android/debug.keystore` — ابنِ الإصداراتِ على الجهازِ نفسِه وإلّا تعذّرَ التحديثُ فوقَ المثبَّت.
+- **اختبارُ الدورةِ قبلَ النشر:** ابنِ الحزمةَ برقمٍ أقدمَ من آخرِ إصدارٍ منشور (عدّلْ `version` مؤقّتًا ثمّ أرجِعْه) وشغّلْها: تُنبِّهُ وتنزّلُ المنشورَ وتثبّتُه.
 
 ## للنشر على متاجر أندرويد
 

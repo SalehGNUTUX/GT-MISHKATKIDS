@@ -148,6 +148,29 @@
   /* Parent overlay */
   .overlay{position:fixed;inset:0;background:rgba(43,43,43,.45);display:none;align-items:flex-start;justify-content:center;padding:20px;z-index:50;overflow:auto}
   .overlay.show{display:flex}
+  /* لوحةُ الأهلِ وحدَها (بلا جلسةٍ خلفها): خلفيّةٌ معتمةٌ **تتبعُ السمة** لا لونٌ فاتحٌ ثابت */
+  .overlay.solid{background:radial-gradient(1200px 600px at 50% -10%, color-mix(in srgb,var(--primary) 10%,transparent), transparent 60%), var(--bg)}
+  /* مفتاحُ العرض + شبكةُ البطاقات + رأسُ صفحةِ القسم */
+  .dash-switch{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:12px 0 4px;background:var(--bg)}
+  .dash-switch button{border:none;background:none;padding:6px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted)}
+  .dash-switch button.on{background:var(--primary);color:#fff}
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:14px}
+  .dash-card{display:flex;gap:11px;align-items:flex-start;text-align:start;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px;
+    cursor:pointer;font:inherit;color:var(--ink);transition:transform .15s,border-color .15s,box-shadow .15s}
+  .dash-card:hover,.dash-card:focus-visible{transform:translateY(-2px);border-color:var(--c);box-shadow:0 6px 18px color-mix(in srgb,var(--c) 22%,transparent);outline:none}
+  .dash-card .dc-ic{flex:none;width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+    background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)}
+  .dash-card .dc-ic svg{width:20px;height:20px;fill:currentColor}
+  .dash-card .dc-tx{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .dash-card .dc-t{font-weight:800;font-size:14.5px;color:var(--ink)}
+  .dash-card .dc-d{font-size:12px;color:var(--muted);line-height:1.5}
+  .dash-pagehead{display:flex;align-items:center;gap:12px;margin:14px 0 2px;padding-bottom:10px;border-bottom:2px solid color-mix(in srgb,var(--c,var(--primary)) 40%,transparent)}
+  .dash-pagehead b{font-size:17px;color:var(--ink)}
+  .dash-cards > .sec{border:none;padding:0;margin-top:8px}
+  .dash-cards > .sec > h3, .dash-cards > details.sec > summary{display:none}
+  .dash-hidden{display:none !important}
+  @media (prefers-reduced-motion:reduce){.dash-card{transition:none}.dash-card:hover{transform:none}}
+  @media (max-width:560px){.dash-grid{grid-template-columns:1fr 1fr}.dash-card{flex-direction:column;padding:12px}.dash-card .dc-d{display:none}}
   /* عارضُ الوسائط (صورة/فيديو) بملءِ الشاشة */
   .medialb{position:fixed;inset:0;background:rgba(20,20,20,.92);display:flex;align-items:center;justify-content:center;z-index:120;opacity:0;transition:opacity .15s;padding:16px}
   .medialb.show{opacity:1}
@@ -163,7 +186,7 @@
   .sec.collapsible>h3{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0;user-select:none}
   .sec.collapsible>h3::after{content:"▾";color:var(--muted);font-size:12px;transition:transform .2s}
   .sec.collapsible.collapsed>h3::after{transform:rotate(-90deg)}
-  .sec.collapsible.collapsed>*:not(h3){display:none}
+  .sec.collapsible.collapsed>*:not(h3){display:none !important}
   .sec.collapsible:not(.collapsed)>h3{margin-bottom:8px}
   .statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
   .stat{background:#F6F3EC;border-radius:14px;padding:12px;text-align:center}
@@ -200,6 +223,7 @@
   .vsg-t{font-size:13.5px;font-weight:800;color:var(--ink)}
   .vsg-s{font-size:12.5px;font-weight:800;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 10px;white-space:nowrap}
   .vsg-b{padding:8px 12px 10px;border-top:1px solid var(--line);max-height:260px;overflow:auto}
+  .vsply>summary{background:var(--bg)} .vsply>.vsg-b>.vsgrp{margin:6px 0}
   .vsg-del{margin-top:10px;background:none;border:none;color:#c0392b;font-size:12.5px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:2px 0}
   /* مطويّةُ حسابٍ في سجلِّ الجلسات */
   .loggrp{border:1px solid var(--line);border-radius:10px;margin:6px 0;overflow:hidden}
@@ -353,7 +377,9 @@ import { NOTICES, femaleize } from "./src/robo-phrases.js";
 import { praise, tadabburFor } from "./src/islamic.js";
 import { deepenFor, roboWrongFor } from "./src/think.js";
 import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, getVoiceSet, setVoiceSet, CLIPS, AUTO, getStoryVoice, setStoryVoice, isStoryReadOn, setStoryReadOn, isVoiceNavOn, setVoiceNavOn } from "./src/sound-prefs.js";
-import { isQuranOnlineOn, setQuranOnlineOn } from "./src/quran-online.js"; // بوّابةُ الوالدِ للقرآنِ الكاملِ عبرَ الإنترنت
+import { ICONS } from "./src/icons.js"; // أيقوناتُ بطاقاتِ لوحةِ التحكّم (SVG معتمدة)
+import { APP_VERSION, updatePlatform, isAutoCheckOn, setAutoCheckOn, checkForUpdate, openUpdateDialog } from "./src/updater.js"; // التحديثُ من داخلِ التطبيق
+import { isQuranOnlineEnabled, setQuranOnlineOn, isQuranOnlineAllowedFor, setQuranOnlineAllowedFor } from "./src/quran-online.js"; // بوّابةُ الوالدِ للقرآنِ الكاملِ عبرَ الإنترنت
 import { listSets, primeVoices } from "./src/voices.js";
 import { practiceByAccount, clearAccount as clearPracticeAccount } from "./src/practice.js";
 import { verifyParentPassword, markParentAuthed, isParentAuthed, isParent, isDefaultParentPassword, getSecurityQuestion, verifySecurityAnswer, changeParentPassword, resetParentPasswordToDefault, setSecurityQuestion, getSettings, updateSettings, guestEnabled, listProfiles, deleteProfile, getCurrentUser, addProfile, updateProfile, AVATARS, isFemale } from "./src/accounts.js";
@@ -412,7 +438,7 @@ function init(){
   // أيُّ قدومٍ بـ?parent=1 = لوحةُ التحكّم وحدها (حاجزة): لا نرسم حلقة «علّم الآليّ» خلفها،
   // والخروجُ يعيد لشاشة الدخول/الحساب الذي فُتحت منه. (لا يُترَك المستخدم في الحلقة.)
   parentOnly = wantsParent;
-  if(parentOnly) overlay.style.background="#FBF7EF"; // خلفيّةٌ معتمةٌ فلا يظهر أيُّ شيءٍ خلف البوّابة
+  if(parentOnly) overlay.classList.add("solid"); // خلفيّةٌ معتمةٌ فلا يظهر أيُّ شيءٍ خلف البوّابة
   const dom=params.get("domain");
   if(dom && DOMAINS.includes(dom)){ domFilter=dom; renderMap(); }
   document.querySelectorAll("#filters button").forEach(x=>x.classList.toggle("on", x.getAttribute("data-f")===filter));
@@ -582,7 +608,7 @@ function openMedia(url, type){
 function closeMedia(){ const ov=document.getElementById("mediaLightbox"); if(!ov) return false; try{ const v=ov.querySelector("video"); if(v) v.pause(); }catch(_){} ov.remove(); return true; }
 window.openMedia=openMedia; window.closeMedia=closeMedia;
 // زرُّ الرجوعِ في أندرويد: إن كان عارضُ الوسائطِ مفتوحًا فأغلِقْه بدلَ الخروجِ من التطبيق (يُرجِعُ true فيُستهلَك).
-window.appBack = () => closeMedia();
+window.appBack = () => closeMedia() || dashBack();
 // وضع الإخوة: يقصر الذكريات على أنشطة «لطفلين معًا» ويؤطّرها لطفلين.
 function coopOthers(){ const cu=getCurrentUser(); return listProfiles().filter(p=>!cu||p.id!==cu.id); }
 function coopPartnerName(){ const p=coopPartnerId&&listProfiles().find(x=>x.id===coopPartnerId); return p?`${p.avatar||"🙂"} ${p.name}`:""; }
@@ -829,10 +855,86 @@ let dashIdle=null;
 function armIdle(){ clearTimeout(dashIdle); dashIdle=setTimeout(()=>{ if(overlay.classList.contains("show")) closePanel(); }, 30000); }
 ["click","keydown","input","change","scroll","touchstart","pointerdown"].forEach(ev=>
   overlay.addEventListener(ev, ()=>{ if(overlay.classList.contains("show")) armIdle(); }, { passive:true, capture:true }));
+/* ===== لوحةُ التحكّم: عرضُ «بطاقات» (افتراضيّ) أو «مطويّات» — على نهجِ إعداداتِ GT-SALAT =====
+   البطاقاتُ شبكةٌ لكلِّ قسم؛ النقرُ يفتحُ القسمَ وحدَه بصفحةٍ لها زرُّ رجوع. الأقسامُ نفسُها لا تتغيّر (نفسُ HTML
+   والأحداث)، والعرضُ طبقةٌ فوقها — فكلُّ ما يُضافُ للّوحةِ يظهرُ في الشكلين تلقائيًّا. */
+const DASH_VIEW_KEY="tilmithi_dash_view";
+function dashView(){ try{ return localStorage.getItem(DASH_VIEW_KEY)==="accordion"?"accordion":"cards"; }catch(e){ return "cards"; } }
+let dashPage=null; // القسمُ المفتوحُ في عرضِ البطاقات — يبقى عبرَ إعادةِ رسمِ اللوحةِ (openDashboard بعدَ أيِّ تعديل)
+const DASH_META={
+  "sec-overview":   {key:"star",     c:"#E07A5F", d:"لمحةٌ عن تقدّمِ «علّمِ الآليّ»"},
+  "sec-reports":    {key:"reports",  c:"#3D8BD4", d:"نجومٌ وذكرياتٌ وأوسمةٌ لكلِّ طفل"},
+  "sec-vshistory":  {key:"trophy",   c:"#D4A017", d:"نتائجُ المبارياتِ لكلِّ لاعب"},
+  "sec-domains":    {key:"seedling", c:"#4CAF7A", d:"تقدّمُ المجالاتِ وتفعيلُها"},
+  "sec-mastery":    {key:"brain",    c:"#9B6BD6", d:"ما أُتقِنَ وما يحتاجُ مراجعة"},
+  "sec-settings":   {key:"gear",     c:"#6B7A8F", d:"العمرُ والأصواتُ والقراءة"},
+  "sec-quranonline":{key:"quran",    c:"#2E8B57", d:"التفعيلُ وإذنُ كلِّ طفل"},
+  "sec-log":        {key:"book",     c:"#C7613F", d:"جلساتُ الأبناءِ وتسجيلاتُهم"},
+  "sec-updates":    {key:"rocket",   c:"#5E9E4A", d:"الإصدارُ والتنبيهُ بالجديد"},
+  "sec-accounts":   {key:"accounts", c:"#E0566B", d:"الأبناءُ وكلمةُ المرورِ والنسخُ الاحتياطيّ"},
+  "sec-tools":      {key:"print",    c:"#5B8DB8", d:"المطبوعاتُ ومسحُ البيانات"},
+  "sec-about":      {key:"robot",    c:"#8A7F6B", d:"الإصدارُ والرخصةُ والروابط"},
+};
+function dashSwitchHtml(){
+  const v=dashView();
+  return `<div class="dash-switch" role="group" aria-label="شكلُ اللوحة">
+    <button type="button" data-view="cards" class="${v==="cards"?"on":""}">▦ بطاقات</button>
+    <button type="button" data-view="accordion" class="${v==="accordion"?"on":""}">☰ مطويّات</button></div>`;
+}
+function wireDashSwitch(){
+  panel.querySelectorAll(".dash-switch button").forEach(b=>b.onclick=()=>{
+    if(b.dataset.view===dashView()) return;
+    try{ localStorage.setItem(DASH_VIEW_KEY,b.dataset.view); }catch(e){}
+    dashPage=null; openDashboard(); panel.scrollIntoView({block:"start"});
+  });
+}
+const dashSecs=()=>[...panel.querySelectorAll(":scope > .sec")];
+const dashTitle=sec=>{ const h=sec.querySelector(":scope > h3, :scope > summary"); return h?h.textContent.replace(/^(?:[^\p{L}\p{N}]|\p{Extended_Pictographic})+/u,"").trim():""; };
+function buildDashCards(hash){
+  const grid=document.createElement("div"); grid.className="dash-grid";
+  grid.innerHTML=dashSecs().filter(s=>s.id).map(sec=>{
+    const m=DASH_META[sec.id]||{key:"gear",c:"#6B7A8F",d:""};
+    return `<button type="button" class="dash-card" data-sec="${sec.id}" style="--c:${m.c}">
+      <span class="dc-ic">${ICONS[m.key]||""}</span>
+      <span class="dc-tx"><span class="dc-t">${dashTitle(sec)}</span>${m.d?`<span class="dc-d">${m.d}</span>`:""}</span></button>`;
+  }).join("");
+  const head=document.createElement("div"); head.className="dash-pagehead dash-hidden";
+  head.innerHTML=`<button type="button" class="backstep">كلُّ الأقسام</button><b></b>`;
+  panel.querySelector(".dash-switch").after(grid, head); // تحتَ مفتاحِ العرض
+  grid.querySelectorAll(".dash-card").forEach(c=>c.onclick=()=>{ dashOpen(c.dataset.sec); armIdle(); });
+  head.querySelector(".backstep").onclick=()=>{ dashBack(); armIdle(); };
+  // الرابطُ المباشرُ (#sec-reports / #sec-backup…) يفتحُ صفحةَ القسمِ الحاوي؛ وإلّا ما كان مفتوحًا قبلَ إعادةِ الرسم.
+  const target=hash && panel.querySelector(hash), owner=target && target.closest(".sec");
+  const want=(owner && owner.id) || dashPage;
+  if(want && panel.querySelector("#"+CSS.escape(want))) dashOpen(want, true); else dashShowGrid();
+}
+function dashShowGrid(){
+  dashPage=null;
+  dashSecs().forEach(s=>s.classList.add("dash-hidden"));
+  panel.querySelector(".dash-grid")?.classList.remove("dash-hidden");
+  panel.querySelector(".dash-pagehead")?.classList.add("dash-hidden");
+}
+function dashOpen(id, keepScroll){
+  const sec=panel.querySelector("#"+CSS.escape(id)); if(!sec) return;
+  dashPage=id;
+  dashSecs().forEach(s=>s.classList.toggle("dash-hidden", s!==sec));
+  if(sec.tagName==="DETAILS") sec.open=true;
+  panel.querySelector(".dash-grid")?.classList.add("dash-hidden");
+  const head=panel.querySelector(".dash-pagehead"); head.classList.remove("dash-hidden");
+  head.querySelector("b").textContent=dashTitle(sec);
+  head.style.setProperty("--c",(DASH_META[id]||{}).c||"var(--primary)");
+  if(!keepScroll) overlay.scrollTo({top:0,behavior:"smooth"});
+}
+// يُرجِعُ true إن استُهلِكَ الرجوع (صفحةُ قسمٍ ← الشبكة)
+function dashBack(){
+  if(!overlay.classList.contains("show") || !dashPage || dashView()!=="cards") return false;
+  dashShowGrid(); overlay.scrollTo({top:0,behavior:"smooth"}); return true;
+}
+
 function closePanel(){
-  clearTimeout(dashIdle);
+  clearTimeout(dashIdle); dashPage=null;
   if(pendingDel) finalizeDel();
-  overlay.classList.remove("show"); panel.innerHTML=""; panel.style.maxWidth="";
+  overlay.classList.remove("show"); panel.innerHTML=""; panel.classList.remove("dash-cards"); panel.style.maxWidth="";
   // لا جلسةَ حسابٍ خلف اللوحة ⇒ العودةُ لشاشة الدخول لا إلى تصفّحٍ مجهول.
   if(parentOnly){ location.href="home.html"; }
 }
@@ -949,7 +1051,7 @@ function vsHistoryHtml(){
   }
   // مطويّةٌ لكلِّ طرفَين: عنوانُها الطرفانِ وحصيلةُ الفوز، وداخلَها مبارياتُهما وحدَها (لا قائمةٌ مسطّحةٌ مختلطة).
   // وهي **حصريّة**: فتحُ واحدةٍ يطوي الأخرى — يُدارُ في wireVsHistory كي يعملَ على كلِّ المتصفّحات.
-  const groups=Object.entries(agg).map(([key,a])=>{
+  const pairHtml=([key,a])=>{
     const mine=hist.filter(e=>vsPairKey(e)===key);
     const rows=mine.map(e=>`<div class="dom-row" style="align-items:flex-start">
       <span style="flex:1;font-size:12.5px"><b>${e.game||"لعبة"}</b>${e.diff?` <span class="muted">· ${e.diff}</span>`:""}<br>
@@ -965,6 +1067,16 @@ function vsHistoryHtml(){
         ${rows}
         <button class="vsg-del" data-pair="${encodeURIComponent(key)}" data-label="${a.me} ضدّ ${vsOppLabel(a.opp)}">↺ صفّرْ سجلَّ هذين الطرفَين</button>
       </div></details>`;
+  };
+  // مستوًى أعلى (v1.8): مطويّةٌ لكلِّ لاعبٍ بحصيلتِه، وداخلَها مطويّاتُ خصومِه — فلا تختلطُ سجلّاتُ الأبناءِ في قائمةٍ واحدة.
+  const byMe={};
+  for(const ent of Object.entries(agg)){ const me=ent[1].me; (byMe[me]=byMe[me]||[]).push(ent); }
+  const groups=Object.entries(byMe).map(([me,pairs])=>{
+    const w=pairs.reduce((t,[,a])=>t+a.meWins,0), l=pairs.reduce((t,[,a])=>t+a.oppWins,0), tie=pairs.reduce((t,[,a])=>t+a.ties,0);
+    return `<details class="vsgrp vsply"><summary>
+        <span class="vsg-t">${me}</span>
+        <span class="vsg-s">${AR(w+l+tie)} مباراة · فوز ${AR(w)}</span>
+      </summary><div class="vsg-b" style="max-height:none">${pairs.map(pairHtml).join("")}</div></details>`;
   }).join("");
   return `<div class="sec" id="sec-vshistory">${head}
     <div id="vsHistBody"><div class="muted" style="font-size:12px;margin-bottom:6px">اضغطْ على أيِّ سجلٍّ لعرضِ مبارياتِه (يُطوى الآخرُ تلقائيًّا):</div>${groups}</div>
@@ -1072,9 +1184,9 @@ async function openDashboard(){
 
   panel.innerHTML=`
     <button class="close" onclick="closePanel()">✕</button>
-    <h2>🛡️ لوحة التحكّم</h2><div class="muted" style="font-size:13px">تقارير الأبناء · إدارة الحسابات · الإعدادات — كلُّ البيانات محليّةٌ على هذا الجهاز.</div>
+    <h2>🛡️ لوحة التحكّم</h2><div class="muted" style="font-size:13px">تقارير الأبناء · إدارة الحسابات · الإعدادات — كلُّ البيانات محليّةٌ على هذا الجهاز.</div>${dashSwitchHtml()}
 
-    <div class="sec"><h3>نظرة عامة</h3>
+    <div class="sec" id="sec-overview"><h3>نظرة عامة</h3>
       <div class="statgrid">
         <div class="stat"><div class="n">${AR(done)}</div><div class="t">ذكرى مُستعادة</div></div>
         <div class="stat"><div class="n">${AR(litP)}/7</div><div class="t">أجزاء الآليّ</div></div>
@@ -1087,7 +1199,7 @@ async function openDashboard(){
 
     ${vsHistoryHtml()}
 
-    <div class="sec"><h3>التقدّم حسب المجال (وتفعيله)</h3>
+    <div class="sec" id="sec-domains"><h3>التقدّم حسب المجال (وتفعيله)</h3>
       ${perDom.map(p=>`<div class="dom-row">
         <span style="flex:none;width:130px;font-size:13px">${p.d}</span>
         <span class="bar"><i style="width:${p.pct}%"></i></span>
@@ -1096,7 +1208,7 @@ async function openDashboard(){
       </div>`).join("")}
     </div>
 
-    <div class="sec"><h3>إتقان المهارات (مراجعة بالفواصل)</h3>
+    <div class="sec" id="sec-mastery"><h3>إتقان المهارات (مراجعة بالفواصل)</h3>
       ${ mkeys.length ? `<div class="muted" style="font-size:12px;margin-bottom:6px">الأنشطة تعيد ما لم يُتقَن أكثر، وتخفّف ما أُتقِن.</div>
       ${Object.keys(mGroups).map(t=>`<div class="dom-row">
         <span style="flex:none;width:90px;font-size:13px">${MLBL[t]||t}</span>
@@ -1105,7 +1217,7 @@ async function openDashboard(){
       </div>`).join("")}` : `<p class="muted">لا تدرّب بعد — ستظهر هنا المهارات حين يلعب الطفل.</p>` }
     </div>
 
-    <div class="sec"><h3>إعدادات</h3>
+    <div class="sec" id="sec-settings"><h3>إعدادات</h3>
       <div class="dom-row">
         <span style="flex:none;width:210px;font-size:13px">🎂 عمر الطفل (تصفية تلقائية)</span>
         <span class="chips" style="display:flex;gap:6px;flex:1;justify-content:flex-end">${ageOpt("all","الكل")}${ageOpt("4-6","4–6")}${ageOpt("7-10","7–10")}</span>
@@ -1155,20 +1267,48 @@ async function openDashboard(){
       <div class="dom-row">
         <span style="flex:none;width:210px;font-size:13px">📖 تفعيلُ القرآنِ الكاملِ (إنترنت)</span>
         <span class="muted" style="font-size:12px;flex:1">تظهرُ بطاقتُه في الفهرسِ للأبناء</span>
-        <button class="toggle ${isQuranOnlineOn()?"on":""}" id="quranOnlineToggle" title="تفعيل/إيقاف القرآن الكامل عبر الإنترنت"></button>
+        <button class="toggle ${isQuranOnlineEnabled()?"on":""}" id="quranOnlineToggle" title="تفعيل/إيقاف القرآن الكامل عبر الإنترنت"></button>
       </div>
-      <div class="dom-row" id="quranOnlineOpenRow" style="display:${isQuranOnlineOn()?"flex":"none"}">
-        <span class="muted" style="font-size:12px;flex:1">افتحِ الصفحةَ لتصفُّحِ الأحزابِ وتنزيلِ السور</span>
-        <a class="topbtn" href="quran-full.html" style="text-decoration:none;font-size:13px">🌐 فتحُ القرآنِ الكامل</a>
+      <div id="quranOnlineMore" style="display:${isQuranOnlineEnabled()?"block":"none"}">
+        <div class="muted" style="font-size:12px;margin:8px 0 2px">لمن يظهرُ من الأبناء؟</div>
+        ${[...listProfiles().map(p=>({id:p.id,name:p.name,avatar:p.avatar})), ...(guestEnabled()?[{id:"guest",name:"الضيف",avatar:"👋"}]:[])].map(k=>`<div class="dom-row">
+          <span style="flex:1;font-size:13px">${k.avatar||""} ${k.name}</span>
+          <button class="toggle qoKid ${isQuranOnlineAllowedFor(k.id)?"on":""}" data-id="${k.id}" title="إظهار/حجب القرآن الكامل لهذا الحساب"></button>
+        </div>`).join("") || `<div class="muted" style="font-size:12px">لا حساباتِ أبناءٍ بعد.</div>`}
+        <div class="dom-row">
+          <span class="muted" style="font-size:12px;flex:1">افتحِ الصفحةَ لتصفُّحِ الأحزابِ وتنزيلِ السور</span>
+          <a class="topbtn" href="quran-full.html" style="text-decoration:none;font-size:13px">🌐 فتحُ القرآنِ الكامل</a>
+        </div>
       </div>
     </div>
 
-    <div class="sec"><h3>سجلّ الجلسات (${AR(logTotal)})</h3>
+    <div class="sec" id="sec-log"><h3>سجلّ الجلسات (${AR(logTotal)})</h3>
       <div class="muted" style="font-size:12px;margin-bottom:6px">مطويّةٌ لكلِّ حساب. يمكنك حذف أيّ تسجيلٍ على حدة (مع مهلة تراجع).</div>
       <div id="logHost">${ logGroups.length ? logGroups.map(g=>`
         <details class="loggrp"><summary>${g.name} <span class="logcount">(${AR(g.log.length)})</span></summary>
           <div class="log">${g.log.map(logItemHtml).join("")}</div>
         </details>`).join("") : `<p class="muted">لا جلسات بعد.</p>` }</div>
+    </div>
+
+    <div class="sec" id="sec-updates" style="scroll-margin-top:12px"><h3>⬆️ تحديثُ التطبيق</h3>
+      <div class="muted" style="font-size:12.5px;line-height:1.7;margin-bottom:8px">
+        ${updatePlatform()==="web"
+          ? "نسخةُ المتصفّحِ تُحدِّثُ نفسَها تلقائيًّا عندَ نشرِ إصدارٍ جديد — لا يلزمُ شيء."
+          : "يفحصُ التطبيقُ مرّةً في اليومِ عن إصدارٍ جديدٍ على GitHub (قراءةُ قائمةِ الإصداراتِ فقط — <b>لا يُرسَلُ أيُّ شيءٍ عن أبنائك</b>)، ويُنبِّهُ بشريطٍ لطيف. التنزيلُ والتثبيتُ من داخلِ التطبيقِ وخلفَ كلمةِ مرورِ الوالدين، وبياناتُ الأبناءِ تبقى كما هي."}
+      </div>
+      <div class="dom-row">
+        <span style="flex:none;width:210px;font-size:13px">الإصدارُ الحاليّ</span>
+        <b style="flex:1;font-size:13px">v${APP_VERSION}</b>
+      </div>
+      ${updatePlatform()==="web" ? "" : `<div class="dom-row">
+        <span style="flex:none;width:210px;font-size:13px">🔔 التنبيهُ بالتحديثاتِ تلقائيًّا</span>
+        <span class="muted" style="font-size:12px;flex:1">يتطلّبُ اتّصالًا بالإنترنت</span>
+        <button class="toggle ${isAutoCheckOn()?"on":""}" id="updAutoToggle" title="تفعيل/إيقاف فحص التحديثات تلقائيًّا"></button>
+      </div>
+      <div class="dom-row">
+        <span class="muted" id="updStatus" style="font-size:12.5px;flex:1"></span>
+        <button class="topbtn" id="updCheckNow" style="font-size:13px">🔎 افحصِ الآن</button>
+      </div>`}
     </div>
 
     <div class="sec" id="sec-accounts"><h3>الحسابات والأمان</h3>
@@ -1218,7 +1358,7 @@ async function openDashboard(){
       `; })()}
     </div>
 
-    <div class="sec"><h3>أدوات</h3>
+    <div class="sec" id="sec-tools"><h3>أدوات</h3>
       <a class="topbtn" href="print.html" target="_blank" style="text-decoration:none;display:inline-block;margin-inline-end:8px">🖨️ المطبوعات (بطاقات + ملصق)</a>
       <button class="danger" id="wipe">🗑️ مسح كل التقدّم والتسجيلات</button>
     </div>
@@ -1227,7 +1367,7 @@ async function openDashboard(){
       <div style="font-size:13px;color:var(--muted);line-height:1.9;margin-top:10px">
         <b style="color:var(--ink)">مِشكاةُ الطفلِ والآليّ 🪔</b> — الطفلُ يُعلّم، والآليُّ يَستنير.<br/>
         تطبيقٌ تعليميٌّ إسلاميٌّ للأطفال (4–10): <b>محلّيٌّ بالكامل</b> · يعمل دون اتصال · بلا ذكاءٍ اصطناعيٍّ وقتَ التشغيل · بياناتُ طفلِك لا تغادر جهازك.<br/>
-        الإصدار <b>v1.7.1</b> · الرخصة GPL-3.0 · تطوير SalehGNUTUX.<br/>
+        الإصدار <b>v${APP_VERSION}</b> · الرخصة GPL-3.0 · تطوير SalehGNUTUX.<br/>
         <a href="https://salehgnutux.github.io/GT-MISHKATKIDS/" target="_blank" rel="noopener" style="color:var(--primary-d);font-weight:700;text-decoration:none">🌐 الموقع الرسميّ</a>
         · <a href="https://github.com/SalehGNUTUX/GT-MISHKATKIDS" target="_blank" rel="noopener" style="color:var(--primary-d);font-weight:700;text-decoration:none">📦 المستودع</a>
         · <a href="https://salehgnutux.github.io/gnutux/" target="_blank" rel="noopener" style="color:var(--primary-d);font-weight:700;text-decoration:none">✨ مشاريع GNUTUX</a>
@@ -1260,7 +1400,15 @@ async function openDashboard(){
     const show=d.style.display==="none"; d.style.display=show?"block":"none"; b.textContent=show?"تفاصيل ▴":"تفاصيل ▾";
   }));
   const srt=document.getElementById("storyReadToggle"); if(srt) srt.addEventListener("click",()=>{ const on=!isStoryReadOn(); setStoryReadOn(on); srt.classList.toggle("on",on); });
-  const qot=document.getElementById("quranOnlineToggle"); if(qot) qot.addEventListener("click",()=>{ const on=!isQuranOnlineOn(); setQuranOnlineOn(on); qot.classList.toggle("on",on); const r=document.getElementById("quranOnlineOpenRow"); if(r) r.style.display=on?"flex":"none"; });
+  const uat=document.getElementById("updAutoToggle"); if(uat) uat.addEventListener("click",()=>{ const on=!isAutoCheckOn(); setAutoCheckOn(on); uat.classList.toggle("on",on); });
+  const ucn=document.getElementById("updCheckNow"); if(ucn) ucn.addEventListener("click",async()=>{
+    const st=document.getElementById("updStatus"); ucn.disabled=true; st.textContent="جارٍ الفحص…";
+    const info=await checkForUpdate(); ucn.disabled=false;
+    if(!info||!info.checked){ st.textContent="تعذّرَ الفحص — تحقّقْ من الاتّصالِ بالإنترنت."; return; }
+    if(!info.available){ st.textContent=`أنتَ على أحدثِ إصدار (v${info.current}) ✓`; return; }
+    st.textContent=`متاحٌ الإصدار v${info.latest}`; openUpdateDialog(info); });
+  const qot=document.getElementById("quranOnlineToggle"); if(qot) qot.addEventListener("click",()=>{ const on=!isQuranOnlineEnabled(); setQuranOnlineOn(on); qot.classList.toggle("on",on); const r=document.getElementById("quranOnlineMore"); if(r) r.style.display=on?"block":"none"; });
+  document.querySelectorAll(".qoKid").forEach(b=>b.addEventListener("click",()=>{ const on=!isQuranOnlineAllowedFor(b.dataset.id); setQuranOnlineAllowedFor(b.dataset.id,on); b.classList.toggle("on",on); })); // إذنُ القرآنِ الكاملِ لكلِّ حساب
   const vnt=document.getElementById("voiceNavToggle"); if(vnt) vnt.addEventListener("click",()=>{ const on=!isVoiceNavOn(); setVoiceNavOn(on); vnt.classList.toggle("on",on); });
   const bkE=document.getElementById("bkExport"); if(bkE) bkE.addEventListener("click",()=>backupExport(bkMsg));
   const bkI=document.getElementById("bkImport"), bkF=document.getElementById("bkFile");
@@ -1339,25 +1487,31 @@ async function openDashboard(){
       undoable("صُفِّرَ سجلُّ الألعابِ التنافسيّة.", ()=>{ clearVsHistory(); openDashboard(); }, 6000, ()=>{ if(body) body.style.display=""; });
     }; }
   // مطويّاتُ سجلِّ التنافسِ حصريّة: فتحُ سجلِّ طرفَينِ يطوي المفتوحَ قبلَه (بـJS لا بخاصّيّةِ name كي يعملَ على كلِّ المتصفّحاتِ وWebView).
+  // الحصريّةُ في كلِّ مستوًى على حدة: بين اللاعبين، وبين خصومِ اللاعبِ الواحد.
   { const vsg=[...document.querySelectorAll("details.vsgrp")];
-    vsg.forEach(d=>d.addEventListener("toggle",()=>{ if(d.open) vsg.forEach(o=>{ if(o!==d) o.open=false; }); })); }
+    vsg.forEach(d=>d.addEventListener("toggle",()=>{ if(d.open) vsg.forEach(o=>{ if(o!==d && o.parentElement===d.parentElement) o.open=false; }); })); }
   // تصفيرُ سجلِّ طرفَينِ على حدة (لا يمسُّ بقيّةَ السجلّ) — بتأكيدٍ ثمّ مهلةِ تراجعٍ كبقيّةِ عمليّاتِ الحذف.
   document.querySelectorAll(".vsg-del").forEach(b=>b.onclick=async e=>{
     e.preventDefault(); e.stopPropagation();
     const key=decodeURIComponent(b.getAttribute("data-pair")), label=b.getAttribute("data-label")||"هذين الطرفَين";
     // حذفٌ دائمٌ ⇒ كلمةُ مرورِ الوالدَين، ثمّ مهلةُ تراجع.
     if(!await confirmWithPassword(`تصفيرُ سجلِّ «${label}»؟ لن يُمَسَّ سجلُّ بقيّةِ المتنافسين. ستظهرُ مهلةُ تراجعٍ بعد التأكيد.`)) return;
-    const grp=b.closest("details.vsgrp"); if(grp) grp.style.display="none";   // إخفاءٌ فوريّ، والحذفُ بعدَ المهلة
+    const grp=b.closest("details.vsgrp:not(.vsply)"); if(grp) grp.style.display="none";   // إخفاءٌ فوريّ، والحذفُ بعدَ المهلة
     undoable(`صُفِّرَ سجلُّ «${label}».`, ()=>{ clearVsPair(key); openDashboard(); }, 6000, ()=>{ if(grp) grp.style.display=""; });
   });
-  // مطويات: كلُّ قسمٍ يُطوى افتراضاً (لوحةٌ مرتّبةٌ غيرُ مزدحمة)، والعنوانُ يفتحه/يطويه.
   const hash = location.hash;
-  panel.querySelectorAll(".sec").forEach(sec=>{
-    const h=sec.querySelector("h3"); if(!h) return;
-    sec.classList.add("collapsible","collapsed");
-    if(hash && sec.id && ("#"+sec.id)===hash) sec.classList.remove("collapsed"); // افتح المقصودَ بالرابط
-    h.addEventListener("click",()=>{ sec.classList.toggle("collapsed"); armIdle(); });
-  });
+  wireDashSwitch();
+  panel.classList.toggle("dash-cards", dashView()==="cards"); // الحاويةُ تبقى عبرَ إعادةِ الرسم — يُضبَطُ الصنفُ صراحةً
+  if(dashView()==="cards") buildDashCards(hash);
+  else {
+    // مطويات: كلُّ قسمٍ يُطوى افتراضاً (لوحةٌ مرتّبةٌ غيرُ مزدحمة)، والعنوانُ يفتحه/يطويه.
+    panel.querySelectorAll(".sec").forEach(sec=>{
+      const h=sec.querySelector("h3"); if(!h) return;
+      sec.classList.add("collapsible","collapsed");
+      if(hash && sec.id && ("#"+sec.id)===hash) sec.classList.remove("collapsed"); // افتح المقصودَ بالرابط
+      h.addEventListener("click",()=>{ sec.classList.toggle("collapsed"); armIdle(); });
+    });
+  }
   overlay.classList.add("show");
   armIdle(); // بدءُ عدّاد الخمول (30ث)
   // تمريرٌ تلقائيٌّ للقسم المقصود (#sec-reports / #sec-accounts / #sec-backup). نُعيدُه مرّاتٍ لأنّ

@@ -124,7 +124,7 @@ import { logEvent, recordMastery } from "./src/progress.js";
 import { robo } from "./src/robo-companion.js";
 import { NOTICES } from "./src/robo-phrases.js";
 import {
-  isQuranOnlineOn, hizbList, surahMeta, isSurahLocal, isAvailableOffline,
+  isQuranOnlineOn, isQuranOnlineBlockedForMe, hizbList, surahMeta, isSurahLocal, isAvailableOffline,
   audioUrl, BASMALA_AUDIO, fetchSurahText, downloadSurah, deleteSurah,
 } from "./src/quran-online.js";
 import { confirmWithPassword, undoable } from "./src/confirm-action.js";
@@ -144,7 +144,14 @@ addEventListener("online", updateNet); addEventListener("offline", updateNet); u
 
 /* ===== بوّابةُ الوالد + الإقلاع (يُستدعى في نهايةِ السكربتِ بعدَ تعريفِ محرّكِ التشغيل، تفاديًا لمنطقةِ TDZ) ===== */
 function boot(){
-  if(!isQuranOnlineOn()){
+  if(isQuranOnlineBlockedForMe()){ // البوّابةُ مفتوحةٌ لكنّ الوالدَ لم يُتِحْها لهذا الحساب (v1.8)
+    view.innerHTML = `<div class="gate">
+      <div class="big">🔒</div>
+      <h2>القرآنُ الكريمُ كاملًا</h2>
+      <p>لم يُتِحْ والداك هذه الصفحةَ لحسابِك بعد. يمكنُك دائمًا قراءةُ <b>الفاتحةِ وجزءِ عمّ</b> والاستماعُ إليهما في «القرآن الكريم».</p>
+      <a class="cta" href="quran.html">📖 القرآن الكريم</a>
+    </div>`;
+  } else if(!isQuranOnlineOn()){
     view.innerHTML = `<div class="gate">
       <div class="big">🔒</div>
       <h2>القرآنُ الكريمُ كاملًا عبرَ الإنترنت</h2>

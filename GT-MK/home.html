@@ -301,7 +301,7 @@
          ثمّ البقيّة بحسب الأولويّة الذهنيّة والتعليميّة والترفيهيّة، وأدواتُ الأهل (المطبوعات ولوحة التحكّم) في الأسفل. -->
     <a class="navcard" href="index.html"><div class="ic" data-icon="robot">🤖</div><div class="t">علّم الآليّ</div><div class="d">الحلقة: شرارة ← مهمة ← تلقين ← شفاء</div></a>
     <a class="navcard" href="quran.html"><div class="ic" data-icon="quran">🕌</div><div class="t">القرآن الكريم<span class="qsub">الفاتحة وجزء عمّ</span></div><div class="d">الفاتحة وجزء عمّ — تلاوة الحصري + تظليل + تكرار للحفظ + تسجيل</div></a>
-    <a class="navcard" id="quranFullCard" href="quran-full.html" style="display:none"><span class="nb">🆕 جديد</span><div class="ic" data-icon="book">📖</div><div class="t">القرآن الكريم كاملًا <span style="font-size:11px;color:var(--muted)">🌐</span></div><div class="d">كلُّ القرآنِ في 60 حزبًا — استماعٌ وحفظٌ عبرَ الإنترنت + إمكانيّةُ تنزيلٍ لكلِّ سورة</div></a>
+    <a class="navcard" id="quranFullCard" href="quran-full.html" style="display:none"><div class="ic" data-icon="book">📖</div><div class="t">القرآن الكريم كاملًا <span style="font-size:11px;color:var(--muted)">🌐</span></div><div class="d">كلُّ القرآنِ في 60 حزبًا — استماعٌ وحفظٌ عبرَ الإنترنت + إمكانيّةُ تنزيلٍ لكلِّ سورة</div></a>
     <a class="navcard" href="basics.html"><div class="ic" data-icon="basics">🔤</div><div class="t">الأساسيّات</div><div class="d">الحروف والأرقام والحركات — أوّل خطوات القراءة</div></a>
     <a class="navcard" href="read.html"><div class="ic" data-icon="read">📖</div><div class="t">سُلّم القراءة</div><div class="d">المقاطع ← الكلمات ← الجُمل (حرف + حركة فأكثر)</div></a>
     <a class="navcard" href="math.html"><div class="ic" data-icon="math">📐</div><div class="t">أرقام وهندسة</div><div class="d">أشكال · عُدّ وقارن · أنماط · أحجام — بتدبّر</div></a>
@@ -313,7 +313,7 @@
     <a class="navcard" href="puzzles.html"><div class="ic" data-icon="puzzles">🧩</div><div class="t">ألغاز ذكية</div><div class="d">فوازير ومنطق بمستويات — مع تلميح وحل</div></a>
     <a class="navcard" href="quiz.html"><div class="ic" data-icon="quiz">🎯</div><div class="t">اختبارات تعليمية</div><div class="d">اختيار من متعدد بفئاتٍ وأعمار — نتيجة فوريّة</div></a>
     <a class="navcard" href="progress.html"><div class="ic" data-icon="progress">🏆</div><div class="t">تقدّمي</div><div class="d">النجوم والأوسمة وسلسلة الأيّام + شهادة إنجاز</div></a>
-    <div class="navcard" id="roboCustomCard" role="button" tabindex="0" style="cursor:pointer"><span class="nb">🆕 جديد</span><div class="ic" data-icon="robot">🤖</div><div class="t">خصّصْ آليّك</div><div class="d">لونٌ واسمٌ وملحقاتٌ تكسبُها بالإنجاز</div></div>
+    <div class="navcard" id="roboCustomCard" role="button" tabindex="0" style="cursor:pointer"><div class="ic" data-icon="robot">🤖</div><div class="t">خصّصْ آليّك</div><div class="d">لونٌ واسمٌ وملحقاتٌ تكسبُها بالإنجاز</div></div>
     <a class="navcard" href="print.html"><div class="ic" data-icon="print">🖨️</div><div class="t">المطبوعات</div><div class="d">بطاقات المهام + ملصق شفاء الآليّ (PDF)</div></a>
     <a class="navcard" href="index.html?parent=1"><div class="ic" data-icon="shield">🛡️</div><div class="t">لوحة التحكّم</div><div class="d">تقارير الأبناء · إدارة الحسابات · الإعدادات والأصوات</div></a>
   </div>
@@ -350,7 +350,9 @@ import { wireThemeToggle } from "./src/theme.js";
 wireThemeToggle(document.getElementById("themeBtn"));
 wireThemeToggle(document.getElementById("loginThemeBtn")); // زرُّ تبديل الوضع في شاشة الدخول
 import { injectIcons } from "./src/icons.js";
+import { initUpdateNotice } from "./src/updater.js"; // التحديثُ من داخلِ التطبيق
 import { openBackupModal, handleIncomingBackup } from "./src/backup.js"; // نافذةُ النسخةِ الاحتياطيّة + فتحُ ملفِّ .json الوارد
+initUpdateNotice(); // إشعارُ توفّرِ إصدارٍ جديد (سطحُ المكتبِ والهاتف؛ مرّةً يوميًّا، يُطفئُه الوالد)
 handleIncomingBackup((t,ok)=>{ if(!ok){ try{ alert(t); }catch(e){} } }); // نقرُ ملفِّ .json خارجَ التطبيق ⇒ استيرادٌ (بتأكيد)
 import { NOTICES } from "./src/robo-phrases.js"; // تحيّةُ الإقلاعِ المنطوقة
 import { ROBO_SVG, robo } from "./src/robo-companion.js"; // شكلُ الآليّ الرسميّ (بطاقةُ الدخول) + المرافقُ العائم
@@ -499,7 +501,7 @@ function setupView(){
       <div class="navcard" id="hubComp" role="button" tabindex="0" style="cursor:pointer"><div class="ic" data-icon="components">📦</div><div class="t">المكوّنات</div><div class="d">استعرض مزايا البرنامج كلَّها (الأنشطة والقصص والقرآن…)</div></div>
       <a class="navcard" href="index.html?parent=1#sec-reports"><div class="ic" data-icon="reports">📊</div><div class="t">البيانات والإحصائيات</div><div class="d">تقاريرُ تقدّمِ الأبناء وأوسمتهم وإنجازاتهم</div></a>
       <a class="navcard" href="index.html?parent=1#sec-accounts"><div class="ic" data-icon="accounts">👥</div><div class="t">الحسابات</div><div class="d">إضافة وتعديل وحذف حسابات الأبناء وكلماتها</div></a>
-      <div class="navcard" id="guideCard" role="button" tabindex="0" style="cursor:pointer"><span class="nb">🆕 جديد</span><div class="ic" data-icon="book">📘</div><div class="t">دليلُ الوالد</div><div class="d">كيف تُحوّلُ كلَّ نشاطٍ إلى تعلّمٍ حقيقيٍّ في الواقع</div></div>
+      <div class="navcard" id="guideCard" role="button" tabindex="0" style="cursor:pointer"><div class="ic" data-icon="book">📘</div><div class="t">دليلُ الوالد</div><div class="d">كيف تُحوّلُ كلَّ نشاطٍ إلى تعلّمٍ حقيقيٍّ في الواقع</div></div>
       <div class="navcard" id="bkCard" role="button" tabindex="0" style="cursor:pointer"><div class="ic" data-icon="backup">💾</div><div class="t">نسخةٌ احتياطيّة</div><div class="d">تصدير/استيراد الحسابات والتقدّم (JSON) لئلّا تفقدَ بياناتك</div></div>
       <a class="navcard" href="index.html?parent=1"><div class="ic" data-icon="shield">🛡️</div><div class="t">لوحة التحكّم</div><div class="d">الإعدادات والأصوات وكلمة المرور والتوثيق</div></a>`;
     injectIcons(hub);

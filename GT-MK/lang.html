@@ -805,7 +805,7 @@ function renderLang(k){
     } else if(!C){
       const nw = k==="fr"?"Nouveau":"New";
       topnav = nav("↩ الأقسام","secs")+`<span class="cur">🔡 خرائطُ المقاطع</span>`;
-      body = `<div class="lgrid"><button class="lcard hasnew" data-chart="quiz"><span class="newbadge" data-ar="🆕 جديد" data-fg="🆕 ${nw}">🆕 جديد</span><span class="ic">${iconHtml("🎯")}</span><span class="lt" data-ar="اختبارُ المقاطع" data-fg="Quiz syllabes">اختبارُ المقاطع</span></button>${charts.map(c=>`<button class="lcard" data-chart="${c.id}"><span class="ic">${iconHtml("🔡")}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc(c[k]||c.fr||c.ar)}">${esc(c.ar)}</span></button>`).join("")}</div>
+      body = `<div class="lgrid"><button class="lcard" data-chart="quiz"><span class="ic">${iconHtml("🎯")}</span><span class="lt" data-ar="اختبارُ المقاطع" data-fg="Quiz syllabes">اختبارُ المقاطع</span></button>${charts.map(c=>`<button class="lcard" data-chart="${c.id}"><span class="ic">${iconHtml("🔡")}</span><span class="lt" data-ar="${esc(c.ar)}" data-fg="${esc(c[k]||c.fr||c.ar)}">${esc(c.ar)}</span></button>`).join("")}</div>
         <div class="hint">اختَرْ خريطةً لتسمعَ مقاطعَها (décodage)، أو ابدأِ اختبارَ المقاطع 🎯</div>`;
     } else {
       topnav = nav("↩ الخرائط","charts")+`<span class="cur">🔡 ${esc(C.ar)}</span>`;
@@ -871,14 +871,13 @@ function renderLang(k){
   } else if(sec==="time"){
     const t = qp.get("t");
     if(!t){
-      const newWord = k==="fr"?"Nouveau":"New";
       const CARDS=[{t:"learn",ic:"🕐",ar:"تعلَّمِ الساعة",en:"Learn the Clock",fr:"Apprends l'heure"},
                    {t:"game",ic:"🏆",ar:"تحدّي الساعة",en:"Clock Challenge",fr:"Défi de l'horloge",vs:1},
                    {t:"dayparts",ic:"🌅",ar:"فتراتُ اليوم",en:"Times of Day",fr:"Moments du jour"},
                    {t:"directions",ic:"🧭",ar:"الاتجاهات",en:"Directions",fr:"Directions"},
                    {t:"seasons",ic:"🍂",ar:"الفصول",en:"Seasons",fr:"Saisons"}];
       topnav = nav("↩ الأقسام","secs")+`<span class="cur">🧭 الزمانُ والمكان</span>`;
-      body = `<div class="lgrid">${CARDS.map(x=>`<button class="lcard${x.vs?" vs":""}" data-t="${x.t}">${x.vs?'<span class="vsbadge">⚔️ تنافسيّة</span>':''}<span class="newbadge" data-ar="🆕 جديد" data-fg="🆕 ${newWord}">🆕 جديد</span><span class="ic">${iconHtml(x.ic)}</span><span class="lt" data-ar="${esc(x.ar)}" data-fg="${esc(x[k]||x.ar)}">${esc(x.ar)}</span></button>`).join("")}</div>`;
+      body = `<div class="lgrid">${CARDS.map(x=>`<button class="lcard${x.vs?" vs":""}" data-t="${x.t}">${x.vs?'<span class="vsbadge">⚔️ تنافسيّة</span>':''}<span class="ic">${iconHtml(x.ic)}</span><span class="lt" data-ar="${esc(x.ar)}" data-fg="${esc(x[k]||x.ar)}">${esc(x.ar)}</span></button>`).join("")}</div>`;
     } else {
       const T={learn:"🕐 تعلَّمِ الساعة",game:"🏆 تحدّي الساعة",dayparts:"🌅 فتراتُ اليوم",directions:"🧭 الاتجاهات",seasons:"🍂 الفصول"};
       topnav = nav("↩ الزمانُ والمكان","time")+`<span class="cur">${T[t]||"🧭 الزمانُ والمكان"}</span>`;
@@ -893,9 +892,9 @@ function renderLang(k){
     if(!g){
       topnav = nav("↩ الأقسام","secs")+`<span class="cur">🎮 ألعاب</span>`;
       const GAMES=[
-        {g:"transrace",ic:"🏃",ar:"سباقُ الترجمة",en:"Translation Race",fr:"Course de traduction",vs:1,nw:1},
-        {g:"sortwords",ic:"⚖️",ar:"صنّفِ الكلمات",en:"Sort the Words",fr:"Classe les mots",vs:1,nw:1},
-        {g:"alphaorder",ic:"🔤",ar:"رتّبِ الأبجديّة",en:"Alphabetical Order",fr:"Ordre alphabétique",vs:1,nw:1},
+        {g:"transrace",ic:"🏃",ar:"سباقُ الترجمة",en:"Translation Race",fr:"Course de traduction",vs:1},
+        {g:"sortwords",ic:"⚖️",ar:"صنّفِ الكلمات",en:"Sort the Words",fr:"Classe les mots",vs:1},
+        {g:"alphaorder",ic:"🔤",ar:"رتّبِ الأبجديّة",en:"Alphabetical Order",fr:"Ordre alphabétique",vs:1},
         {g:"match",ic:"🃏",ar:"مطابقةُ الصور",en:"Picture Match",fr:"Associe les images",vs:1},
         {g:"matchar",ic:"🔗",ar:"مطابقةُ المعنى",en:"Meaning Match",fr:"Associe le sens",vs:1},
         {g:"spell",ic:"🔡",ar:"الإملاء",en:"Spelling",fr:"Épellation",vs:1},

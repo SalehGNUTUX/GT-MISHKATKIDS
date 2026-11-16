@@ -4,8 +4,10 @@
 // السورُ المحلّيّةُ أصلًا (LOCAL) تُقرأُ من الحزمةِ (نصٌّ من content/quran.js، صوتٌ من public/quran/husary) بلا شبكة.
 import QF from "../content/quran-full.js";
 import LOCAL_QURAN from "../content/quran.js";
+import { getCurrentUser } from "./accounts.js";
 
 const GATE_KEY = "tilmithi_quran_online";  // بوّابةُ الوالد (off افتراضًا) — عامّةٌ يضبطُها الوالدُ في اللوحة
+const BLOCK_KEY = "tilmithi_quran_online_block"; // معرّفاتُ الحساباتِ المحجوبة (v1.8) — متى فُعِّلت البوّابةُ فالكلُّ مسموحٌ إلّا من حجبَه الوالد
 const DL_KEY = "tilmithi_quran_dl";        // مجموعةُ أرقامِ السورِ المنزَّلةِ يدويًّا
 
 export const QURAN_FULL = QF;
@@ -13,7 +15,19 @@ export const LOCAL_SURAHS = new Set(QF.local);
 const pad3 = n => String(n).padStart(3, "0");
 
 // ── بوّابةُ الوالد ──
-export function isQuranOnlineOn() { try { return localStorage.getItem(GATE_KEY) === "on"; } catch (e) { return false; } }
+// البوّابةُ العامّة (مفتاحُ الوالدِ الرئيسيّ في اللوحة).
+export function isQuranOnlineEnabled() { try { return localStorage.getItem(GATE_KEY) === "on"; } catch (e) { return false; } }
+// الإذنُ لكلِّ حساب: الوالدُ وبلا-حساب مسموحانِ دائمًا؛ الطفلُ والضيفُ ما لم يُحجَبا.
+function blocked() { try { return new Set(JSON.parse(localStorage.getItem(BLOCK_KEY) || "[]")); } catch (e) { return new Set(); } }
+const accKey = u => (!u || u.role === "parent") ? null : (u.role === "guest" ? "guest" : u.id);
+export function isQuranOnlineAllowedFor(id) { return !id || !blocked().has(id); }
+export function setQuranOnlineAllowedFor(id, on) {
+  const b = blocked(); on ? b.delete(id) : b.add(id);
+  try { localStorage.setItem(BLOCK_KEY, JSON.stringify([...b])); } catch (e) {}
+}
+// هل يرى الحسابُ الحاليُّ القرآنَ الكامل؟ (البوّابةُ العامّةُ مفتوحة + الحسابُ غيرُ محجوب)
+export function isQuranOnlineOn() { return isQuranOnlineEnabled() && isQuranOnlineAllowedFor(accKey(getCurrentUser())); }
+export function isQuranOnlineBlockedForMe() { return isQuranOnlineEnabled() && !isQuranOnlineOn(); }
 export function setQuranOnlineOn(on) { try { localStorage.setItem(GATE_KEY, on ? "on" : "off"); } catch (e) {} }
 
 // ── البياناتُ الوصفيّة ──

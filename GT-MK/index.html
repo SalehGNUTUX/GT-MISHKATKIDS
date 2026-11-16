@@ -515,7 +515,7 @@ function renderIdle(){
     <div class="btns" style="justify-content:center"><button class="act" onclick="spark()">✨ شرارة ذكرى</button>
     ${coopMode
       ? '<button class="ghost" onclick="toggleCoop()">↩ خروج من وضع الإخوة</button>'
-      : `<button class="ghost" onclick="surprise()">🎲 فاجئني</button><button class="ghost" onclick="toggleCoop()">👯 وضع الإخوة</button>${progress.completed.length?`<button class="ghost" onclick="viewMyWorks()">📂 أعمالي (${AR(progress.completed.length)})</button>`:""}`}</div></div>`;
+      : `<button class="ghost" onclick="surprise()">🎲 فاجئني</button><button class="ghost" onclick="toggleCoop()">👯 وضع الإخوة</button>${progress.log.length?`<button class="ghost" onclick="viewMyWorks()">📂 أعمالي (${AR(progress.log.length)})</button>`:""}`}</div></div>`;
 }
 
 // معرضُ «أعمالي»: الذكرياتُ التي أنجزها الطفلُ + ما سجّله فيها (صوت/صورة/ملاحظة) — متاحٌ للطفلِ نفسِه.
@@ -548,8 +548,8 @@ async function viewMyWorks(){
       ${media?`<div class="workmedia">${media}</div>`:`<span class="muted" style="font-size:12px">أُنجِزت — بلا توثيقٍ بعد.</span>`}
       ${add}</details>`;
   }).join("") : `<p class="muted" style="text-align:center">لم تُنجِزْ أعمالًا بعد — علّمِ الآليَّ ذكرى لتظهرَ هنا!</p>`;
-  host.innerHTML=`<div class="card"><div class="robo-says">📂 أعمالي المنجَزة (${AR(progress.completed.length)})</div>
-    <p class="muted">ذكرياتٌ علّمتَها الآليَّ وما سجّلتَه فيها. أحسنت! 🌟</p>
+  host.innerHTML=`<div class="card"><div class="robo-says">📂 أعمالي المنجَزة (${AR(progress.log.length)})</div>
+    <p class="muted">ذكرياتٌ علّمتَها الآليَّ وما سجّلتَه فيها، ورسوماتُك الملوَّنة. أحسنت! 🌟</p>
     <div class="works">${items}</div>
     <div class="btns" style="justify-content:center;margin-top:12px"><button class="act" onclick="renderIdle()">↩ رجوع</button></div></div>`;
   // ربطُ أزرارِ الإضافةِ اللاحقة (الحدثُ يُعرَفُ بطابعِ وقتِه من السجلّ).
@@ -1155,7 +1155,7 @@ async function openDashboard(){
           : `<img src="${url}" onclick="openMedia('${url}','photo')" />`; }
       return `<span class="capwrap" data-key="${c.key}">${inner}<button class="capdel" data-key="${c.key}" title="حذف هذا التسجيل">🗑️</button></span>`;
     }).join("");
-    const hd=`<span class="logtitle">${e.title}</span><span class="logmeta">· ${e.domain} · ${e.age_band}</span><span class="when">${fmt(e.ts)}</span>`;
+    const hd=`<span class="logtitle">${e.title}</span><span class="logmeta">· ${e.domain}${e.age_band?` · ${e.age_band}`:""}</span><span class="when">${fmt(e.ts)}</span>`;
     // بلا وسائطَ ⇒ صفٌّ بسيطٌ (لا سهمَ طيٍّ لمحتوًى غيرِ موجود). ومع الوسائطِ ⇒ مطويّةٌ تُكشَفُ عندَ الطلب.
     if(!media) return `<div class="logitem"><div class="loghd">${hd}</div></div>`;
     return `<details class="logitem"><summary class="loghd">${hd}</summary><div class="logmedia">${media}</div></details>`;

@@ -278,3 +278,175 @@ function jgTap(i) {
   for (const k of [a, i]) document.querySelector(`#jgb [data-i="${k}"]`)?.classList.add("swap");
 }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* ======================================================================
+   🎨 التلوين — رسوماتٌ SVG أصيلةٌ بمناطقَ مغلقة. ثلاثةُ أنماط:
+   حُرّ (أيُّ لونٍ لأيِّ منطقة) · حسبَ الرقم · حسبَ الحرف (لونُ المنطقةِ مكتوبٌ فيها؛ اللونُ الخطأُ يهتزُّ ولا يُحتسَب).
+   «💾 احفظْ في أعمالي» يُحوِّلُ الرسمةَ إلى PNG ويضيفُها إلى «📂 أعمالي» (src/works.js).
+   ====================================================================== */
+// الألوانُ مرقّمةٌ 1..10 (الرقمُ/الحرفُ المكتوبُ في المنطقةِ = موضعُ اللونِ هنا)
+const CL_PAL = [
+  { c: "#E0566B", n: "أحمر" }, { c: "#F28C38", n: "برتقاليّ" }, { c: "#F4C95D", n: "أصفر" }, { c: "#7BB661", n: "أخضر" },
+  { c: "#4C8BF5", n: "أزرق" }, { c: "#9B6DD6", n: "بنفسجيّ" }, { c: "#8B5A2B", n: "بنّيّ" }, { c: "#F28FB1", n: "ورديّ" },
+  { c: "#8FD3F0", n: "سماويّ" }, { c: "#4A4A4A", n: "رماديٌّ داكن" },
+];
+const CL_LET = ["أ", "ب", "ت", "ث", "ج", "ح", "خ", "د", "ذ", "ر"];
+// كلُّ منطقة: s = عنصرُ SVG بلا fill، n = رقمُ لونِها (1..10)، at = موضعُ الرقم، f = حجمُ خطِّه (اختياريّ)
+const CL_PICS = [
+  { id: "house", name: "البيت", regions: [
+    { s: `<rect x="0" y="0" width="200" height="140"/>`, n: 9, at: [22, 22] },
+    { s: `<rect x="0" y="140" width="200" height="60"/>`, n: 4, at: [22, 175] },
+    { s: `<circle cx="165" cy="35" r="18"/>`, n: 3, at: [165, 35] },
+    { s: `<rect x="122" y="50" width="13" height="30"/>`, n: 7, at: [128.5, 62], f: 9 },
+    { s: `<rect x="50" y="90" width="100" height="70"/>`, n: 8, at: [68, 140] },
+    { s: `<polygon points="40,92 100,42 160,92"/>`, n: 1, at: [100, 74] },
+    { s: `<rect x="86" y="118" width="24" height="42"/>`, n: 7, at: [98, 140] },
+    { s: `<rect x="120" y="104" width="20" height="18"/>`, n: 5, at: [130, 113], f: 10 },
+  ] },
+  { id: "fish", name: "السمكة", regions: [
+    { s: `<rect x="0" y="0" width="200" height="165"/>`, n: 5, at: [20, 20] },
+    { s: `<path d="M0 165 Q50 152 100 162 T200 160 V200 H0 Z"/>`, n: 3, at: [100, 184] },
+    { s: `<path d="M150 165 Q140 130 155 110 Q168 95 158 75 Q178 100 166 125 Q158 145 165 165 Z"/>`, n: 4, at: [158, 135], f: 9 },
+    { s: `<polygon points="128,90 170,62 162,92 170,122"/>`, n: 1, at: [156, 92] },
+    { s: `<path d="M84 72 Q100 46 118 70 Z"/>`, n: 1, at: [101, 63], f: 9 },
+    { s: `<ellipse cx="85" cy="92" rx="48" ry="28"/>`, n: 2, at: [96, 98] },
+    { s: `<circle cx="62" cy="86" r="7"/>`, n: 10, at: [62, 86], f: 0 },
+    { s: `<circle cx="40" cy="45" r="7"/>`, n: 9, at: [40, 45], f: 8 },
+    { s: `<circle cx="26" cy="68" r="5"/>`, n: 9, at: [26, 68], f: 0 },
+  ] },
+  { id: "butterfly", name: "الفراشة", regions: [
+    { s: `<path d="M98 95 Q60 20 22 45 Q5 75 50 95 Z"/>`, n: 6, at: [52, 66] },
+    { s: `<path d="M102 95 Q140 20 178 45 Q195 75 150 95 Z"/>`, n: 6, at: [148, 66] },
+    { s: `<path d="M98 100 Q55 105 40 140 Q55 170 98 118 Z"/>`, n: 8, at: [66, 132] },
+    { s: `<path d="M102 100 Q145 105 160 140 Q145 170 102 118 Z"/>`, n: 8, at: [134, 132] },
+    { s: `<circle cx="45" cy="60" r="9"/>`, n: 3, at: [45, 60], f: 9 },
+    { s: `<circle cx="155" cy="60" r="9"/>`, n: 3, at: [155, 60], f: 9 },
+    { s: `<ellipse cx="100" cy="105" rx="7" ry="38"/>`, n: 7, at: [100, 108], f: 9 },
+    { s: `<circle cx="100" cy="62" r="9"/>`, n: 10, at: [100, 62], f: 0 },
+  ], extra: `<path d="M96 56 Q86 34 78 30 M104 56 Q114 34 122 30" fill="none" stroke="#333" stroke-width="2"/>` },
+  { id: "tree", name: "الشجرة", regions: [
+    { s: `<rect x="0" y="0" width="200" height="150"/>`, n: 9, at: [20, 20] },
+    { s: `<rect x="0" y="150" width="200" height="50"/>`, n: 4, at: [24, 178] },
+    { s: `<rect x="90" y="110" width="20" height="62"/>`, n: 7, at: [100, 145] },
+    { s: `<path d="M100 22 C150 22 165 60 150 85 C170 110 130 130 100 118 C70 130 30 110 50 85 C35 60 50 22 100 22 Z"/>`, n: 4, at: [100, 50] },
+    { s: `<circle cx="72" cy="80" r="9"/>`, n: 1, at: [72, 80], f: 9 },
+    { s: `<circle cx="125" cy="70" r="9"/>`, n: 1, at: [125, 70], f: 9 },
+    { s: `<circle cx="104" cy="98" r="9"/>`, n: 1, at: [104, 98], f: 9 },
+    { s: `<circle cx="168" cy="30" r="14"/>`, n: 3, at: [168, 30] },
+  ] },
+  { id: "car", name: "السيّارة", regions: [
+    { s: `<rect x="0" y="0" width="200" height="140"/>`, n: 9, at: [20, 20] },
+    { s: `<rect x="0" y="140" width="200" height="60"/>`, n: 10, at: [20, 178] },
+    { s: `<path d="M20 135 V108 Q22 98 34 96 L62 94 L80 66 H138 L160 94 Q182 96 184 110 V135 Z"/>`, n: 1, at: [44, 120] },
+    { s: `<polygon points="86,72 106,72 106,94 70,94"/>`, n: 9, at: [94, 85], f: 9 },
+    { s: `<polygon points="112,72 134,72 152,94 112,94"/>`, n: 9, at: [124, 85], f: 9 },
+    { s: `<circle cx="60" cy="138" r="17"/>`, n: 10, at: [60, 138], f: 0 },
+    { s: `<circle cx="148" cy="138" r="17"/>`, n: 10, at: [148, 138], f: 0 },
+    { s: `<circle cx="60" cy="138" r="7"/>`, n: 3, at: [60, 138], f: 8 },
+    { s: `<circle cx="148" cy="138" r="7"/>`, n: 3, at: [148, 138], f: 8 },
+    { s: `<rect x="172" y="108" width="10" height="8"/>`, n: 3, at: [177, 112], f: 0 },
+  ] },
+  { id: "flower", name: "الزهرة", regions: [
+    { s: `<rect x="96" y="80" width="8" height="70"/>`, n: 4, at: [100, 128], f: 0 },
+    { s: `<path d="M100 130 Q70 110 60 125 Q75 140 100 136 Z"/>`, n: 4, at: [78, 127], f: 9 },
+    { s: `<path d="M100 115 Q130 95 140 110 Q125 125 100 121 Z"/>`, n: 4, at: [122, 112], f: 9 },
+    ...[0, 1, 2, 3, 4, 5].map(i => { const a = (i * 60 - 90) * Math.PI / 180, x = +(100 + 24 * Math.cos(a)).toFixed(1), y = +(62 + 24 * Math.sin(a)).toFixed(1);
+      return { s: `<circle cx="${x}" cy="${y}" r="15"/>`, n: 8, at: [+(100 + 30 * Math.cos(a)).toFixed(1), +(62 + 30 * Math.sin(a)).toFixed(1)], f: 9 }; }),
+    { s: `<circle cx="100" cy="62" r="13"/>`, n: 3, at: [100, 62] },
+    { s: `<path d="M62 150 H138 L128 192 H72 Z"/>`, n: 2, at: [100, 172] },
+  ] },
+];
+const CL = { mode: "num", pic: null, fills: [], sel: 1, last: null };
+export function startColoring() { stopVisualPlay(); jgStyle(); clStyle(); clNew(); try { robo.say(NOTICES.colorIntro, "ask"); } catch (e) {} }
+let clStyled = false;
+function clStyle() {
+  if (clStyled) return; clStyled = true;
+  const st = document.createElement("style");
+  st.textContent = `
+  .cl-svg{width:min(100%,400px);display:block;margin:4px auto;background:#fff;border:2px solid var(--line,#ECE6DA);border-radius:14px;touch-action:manipulation}
+  .cl-svg [data-r]{cursor:pointer;transition:fill .2s}
+  .cl-svg .cl-lbl{font:700 12px system-ui,sans-serif;fill:#555;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+  .cl-svg .cl-lbl.done{display:none}
+  .cl-svg .shake{animation:clShake .35s}
+  @keyframes clShake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+  @media (prefers-reduced-motion:reduce){.cl-svg .shake{animation:none}}
+  .cl-pal{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;max-width:420px;margin:6px auto}
+  .cl-sw{width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line,#ddd);cursor:pointer;font:800 15px system-ui,sans-serif;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55);padding:0}
+  .cl-sw.on{box-shadow:0 0 0 3px var(--ink,#2B2B2B);transform:scale(1.12)}
+  .cl-sw.eraser{background:#fff;color:#888;text-shadow:none}
+  .cl-msg{text-align:center;min-height:24px;font-size:15px;margin:4px}`;
+  document.head.appendChild(st);
+}
+function clNew(id) {
+  const pool = CL_PICS.filter(p => p.id !== CL.last);
+  CL.pic = id ? CL_PICS.find(p => p.id === id) : pick(pool); CL.last = CL.pic.id;
+  CL.fills = CL.pic.regions.map(() => null); CL.sel = 1; clRender();
+}
+const clLabel = n => CL.mode === "abc" ? CL_LET[n - 1] : String(n);
+// الرسمةُ نفسُها (للعرضِ وللحفظ): withLabels=false للحفظِ صورةً نظيفة
+function clSvgMarkup(withLabels) {
+  const P = CL.pic, guided = CL.mode !== "free";
+  const regs = P.regions.map((r, i) => `<g data-r="${i}" fill="${CL.fills[i] || "#fff"}" stroke="#333" stroke-width="1.6" stroke-linejoin="round">${r.s}</g>`).join("");
+  const lbls = !withLabels || !guided ? "" : P.regions.map((r, i) => r.f === 0 ? ""
+    : `<text class="cl-lbl${CL.fills[i] === CL_PAL[r.n - 1].c ? " done" : ""}" x="${r.at[0]}" y="${r.at[1]}" style="font-size:${r.f || 12}px">${clLabel(r.n)}</text>`).join("");
+  return `<svg class="cl-svg" id="clsvg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">${regs}${P.extra || ""}${lbls}</svg>`;
+}
+// منطقةٌ بلا رقمٍ ظاهر (f:0 — صغيرةٌ جدًّا) تُلوَّنُ تلقائيًّا في النمطِ الموجَّه ليكتملَ الرسمُ دونَ تخمين
+function clAutoSmall() { if (CL.mode === "free") return; CL.pic.regions.forEach((r, i) => { if (r.f === 0) CL.fills[i] = CL_PAL[r.n - 1].c; }); }
+function clDone() { return CL.mode !== "free" && CL.pic.regions.every((r, i) => CL.fills[i] === CL_PAL[r.n - 1].c); }
+function clRender(msg) {
+  const { view, backBar, wireBack } = ctx, guided = CL.mode !== "free";
+  clAutoSmall();
+  const chip = (v, t) => `<button class="jg-chip${CL.mode === v ? " on" : ""}" data-m="${v}">${t}</button>`;
+  const sw = CL_PAL.map((p, k) => `<button class="cl-sw${CL.sel === k + 1 ? " on" : ""}" data-c="${k + 1}" style="background:${p.c}" title="${p.n}" aria-label="${p.n}">${guided ? clLabel(k + 1) : ""}</button>`).join("")
+    + (guided ? "" : `<button class="cl-sw eraser${CL.sel === 0 ? " on" : ""}" data-c="0" title="ممحاة" aria-label="ممحاة">⌫</button>`);
+  view.innerHTML = backBar()
+    + `<div class="jg-chips">${chip("free", "حُرّ")}${chip("num", "حسبَ الرقم")}${chip("abc", "حسبَ الحرف")}</div>`
+    + `<div class="jg-prompt">${guided ? `لوِّنْ «${CL.pic.name}»: لونُ كلِّ منطقةٍ هو ${CL.mode === "abc" ? "حرفُها" : "رقمُها"}` : `لوِّنْ «${CL.pic.name}» كما تحبّ`}</div>`
+    + clSvgMarkup(true)
+    + `<div class="cl-pal" id="clpal">${sw}</div>`
+    + `<div class="cl-msg" id="clmsg">${msg || ""}</div>`
+    + `<div class="jg-tools"><button id="clsave">💾 احفظْ في أعمالي</button><button id="clclear">🧹 امسحْ</button><button id="clnext">🔀 رسمةٌ أخرى</button></div>`;
+  wireBack();
+  view.querySelectorAll(".jg-chip[data-m]").forEach(b => b.onclick = () => { CL.mode = b.dataset.m; CL.fills = CL.pic.regions.map(() => null); CL.sel = 1; clRender(); });
+  view.querySelector("#clpal").addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (!b) return; CL.sel = +b.dataset.c; sfx.tap();
+    view.querySelectorAll(".cl-sw").forEach(x => x.classList.toggle("on", x === b)); });
+  view.querySelector("#clsvg").addEventListener("click", e => { const g = e.target.closest("[data-r]"); if (g) clTap(+g.dataset.r, g); });
+  view.querySelector("#clclear").onclick = () => { CL.fills = CL.pic.regions.map(() => null); clRender(); };
+  view.querySelector("#clnext").onclick = () => clNew();
+  view.querySelector("#clsave").onclick = clSave;
+}
+function clTap(i, g) {
+  const r = CL.pic.regions[i];
+  if (CL.mode !== "free" && CL.sel !== r.n) {           // اللونُ ليس لونَ هذه المنطقة: اهتزازٌ وتلميحٌ لطيف
+    g.classList.remove("shake"); void g.getBBox(); g.classList.add("shake"); sfx.nope();
+    const m = document.getElementById("clmsg"); if (m) m.textContent = `هذه المنطقةُ لونُها ${clLabel(r.n)} — ${CL_PAL[r.n - 1].n}`;
+    return;
+  }
+  CL.fills[i] = CL.sel === 0 ? null : CL_PAL[CL.sel - 1].c; sfx.tap();
+  if (clDone()) { clRender(`🎉 أحسنت! اكتملَ «${CL.pic.name}» — احفظْه في أعمالِك`); sfx.success(); logEvent("color_done", { pic: CL.pic.id, mode: CL.mode });
+    try { robo.cheer(NOTICES.colorDone); } catch (e) {} return; }
+  // تحديثٌ موضعيٌّ دونَ إعادةِ رسمِ الصفحة (أسرعُ وأهدأُ للعين)
+  g.setAttribute("fill", CL.fills[i] || "#fff");
+  const lbl = document.querySelectorAll("#clsvg .cl-lbl"); // تُطابَقُ بالفهرسِ بين المناطقِ ذاتِ الرقمِ الظاهر
+  let k = -1; CL.pic.regions.forEach((rr, j) => { if (rr.f !== 0) { k++; if (j === i && lbl[k]) lbl[k].classList.toggle("done", CL.fills[i] === CL_PAL[rr.n - 1].c); } });
+  const m = document.getElementById("clmsg"); if (m) m.textContent = "";
+}
+async function clSave() {
+  const msg = t => { const m = document.getElementById("clmsg"); if (m) m.textContent = t; };
+  if (!CL.fills.some(Boolean)) { msg("لوِّنْ شيئًا أوّلًا 🙂"); return; }
+  msg("… أحفظُ رسمتَك");
+  try {
+    const src = clSvgMarkup(false).replace(' class="cl-svg" id="clsvg"', ' width="600" height="600"');
+    const img = new Image();
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(src); });
+    const cv = document.createElement("canvas"); cv.width = cv.height = 600;
+    const g2 = cv.getContext("2d"); g2.fillStyle = "#fff"; g2.fillRect(0, 0, 600, 600); g2.drawImage(img, 0, 0, 600, 600);
+    const blob = await new Promise(res => cv.toBlob(res, "image/png"));
+    const { saveWork } = await import("./works.js");
+    const ok = blob && await saveWork({ id: "color:" + CL.pic.id, title: `🎨 تلوين: ${CL.pic.name}`, domain: "رسوماتي", blob });
+    if (!ok) throw new Error("save");
+    msg("✅ حُفِظَتْ في «📂 أعمالي»"); logEvent("color_saved", { pic: CL.pic.id });
+    try { robo.say(NOTICES.colorSaved, "happy"); } catch (e) {}
+  } catch (e) { msg("تعذّرَ الحفظ — جرِّبْ مرّةً أخرى"); }
+}

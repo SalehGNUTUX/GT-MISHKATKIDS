@@ -19,7 +19,7 @@ export const SECTION_OF = {
   memory_win: "play", basics_correct: "basics", read_practice: "read",
   math_correct: "math", craft_done: "math", quran_listen: "quran",
   math_dots_done: "math", math_balance_win: "math", math_geo_free: "math",
-  oddone_correct: "play", oddone_win: "play", jigsaw_done: "play",
+  oddone_correct: "play", oddone_win: "play", jigsaw_done: "play", color_done: "play", color_saved: "play",
 };
 
 export function logEvent(type, payload = {}) {
@@ -130,3 +130,8 @@ export function setChildAge(a) { const s = load(); s.childAge = a; save(s); }
 export function getName() { return load().name || ""; }
 export function setName(n) { const s = load(); s.name = (n || "").slice(0, 40); save(s); }
 export function resetProgress() { save({}); }
+
+// v1.9 — عملٌ من خارجِ «علّمِ الآليّ» (رسمةُ التلوين…) يُضافُ إلى «📂 أعمالي» وسجلِّ الجلسات:
+// مدخلٌ في log بالبنيةِ نفسِها التي يقرؤها index.html، والوسائطُ تُحفَظُ بطابعِ الوقتِ نفسِه (src/works.js).
+// نمطُ «حمّلْ-عدّلْ-احفظ» لأنّ index.html يكتبُ في المفتاحِ نفسِه.
+export function addWorkEntry(entry) { const s = load(); s.log = s.log || []; s.log.push(entry); save(s); }

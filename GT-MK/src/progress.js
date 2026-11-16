@@ -19,6 +19,7 @@ export const SECTION_OF = {
   memory_win: "play", basics_correct: "basics", read_practice: "read",
   math_correct: "math", craft_done: "math", quran_listen: "quran",
   math_dots_done: "math", math_balance_win: "math", math_geo_free: "math",
+  oddone_correct: "play", oddone_win: "play",
 };
 
 export function logEvent(type, payload = {}) {

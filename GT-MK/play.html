@@ -325,6 +325,7 @@ import { clockGame, AR_L } from "./src/clock-widget.js"; // تحدّي السا�
 import { playClipAsync } from "./src/tts-clips.js";      // نطقُ جُمَلِ الوقت (Piper العصبيّ)
 import { listProfiles, getProfile, getCurrentUser, getParentName, getParentAvatar } from "./src/accounts.js";
 import { attachReader } from "./src/reader-recorder.js"; // تسجيلُ نُطق الطفل للكلمة المُكوَّنة
+import { initVisualPlay, stopVisualPlay, startOddOne } from "./src/visual-play.js"; // أنشطةُ v1.9 (دفعة ب): جِدِ المختلف
 import { smartPrint } from "./src/smart-print.js"; window.smartPrint = smartPrint; // طباعةٌ تعملُ على الهاتف أيضًا
 // كلماتٌ شائعةٌ يُمكنُ تكوينُها من أحرف العجلة الـ20 (لتوسعة التعرّف على الكلمات ذات المعنى).
 const EXTRA_WHEEL_WORDS = new Set(["بيت","بنت","باب","جبل","حبل","دار","رمل","سمك","شمس","قمر","قلم","كلب","لبن","نهر","نمر","ورد","جمل","حليب","سرير","كتاب","نار","ليل","نهار","شجر","حجر","بقر","سحب","ريح","برد","فرح","علم","نور","كرم","جسم","رمح","سيف","درع","حرب","سلم","قلب","شعر","فيل","ديك","حمل","نمل","سمن","لحم","تمر","عنب","تين","رمان","ليمون","جبن","سكر","ملح","عسل","شاي","بحر","حلم","نجم","عمل","رسم","قدم","سهل","فهد","ثعلب","دجاج","حمار","حوت","ريش","جناح","حقل","نبت","ثمر","فرع","نحل","رجل","عين","حر","حب","حق","دم","سن","دب","فم","يد","عش","شمع","نبع","سفر","حكم","لعب","كسر","فكر","نشر","حسن"]);
@@ -350,6 +351,7 @@ const backBar = () => `<button class="backstep" id="back">الألعاب</button
 // ردُّ الآليِّ الموحَّدُ عند انقضاءِ مهلةِ «ضدّ الوقت» في أيِّ لعبةٍ تنافسيّة (نصٌّ مشكولٌ له مقطعُ Piper).
 function dtSay(){ try{ robo.encourage(NOTICES.timeUp); }catch(e){} }
 function wireBack(){ const b=document.getElementById("back"); if(b) b.onclick=renderMenu; }
+initVisualPlay({ view, backBar, wireBack });
 const clueCard = (instruction, withFlash) => `<div class="clue"><div class="emoji">${cur.emoji}</div>${withFlash?`<div class="flash" id="flash">${cur.word}</div>`:""}<div class="say">${instruction}</div></div>`;
 function winBanner(msg){ return `<div class="win"><div class="em">${cur.emoji}</div><div class="big" dir="rtl">${cur.word}</div>${msg}<div class="controls"><button class="go" id="cont">التالية ▶</button></div></div>`; }
 function celebrate(){ score++; streak++; logEvent("word_win"); if(cur) recordMastery("W:"+cur.word,true);
@@ -371,6 +373,7 @@ const GAMES = [
   { id:"clock",  ic:"🕐", t:"تحدّي الساعة", d:"اقرأِ الساعةَ (عقارب ورقميّ) وتنافسْ — أنماطٌ متنوّعة", vs:1, cat:"math" },
   { id:"hunt",   ic:"🔎", t:"صيدُ الحرف/الرقم", d:"اعثرْ على المطلوبِ بسرعة", vs:1, cat:"skill" },
   { id:"smatch", ic:"⚡", t:"سباقُ المطابقة", d:"جِدِ الصورةَ المطابقةَ أسرع", vs:1, cat:"skill" },
+  { id:"oddone", ic:"👁️", t:"جِدِ المختلف", d:"أيُّ الصورِ لا تُشبِهُ أخواتِها؟ أسرعُ عينٍ تفوز", vs:1, nw:1, cat:"skill" },
   { id:"spinq",  ic:"🎡", t:"عجلة أدرْ وأجب", d:"أدِرِ العجلةَ ثمّ أجِبْ عن سؤالِ القطاع", vs:1, cat:"skill" },
   { id:"memory", ic:"🧠", t:"لعبة الذاكرة", d:"جِد الصورتين المتطابقتين — بمظاهرَ متعدّدة", vs:1, cat:"fun" },
   { id:"xo",     ic:"⭕", t:"دائرةٌ وعلامة", d:"ثلاثةٌ في خطٍّ ضدّ الآليّ", vs:1, cat:"fun" },
@@ -391,6 +394,7 @@ const GAME_GROUPS = [
 let curCat=null; // القسمُ المفتوحُ في لوحةِ الأقسام (null = لوحةُ الأقسام)
 function renderMenu(){
   vsRun=false; // مغادرةُ اللعبة إلى قائمة الألعاب ⇒ أوقِفِ المؤقّتات
+  stopVisualPlay(); // وأنشطةُ v1.9 كذلك
   document.body.classList.remove("ingame"); // إعادةُ الرأسِ الكامل في القائمة
   // فئةٌ من الرابط (المهامّ) أو من اختيارِ الطفلِ لبطاقةِ قسمٍ في هذه الجلسة.
   const only = new URLSearchParams(location.search).get("only") || curCat;
@@ -424,7 +428,7 @@ function renderMenu(){
   view.querySelectorAll(".menu").forEach(m=>m.addEventListener("click", e=>{ const c=e.target.closest("[data-g]"); if(c) open(c.getAttribute("data-g")); }));
 }
 function open(id){ if(id!=="print") document.body.classList.add("ingame"); // شاشةٌ مخصّصةٌ للّعبة: يُطوى رأسُ الصفحةِ وشريطُ التنقّل
-  ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,dots:startDots,four:startF4,dama:startDama,chess:startChess,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,clock:startClock,print:()=>location.assign("print.html")})[id](); }
+  ({memory:startMemory,train:startTrain,pins:startPins,blocks:startBlocks,fish:startFish,cards:startCards,maze:startMaze,wheel:startWheel,spinq:startSpinQ,xo:startXO,dots:startDots,four:startF4,dama:startDama,chess:startChess,numrace:startNC,hunt:startHU,smatch:startSM,wgrid:startWG,clock:startClock,oddone:startOddOne,print:()=>location.assign("print.html")})[id](); }
 
 /* ===================== 🕐 تحدّي الساعة (v1.5 · versus مشترَك) ===================== */
 function startClock(){

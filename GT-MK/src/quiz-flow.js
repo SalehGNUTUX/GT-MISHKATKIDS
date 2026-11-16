@@ -9,16 +9,17 @@ function ensureStyle() {
   if (styled) return; styled = true;
   const st = document.createElement("style");
   st.textContent = `
-  .qa-auto{background:#fff;border:1px solid #ECE6DA;border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;font-family:inherit;color:#6B6B6B}
+  .qa-auto{background:var(--card,#fff);border:1px solid var(--line,#ECE6DA);border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;font-family:inherit;color:var(--muted,#6B6B6B)} /* متغيّراتُ السمة: كان أبيضَ ثابتًا في الوضعِ الداكن */
   .qa-auto.on{background:#7BB661;color:#fff;border-color:#7BB661}
   .qa-next{text-align:center;margin-top:16px}
   .qa-nextbtn{background:#E07A5F;color:#fff;border:none;border-radius:12px;padding:11px 22px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit}
-  .qa-skipbtn{background:#fff;color:#6B6B6B;border:1px solid #ECE6DA;border-radius:12px;padding:10px 18px;font-size:14px;cursor:pointer;font-family:inherit}`;
+  .qa-skipbtn{background:var(--card,#fff);color:var(--muted,#6B6B6B);border:1px solid var(--line,#ECE6DA);border-radius:12px;padding:10px 18px;font-size:14px;cursor:pointer;font-family:inherit}`;
   document.head.appendChild(st);
 }
 
 // زرّ تبديل «الانتقال التلقائيّ» — يوضَع في شريط كلّ اختبار.
 export function autoToggleHtml() {
+  ensureStyle(); // كان النمطُ يُحقَنُ عند أوّلِ إجابةٍ فقط ⇒ الزرُّ بلا تنسيقٍ (رماديُّ المتصفّح) قبلَها
   const on = isAutoNext();
   return `<button class="qa-auto${on ? " on" : ""}" id="qaAuto" title="عند تفعيله ينتقل للسؤال التالي تلقائياً">${on ? "⏭️ تلقائيّ" : "✋ يدويّ"}</button>`;
 }

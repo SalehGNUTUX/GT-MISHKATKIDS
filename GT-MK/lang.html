@@ -22,6 +22,12 @@
   header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 12px}
   header h1{font-size:21px;margin:0}
   header .sub{color:var(--muted);font-size:13px}
+  /* أثناءَ اللعبِ/الاختبار: شاشةٌ مخصّصةٌ له (كـplay.html وmath.html) — يصغُرُ العنوانُ ويُطوى الوصف */
+  body.ingame .wrap{padding-top:8px}
+  body.ingame header{padding:2px 2px 4px}
+  body.ingame header h1{font-size:15px}
+  body.ingame header .sub{display:none}
+  body.ingame .topnav{margin-top:4px}
   .topbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink);font-family:inherit}
 
   /* اختيار اللغة */
@@ -994,6 +1000,10 @@ function startTitleAlt(){
 function render(){ trRun=false;
   if(altTimer){ clearInterval(altTimer); altTimer=null; }
   const k = curLng();
+  // الشاشةُ المخصّصةُ للّعب تُحسَبُ من حالةِ الرابطِ نفسِها: لعبةٌ · اختبارٌ · تحدّي الساعة · اختبارُ المقاطع.
+  { const q=new URLSearchParams(location.search), sec=q.get("sec");
+    const playing = !!(k && LANGS[k]) && ((sec==="games" && q.get("g")) || sec==="quiz" || (sec==="time" && q.get("t")==="game") || q.get("chart")==="quiz");
+    document.body.classList.toggle("ingame", !!playing); }
   if(k && LANGS[k]) renderLang(k); else renderPick();
 }
 primeWS();

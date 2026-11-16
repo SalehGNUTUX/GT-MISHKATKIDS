@@ -22,5 +22,5 @@ tools/piper-voices/*.onnx*
 # تحزيمٌ أصليّ (مُولَّد، يُعاد إنشاؤه)
 release/
 build/
-android/
+/android/
 *.AppImage

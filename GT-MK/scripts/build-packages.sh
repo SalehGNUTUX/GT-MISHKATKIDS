@@ -55,8 +55,17 @@ build_linux() { # $1 = أهداف electron-builder (مثل: "AppImage deb rpm")
   step "electron-builder → $1"
   local args=""; for t in $1; do args="$args --linux $t"; done
   npx electron-builder $args 2>&1 | tail -20
+  # الأنبوبُ إلى tail يُخفي رمزَ الفشل — نقرؤه من PIPESTATUS (وقعَ: «انتهى» مع امتلاءِ القرصِ وغيابِ الحزمة).
+  local rc=${PIPESTATUS[0]}
   cp "$ROOT"/release/*.AppImage "$ROOT"/release/*.deb "$ROOT"/release/*.rpm "$RELEASE"/ 2>/dev/null || true
-  ls -1 "$RELEASE" 2>/dev/null | grep -iE "appimage|\.deb|\.rpm" && ok "حزمُ لينكس في release/" || wrn "راجِعْ مخرجَ electron-builder"
+  [ "$rc" -eq 0 ] || { err "فشلَ electron-builder (رمز $rc) — راجِعِ المخرجَ أعلاه"; exit 1; }
+  # التحقّقُ بحزمِ **هذا الإصدار** لا بأيِّ حزمةٍ قديمةٍ باقيةٍ في المجلّد.
+  local t miss=0
+  for t in $1; do
+    case "$t" in AppImage) ls "$RELEASE"/*-"$VERSION"-*.AppImage >/dev/null 2>&1 || miss=1 ;;
+                 deb)      ls "$RELEASE"/*-"$VERSION"-*.deb      >/dev/null 2>&1 || miss=1 ;; esac
+  done
+  [ "$miss" -eq 0 ] && ok "حزمُ لينكس $VERSION في release/" || { err "لم تُنتَجْ حزمُ $VERSION المطلوبة ($1)"; exit 1; }
 }
 
 # rpm: fpm المرفقُ في electron-builder (1.9.3) لا يوافق rpmbuild الحديث (4.20+)، فنحوّلُ الـdeb العاملَ
@@ -180,6 +189,32 @@ build_apk() {
     fs.writeFileSync(p, m);
 NODE
     step "حُقِنت intent-filters لاستقبالِ .json (json + content/file + octet-stream/text·pathPattern لواتساب)"
+  fi
+  # التحديثُ من داخلِ التطبيق: صلاحيّةُ تسليمِ APK لمثبِّتِ النظام + المكوّنُ الأصليُّ MishkatUpdater
+  # (مصدرُه مُلتزَمٌ في scripts/android/ لأنّ android/ مولَّد) + تسجيلُه في MainActivity قبل super.onCreate.
+  if [ -f "$mani" ] && ! grep -q "REQUEST_INSTALL_PACKAGES" "$mani"; then
+    sed -i 's#<application#<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />\n\n    <application#' "$mani"
+    step "أُضيفت صلاحيّةُ REQUEST_INSTALL_PACKAGES (التحديثُ من داخلِ التطبيق)"
+  fi
+  local jdir="$ANDROID/app/src/main/java/com/gnutux/gtmishkatkids"
+  if [ -d "$jdir" ]; then
+    cp "$ROOT/scripts/android/MishkatUpdaterPlugin.java" "$jdir/"
+    cat > "$jdir/MainActivity.java" <<'JAVA'
+package com.gnutux.gtmishkatkids;
+
+import android.os.Bundle;
+import com.getcapacitor.BridgeActivity;
+
+// مُولَّدٌ من scripts/build-packages.sh — لا تُحرِّرْه يدويًّا.
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(MishkatUpdaterPlugin.class); // التحديثُ من داخلِ التطبيق
+        super.onCreate(savedInstanceState);
+    }
+}
+JAVA
+    step "حُقِنَ مكوّنُ التحديثِ الأصليّ (MishkatUpdater) وسُجِّلَ في MainActivity"
   fi
   # مزامنةُ نسخةِ أندرويد من package.json (Capacitor لا يزامنُها تلقائيًّا فتبقى "1.0"). android/ مُولَّدٌ فيُعادُ كلَّ بناء.
   local gradle="$ANDROID/app/build.gradle"

@@ -1,8 +1,13 @@
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { readFileSync } from "node:fs";
+
+// رقمُ الإصدارِ من package.json يُحقَنُ في الكود (__APP_VERSION__) — مصدرٌ واحدٌ للتحديثِ و«حول المشروع».
+const APP_VERSION = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")).version;
 
 export default defineConfig({
   base: "./",
+  define: { __APP_VERSION__: JSON.stringify(APP_VERSION) },
   // منفذٌ ثابت: التخزين (الحسابات/التقدّم/التسجيلات) مرتبطٌ بالأصل (المنفذ)، فتثبيتُه يمنع «اختفاء» البيانات
   // حين يختار Vite منفذًا مختلفًا. strictPort يُخطئ بدل الانتقال صامتًا (فنحرّر المنفذ بدل تغيّر الأصل).
   server: { port: 5174, strictPort: true },

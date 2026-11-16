@@ -1,8 +1,9 @@
 'use strict';
 // مِشكاةُ الطفلِ والآليّ (GT-MISHKATKIDS) — عمليّةُ Electron الرئيسيّة (تحزيمُ سطح المكتب).
 // تَلُفُّ تطبيقَ الويب المبنيَّ (dist/) في نافذةٍ محلّيّةٍ تعملُ دون إنترنت. GNU GPL v3.
-const { app, BrowserWindow, shell, Menu, session } = require('electron');
+const { app, BrowserWindow, shell, Menu, session, ipcMain } = require('electron');
 const path = require('path');
+const updates = require('./updates.cjs'); // التحديثُ من داخلِ التطبيق (فحص/تنزيل/تثبيت)
 
 const APP_ENTRY = path.join(__dirname, '..', 'dist', 'home.html'); // الفهرس/المُشغِّل هو المدخل
 // أيقونةُ النافذة = الشعارُ الكامل (dist/icon.png 1024²)، لا الأيقونةَ المحشوّةَ icon-512 (هامشُها كبير
@@ -23,7 +24,8 @@ function createWindow() {
     title: 'مِشكاةُ الطفلِ والآليّ',
     icon: APP_ICON,
     autoHideMenuBar: true, // لا شريطَ قوائمَ يُربك الطفل
-    webPreferences: { contextIsolation: true, nodeIntegration: false, spellcheck: false },
+    webPreferences: { contextIsolation: true, nodeIntegration: false, spellcheck: false,
+      preload: path.join(__dirname, 'preload.cjs') },
   });
   Menu.setApplicationMenu(null);
   win.loadFile(APP_ENTRY);
@@ -38,6 +40,18 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+// قنواتُ التحديث — الواجهةُ تطلبُ، والعمليّةُ الرئيسيّةُ تتّصلُ وتنزّلُ وتثبّت.
+function registerUpdateIpc() {
+  ipcMain.handle('update:check', (_e, opts) => updates.checkForUpdate(opts));
+  ipcMain.handle('update:download', (_e, asset) =>
+    updates.downloadUpdate(asset, p => { if (win && !win.isDestroyed()) win.webContents.send('update:progress', p); }));
+  ipcMain.handle('update:cancel', () => updates.cancelUpdateDownload());
+  ipcMain.handle('update:install', (_e, file) => updates.installUpdate(file));
+  ipcMain.handle('update:restart', () => updates.restartApp());
+  ipcMain.handle('update:reveal', (_e, file) => updates.revealPackage(file));
+  ipcMain.handle('update:open-page', () => updates.openReleasePage());
+}
+
+app.whenReady().then(() => { registerUpdateIpc(); createWindow(); });
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });

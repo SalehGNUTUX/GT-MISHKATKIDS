@@ -165,8 +165,16 @@ function pruneOldPackages(keep) {
   } catch (e) { /* لا يمنعُ التنزيل */ }
 }
 
-async function downloadUpdate(asset, onProgress, freshRetry = false) {
-  if (activeDownload) return { ok: false, error: 'ثمّةَ تنزيلٌ جارٍ بالفعل' };
+// طلبٌ ثانٍ للحزمةِ نفسِها أثناءَ تنزيلِها (أُغلِقتِ النافذةُ ثمّ فُتِحت) يَلتحقُ بالتنزيلِ الجاري ويَنتظرُ نتيجتَه
+// بدلَ الرفض — والتقدّمُ يصلُ النافذةَ الجديدةَ لأنّه يُبَثُّ إلى النافذةِ نفسِها (update:progress).
+let activeJob = null; // { name, promise }
+function downloadUpdate(asset, onProgress) {
+  if (activeJob) return activeJob.name === (asset && asset.name) ? activeJob.promise : Promise.resolve({ ok: false, error: 'ثمّةَ تنزيلٌ آخرُ جارٍ' });
+  const promise = downloadOnce(asset, onProgress).finally(() => { activeJob = null; });
+  activeJob = { name: asset && asset.name, promise };
+  return promise;
+}
+async function downloadOnce(asset, onProgress, freshRetry = false) {
   if (!asset || !/^https:\/\/github\.com\//.test(asset.url) || /[\\/]/.test(asset.name)) return { ok: false, error: 'حزمةٌ غيرُ صالحة' };
   const dest = path.join(updatesDir(), asset.name);
   const part = `${dest}.part`;
@@ -219,7 +227,7 @@ async function downloadUpdate(asset, onProgress, freshRetry = false) {
       if (got !== asset.sha256) {
         console.warn(`[update] بصمةُ «${asset.name}» لا تطابق — ${got} · المنشورة ${asset.sha256}`);
         fs.rmSync(part, { force: true });
-        if (resumed && !freshRetry) { activeDownload = null; return downloadUpdate(asset, onProgress, true); }
+        if (resumed && !freshRetry) { activeDownload = null; return downloadOnce(asset, onProgress, true); }
         return { ok: false, error: 'البصمةُ لا تطابقُ المنشورة — حُذِفتِ الحزمة' };
       }
     }

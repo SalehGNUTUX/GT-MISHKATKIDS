@@ -25,12 +25,29 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.List;
 
 @CapacitorPlugin(name = "MishkatUpdater")
 public class MishkatUpdaterPlugin extends Plugin {
 
     private volatile boolean cancelled = false;
     private volatile boolean busy = false;
+    // التنزيلُ الجاري ومَن ينتظرُ نتيجتَه: إن أُغلِقت النافذةُ (أو أُعيدَ تحميلُ الصفحة) ثمّ طُلِبتِ الحزمةُ نفسُها
+    // يَلتحقُ الطلبُ الجديدُ بالتنزيلِ الجاري بدلَ رفضِه بـ«تنزيلٌ جارٍ بالفعل»؛ والتقدّمُ يصلُه عبرَ notifyListeners.
+    private String activeName = null;
+    private final List<PluginCall> waiters = new ArrayList<>();
+
+    private void finishOk(JSObject r) {
+        List<PluginCall> ws;
+        synchronized (this) { ws = new ArrayList<>(waiters); waiters.clear(); busy = false; activeName = null; }
+        for (PluginCall c : ws) c.resolve(r);
+    }
+    private void finishErr(String msg, String code) {
+        List<PluginCall> ws;
+        synchronized (this) { ws = new ArrayList<>(waiters); waiters.clear(); busy = false; activeName = null; }
+        for (PluginCall c : ws) { if (code == null) c.reject(msg); else c.reject(msg, code); }
+    }
 
     private File updatesDir() {
         // داخلَ cacheDir: يُشاركُه FileProvider الخاصُّ بـCapacitor (cache-path ".") بلا صلاحيّةِ تخزين.
@@ -71,9 +88,17 @@ public class MishkatUpdaterPlugin extends Plugin {
             call.reject("حزمةٌ غيرُ صالحة");
             return;
         }
-        if (busy) { call.reject("ثمّةَ تنزيلٌ جارٍ بالفعل"); return; }
-        busy = true;
-        cancelled = false;
+        synchronized (this) {
+            if (busy) {
+                if (name.equals(activeName)) waiters.add(call); // التحاقٌ بالتنزيلِ الجاري
+                else call.reject("ثمّةَ تنزيلٌ آخرُ جارٍ");
+                return;
+            }
+            busy = true;
+            activeName = name;
+            waiters.add(call);
+            cancelled = false;
+        }
 
         new Thread(() -> {
             File dest = new File(updatesDir(), name);
@@ -83,7 +108,7 @@ public class MishkatUpdaterPlugin extends Plugin {
                 if (dest.exists() && (size == 0 || dest.length() == size) && (sha.isEmpty() || sha256(dest).equals(sha))) {
                     prune(name);
                     JSObject r = new JSObject(); r.put("file", dest.getAbsolutePath()); r.put("reused", true);
-                    call.resolve(r);
+                    finishOk(r);
                     return;
                 }
                 long from = (part.exists() && part.length() > 0 && part.length() < size) ? part.length() : 0;
@@ -104,7 +129,7 @@ public class MishkatUpdaterPlugin extends Plugin {
                     byte[] buf = new byte[65536];
                     int n;
                     while ((n = in.read(buf)) > 0) {
-                        if (cancelled) { call.reject("cancelled", "CANCELLED"); return; } // الجزءُ يبقى ليُستأنَف
+                        if (cancelled) { finishErr("cancelled", "CANCELLED"); return; } // الجزءُ يبقى ليُستأنَف
                         out.write(buf, 0, n);
                         received += n;
                         long now = System.currentTimeMillis();
@@ -127,11 +152,11 @@ public class MishkatUpdaterPlugin extends Plugin {
                 if (!part.renameTo(dest)) throw new Exception("تعذّرَ حفظُ الحزمة");
                 prune(name);
                 JSObject r = new JSObject(); r.put("file", dest.getAbsolutePath());
-                call.resolve(r);
+                finishOk(r);
             } catch (Exception e) {
-                call.reject(e.getMessage() == null ? "تعذّرَ التنزيل" : e.getMessage());
+                finishErr(e.getMessage() == null ? "تعذّرَ التنزيل" : e.getMessage(), null);
             } finally {
-                busy = false;
+                if (busy) finishErr("تعذّرَ التنزيل", null); // حارس: لا يبقى «مشغولًا» إلى الأبد
             }
         }).start();
     }

@@ -877,7 +877,9 @@ document.getElementById("parentBtn").addEventListener("click", openGate);
 overlay.addEventListener("click",e=>{ if(e.target===overlay) closePanel(); });
 // إغلاقٌ تلقائيٌّ بعد 30 ثانيةً من الخمول (لا عملَ على اللوحة). أيُّ تفاعلٍ يُعيد العدّ.
 let dashIdle=null;
-function armIdle(){ clearTimeout(dashIdle); dashIdle=setTimeout(()=>{ if(overlay.classList.contains("show")) closePanel(); }, 30000); }
+// نافذةُ التحديثِ (.up-ov) تُغطّي اللوحةَ كاملةً ⇒ لا تُغلَقُ اللوحةُ تحتَها: تنزيلُ مئاتِ الميغابايتِ يتجاوزُ 30ث
+// فكانت تُغلَقُ أثناءَه فيضيعُ سيرُ التحديث. بعدَ إغلاقِ النافذةِ يعودُ العدُّ عاديًّا.
+function armIdle(){ clearTimeout(dashIdle); dashIdle=setTimeout(()=>{ if(!overlay.classList.contains("show")) return; if(document.querySelector(".up-ov")) armIdle(); else closePanel(); }, 30000); }
 ["click","keydown","input","change","scroll","touchstart","pointerdown"].forEach(ev=>
   overlay.addEventListener(ev, ()=>{ if(overlay.classList.contains("show")) armIdle(); }, { passive:true, capture:true }));
 /* ===== لوحةُ التحكّم: عرضُ «بطاقات» (افتراضيّ) أو «مطويّات» — على نهجِ إعداداتِ GT-SALAT =====

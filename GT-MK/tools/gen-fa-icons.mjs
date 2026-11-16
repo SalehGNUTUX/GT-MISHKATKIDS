@@ -45,6 +45,8 @@ const MAP = {
   polite: "hands-praying", questions: "circle-question",
   jobs: "briefcase", sports: "futbol", house: "house", sentences: "comment-dots", tenses: "clock-rotate-left",
   asking: "person-circle-question",
+  // v1.9 — أنشطةُ الرياضيّاتِ والمنطق
+  balance: "scale-unbalanced", connectdots: "draw-polygon", geoboard: "border-all",
 };
 
 // خريطةُ الإيموجي (المستعمَلة كأيقونات بطاقاتٍ في صفحاتٍ تُرسَم من بياناتٍ) ← الاسم الدلاليّ
@@ -64,6 +66,7 @@ const EMOJI = {
   "🌦️": "weather", "📅": "days", "🏃": "actions", "🙏": "polite", "❓": "questions",
   "⚙️": "gear", "🃏": "cards", "🔡": "spellcheck", "👂": "earlisten",
   "💼": "jobs", "⚽": "sports", "🏠": "house", "🗨️": "sentences", "🕰️": "tenses", "🙋": "asking",
+  "🎚️": "balance", "✏️": "connectdots", "📌": "geoboard",
 };
 
 function clean(name) {

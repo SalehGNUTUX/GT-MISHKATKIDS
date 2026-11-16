@@ -169,6 +169,31 @@
   .dash-cards > .sec{border:none;padding:0;margin-top:8px}
   .dash-cards > .sec > h3, .dash-cards > details.sec > summary{display:none}
   .dash-hidden{display:none !important}
+  /* عرضُ المطويّات (v1.8): رأسٌ بأيقونةِ القسمِ ولونِه ووصفِه، والمفتوحةُ بإطارٍ وظلٍّ بلونِها */
+  .dash-acc > .sec{border:1px solid var(--line) !important;border-radius:16px !important;padding:0 !important;margin-top:10px !important;
+    background:var(--bg);overflow:hidden;transition:border-color .2s,box-shadow .2s}
+  .dash-acc > .sec > h3, .dash-acc > details.sec > summary{display:flex !important;align-items:center;gap:12px;justify-content:flex-start !important;
+    margin:0 !important;padding:11px 14px;cursor:pointer;user-select:none;list-style:none;transition:background .15s}
+  .dash-acc > details.sec > summary::-webkit-details-marker{display:none}
+  .dash-acc > .sec > h3:hover, .dash-acc > details.sec > summary:hover{background:color-mix(in srgb,var(--c,var(--primary)) 7%,transparent)}
+  /* السهمُ في دائرةٍ صغيرة؛ مطويًّا يشيرُ إلى اليسار (اتّجاهُ القراءةِ العربيّ)، مفتوحًا إلى الأسفل — .panel لتعلوَ قاعدةَ المطويّاتِ القديمة */
+  .panel.dash-acc > .sec > h3::after, .panel.dash-acc > details.sec > summary::after{content:"▾";margin-inline-start:auto;flex:none;
+    width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;
+    color:var(--muted);background:var(--card);border:1px solid var(--line);transform:none;transition:transform .2s,color .2s}
+  .panel.dash-acc > .sec.collapsed > h3::after, .panel.dash-acc > details.sec:not([open]) > summary::after{transform:rotate(90deg)}
+  .panel.dash-acc > .sec:not(.collapsed) > h3::after, .panel.dash-acc > details.sec[open] > summary::after{color:var(--c,var(--primary));border-color:var(--c,var(--primary))}
+  .dash-acc > .sec:not(.collapsed):not(details), .dash-acc > details.sec[open]{border-color:var(--c,var(--primary)) !important;
+    box-shadow:0 6px 18px color-mix(in srgb,var(--c,var(--primary)) 16%,transparent)}
+  .dash-acc > .sec:not(.collapsed) > h3, .dash-acc > details.sec[open] > summary{background:color-mix(in srgb,var(--c,var(--primary)) 10%,transparent);border-bottom:1px solid var(--line)}
+  .dash-acc > .sec:not(.collapsed) > :not(h3), .dash-acc > details.sec[open] > :not(summary){margin-inline:14px}
+  .dash-acc > .sec:not(.collapsed) > :not(h3):last-child, .dash-acc > details.sec[open] > :not(summary):last-child{margin-bottom:14px}
+  .dash-acc > .sec:not(.collapsed) > h3 + *, .dash-acc > details.sec[open] > summary + *{margin-top:12px}
+  .acc-ic{flex:none;width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    background:color-mix(in srgb,var(--c,var(--primary)) 16%,transparent);color:var(--c,var(--primary))}
+  .acc-ic svg{width:18px;height:18px;fill:currentColor}
+  .acc-tx{display:flex;flex-direction:column;min-width:0;line-height:1.35}
+  .acc-t{font-size:15px;font-weight:800;color:var(--ink)}
+  .acc-d{font-size:12px;font-weight:400;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   @media (prefers-reduced-motion:reduce){.dash-card{transition:none}.dash-card:hover{transform:none}}
   @media (max-width:560px){.dash-grid{grid-template-columns:1fr 1fr}.dash-card{flex-direction:column;padding:12px}.dash-card .dc-d{display:none}}
   /* عارضُ الوسائط (صورة/فيديو) بملءِ الشاشة */
@@ -885,7 +910,7 @@ function wireDashSwitch(){
   panel.querySelectorAll(".dash-switch button").forEach(b=>b.onclick=()=>{
     if(b.dataset.view===dashView()) return;
     try{ localStorage.setItem(DASH_VIEW_KEY,b.dataset.view); }catch(e){}
-    dashPage=null; openDashboard(); panel.scrollIntoView({block:"start"});
+    dashPage=null; openDashboard(); overlay.scrollTo({top:0});
   });
 }
 const dashSecs=()=>[...panel.querySelectorAll(":scope > .sec")];
@@ -907,6 +932,14 @@ function buildDashCards(hash){
   const target=hash && panel.querySelector(hash), owner=target && target.closest(".sec");
   const want=(owner && owner.id) || dashPage;
   if(want && panel.querySelector("#"+CSS.escape(want))) dashOpen(want, true); else dashShowGrid();
+}
+// المطويّات بمظهرِ البطاقات: أيقونةٌ ملوّنة + عنوان + وصف، ولونُ القسمِ يُبرِزُ المفتوحة.
+function dashDecorateAccordion(){
+  dashSecs().forEach(sec=>{
+    const m=DASH_META[sec.id], h=sec.querySelector(":scope > h3, :scope > summary"); if(!m||!h) return;
+    sec.style.setProperty("--c", m.c);
+    h.innerHTML=`<span class="acc-ic">${ICONS[m.key]||""}</span><span class="acc-tx"><span class="acc-t">${dashTitle(sec)}</span><span class="acc-d">${m.d}</span></span>`;
+  });
 }
 function dashShowGrid(){
   dashPage=null;
@@ -1502,9 +1535,11 @@ async function openDashboard(){
   const hash = location.hash;
   wireDashSwitch();
   panel.classList.toggle("dash-cards", dashView()==="cards"); // الحاويةُ تبقى عبرَ إعادةِ الرسم — يُضبَطُ الصنفُ صراحةً
+  panel.classList.toggle("dash-acc", dashView()!=="cards");
   if(dashView()==="cards") buildDashCards(hash);
   else {
     // مطويات: كلُّ قسمٍ يُطوى افتراضاً (لوحةٌ مرتّبةٌ غيرُ مزدحمة)، والعنوانُ يفتحه/يطويه.
+    dashDecorateAccordion(); // رأسُ كلِّ مطويّةٍ بأيقونةِ قسمِه ولونِه ووصفِه (كالبطاقات)
     panel.querySelectorAll(".sec").forEach(sec=>{
       const h=sec.querySelector("h3"); if(!h) return;
       sec.classList.add("collapsible","collapsed");

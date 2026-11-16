@@ -203,11 +203,12 @@ import { pickAdaptive } from "./src/adaptive.js";
 import { speak } from "./src/speak.js";
 import { robo } from "./src/robo-companion.js";
 import { NOTICES, GAME_INTROS as GI } from "./src/robo-phrases.js";
-import { vsSetup, vsMakePlayers, vsScoreHtml, vsTurnHtml, vsEndRound, vP, GAME as GR, sfx } from "./src/versus.js"; // الإطارُ التنافسيّ المشترك (v1.4)
+import { vsSetup, vsMakePlayers, vsScoreHtml, vsTurnHtml, vsEndRound, vsStartIndex, vP, GAME as GR, sfx } from "./src/versus.js"; // الإطارُ التنافسيّ المشترك (v1.4)
 import { downloadSvgAsPdf } from "./src/pdf-utils.js";
 import { numberName as numAr } from "./src/numbers-ar.js";
 import { autoToggleHtml, wireAuto, onCorrect, onWrong } from "./src/quiz-flow.js";
 import { attachReader } from "./src/reader-recorder.js";
+import { initMathPlay, stopMathPlay, startBalance, startConnectDots, startGeoboard } from "./src/math-play.js"; // أنشطةُ v1.9: الميزان · وصلُ النقاط · اللوحةُ الهندسيّة
 robo.mount();
 
 const view = document.getElementById("view");
@@ -217,6 +218,8 @@ const rand = n => Math.floor(Math.random()*n);
 const shuffle = a => { for(let k=a.length-1;k>0;k--){ const j=rand(k+1); [a[k],a[j]]=[a[j],a[k]]; } return a; };
 const backBar = () => `<button class="backstep" id="back">أرقام وهندسة</button>`;
 function wireBack(){ const b=document.getElementById("back"); if(b) b.onclick=renderMenu; }
+initMathPlay({ view, backBar, wireBack, robo, speak, logEvent, autoToggleHtml, wireAuto, onCorrect, onWrong, GI, NOTICES, numAr,
+  vs:{ vsSetup, vsMakePlayers, vsScoreHtml, vsTurnHtml, vsEndRound, vsStartIndex, vP, GR, sfx } });
 
 /* ===== أشكال صغيرة (SVG) لألعاب العثور ===== */
 const C = ["#E07A5F","#6FB3D6","#7BB661","#F4C95D","#C9A0DC"];
@@ -242,6 +245,9 @@ const GAMES = [
   { id:"pattern", ic:"🔁", t:"أكمل النمط",     d:"ما العنصرُ التالي؟" },
   { id:"patternvs", ic:"🧩", t:"تحدّي النمط",  d:"تنافسْ: ما العنصرُ التالي؟", vs:1 },
   { id:"size",    ic:"📏", t:"الأكبر والأصغر", d:"قارن الأحجام" },
+  { id:"balance", ic:"🎚️", t:"ميزانُ المقارنة", d:"أيُّ الكفّتين أثقل؟ أشياء · أعداد · عمليّات", vs:1, nw:1 },
+  { id:"dots",    ic:"✏️", t:"وصلُ النقاط",    d:"صِلْ بالترتيبِ واكتشفِ الرسم", nw:1 },
+  { id:"geo",     ic:"📌", t:"اللوحةُ الهندسيّة", d:"اصنعِ الأشكالَ بشريطٍ ومسامير", nw:1 },
   { id:"basic",   ic:"🔵", t:"أشكالٌ بسيطة",   d:"دائرة · مربّع · مثلّث · مستطيل" },
   { id:"adv",     ic:"🔷", t:"أشكالٌ متقدّمة", d:"2D و3D — أمثلةٌ في خلق الله" },
   { id:"crafts",  ic:"✂️", t:"ورشة الورق",    d:"اصنع الأشكالَ بنفسك بالمقاسات" },
@@ -249,6 +255,7 @@ const GAMES = [
 function renderMenu(){
   pvRun=false; // مغادرةُ أيِّ لعبةٍ تنافسيّةٍ ⇒ أوقِفْ مؤقّتاتِها/ذكاءَها
   document.body.classList.remove("ingame"); // إعادةُ الرأسِ الكاملِ في القائمة
+  stopMathPlay(); // أوقِفْ مؤقّتاتِ أنشطةِ v1.9 وذكاءَها
   view.innerHTML = `<div class="menu">` +
     GAMES.map(g=>`<div class="gcard${g.nw?" hasnew":""}" data-g="${g.id}">${g.nw?'<span class="nbadge">🆕 جديد</span>':''}${g.vs?'<span class="vbadge">⚔️</span>':''}<div class="ic">${iconHtml(g.ic)}</div><div class="t">${g.t}</div><div class="d">${g.d}</div></div>`).join("") +
     `</div>
@@ -259,7 +266,7 @@ function renderMenu(){
     document.body.classList.add("ingame"); try{ scrollTo({top:0}); }catch(_){}
     ({numbers:startNumbers,numerals:startNumerals,add:()=>startArith("+"),sub:()=>startArith("-"),mul:()=>startArith("×"),div:()=>startArith("÷"),
       find:startFind,compare:startCompare,pattern:startPattern,patternvs:startPatternVs,arithvs:startArithVs,size:startSize,
-      basic:startBasicShapes,adv:startAdvShapes,crafts:startCrafts})[c.getAttribute("data-g")]();
+      basic:startBasicShapes,adv:startAdvShapes,crafts:startCrafts,balance:startBalance,dots:startConnectDots,geo:startGeoboard})[c.getAttribute("data-g")]();
   });
 }
 

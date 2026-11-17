@@ -3,7 +3,7 @@
 // (انظر pitfalls ب‑1: التكرارُ مصدرُ الأخطاء). تتلقّى من الصفحةِ ما يخصُّها فقط: view وزرَّ الرجوع.
 // كلُّ الرسومِ SVG محلّيّةٌ أصيلة.
 import { robo } from "./robo-companion.js";
-import { logEvent } from "./progress.js";
+import { logEvent, byAge } from "./progress.js";
 import { speak } from "./speak.js";
 import { GAME_INTROS as GI, NOTICES } from "./robo-phrases.js";
 import { vsSetup, vsMakePlayers, vsScoreHtml, vsTurnHtml, vsEndRound, vsStartIndex, vP, GAME as GR, sfx } from "./versus.js";
@@ -14,7 +14,7 @@ let raf = null, tmo = null;
 const rand = n => Math.floor(Math.random() * n);
 const pick = a => a[rand(a.length)];
 
-export function initVisualPlay(c) { ctx = c; ensureStyle(); }
+export function initVisualPlay(c) { ctx = c; ensureStyle(); JG.n = byAge([2, 3, 4], JG.n); } // حجمُ البازلِ بحسبِ العمر (v1.9)
 export function stopVisualPlay() { run = false; cancelAnimationFrame(raf); clearTimeout(tmo); }
 
 let styled = false;

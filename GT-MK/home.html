@@ -201,6 +201,18 @@
   .lbtn{border:none;border-radius:14px;padding:13px;font-weight:800;cursor:pointer;font-family:inherit;font-size:15px}
   .lbtn.primary{background:var(--primary);color:#fff} .lbtn.primary:hover{background:var(--primary-d)}
   .lbtn.ghost{background:var(--card);border:1.5px solid var(--line);color:var(--ink)}
+  /* زرُّ «إنشاء ودخول»: ألوانٌ متوهّجةٌ تنسابُ وتتمايلُ برفقٍ لتُغريَ الطفلَ بالبدء (بطلبِ المستخدم، v1.9).
+     !important لأنّ السمةَ الداكنةَ تُعيدُ تلوينَ .lbtn.primary. تتوقّفُ الحركةُ لمن يفضّلُ تقليلَها. */
+  /* المحدِّدُ بـ#loginBody ليغلبَ قاعدةَ dark.css (‎#loginBody button{background:…!important}) التي كانت تُطفئُ التدرّج */
+  .lbtn.glow,html #loginBody button.lbtn.glow{position:relative;color:#fff!important;font-size:17px;letter-spacing:.3px;text-shadow:0 1px 3px rgba(0,0,0,.35);
+    background:linear-gradient(110deg,#FF6B6B,#FFB347,#FFE066,#7BD389,#4CC9F0,#B388FF,#FF6B6B)!important;background-size:300% 100%!important;
+    animation:glowFlow 4s linear infinite,glowSway 2.6s ease-in-out infinite,glowPulse 1.8s ease-in-out infinite}
+  .lbtn.glow:hover,.lbtn.glow:focus-visible{animation-duration:2s,1.3s,.9s}
+  .lbtn.glow:active{transform:scale(.96)}
+  @keyframes glowFlow{to{background-position:300% 0}}
+  @keyframes glowSway{0%,100%{transform:rotate(-1.6deg) translateY(0)}50%{transform:rotate(1.6deg) translateY(-2px)}}
+  @keyframes glowPulse{0%,100%{box-shadow:0 0 10px 1px rgba(255,179,71,.55),0 0 22px 4px rgba(76,201,240,.25)}50%{box-shadow:0 0 18px 4px rgba(255,107,107,.7),0 0 34px 10px rgba(179,136,255,.4)}}
+  @media (prefers-reduced-motion:reduce){.lbtn.glow{animation:none;box-shadow:0 0 14px 3px rgba(255,179,71,.6)}}
   .lprof{display:flex;flex-direction:column;align-items:center;gap:3px;background:var(--bg);border:1.5px solid var(--line);border-radius:16px;padding:14px 8px;cursor:pointer;font-family:inherit;color:var(--ink);transition:transform .12s,border-color .12s,box-shadow .12s}
   .lprof:hover{transform:translateY(-3px);border-color:var(--primary);box-shadow:0 8px 18px rgba(0,0,0,.12)}
   .lprof .pav{font-size:38px;line-height:1} .lprof .pnm{font-weight:800;font-size:14px} .lprof .pag{font-size:11px;color:var(--muted)}
@@ -598,7 +610,7 @@ function renderAdd(){
     <div class="llabel">الصورة:</div>
     <div class="lavgrid" id="avRow">${AVATARS.map((a,i)=>`<button type="button" class="lchip av${i===0?' on':''}" data-a="${a}">${a}</button>`).join("")}</div>
     <input id="npw" type="password" class="lfield" placeholder="كلمة مرور (اختياريّة)" style="margin-top:12px">
-    <div style="display:flex;gap:8px;margin-top:14px"><button id="createGo" class="lbtn primary" style="flex:1">إنشاء ودخول</button><button id="createBack" class="lbtn ghost">رجوع</button></div>`;
+    <div style="display:flex;gap:8px;margin-top:14px"><button id="createGo" class="lbtn primary glow" style="flex:1">إنشاء ودخول</button><button id="createBack" class="lbtn ghost">رجوع</button></div>`;
   let age="4-6", av=AVATARS[0], gender="m";
   const pick=(sel,set)=>body.querySelectorAll(sel).forEach(b=>b.onclick=()=>{ set(b.dataset.a); body.querySelectorAll(sel).forEach(x=>x.classList.remove("on")); b.classList.add("on"); });
   pick("#ageRow .lchip", v=>age=v);

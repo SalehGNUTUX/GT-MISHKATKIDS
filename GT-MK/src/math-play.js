@@ -2,6 +2,8 @@
 // وحدةٌ مستقلّةٌ عن math.html كي لا يتضخّم؛ تتلقّى ما تحتاجُه عبرَ ctx (الآليّ، إطارُ التنافس، تدفّقُ الإجابة).
 // كلُّ الرسمِ SVG محلّيّ أصيل. ميزانُ المقارنة تنافسيٌّ عبر versus؛ النشاطانِ الآخرانِ فرديّانِ بتدرّجٍ في الصعوبة.
 
+import { byAge } from "./progress.js"; // المستوى المقترحُ بحسبِ العمر (v1.9)
+
 let ctx = null;          // { view, backBar, wireBack, robo, speak, logEvent, autoToggleHtml, wireAuto, onCorrect, onWrong, vs, GI, NOTICES, numAr }
 let run = false;         // حارسُ المؤقّتاتِ والذكاء: يُطفأُ عند الرجوعِ إلى القائمة
 let raf = null, tmo = null;
@@ -9,7 +11,7 @@ const rand = n => Math.floor(Math.random() * n);
 const shuffle = a => { for (let k = a.length - 1; k > 0; k--) { const j = rand(k + 1); [a[k], a[j]] = [a[j], a[k]]; } return a; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-export function initMathPlay(c) { ctx = c; ensureStyle(); }
+export function initMathPlay(c) { ctx = c; ensureStyle(); CD.lvl = byAge([1, 2, 3], CD.lvl); GB.lvl = byAge([1, 2], GB.lvl); } // مستوى عمرِ الطفل (v1.9)
 export function stopMathPlay() { run = false; cancelAnimationFrame(raf); clearTimeout(tmo); }
 
 let styled = false;

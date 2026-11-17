@@ -198,7 +198,7 @@ import { iconHtml } from "./src/icons.js";
 wireThemeToggle(document.getElementById("themeBtn"));
 import MATH from "./content/math.js";
 import NUMERALS from "./content/numerals.js";
-import { logEvent, recordMastery } from "./src/progress.js";
+import { logEvent, recordMastery, byAge } from "./src/progress.js";
 import { pickAdaptive } from "./src/adaptive.js";
 import { speak } from "./src/speak.js";
 import { robo } from "./src/robo-companion.js";
@@ -357,7 +357,7 @@ function startNumerals(){
 /* ===== ➕➖✖ ARITHMETIC ===== */
 // مستوياتٌ بحسب العمر: 1=أعداد صغيرة (4-6)، 2=متوسطة (7-8)، 3=أكبر (9-10)
 let arOp = "+", arLevel = 1, arScore = 0;
-function startArith(op){ arOp = op; arLevel = 1; arScore = 0; nextArith(); }
+function startArith(op){ arOp = op; arLevel = byAge([1,2,3], 1); arScore = 0; nextArith(); } // يبدأُ بمستوى عمرِ الطفل (v1.9)
 function genArith(){
   const max = arLevel===1 ? 5 : arLevel===2 ? 10 : 20;
   let a, b, ans, q;

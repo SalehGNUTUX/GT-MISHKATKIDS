@@ -101,7 +101,7 @@ const SESSION_SIZE = 10;
 const view = document.getElementById("view");
 
 // فئات الاختبار العمرية تختلف عن فئات التطبيق، فنطبّق الافتراض الذكيّ فقط إن طابق.
-let fCat = "all", fAge = ["4-6","6-8","9-12"].includes(getChildAge()) ? getChildAge() : "all";
+let fCat = "all", fAge = ({"4-6":"4-6","7-10":"6-8"})[getChildAge()] || "all"; // فئاتُ الحسابِ (4-6/7-10) ← أقربُ فئةِ أسئلة؛ كان 7-10 يسقطُ إلى «الكل»
 let session = [], qi = 0, score = 0, answered = false;
 
 const shuffle = a => { for(let k=a.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [a[k],a[j]]=[a[j],a[k]]; } return a; };

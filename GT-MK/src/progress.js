@@ -135,3 +135,12 @@ export function resetProgress() { save({}); }
 // مدخلٌ في log بالبنيةِ نفسِها التي يقرؤها index.html، والوسائطُ تُحفَظُ بطابعِ الوقتِ نفسِه (src/works.js).
 // نمطُ «حمّلْ-عدّلْ-احفظ» لأنّ index.html يكتبُ في المفتاحِ نفسِه.
 export function addWorkEntry(entry) { const s = load(); s.log = s.log || []; s.log.push(entry); save(s); }
+
+// v1.9 — المستوى بحسبِ الفئةِ العمريّةِ المختارةِ في الحساب: تقترحُ كلُّ لعبةٍ مستواها عند فتحِها،
+// ويبقى الطفلُ/الوالدُ حرًّا في تغييرِه. "young" = 4–6 · "older" = 7–10 · null = «الكلّ»/غيرُ محدَّد (لا تغيير).
+export function ageTier() { const a = getChildAge(); return a === "4-6" ? "young" : a === "7-10" ? "older" : null; }
+/** من مستوياتٍ مرتّبةٍ من الأسهل: الصغيرُ أوّلُها، والأكبرُ أوسطُها (يبقى الأصعبُ تحدّيًا اختياريًّا). */
+export function byAge(levels, fallback) {
+  const t = ageTier(); if (!t || !levels || !levels.length) return fallback;
+  return t === "young" ? levels[0] : levels[Math.min(levels.length - 1, Math.floor(levels.length / 2))];
+}

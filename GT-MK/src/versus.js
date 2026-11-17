@@ -4,6 +4,7 @@ import { getCurrentUser, listProfiles, getProfile, getParentName, getParentAvata
 import { robo } from "./robo-companion.js";
 import * as sfx from "./sfx.js";
 import { GAME_REACTIONS as GR } from "./robo-phrases.js";
+import { byAge } from "./progress.js";
 
 // جنسُ الوالدِ في اللعبِ التنافسيّ (أب/أم) — يختارُه الابنُ عند «ضدّ الوالد»، محفوظٌ ليبقى بين الجلسات.
 const PGEN_KEY = "tilmithi_vs_parentgender";
@@ -30,6 +31,7 @@ function ensureStyle() {
   if (styled) return; styled = true;
   const st = document.createElement("style");
   st.textContent = `
+  ${VS_AGE_CSS}
   .vs-set{max-width:580px;margin:14px auto;background:var(--card,#fff);border:1px solid var(--line,#ECE6DA);border-radius:18px;padding:18px 16px;box-shadow:var(--shadow,0 6px 20px rgba(0,0,0,.08))}
   .vs-row{margin:0 0 16px} .vs-lbl{font-weight:800;font-size:14px;color:var(--muted,#6B6B6B);margin-bottom:8px}
   .vs-lvl{display:flex;gap:8px;flex-wrap:wrap}
@@ -106,17 +108,30 @@ export function vsTurnHtml(p) {
 }
 export function vsScoreHtml(ps) { return `<div class="vs-score">` + ps.map(p => { const w = vsWins[p.name] || 0; return `<span class="vs-chip" style="border-color:${p.color};color:${p.color}">${p.avatar} ${p.name}: ${p.score}${w ? ` <b style="opacity:.8">🏅${w}</b>` : ""}</span>`; }).join("") + `</div>`; }
 
+// المستوى بحسبِ العمر (v1.9): يُطبَّقُ مرّةً لكلِّ لعبةٍ في الصفحة (مفتاحُها cfg.say) ما لم يخترِ الطفلُ مستوًى بنفسِه،
+// ومثلُه مستوى الآليّ مرّةً للصفحة. يُصدَّرُ ليستعملَه play.html (نسختُه المحلّيّةُ من vsSetup) فلا يتكرّرُ المنطق.
+const vsAgeDone = new Set(); let vsAiAgeDone = false;
+export function vsApplyAge(cfg, ai) {
+  if (!vsAgeDone.has(cfg.say)) { vsAgeDone.add(cfg.say); const v = byAge(cfg.diffs.map(d => d.v), null); if (v != null) cfg.setDiff(v); }
+  if (!vsAiAgeDone) { vsAiAgeDone = true; ai = byAge(["easy", "medium", "hard"], ai); }
+  return ai;
+}
+/** وسمٌ صغيرٌ «لعمرك» على المستوى المقترح. */
+export function vsAgeTag(cfg, v) { const s = byAge(cfg.diffs.map(d => d.v), null); return s != null && s == v ? ` <span class="vs-age">لعمرك</span>` : ""; }
+export const VS_AGE_CSS = `.vs-age{display:inline-block;font-size:10.5px;font-weight:800;background:#F4C95D;color:#5a4300;border-radius:999px;padding:1px 7px;margin-inline-start:4px;vertical-align:middle}`;
+
 // شاشةُ الإعداد داخل host. cfg={ say, diffLabel?, diffs:[{v,label}], getDiff, setDiff, start, soloOk? }
 export function vsSetup(host, cfg) {
   ensureStyle();
   vsResetStarter();   // شاشةُ الإعدادِ = سلسلةٌ جديدة ⇒ يبدأُ صاحبُ الحسابِ أوّلَ جولة
+  VS.ai = vsApplyAge(cfg, VS.ai);
   const sibs = siblings();
   if (!cfg.soloOk && VS.opp === "solo") VS.opp = "ai";
   const opp = (cfg.soloOk ? `<button data-opp="solo" class="${VS.opp === "solo" ? "on" : ""}">🧒 وحدي</button>` : "")
     + `<button data-opp="ai" class="${VS.opp === "ai" ? "on" : ""}">🤖 ضدّ الآليّ</button>`
     + sibs.map(s => `<button data-opp="${s.key}" class="${VS.opp === s.key ? "on" : ""}">${s.avatar} ${s.name}</button>`).join("")
     + `<button data-opp="parent" class="${VS.opp === "parent" ? "on" : ""}">${getParentAvatar()} ${getParentName()}</button>`;
-  const dh = cfg.diffs.map(d => `<button data-d="${d.v}" class="${cfg.getDiff() == d.v ? "on" : ""}">${d.label}</button>`).join("");
+  const dh = cfg.diffs.map(d => `<button data-d="${d.v}" class="${cfg.getDiff() == d.v ? "on" : ""}">${d.label}${vsAgeTag(cfg, d.v)}</button>`).join("");
   host.innerHTML = `<div class="clue" style="padding:12px"><div class="say">${cfg.say}</div></div>
     <div class="vs-set">
       <div class="vs-row"><div class="vs-lbl">${cfg.diffLabel || "🎚️ الصعوبة"}</div><div class="vs-lvl" id="vsD">${dh}</div></div>

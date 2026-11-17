@@ -320,7 +320,7 @@ import { speak } from "./src/speak.js";
 import { robo, ROBO_SVG } from "./src/robo-companion.js";
 import * as sfx from "./src/sfx.js"; // أصواتٌ تفاعليّة (لمسة/نجاح/خطأ) للألعاب
 import { GAME_REACTIONS as GR, GAME_INTROS as GI, NOTICES } from "./src/robo-phrases.js"; // تفاعلاتُ الألعاب (مُولَّدةٌ عبر Piper)
-import { vsEndRound, vsWinsOf, vsTurnHtml, VS, setParentFemale, vsStartIndex, vsResetStarter, PARENT_SELF, setParentSelf, parentLabel, parentAvatarOf } from "./src/versus.js"; // نافذةُ نهاية الجولة + سجلُّ الانتصارات + حبّةُ الدور (v1.4) + جنسُ الوالد (v1.5.5)
+import { vsEndRound, vsWinsOf, vsTurnHtml, VS, setParentFemale, vsStartIndex, vsResetStarter, vsApplyAge, vsAgeTag, VS_AGE_CSS, PARENT_SELF, setParentSelf, parentLabel, parentAvatarOf } from "./src/versus.js"; // نافذةُ نهاية الجولة + سجلُّ الانتصارات + حبّةُ الدور (v1.4) + جنسُ الوالد (v1.5.5)
 import { clockGame, AR_L } from "./src/clock-widget.js"; // تحدّي الساعة (v1.5)
 import { playClipAsync } from "./src/tts-clips.js";      // نطقُ جُمَلِ الوقت (Piper العصبيّ)
 import { listProfiles, getProfile, getCurrentUser, getParentName, getParentAvatar } from "./src/accounts.js";
@@ -781,6 +781,8 @@ function vsScoreHtml(ps){ return `<div class="vsscore">`+ps.map((p,i)=>{ const w
 // حارسٌ يوقفُ اللعبةَ عند مغادرتها فلا تبقى مؤقّتاتُها/ذكاءُ الآليّ يعملُ في الخلفيّة ويُرجِعُ للّعب قسرًا.
 let vsRun=false;
 function vsSetup(cfg){
+  vs_ai = vsApplyAge(cfg, vs_ai); // المستوى المقترحُ بحسبِ العمر (المنطقُ مركزيٌّ في versus.js)
+  if(!document.getElementById("vsAgeCss")){ const st=document.createElement("style"); st.id="vsAgeCss"; st.textContent=VS_AGE_CSS; document.head.appendChild(st); }
   vsRun=false; // شاشةُ الإعداد ليست لعبًا نشطًا ⇒ أوقِفْ أيَّ استدعاءٍ مؤجَّلٍ سابق
   const sibs=siblings();
   const opp = (cfg.soloOk?`<button data-opp="solo" class="${vs_opp==="solo"?"on":""}">🧒 وحدي</button>`:"")
@@ -788,7 +790,7 @@ function vsSetup(cfg){
     +sibs.map(s=>`<button data-opp="${s.key}" class="${vs_opp===s.key?"on":""}">${s.avatar} ${s.name}</button>`).join("")
     +`<button data-opp="parent" class="${vs_opp==="parent"?"on":""}">${getParentAvatar()} ${getParentName()}</button>`;
   if(!cfg.soloOk && vs_opp==="solo") vs_opp="ai";
-  const dh = cfg.diffs.map(d=>`<button data-d="${d.v}" class="${cfg.getDiff()==d.v?"on":""}">${d.label}</button>`).join("");
+  const dh = cfg.diffs.map(d=>`<button data-d="${d.v}" class="${cfg.getDiff()==d.v?"on":""}">${d.label}${vsAgeTag(cfg,d.v)}</button>`).join("");
   view.innerHTML = backBar()
     +`<div class="clue" style="padding:12px"><div class="say">${cfg.say}</div></div>
       <div class="memset">

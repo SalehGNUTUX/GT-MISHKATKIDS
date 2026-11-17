@@ -46,7 +46,8 @@
   .card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px 16px;text-align:center;margin-top:6px}
   .say{font-size:14px;color:var(--muted)}
   .emoji{font-size:62px;line-height:1.1}
-  .bigsyl{font-size:96px;font-weight:800;color:var(--primary-d);line-height:1.2;min-height:120px}
+  /* سطرٌ واسع: الهمزةُ والحركةُ فوقَها (أَ أُ) والكسرةُ تحتَها (إِ) تتجاوزُ مربّعَ الحرفِ بخطِّ 96px — بـ1.2 كانت تغطّي سطرَ التعليمات */
+  .bigsyl{font-size:96px;font-weight:800;color:var(--primary-d);line-height:1.75;min-height:168px;margin:4px 0;padding-top:26px}
 
   .hbtns{display:flex;gap:10px;justify-content:center;margin:8px 2px}
   .hbtn{flex:1;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px 6px;font-size:46px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--violet);position:relative}

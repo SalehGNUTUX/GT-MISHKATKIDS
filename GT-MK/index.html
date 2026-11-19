@@ -403,7 +403,7 @@ import { praise, tadabburFor } from "./src/islamic.js";
 import { deepenFor, roboWrongFor } from "./src/think.js";
 import { isSoundOn, toggleSound, isTonesOn, setTonesOn, isVoiceOn, setVoiceOn, getVoiceSet, setVoiceSet, CLIPS, AUTO, getStoryVoice, setStoryVoice, isStoryReadOn, setStoryReadOn, isVoiceNavOn, setVoiceNavOn } from "./src/sound-prefs.js";
 import { ICONS } from "./src/icons.js"; // أيقوناتُ بطاقاتِ لوحةِ التحكّم (SVG معتمدة)
-import { APP_VERSION, updatePlatform, isAutoCheckOn, setAutoCheckOn, checkForUpdate, openUpdateDialog } from "./src/updater.js"; // التحديثُ من داخلِ التطبيق
+import { APP_VERSION, updatePlatform, isAutoCheckOn, setAutoCheckOn, checkForUpdate, openUpdateDialog, checkWebUpdate, refreshWebApp } from "./src/updater.js"; // التحديثُ من داخلِ التطبيق
 import { isQuranOnlineEnabled, setQuranOnlineOn, isQuranOnlineAllowedFor, setQuranOnlineAllowedFor } from "./src/quran-online.js"; // بوّابةُ الوالدِ للقرآنِ الكاملِ عبرَ الإنترنت
 import { listSets, primeVoices } from "./src/voices.js";
 import { practiceByAccount, clearAccount as clearPracticeAccount } from "./src/practice.js";
@@ -1328,14 +1328,19 @@ async function openDashboard(){
     <div class="sec" id="sec-updates" style="scroll-margin-top:12px"><h3>⬆️ تحديثُ التطبيق</h3>
       <div class="muted" style="font-size:12.5px;line-height:1.7;margin-bottom:8px">
         ${updatePlatform()==="web"
-          ? "نسخةُ المتصفّحِ تُحدِّثُ نفسَها تلقائيًّا عندَ نشرِ إصدارٍ جديد — لا يلزمُ شيء."
+          ? "نسخةُ المتصفّحِ تُخبّئُ التطبيقَ لتعملَ دونَ اتّصال، فقد تبقى على إصدارٍ قديمٍ بعدَ النشر. <b>«حدِّثِ الآن»</b> يجلبُ الجديدَ (الملفّاتِ المتغيّرةَ فقط) ويحفظُه محلّيًّا؛ و<b>«تحديثٌ عميق»</b> يمحو النسخةَ المخبَّأةَ ويُنزّلُها كاملةً من جديد. <b>بياناتُ الأبناءِ وتلاواتُ القرآنِ المنزَّلةُ لا تُمَسّ.</b>"
           : "يفحصُ التطبيقُ مرّةً في اليومِ عن إصدارٍ جديدٍ على GitHub (قراءةُ قائمةِ الإصداراتِ فقط — <b>لا يُرسَلُ أيُّ شيءٍ عن أبنائك</b>)، ويُنبِّهُ بشريطٍ لطيف. التنزيلُ والتثبيتُ من داخلِ التطبيقِ وخلفَ كلمةِ مرورِ الوالدين، وبياناتُ الأبناءِ تبقى كما هي."}
       </div>
       <div class="dom-row">
         <span style="flex:none;width:210px;font-size:13px">الإصدارُ الحاليّ</span>
         <b style="flex:1;font-size:13px">v${APP_VERSION}</b>
       </div>
-      ${updatePlatform()==="web" ? "" : `<div class="dom-row">
+      ${updatePlatform()==="web" ? `<div class="dom-row">
+        <span class="muted" id="webUpdStatus" style="font-size:12.5px;flex:1"></span>
+        <button class="topbtn" id="webUpdCheck" style="font-size:13px">🔎 افحصْ</button>
+        <button class="topbtn" id="webUpdNow" style="font-size:13px">⬆️ حدِّثِ الآن</button>
+        <button class="topbtn" id="webUpdDeep" style="font-size:13px" title="يمحو النسخةَ المخبَّأةَ ويُنزّلُ التطبيقَ كاملًا من الخادم">🧹 تحديثٌ عميق</button>
+      </div>` : `<div class="dom-row">
         <span style="flex:none;width:210px;font-size:13px">🔔 التنبيهُ بالتحديثاتِ تلقائيًّا</span>
         <span class="muted" style="font-size:12px;flex:1">يتطلّبُ اتّصالًا بالإنترنت</span>
         <button class="toggle ${isAutoCheckOn()?"on":""}" id="updAutoToggle" title="تفعيل/إيقاف فحص التحديثات تلقائيًّا"></button>
@@ -1435,6 +1440,14 @@ async function openDashboard(){
     const show=d.style.display==="none"; d.style.display=show?"block":"none"; b.textContent=show?"تفاصيل ▴":"تفاصيل ▾";
   }));
   const srt=document.getElementById("storyReadToggle"); if(srt) srt.addEventListener("click",()=>{ const on=!isStoryReadOn(); setStoryReadOn(on); srt.classList.toggle("on",on); });
+  // نسخةُ المتصفّح: فحصُ الإصدارِ المنشور + تحديثٌ سريع/عميق (src/updater.js)
+  { const st=document.getElementById("webUpdStatus"), say=(t,bad)=>{ if(st){ st.textContent=t; st.style.color=bad?"#B5482F":""; } };
+    const ck=document.getElementById("webUpdCheck"), now=document.getElementById("webUpdNow"), deep=document.getElementById("webUpdDeep");
+    if(ck) ck.addEventListener("click", async()=>{ say("يفحص…"); const i=await checkWebUpdate();
+      say(!i.checked ? "تعذّرَ الفحص (لا اتّصال؟)" : i.available ? `متاحٌ v${i.latest} — اضغطْ «حدِّثِ الآن»` : `لديك أحدثُ إصدار (v${APP_VERSION})`, !i.checked); });
+    if(now) now.addEventListener("click", ()=>{ now.disabled=deep.disabled=true; refreshWebApp({ onMsg:say }).then(ok=>{ if(!ok){ now.disabled=deep.disabled=false; } }); });
+    if(deep) deep.addEventListener("click", async()=>{ if(!await confirmChoice("تحديثٌ عميق: يُنزّلُ التطبيقَ كاملًا من جديد (قد يستغرقُ دقائق). بياناتُ الأبناءِ تبقى. متابعة؟","🧹 حدِّثْ","إلغاء")) return;
+      now.disabled=deep.disabled=true; refreshWebApp({ deep:true, onMsg:say }).then(ok=>{ if(!ok){ now.disabled=deep.disabled=false; } }); }); }
   const uat=document.getElementById("updAutoToggle"); if(uat) uat.addEventListener("click",()=>{ const on=!isAutoCheckOn(); setAutoCheckOn(on); uat.classList.toggle("on",on); });
   const ucn=document.getElementById("updCheckNow"); if(ucn) ucn.addEventListener("click",async()=>{
     const st=document.getElementById("updStatus"); ucn.disabled=true; st.textContent="جارٍ الفحص…";

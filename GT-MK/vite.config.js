@@ -36,6 +36,11 @@ export default defineConfig({
     },
   },
   plugins: [
+    // version.json: رقمُ الإصدارِ المنشور — تقرؤه نسخةُ المتصفّحِ من الشبكةِ مباشرةً (خارجَ عاملِ الخدمة)
+    // لتعرفَ أنّ إصدارًا أحدثَ نُشِرَ فتعرضَ «حدِّثِ الآن» (src/updater.js → checkWebUpdate/refreshWebApp).
+    { name: "app-version-json", generateBundle() {
+        this.emitFile({ type: "asset", fileName: "version.json", source: JSON.stringify({ version: APP_VERSION, built: new Date().toISOString() }) });
+    } },
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"],
@@ -63,7 +68,7 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,svg,json,webmanifest,woff2,ttf,otf,mp3,webp}"],
         // تلاوةُ القرآن (الحصري، ~79م) لا تُحمَّل مسبقاً (تُثقِل التثبيت)؛ تُخزَّن عند الاستماع (CacheFirst)
         // فتعمل دون إنترنت بعد أوّل استماعٍ لكلِّ سورة. النصُّ مُضمَّنٌ في الحزمة فيعملُ دائمًا.
-        globIgnores: ["**/quran/husary/**"],
+        globIgnores: ["**/quran/husary/**", "version.json"],   // version.json يُقرأُ من الشبكةِ دائمًا
         runtimeCaching: [{
           urlPattern: ({ url }) => url.pathname.includes("/quran/husary/"),
           handler: "CacheFirst",

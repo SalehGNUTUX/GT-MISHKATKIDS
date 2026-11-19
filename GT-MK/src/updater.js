@@ -71,6 +71,54 @@ async function checkAndroid() {
   } catch (e) { return base; }
 }
 
+// ── نسخةُ المتصفّح (PWA): عاملُ الخدمةِ يُحدِّثُ نفسَه «يومًا ما» — والنسخةُ المثبَّتةُ قد تبقى على القديم ──
+// checkWebUpdate يقرأُ version.json المنشورَ من الشبكة (لا من المخبَّأ) فيعرفُ إن كان أحدث.
+// refreshWebApp: (1) سريع — reg.update() وينتظرُ تفعيلَ العاملِ الجديد (Workbox يُنزّلُ المتغيّرَ فقط) ثمّ يُعيدُ التحميل؛
+// (2) عميق — يمحو مخبَّآتِ ملفّاتِ التطبيق ويُلغي العاملَ ثمّ يُعيدُ التحميلَ من الخادم. لا يَمسُّ بياناتِ الأبناء
+// (localStorage/IndexedDB) ولا تلاواتِ القرآنِ المنزَّلة (مخبَّآت quran-*).
+const KEEP_CACHE = /quran/i;
+export async function checkWebUpdate() {
+  const base = { current: APP_VERSION, latest: "", available: false, checked: false, channel: "web" };
+  try {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return base;
+    const res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) return base;
+    const j = await res.json(), latest = parseVersion(j.version), cur = parseVersion(APP_VERSION);
+    return { ...base, checked: true, latest: latest ? vText(latest) : "", available: !!(latest && cur && compareVersion(latest, cur) > 0) };
+  } catch (e) { return base; }
+}
+const waitActivated = (sw, ms) => new Promise(res => {
+  if (!sw) return res(false);
+  if (sw.state === "activated") return res(true);
+  const t = setTimeout(() => res(false), ms);
+  sw.addEventListener("statechange", () => { if (sw.state === "activated") { clearTimeout(t); res(true); } });
+});
+export async function refreshWebApp({ deep = false, onMsg = () => {} } = {}) {
+  if (typeof navigator !== "undefined" && navigator.onLine === false) { onMsg("لا اتّصالَ بالإنترنت — التحديثُ يحتاجُ الشبكة.", true); return false; }
+  const reload = () => { const u = new URL(location.href); u.searchParams.set("_v", Date.now()); location.replace(u.toString()); };
+  try {
+    const reg = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistration() : null;
+    if (!deep && reg) {
+      onMsg("يبحثُ عن الجديد…");
+      await reg.update();
+      const sw = reg.installing || reg.waiting;
+      if (sw) {
+        onMsg("يُنزِّلُ الجديد (الملفّاتُ المتغيّرةُ فقط)…");
+        try { sw.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
+        await waitActivated(sw, 120000);
+        onMsg("تمّ — يُعيدُ التحميل…"); reload(); return true;
+      }
+      const info = await checkWebUpdate();
+      if (!info.available) { onMsg(`لديك أحدثُ إصدار (v${APP_VERSION}).`); return false; }
+      onMsg("العاملُ لم يلتقطِ الجديد — تحديثٌ عميق…");
+    }
+    onMsg("يمحو نسخةَ التطبيقِ المخبَّأة (بياناتُ الأبناءِ والتلاواتُ المنزَّلةُ تبقى)…");
+    if (typeof caches !== "undefined") for (const k of await caches.keys()) if (!KEEP_CACHE.test(k)) await caches.delete(k);
+    if (reg) await reg.unregister();
+    onMsg("يُعيدُ التحميلَ من الخادم…"); reload(); return true;
+  } catch (e) { onMsg("تعذّرَ التحديث: " + (e && e.message || e), true); return false; }
+}
+
 /** فحصٌ صريح. يُرجِعُ معلوماتِ التحديث (available/latest/asset…) أو null على الويب. */
 export async function checkForUpdate() {
   const p = updatePlatform();
@@ -152,7 +200,8 @@ function showBar(info) {
 
 /** فحصٌ تلقائيٌّ هادئٌ عند الإقلاع (مرّةً يوميًّا على الأكثر)؛ يُظهرُ الشريطَ إن وُجدَ إصدارٌ لم يُتخطَّ. */
 export function initUpdateNotice({ delay = 8000 } = {}) {
-  if (updatePlatform() === "web" || !isAutoCheckOn()) return;
+  if (!isAutoCheckOn()) return;
+  if (updatePlatform() === "web") { initWebNotice(delay); return; }
   try { if (sessionStorage.getItem("tilmithi_update_seen")) return; sessionStorage.setItem("tilmithi_update_seen", "1"); } catch (e) {}
   setTimeout(async () => {
     if (typeof navigator !== "undefined" && navigator.onLine === false) return;
@@ -248,4 +297,21 @@ export function openUpdateDialog(info) {
     extra.querySelector(".up-reveal").onclick = () => desktop().reveal(file);
     extra.querySelector(".up-page").onclick = openPage;
   }
+}
+
+// نسخةُ المتصفّح: فحصٌ يوميٌّ هادئٌ لـversion.json؛ إن نُشِرَ أحدثُ ظهرَ شريطٌ بـ«حدِّثِ الآن» (تحديثٌ سريعٌ ثمّ عميقٌ عند الحاجة).
+function initWebNotice(delay) {
+  try { if (sessionStorage.getItem("tilmithi_update_seen")) return; sessionStorage.setItem("tilmithi_update_seen", "1"); } catch (e) {}
+  setTimeout(async () => {
+    if (Date.now() - (getState().lastCheck || 0) < AUTO_EVERY) return;
+    const info = await checkWebUpdate(); if (info.checked) setState({ lastCheck: Date.now() });
+    if (!info.available || info.latest === getState().skipped) return;
+    ensureStyle(); document.querySelector(".up-bar")?.remove();
+    const bar = document.createElement("div"); bar.className = "up-bar"; bar.setAttribute("role", "status");
+    bar.innerHTML = `<div class="up-ic">${ARROW}</div><div class="up-tx"><b>إصدارٌ جديدٌ متاح: v${esc(info.latest)}</b><small id="upWebMsg">أنتَ على v${esc(info.current)} — التحديثُ لا يمسُّ بياناتِ الأبناء</small></div>
+      <div class="up-btns"><button class="up-go">حدِّثِ الآن</button><button class="up-later">لاحقًا</button></div>`;
+    document.body.appendChild(bar);
+    bar.querySelector(".up-later").onclick = () => bar.remove();
+    bar.querySelector(".up-go").onclick = () => refreshWebApp({ onMsg: t => { const m = bar.querySelector("#upWebMsg"); if (m) m.textContent = t; } });
+  }, delay);
 }

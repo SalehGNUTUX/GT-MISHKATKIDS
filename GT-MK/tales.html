@@ -100,6 +100,7 @@ wireThemeToggle(document.getElementById("themeBtn"));
 import data from "./content/sararim-stories.js";
 import { logEvent } from "./src/progress.js";
 import { robo } from "./src/robo-companion.js";
+import { sayBtn, wireSay, autoRead } from "./src/read-aloud.js"; // «اسمعِ السؤال» لمن لا يقرأ (v1.10)
 import { attachReader } from "./src/reader-recorder.js";
 import { isStoryReadOn, showTashkeel, setShowTashkeel, stripTashkeel } from "./src/sound-prefs.js";
 import { attachStoryReader } from "./src/story-reader.js";
@@ -197,11 +198,12 @@ function openStory(id){
     qbox.innerHTML = `
       <div class="qprog">السُّؤَالُ ${i+1} مِنْ ${qs.length}</div>
       <div class="q">
-        <div class="qt">${q.qt}</div>
+        <div class="qt">${q.qt}${sayBtn(q.qt)}</div>
         <button class="reveal" id="qReveal">🤔 فكّرْ… ثمّ أظهِرِ الخيارات</button>
-        <div class="opts hidden" id="qOpts">${q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.t}</button>`).join("")}</div>
+        <div class="opts hidden" id="qOpts">${q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.t}${sayBtn(o.t,true)}</button>`).join("")}</div>
         <div id="qAfter"></div>
       </div>`;
+    wireSay(qbox); if(i>0) autoRead(q.qt); // الأوّلُ يظهرُ مع القصّة فلا يُقاطِعُ قراءتَها
     const rev = document.getElementById("qReveal");
     rev.onclick = ()=>{ document.getElementById("qOpts").classList.remove("hidden"); rev.style.display="none"; };
     const opts = document.getElementById("qOpts");

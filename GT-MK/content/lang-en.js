@@ -190,6 +190,26 @@ export default {
       { art: "clean-2", text: "So he washed his hands with water and soap, and tidied his toys one by one." },
       { art: "clean-3", text: "The room became clean and shiny, and he felt comfort and pride!" } ],
       lesson: "Cleanliness makes us happy and protects us. 🫧" },
+    { id: "grandma-garden", cover: "garden-3", title: "Grandma's Garden", pages: [
+      { art: "garden-1", text: "Grandma watered her flowers every day, but the watering can became too heavy for her. She got tired, and the flowers wilted." },
+      { art: "garden-2", text: "Her grandson Ali saw her and said: «Let me help you, Grandma!» He carried the watering can and watered the flowers one by one." },
+      { art: "garden-3", text: "The flowers bloomed, and Grandma smiled and said: «May Allah bless you, my son.» Ali felt very happy." } ],
+      lesson: "Whoever honours the elderly brings joy to them and to himself. 🌷" },
+    { id: "umbrella-share", cover: "umb-2", title: "An Umbrella for Two", pages: [
+      { art: "umb-1", text: "It rained on the way home from school. Layla had an umbrella, and she saw her friend Huda getting wet and shivering." },
+      { art: "umb-2", text: "Layla said: «Come with me, Huda!» And they walked under the umbrella together, shoulder to shoulder." },
+      { art: "umb-3", text: "They reached home laughing, and a rainbow appeared. Huda said: «Thank you, sharing is so lovely!»" } ],
+      lesson: "When we share what we have, there is room for everyone. ☂️" },
+    { id: "water-drops", cover: "tap-3", title: "Drop by Drop", pages: [
+      { art: "tap-1", text: "Omar went into the bathroom and found the tap left open, with water running away for nothing, drop after drop." },
+      { art: "tap-2", text: "He quickly closed it and said: «Water is a blessing from Allah, and many people don't have it, so we must not waste it.»" },
+      { art: "tap-3", text: "Then he filled a watering can with only what he needed and watered the garden flowers, so every drop was useful." } ],
+      lesson: "Take care of a blessing, and it will last. 💧" },
+    { id: "new-friend", cover: "friend-3", title: "The New Friend", pages: [
+      { art: "friend-1", text: "A new pupil named Zayd came to the class. He sat alone, shy, not knowing anyone." },
+      { art: "friend-2", text: "Yusuf came up to him with a smile and said: «Peace be upon you, Zayd! Will you play with us at break?»" },
+      { art: "friend-3", text: "They played ball together and laughed a lot, and became friends. Yusuf learned that a smile and a greeting open hearts." } ],
+      lesson: "«Spread peace among you» — and welcome the newcomer. 🤝" },
   ],
 
   // عباراتٌ وجملٌ مركّبة (بطاقةٌ خاصّة): t = العبارة، ar = معناها بالعربيّة.

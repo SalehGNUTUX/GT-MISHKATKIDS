@@ -209,6 +209,26 @@ export default {
       { art: "clean-2", text: "Alors il s'est lavé les mains avec de l'eau et du savon, et a rangé ses jouets un par un." },
       { art: "clean-3", text: "La chambre est devenue propre et brillante, et il a ressenti du confort et de la fierté !" } ],
       lesson: "La propreté nous rend heureux et nous protège. 🫧" },
+    { id: "grandma-garden", cover: "garden-3", title: "Le jardin de grand-mère", pages: [
+      { art: "garden-1", text: "Grand-mère arrosait ses fleurs chaque jour, mais l'arrosoir était devenu trop lourd pour elle. Elle s'est fatiguée, et les fleurs ont fané." },
+      { art: "garden-2", text: "Son petit-fils Ali l'a vue et a dit : « Laisse-moi t'aider, grand-mère ! » Il a porté l'arrosoir et a arrosé les fleurs une à une." },
+      { art: "garden-3", text: "Les fleurs se sont épanouies, et grand-mère a souri et dit : « Qu'Allah te bénisse, mon fils. » Ali s'est senti très heureux." } ],
+      lesson: "Qui honore les aînés leur apporte la joie, et à lui-même aussi. 🌷" },
+    { id: "umbrella-share", cover: "umb-2", title: "Un parapluie pour deux", pages: [
+      { art: "umb-1", text: "Il pleuvait sur le chemin du retour de l'école. Layla avait un parapluie, et elle a vu son amie Houda se mouiller et trembler." },
+      { art: "umb-2", text: "Layla a dit : « Viens avec moi, Houda ! » Et elles ont marché ensemble sous le parapluie, épaule contre épaule." },
+      { art: "umb-3", text: "Elles sont arrivées à la maison en riant, et un arc-en-ciel est apparu. Houda a dit : « Merci, partager, c'est si beau ! »" } ],
+      lesson: "Quand nous partageons ce que nous avons, il y a de la place pour tous. ☂️" },
+    { id: "water-drops", cover: "tap-3", title: "Goutte à goutte", pages: [
+      { art: "tap-1", text: "Omar est entré dans la salle de bain et a trouvé le robinet ouvert : l'eau coulait pour rien, goutte après goutte." },
+      { art: "tap-2", text: "Il l'a vite fermé et a dit : « L'eau est un bienfait d'Allah, et beaucoup de gens n'en ont pas ; ne la gaspillons pas. »" },
+      { art: "tap-3", text: "Puis il a rempli un arrosoir avec juste ce qu'il fallait et a arrosé les fleurs du jardin : chaque goutte était utile." } ],
+      lesson: "Prends soin d'un bienfait, et il durera. 💧" },
+    { id: "new-friend", cover: "friend-3", title: "Le nouvel ami", pages: [
+      { art: "friend-1", text: "Un nouvel élève nommé Zayd est arrivé en classe. Il s'est assis seul, timide, sans connaître personne." },
+      { art: "friend-2", text: "Youssef s'est approché de lui en souriant et a dit : « Que la paix soit sur toi, Zayd ! Tu joues avec nous à la récré ? »" },
+      { art: "friend-3", text: "Ils ont joué au ballon ensemble et ont beaucoup ri, et sont devenus amis. Youssef a compris qu'un sourire et un salut ouvrent les cœurs." } ],
+      lesson: "« Répandez la paix entre vous » — et accueille le nouveau venu. 🤝" },
   ],
 
   // عباراتٌ وجملٌ مركّبة (بطاقةٌ خاصّة): t = العبارة، ar = معناها بالعربيّة.

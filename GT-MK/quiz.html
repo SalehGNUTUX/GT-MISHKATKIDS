@@ -92,6 +92,7 @@ wireThemeToggle(document.getElementById("themeBtn"));
 import data from "./content/quiz.js";
 import { logEvent, recordMastery, getChildAge } from "./src/progress.js";
 import { robo } from "./src/robo-companion.js";
+import { sayBtn, wireSay, autoRead } from "./src/read-aloud.js"; // «اسمعِ السؤال» لمن لا يقرأ (v1.10)
 import { autoToggleHtml, wireAuto } from "./src/quiz-flow.js";
 import { isAutoNext } from "./src/sound-prefs.js";
 robo.mount();
@@ -174,15 +175,15 @@ function renderQuestion(){
     <div class="progress"><span style="width:${(qi/session.length)*100}%"></span></div>
     <div class="qcard">
       <span class="qcat">${strip(item.cat)}</span>
-      <div class="qtext">${item.q}</div>
+      <div class="qtext">${item.q}${sayBtn(item.q)}</div>
       <button class="reveal" id="reveal">🤔 فكّرْ… ثمّ أظهِرِ الخيارات</button>
       <div class="opts hidden" id="opts">
-        ${item.opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.t}</button>`).join("")}
+        ${item.opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.t}${sayBtn(o.t,true)}</button>`).join("")}
       </div>
       <button class="next" id="next" style="display:none">${qi===session.length-1?"إظهار النتيجة 🌟":"التالي ▶"}</button>
     </div>`;
 
-  wireAuto(view);
+  wireAuto(view); wireSay(view); autoRead(item.q);
   // فكّرْ ثمّ أظهِرِ الخيارات: الجوابُ مخفيٌّ حتى يتذكّرَ الطفلُ ثمّ يكشفَه.
   const rev = document.getElementById("reveal");
   rev.addEventListener("click", ()=>{ document.getElementById("opts").classList.remove("hidden"); rev.style.display="none"; });

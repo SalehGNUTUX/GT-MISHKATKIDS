@@ -136,6 +136,8 @@ export function playStoryAsync(text) { return playUrlAsync(srcForSet(text, story
 // نسخةٌ وعديّة بمجموعةٍ صريحةٍ (لقسم اللغات: tts-alba/tts-tom) — تُحَلّ عند انتهاء المقطع.
 export function playClipForSetAsync(text, setId) { return playUrlAsync(srcForSet(text, setId)); }
 // إيقافُ أيِّ مقطعٍ جارٍ (لزرّ إيقاف القراءة).
+// هل يُشغَّلُ مقطعٌ الآن؟ (يستعملُه auto-next لينتظرَ انتهاءَ ردّةِ فعلِ الآليّ قبلَ الانتقال)
+export function isClipPlaying() { try { return !!current && !current.paused && !current.ended; } catch (e) { return false; } }
 export function stopClip() { if (current) { try { current.pause(); current.currentTime = 0; } catch (e) {} } }
 
 // نوعُ الصوت الذي ستُقرأ به القصّةُ لهذا النصّ فعلاً (للعرض/التشخيص): عصبيّ/بشريّ/آليّ.

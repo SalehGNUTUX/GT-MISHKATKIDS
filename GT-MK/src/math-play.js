@@ -3,15 +3,17 @@
 // كلُّ الرسمِ SVG محلّيّ أصيل. ميزانُ المقارنة تنافسيٌّ عبر versus؛ النشاطانِ الآخرانِ فرديّانِ بتدرّجٍ في الصعوبة.
 
 import { byAge } from "./progress.js"; // المستوى المقترحُ بحسبِ العمر (v1.9)
+import { getLevel, setLevel, levelResult, announceLevelUp } from "./auto-next.js"; // الارتقاءُ بالإتقان (v1.10)
 
 let ctx = null;          // { view, backBar, wireBack, robo, speak, logEvent, autoToggleHtml, wireAuto, onCorrect, onWrong, vs, GI, NOTICES, numAr }
 let run = false;         // حارسُ المؤقّتاتِ والذكاء: يُطفأُ عند الرجوعِ إلى القائمة
 let raf = null, tmo = null;
 const rand = n => Math.floor(Math.random() * n);
+const pick = a => a[rand(a.length)];
 const shuffle = a => { for (let k = a.length - 1; k > 0; k--) { const j = rand(k + 1); [a[k], a[j]] = [a[j], a[k]]; } return a; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-export function initMathPlay(c) { ctx = c; ensureStyle(); CD.lvl = byAge([1, 2, 3], CD.lvl); GB.lvl = byAge([1, 2], GB.lvl); } // مستوى عمرِ الطفل (v1.9)
+export function initMathPlay(c) { ctx = c; ensureStyle(); CD.lvl = getLevel("dots", byAge([1, 2, 3], CD.lvl)); GB.lvl = getLevel("geo", byAge([1, 2, 3], GB.lvl)); } // المحفوظُ للطفلِ أوّلًا // مستوى عمرِ الطفل (v1.9)
 export function stopMathPlay() { run = false; cancelAnimationFrame(raf); clearTimeout(tmo); }
 
 let styled = false;
@@ -263,7 +265,7 @@ function cdRender() {
       </svg>`
     + `<div class="cd-name" id="cdname"></div><div class="hint">ابدأْ من ${cdLabel(0)} واتبعِ الترتيب — ماذا سيظهر؟</div>`;
   wireBack();
-  view.querySelectorAll(".mp-chip").forEach(b => b.onclick = () => { const k = b.dataset.k; CD[k] = k === "lvl" ? +b.dataset.v : b.dataset.v; CD.last = null; cdNew(); });
+  view.querySelectorAll(".mp-chip").forEach(b => b.onclick = () => { const k = b.dataset.k; CD[k] = k === "lvl" ? +b.dataset.v : b.dataset.v; if (k === "lvl") setLevel("dots", CD.lvl); CD.last = null; cdNew(); });
   view.querySelector("#cdsvg").addEventListener("click", e => { const g = e.target.closest("[data-i]"); if (g) cdTap(+g.dataset.i, g); });
 }
 function cdTap(i, g) {
@@ -281,7 +283,9 @@ function cdTap(i, g) {
   document.getElementById("cdfill").classList.add("on");
   document.getElementById("cdname").textContent = `🎉 ${CD.shape.name}!`;
   ctx.logEvent("math_dots_done");
-  ctx.onCorrect(ctx.robo, ctx.view, cdNew, ctx.NOTICES.dotsDone);
+  const up = levelResult("dots", CD.lvl, true, [1, 2, 3], 3);
+  if (up) { CD.lvl = up; announceLevelUp(ctx.robo, `مستوًى جديد: ${["", "سهل", "متوسّط", "صعب"][up]}`); }
+  ctx.onCorrect(ctx.robo, ctx.view, cdNew, up ? ctx.NOTICES.levelUp : ctx.NOTICES.dotsDone);
 }
 
 /* ======================================================================
@@ -292,17 +296,25 @@ const GB_N = 6, GB_GAP = 16, GB_PAD = 10;
 const GB_TARGETS = {
   1: ["triangle", "square", "rectangle"],
   2: ["triangle", "square", "rectangle", "right", "rhombus", "pentagon", "hexagon"],
+  3: ["square", "rectangle", "right", "triangle", "parallelogram"],   // صعب: الشكلُ **بمساحةٍ مطلوبة** (v1.10)
 };
+// المساحاتُ الممكنةُ على لوحِ 6×6 لكلِّ شكلٍ في المستوى الصعب (بالمربّعات)
+const GB_AREAS = { square: [1, 4, 9, 16], rectangle: [2, 3, 4, 6, 8, 10, 12], right: [1, 2, 3, 4, 6], triangle: [1, 2, 3, 4, 6], parallelogram: [2, 3, 4, 6] };
+// المساحةُ بعربيّةٍ سليمةٍ للعددِ والمعدود (على شبكةِ المساميرِ صحيحةٌ أو نصف — مبرهنةُ بيك)
+const areaTxt = u => { const w = Math.floor(u), half = u - w >= 0.5;
+  if (!w) return "<b>نصفُ</b> مربّع";
+  const base = w === 1 ? "<b>مربّعٌ</b> واحد" : w === 2 ? "<b>مربّعان</b>" : w <= 10 ? `<b>${w}</b> مربّعات` : `<b>${w}</b> مربّعًا`;
+  return base + (half ? " <b>ونصف</b>" : ""); };
 const GB_NAME = { triangle: "مثلّثًا", right: "مثلّثًا قائمَ الزاوية", square: "مربّعًا", rectangle: "مستطيلًا", rhombus: "معيّنًا",
   parallelogram: "متوازيَ أضلاع", quad: "شكلًا رباعيًّا", pentagon: "شكلًا خماسيًّا", hexagon: "شكلًا سداسيًّا", poly: "مضلّعًا" };
-const GB = { lvl: 1, target: null, pts: [], closed: false, score: 0, free: false };
+const GB = { lvl: 1, target: null, area: null, pts: [], closed: false, score: 0, free: false };
 export function startGeoboard() {
   stopMathPlay(); GB.score = 0; gbNewTarget();
   try { ctx.robo.say(ctx.NOTICES.geoIntro, "ask"); } catch (e) {}
 }
 function gbNewTarget() {
   const list = GB_TARGETS[GB.lvl]; let t = list[rand(list.length)]; if (t === GB.target && list.length > 1) t = list[(list.indexOf(t) + 1) % list.length];
-  GB.target = t; GB.pts = []; GB.closed = false; gbRender();
+  GB.target = t; GB.area = GB.lvl === 3 ? pick(GB_AREAS[t]) : null; GB.pts = []; GB.closed = false; gbRender();
 }
 const pegXY = k => [GB_PAD + (k % GB_N) * GB_GAP, GB_PAD + Math.floor(k / GB_N) * GB_GAP];
 function gbRender(msg) {
@@ -311,8 +323,8 @@ function gbRender(msg) {
   const P = GB.pts.map(pegXY);
   view.innerHTML = backBar()
     + `<div class="gbar"><span class="pill">⭐ <b>${GB.score}</b></span>${autoToggleHtml()}</div>`
-    + `<div class="mp-chips">${chip(1, "سهل")}${chip(2, "متوسّط")}${chip("free", "🎨 حُرّ")}</div>`
-    + `<div class="prompt">${GB.free ? "اصنعْ أيَّ شكلٍ — وسأخبرُك ما هو!" : `اصنعْ <span style="color:var(--primary-d)">${GB_NAME[GB.target]}</span>`}</div>`
+    + `<div class="mp-chips">${chip(1, "سهل")}${chip(2, "متوسّط")}${chip(3, "صعب · بمساحة")}${chip("free", "🎨 حُرّ")}</div>`
+    + `<div class="prompt">${GB.free ? "اصنعْ أيَّ شكلٍ — وسأخبرُك ما هو!" : `اصنعْ <span style="color:var(--primary-d)">${GB_NAME[GB.target]}</span>${GB.area ? ` مساحتُه ${areaTxt(GB.area)}` : ""}`}</div>`
     + `<svg class="gb-svg" viewBox="0 0 ${size} ${size}" id="gbsvg"><rect class="gb-board" x="1" y="1" width="${size - 2}" height="${size - 2}" rx="5"/>
         ${GB.closed ? `<polygon class="gb-shape" id="gbshape" points="${P.map(p => p.join(",")).join(" ")}"/>` : `<polyline class="gb-band" points="${P.map(p => p.join(",")).join(" ")}"/>`}
         ${Array.from({ length: GB_N * GB_N }, (_, k) => { const [x, y] = pegXY(k), used = GB.pts.includes(k);
@@ -321,7 +333,7 @@ function gbRender(msg) {
     + `<div class="gb-msg" id="gbmsg">${msg || (GB.pts.length ? (GB.pts.length >= 3 ? "اضغطِ المسمارَ الأوّلَ لإغلاقِ الشكل" : "تابِعْ — اضغطِ المسمارَ التالي") : "اضغطِ المساميرَ واحدًا تلوَ الآخر")}</div>`
     + `<div class="gb-tools"><button id="gbundo">↶ تراجع</button><button id="gbclear">🧹 امسح</button></div>`;
   wireBack(); wireAuto(view);
-  view.querySelectorAll(".mp-chip").forEach(b => b.onclick = () => { const v = b.dataset.v; GB.free = v === "free"; if (!GB.free) GB.lvl = +v; gbNewTarget(); });
+  view.querySelectorAll(".mp-chip").forEach(b => b.onclick = () => { const v = b.dataset.v; GB.free = v === "free"; if (!GB.free) { GB.lvl = +v; setLevel("geo", GB.lvl); } gbNewTarget(); });
   view.querySelector("#gbsvg").addEventListener("click", e => { const g = e.target.closest("[data-k]"); if (g) gbTap(+g.dataset.k); });
   view.querySelector("#gbundo").onclick = () => { if (GB.closed) GB.closed = false; else GB.pts.pop(); gbRender(); };
   view.querySelector("#gbclear").onclick = () => { GB.pts = []; GB.closed = false; gbRender(); };
@@ -358,15 +370,11 @@ function gbClassify(P) {
   return { kind, units };
 }
 // هل يحقّقُ المصنوعُ الهدف؟ (المربّعُ مستطيلٌ ومعيّنٌ رياضيًّا، والقائمُ مثلّث)
-const gbFits = (kind, t) => kind === t || (t === "triangle" && kind === "right") || (t === "rectangle" && kind === "square") || (t === "rhombus" && kind === "square");
+const gbFits = (kind, t) => kind === t || (t === "triangle" && kind === "right") || (t === "rectangle" && kind === "square") || (t === "rhombus" && kind === "square")
+  || (t === "parallelogram" && ["rectangle", "square", "rhombus"].includes(kind));   // كلُّها متوازياتُ أضلاعٍ رياضيًّا
 function gbCheck() {
   const { robo, view, onCorrect, onWrong, logEvent, NOTICES } = ctx;
   const r = gbClassify(GB.pts.map(pegXY));
-  // المساحةُ على شبكةِ المساميرِ عددٌ صحيحٌ أو نصف (مبرهنةُ بيك) — تُكتَبُ بعربيّةٍ سليمةٍ للعدد والمعدود
-  const areaTxt = u => { const w = Math.floor(u), half = u - w >= 0.5;
-    if (!w) return "<b>نصفُ</b> مربّع";
-    const base = w === 1 ? "<b>مربّعٌ</b> واحد" : w === 2 ? "<b>مربّعان</b>" : w <= 10 ? `<b>${w}</b> مربّعات` : `<b>${w}</b> مربّعًا`;
-    return base + (half ? " <b>ونصف</b>" : ""); };
   if (r.kind === "cross") { GB.closed = false; gbRender("الشريطُ يتقاطعُ مع نفسِه ✋ — تراجعْ وجرّبْ ترتيبًا آخر"); robo.encourage(); return; }
   if (r.kind === "flat") { GB.closed = false; gbRender("هذه نقاطٌ على خطٍّ واحد — أضِفْ مسمارًا خارجَه"); return; }
   const made = GB_NAME[r.kind], area = `مساحتُه ${areaTxt(r.units)}`;
@@ -375,12 +383,17 @@ function gbCheck() {
     document.getElementById("gbshape")?.classList.add("ok"); robo.cheer(); logEvent("math_geo_free");
     return;
   }
-  if (gbFits(r.kind, GB.target)) {
+  if (gbFits(r.kind, GB.target) && (GB.area == null || Math.abs(r.units - GB.area) < 1e-9)) {
     GB.score++; gbRender(`أحسنت! صنعتَ <b>${made}</b> — ${area}`);
     document.getElementById("gbshape")?.classList.add("ok"); logEvent("math_correct");
-    onCorrect(robo, view, gbNewTarget, NOTICES.geoDone);
+    // أربعةُ أشكالٍ صحيحةٍ في المستوى ⇒ المستوى الأصعب (كان السهلُ يكرّرُ المثلّثَ والمربّعَ والمستطيلَ بلا نهاية)
+    const up = levelResult("geo", GB.lvl, true, [1, 2, 3], 4);
+    if (up) { GB.lvl = up; announceLevelUp(robo, up === 2 ? "مستوًى جديد: متوسّط — أشكالٌ أكثر" : "مستوًى جديد: صعب — الشكلُ بمساحتِه"); }
+    onCorrect(robo, view, gbNewTarget, up ? NOTICES.levelUp : NOTICES.geoDone);
   } else {
-    gbRender(`صنعتَ <b>${made}</b>، والمطلوبُ <b>${GB_NAME[GB.target]}</b> — تراجعْ وعدّلْ`);
+    const want = `<b>${GB_NAME[GB.target]}</b>${GB.area ? ` مساحتُه ${areaTxt(GB.area)}` : ""}`;
+    gbRender(gbFits(r.kind, GB.target) ? `صنعتَ <b>${made}</b> مساحتُه ${areaTxt(r.units)}، والمطلوبُ ${want} — تراجعْ وعدّلْ` : `صنعتَ <b>${made}</b>، والمطلوبُ ${want} — تراجعْ وعدّلْ`);
+    levelResult("geo", GB.lvl, false, [1, 2, 3], 4);
     onWrong(robo, view, gbNewTarget);
   }
 }

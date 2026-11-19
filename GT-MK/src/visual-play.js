@@ -4,6 +4,7 @@
 // كلُّ الرسومِ SVG محلّيّةٌ أصيلة.
 import { robo } from "./robo-companion.js";
 import { logEvent, byAge } from "./progress.js";
+import { armAutoNext, getLevel, setLevel, levelResult, announceLevelUp } from "./auto-next.js"; // انتقالٌ تلقائيٌّ + ارتقاءٌ بالإتقان (v1.10)
 import { speak } from "./speak.js";
 import { GAME_INTROS as GI, NOTICES } from "./robo-phrases.js";
 import { vsSetup, vsMakePlayers, vsScoreHtml, vsTurnHtml, vsEndRound, vsStartIndex, vP, GAME as GR, sfx } from "./versus.js";
@@ -14,7 +15,7 @@ let raf = null, tmo = null;
 const rand = n => Math.floor(Math.random() * n);
 const pick = a => a[rand(a.length)];
 
-export function initVisualPlay(c) { ctx = c; ensureStyle(); JG.n = byAge([2, 3, 4], JG.n); } // حجمُ البازلِ بحسبِ العمر (v1.9)
+export function initVisualPlay(c) { ctx = c; ensureStyle(); JG.n = getLevel("jigsaw", byAge([2, 3, 4], JG.n)); } // حجمُ البازلِ بحسبِ العمر (v1.9)
 export function stopVisualPlay() { run = false; cancelAnimationFrame(raf); clearTimeout(tmo); }
 
 let styled = false;
@@ -258,7 +259,7 @@ function jgRender() {
     + (JG.done ? "" : `<button id="jgpeek">${JG.peek ? "🙈 أخفِ الصورة" : "👀 الصورة"}</button>`)
     + `<button id="jgnext">🔀 صورةٌ أخرى</button></div>`;
   wireBack();
-  view.querySelectorAll(".jg-chip[data-n]").forEach(b => b.onclick = () => { JG.n = +b.dataset.n; jgNew(); });
+  view.querySelectorAll(".jg-chip[data-n]").forEach(b => b.onclick = () => { JG.n = +b.dataset.n; setLevel("jigsaw", JG.n); jgNew(); });
   view.querySelector("#jgnext").onclick = jgNew;
   const pk = view.querySelector("#jgpeek"); if (pk) pk.onclick = () => { JG.peek = !JG.peek; jgRender(); };
   view.querySelector("#jgb").addEventListener("click", e => { const t = e.target.closest("[data-i]"); if (t) jgTap(+t.dataset.i); });
@@ -271,7 +272,11 @@ function jgTap(i) {
   const fixed = (o[a] === a) + (o[i] === i);
   if (o.every((v, k) => v === k)) { JG.done = true; jgRender(); sfx.success();
     logEvent("jigsaw_done", { n: JG.n, moves: JG.moves });
-    try { robo.cheer(NOTICES.jigsawDone); } catch (e) {}
+    // صورتانِ مكتملتانِ بهذا الحجم ⇒ قطعٌ أكثر في التالية
+    const up = levelResult("jigsaw", JG.n, true, [2, 3, 4], 2);
+    if (up) { JG.n = up; announceLevelUp(robo, `الصورةُ التاليةُ من ${up * up} قطعة`); }
+    try { robo.cheer(up ? NOTICES.levelUp : NOTICES.jigsawDone); } catch (e) {}
+    armAutoNext(document.getElementById("jgnext"));
     return; }
   if (fixed) sfx.success(); else sfx.tap();
   jgRender();

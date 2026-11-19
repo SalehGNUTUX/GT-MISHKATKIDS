@@ -205,3 +205,15 @@ export function byAge(levels, fallback) {
   const t = ageTier(); if (!t || !levels || !levels.length) return fallback;
   return t === "young" ? levels[0] : levels[Math.min(levels.length - 1, Math.floor(levels.length / 2))];
 }
+
+// v1.10 — مستوى كلِّ نشاطٍ لكلِّ طفل (يرتفعُ بالإتقان): s.levels[act] = { level, streak }
+export function getLevel(act, fallback) { const v = (load().levels || {})[act]; return v && v.level != null ? v.level : fallback; }
+export function setLevel(act, level) { const s = load(); s.levels = s.levels || {}; s.levels[act] = { level, streak: 0 }; save(s); }
+export function levelResult(act, level, ok, levels, need = 5) {
+  const s = load(); s.levels = s.levels || {};
+  const L = s.levels[act] && s.levels[act].level === level ? s.levels[act] : { level, streak: 0 };
+  L.streak = ok ? L.streak + 1 : Math.max(0, L.streak - 2);       // الخطأُ يُنقِصُ السلسلةَ ولا يُنزِلُ المستوى
+  let up = null; const i = levels.indexOf(level);
+  if (L.streak >= need && i >= 0 && i < levels.length - 1) { up = levels[i + 1]; L.level = up; L.streak = 0; }
+  s.levels[act] = L; save(s); return up;
+}

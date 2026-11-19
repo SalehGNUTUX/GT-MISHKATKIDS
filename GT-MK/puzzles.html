@@ -107,6 +107,8 @@ import data from "./content/puzzles.js";
 import { logEvent } from "./src/progress.js";
 import { robo } from "./src/robo-companion.js";
 import { sayBtn, wireSay, autoRead } from "./src/read-aloud.js"; // «اسمعِ السؤال» لمن لا يقرأ (v1.10)
+import { armAutoNext, getLevel, setLevel, levelResult, announceLevelUp } from "./src/auto-next.js"; // انتقالٌ تلقائيٌّ + ارتقاءٌ بالإتقان (v1.10)
+import { getChildAge } from "./src/progress.js";
 import { NOTICES } from "./src/robo-phrases.js";
 robo.mount();
 
@@ -114,7 +116,9 @@ const ALL = data.puzzles || [];
 const LEVEL_AR = { beginner:"تمهيدي", intermediate:"مبتدئ", advanced:"متوسّط", expert:"متقدّم" };
 const TYPE_AR  = { riddle:"فزّورة 🔮", logic:"منطق 🧠" };
 
-let fType = "all", fAge = "all", list = [], i = 0;
+const PZ_BANDS = ["4-6","6-8","9-12"];
+// يبدأُ بالفئةِ المحفوظةِ للطفل، وإلّا فئةِ عمرِه (كان «الكلّ» دائمًا)؛ أربعةُ ألغازٍ يحلُّها بنفسِه ⇒ الفئةُ الأعلى.
+let fType = "all", fAge = getLevel("puzzles", ({"4-6":"4-6","7-10":"6-8"})[getChildAge()] || "all"), list = [], i = 0, pzPendingApply = false;
 
 // ===== مطابقةُ الحلّ المكتوب: تقبَلُ كلَّ صيغ الكتابة (ال/التشكيل/المسافات + الأرقام رقمًا أو كلمةً) =====
 const NUMW = { "صفر":"0","واحد":"1","واحده":"1","اثنان":"2","اثنين":"2","ثنان":"2","ثلاثه":"3","اربعه":"4","خمسه":"5","سته":"6","سبعه":"7","ثمانيه":"8","ثمانيه":"8","تسعه":"9","عشره":"10" };
@@ -201,7 +205,12 @@ function render(){
     const v=ai.value.trim(); if(!v) return;
     if(puzzleMatches(v, p)){
       afb.textContent="🎉 إجابةٌ صحيحة! أحسنتَ."; afb.className="box ansfb ok show";
-      sb.classList.add("show"); ai.disabled=true; logEvent("puzzle_solved"); robo.say(NOTICES.puzzleReveal,"happy");
+      sb.classList.add("show"); ai.disabled=true; logEvent("puzzle_solved");
+      const up = PZ_BANDS.includes(fAge) ? levelResult("puzzles", fAge, true, PZ_BANDS, 4) : null;
+      if(up){ fAge = up; pzPendingApply = true; document.querySelectorAll("#fAge .chip").forEach(x=>x.classList.toggle("on", x.getAttribute("data-v")===up));
+        announceLevelUp(robo, `الألغازُ التاليةُ لعمرِ ${up.replace("-","–")}`, NOTICES.levelUp); }
+      else robo.say(NOTICES.puzzleReveal,"happy");
+      armAutoNext(document.getElementById("next"));
     } else {
       afb.textContent="ليست هي بعدُ — حاولْ ثانيةً 🌟 (أو اطلبْ تلميحًا)"; afb.className="box ansfb bad show"; robo.encourage();
     }
@@ -211,7 +220,7 @@ function render(){
   document.getElementById("bhint").onclick = (e)=>{ hb.classList.toggle("show"); e.target.style.opacity = hb.classList.contains("show")?".6":"1"; };
   document.getElementById("bsol").onclick  = ()=>{ sb.classList.add("show"); logEvent("puzzle_seen"); robo.say(NOTICES.puzzleReveal, "happy"); };
   document.getElementById("prev").onclick = ()=>{ if(i>0){ i--; render(); } };
-  document.getElementById("next").onclick = ()=>{ if(i<list.length-1){ i++; render(); } else { apply(); } };
+  document.getElementById("next").onclick = ()=>{ if(pzPendingApply){ pzPendingApply=false; apply(); return; } if(i<list.length-1){ i++; render(); } else { apply(); } };
   document.getElementById("shuf").onclick = ()=>{ if(list.length>1){ let n; do{ n=Math.floor(Math.random()*list.length); }while(n===i); i=n; render(); } };
 }
 
@@ -223,7 +232,8 @@ function wire(id, set){
   });
 }
 wire("fType", v=>fType=v);
-wire("fAge",  v=>fAge=v);
+wire("fAge",  v=>{ fAge=v; if(PZ_BANDS.includes(v)) setLevel("puzzles", v); });
+document.querySelectorAll("#fAge .chip").forEach(x=>x.classList.toggle("on", x.getAttribute("data-v")===fAge)); // إظهارُ الفئةِ المحفوظة
 
 apply();
 </script>

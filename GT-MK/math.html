@@ -199,6 +199,7 @@ wireThemeToggle(document.getElementById("themeBtn"));
 import MATH from "./content/math.js";
 import NUMERALS from "./content/numerals.js";
 import { logEvent, recordMastery, byAge } from "./src/progress.js";
+import { getLevel, setLevel, levelResult, announceLevelUp } from "./src/auto-next.js"; // الارتقاءُ بالإتقان (v1.10)
 import { pickAdaptive } from "./src/adaptive.js";
 import { speak } from "./src/speak.js";
 import { robo } from "./src/robo-companion.js";
@@ -357,7 +358,7 @@ function startNumerals(){
 /* ===== ➕➖✖ ARITHMETIC ===== */
 // مستوياتٌ بحسب العمر: 1=أعداد صغيرة (4-6)، 2=متوسطة (7-8)، 3=أكبر (9-10)
 let arOp = "+", arLevel = 1, arScore = 0;
-function startArith(op){ arOp = op; arLevel = byAge([1,2,3], 1); arScore = 0; nextArith(); } // يبدأُ بمستوى عمرِ الطفل (v1.9)
+function startArith(op){ arOp = op; arLevel = getLevel("arith:"+op, byAge([1,2,3], 1)); arScore = 0; nextArith(); } // المحفوظُ لهذه العمليّة، وإلّا مستوى العمر
 function genArith(){
   const max = arLevel===1 ? 5 : arLevel===2 ? 10 : 20;
   let a, b, ans, q;
@@ -415,7 +416,7 @@ function nextArith(){
   rev.addEventListener("click", ()=>{ view.querySelector("#opts").classList.remove("hidden"); rev.style.display="none"; });
   view.querySelector(".ageb").addEventListener("click", e=>{
     const b=e.target.closest("button[data-l]"); if(!b) return;
-    arLevel = +b.getAttribute("data-l"); nextArith();
+    arLevel = +b.getAttribute("data-l"); setLevel("arith:"+arOp, arLevel); nextArith();
   });
   view.querySelector("#opts").addEventListener("click", e=>{
     const b=e.target.closest(".opt"); if(!b||b.disabled) return;
@@ -423,10 +424,14 @@ function nextArith(){
     if (v === p.ans) {
       b.classList.add("ok"); arScore++; logEvent("math_correct");
       view.querySelectorAll(".opt").forEach(x=>x.disabled=true);
-      onCorrect(robo, view, nextArith, undefined, numAr(p.ans));
+      // خمسُ إجاباتٍ صحيحةٍ متتالية ⇒ أعدادٌ أكبر (المستوى محفوظٌ لكلِّ عمليّة)
+      const up = levelResult("arith:"+arOp, arLevel, true, [1,2,3], 5);
+      if(up){ arLevel = up; announceLevelUp(robo, `مستوًى جديد: ${up===2?"متوسّط (7–8)":"كبير (9–10)"}`); }
+      onCorrect(robo, view, nextArith, up ? NOTICES.levelUp : undefined, numAr(p.ans));
     } else {
       b.classList.add("bad"); arMissed = true;
       setTimeout(()=>b.classList.remove("bad"), 450);
+      levelResult("arith:"+arOp, arLevel, false, [1,2,3], 5);
       onWrong(robo, view, nextArith);
     }
   });

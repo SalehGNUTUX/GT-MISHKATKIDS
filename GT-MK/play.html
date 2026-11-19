@@ -326,7 +326,8 @@ import { playClipAsync } from "./src/tts-clips.js";      // نطقُ جُمَل�
 import { listProfiles, getProfile, getCurrentUser, getParentName, getParentAvatar } from "./src/accounts.js";
 import { attachReader } from "./src/reader-recorder.js"; // تسجيلُ نُطق الطفل للكلمة المُكوَّنة
 import { initVisualPlay, stopVisualPlay, startOddOne, startJigsaw, startColoring } from "./src/visual-play.js"; // أنشطةُ v1.9 (دفعة ب): جِدِ المختلف · بازلُ الصور
-import { initListenPlay, stopListenPlay, startSoundMemory } from "./src/listen-play.js"; // v1.9 (دفعة ج): ذاكرةُ الأصوات
+import { initListenPlay, stopListenPlay, startSoundMemory } from "./src/listen-play.js";
+import { armAutoNext, getLevel, setLevel, levelResult, announceLevelUp } from "./src/auto-next.js"; // انتقالٌ تلقائيٌّ + ارتقاءٌ بالإتقان (v1.10) // v1.9 (دفعة ج): ذاكرةُ الأصوات
 import { smartPrint } from "./src/smart-print.js"; window.smartPrint = smartPrint; // طباعةٌ تعملُ على الهاتف أيضًا
 // كلماتٌ شائعةٌ يُمكنُ تكوينُها من أحرف العجلة الـ20 (لتوسعة التعرّف على الكلمات ذات المعنى).
 const EXTRA_WHEEL_WORDS = new Set(["بيت","بنت","باب","جبل","حبل","دار","رمل","سمك","شمس","قمر","قلم","كلب","لبن","نهر","نمر","ورد","جمل","حليب","سرير","كتاب","نار","ليل","نهار","شجر","حجر","بقر","سحب","ريح","برد","فرح","علم","نور","كرم","جسم","رمح","سيف","درع","حرب","سلم","قلب","شعر","فيل","ديك","حمل","نمل","سمن","لحم","تمر","عنب","تين","رمان","ليمون","جبن","سكر","ملح","عسل","شاي","بحر","حلم","نجم","عمل","رسم","قدم","سهل","فهد","ثعلب","دجاج","حمار","حوت","ريش","جناح","حقل","نبت","ثمر","فرع","نحل","رجل","عين","حر","حب","حق","دم","سن","دب","فم","يد","عش","شمع","نبع","سفر","حكم","لعب","كسر","فكر","نشر","حسن"]);
@@ -337,7 +338,7 @@ const view = document.getElementById("view");
 
 const shuffle = a => { for(let k=a.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [a[k],a[j]]=[a[j],a[k]]; } return a; };
 const rand = n => Math.floor(Math.random()*n);
-let age=getChildAge(), score=0, streak=0, last=null, cur=null;
+let age=getLevel("words", getChildAge()), score=0, streak=0, last=null, cur=null; // المستوى المحفوظُ للطفل (يرتفعُ بالإتقان)
 const filtered = () => WORDS.filter(w => age==="all" || w.age_band===age);
 function pickWord(){ const p=filtered().filter(w=>w.id!==last); const a=p.length?p:filtered(); const w=pickAdaptive(a, x=>"W:"+x.word); last=w.id; return w; }
 function distractors(exclude, n){ const p=shuffle(WL.filter(l=>!exclude.includes(l))); return p.slice(0,n); }
@@ -347,7 +348,7 @@ const ageChips = () => `<div class="chips"><span class="lbl">العمر:</span>
   <button class="chip ${age==="4-6"?"on":""}" data-age="4-6">4–6</button>
   <button class="chip ${age==="7-10"?"on":""}" data-age="7-10">7–10</button>
   <span class="pills"><span class="pill">⭐ <b>${score}</b></span><span class="pill">🔥 <b>${streak}</b></span></span></div>`;
-function wireAge(reRender){ const c=view.querySelector(".chips"); if(c) c.addEventListener("click", e=>{ const b=e.target.closest("button[data-age]"); if(!b) return; age=b.getAttribute("data-age"); reRender(); }); }
+function wireAge(reRender){ const c=view.querySelector(".chips"); if(c) c.addEventListener("click", e=>{ const b=e.target.closest("button[data-age]"); if(!b) return; age=b.getAttribute("data-age"); if(age!=="all") setLevel("words", age); reRender(); }); }
 const backBar = () => `<button class="backstep" id="back">الألعاب</button>`;
 // ردُّ الآليِّ الموحَّدُ عند انقضاءِ مهلةِ «ضدّ الوقت» في أيِّ لعبةٍ تنافسيّة (نصٌّ مشكولٌ له مقطعُ Piper).
 function dtSay(){ try{ robo.encourage(NOTICES.timeUp); }catch(e){} }
@@ -357,6 +358,10 @@ initListenPlay({ view, backBar, wireBack });
 const clueCard = (instruction, withFlash) => `<div class="clue"><div class="emoji">${cur.emoji}</div>${withFlash?`<div class="flash" id="flash">${cur.word}</div>`:""}<div class="say">${instruction}</div></div>`;
 function winBanner(msg){ return `<div class="win"><div class="em">${cur.emoji}</div><div class="big" dir="rtl">${cur.word}</div>${msg}<div class="controls"><button class="go" id="cont">التالية ▶</button></div></div>`; }
 function celebrate(){ score++; streak++; logEvent("word_win"); if(cur) recordMastery("W:"+cur.word,true);
+  // ستُّ كلماتٍ متتاليةٍ بكلماتِ 4–6 ⇒ كلماتُ 7–10؛ و«التالية ▶» تُسلَّحُ للانتقالِ التلقائيّ بعدَ إدراجِ لافتةِ الفوز
+  const lvUp = (age==="4-6") ? levelResult("words", "4-6", true, ["4-6","7-10"], 6) : null;
+  if(lvUp){ age=lvUp; setTimeout(()=>announceLevelUp(robo, "كلماتٌ أطولُ وأصعب: 7–10", NOTICES.levelUp), 2200); }
+  setTimeout(()=>{ const c=document.getElementById("cont"); if(c) armAutoNext(c); }, 0);
   // ينطق الكلمةَ المبنيّةَ أوّلًا ثمّ ردّةَ الفعل (لا تتداخل الأصوات).
   if(cur && cur.word) robo.read(cur.word, { then:()=>robo.cheer() }); else robo.cheer(); }
 

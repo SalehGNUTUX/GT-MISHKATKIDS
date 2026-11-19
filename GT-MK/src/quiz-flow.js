@@ -3,6 +3,7 @@
 // تلقائياً إن فعّل المستخدمُ «الانتقال التلقائيّ»، وإلّا بزرّ «التالي ▶» يدويّ.
 // وعند الخطأ: تشجيعٌ + إتاحةُ التجاوز («سنعودُ إليها لاحقًا») كي لا يَعلَقَ الطفل.
 import { isAutoNext, setAutoNext } from "./sound-prefs.js";
+import { armAutoNext } from "./auto-next.js"; // الانتقالُ التلقائيّ: 3ث على الأقلّ وحتّى يفرغَ الآليّ (v1.10)
 
 let styled = false;
 function ensureStyle() {
@@ -36,18 +37,23 @@ function appendNext(view, next, label, cls) {
   view.appendChild(d);
   // يُمرَّرُ الزرُّ تلقائيًّا إلى مجالِ الرؤيةِ فلا يحتاجُ المستخدمُ للسحبِ يدويًّا.
   try { d.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
-  d.querySelector("button").onclick = () => { try { d.remove(); } catch (e) {} next && next(); };
+  const b = d.querySelector("button");
+  b.onclick = () => { try { d.remove(); } catch (e) {} next && next(); };
+  return b;
 }
 
 // إجابةٌ صحيحة: يَنطق الآليّ الجوابَ الصحيح أوّلًا (إن مُرِّر: كلمة/رقم/حرف) ثمّ ردّةَ الفعل،
 // ثمّ ينتقل (تلقائيّ بعد انتهاء الكلام، أو زرٌّ يدويّ لا يَقطع الصوت). لا تتداخلُ الأصوات.
 export function onCorrect(robo, view, next, praise, answer) {
   ensureStyle();
-  const react = () => {
-    if (isAutoNext()) robo.cheer(praise, { then: next });
-    else { robo.cheer(praise); appendNext(view, next, "التالي ▶"); }
-  };
-  if (answer) robo.read(String(answer), { then: react });   // انطق الجوابَ ثمّ تفاعَلْ
+  // زرُّ «التالي» يظهرُ دائمًا ومعه مفتاحُ «تلقائيّ» بجانبِه؛ إن فُعِّلَ يُضغَطُ وحدَه بعدَ 3ث وحينَ يفرغُ الآليّ
+  // (كان الانتقالُ التلقائيُّ ينتظرُ إشعارَ انتهاءِ الكلامِ وحدَه فيَعلَقُ إن لم يصل).
+  // «التالي» يظهرُ فورًا (كان ينتظرُ إشعارَ انتهاءِ نطقِ الجواب، فإن لم يصلْ — مقطعٌ لم يُشغَّل — لم يظهرْ أبدًا
+  // وعَلِقَ الطفل). ويبقى ترتيبُ الصوت: الجوابُ ثمّ ردّةُ الفعل، بسقفِ 4ث إن لم يُبلَّغْ بانتهاءِ الجواب.
+  const b = appendNext(view, next, "التالي ▶"); if (b) armAutoNext(b);
+  let reacted = false;
+  const react = () => { if (reacted) return; reacted = true; if (b && !b.isConnected) return; robo.cheer(praise); };
+  if (answer) { robo.read(String(answer), { then: react }); setTimeout(react, 4000); }   // انطق الجوابَ ثمّ تفاعَلْ
   else react();
 }
 // إجابةٌ خاطئة: تشجيعٌ لطيف + إتاحةُ تجاوزٍ مع وعدِ العودة (robo.recall) كيلا يَعلَق الطفل.

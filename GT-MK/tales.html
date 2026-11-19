@@ -101,6 +101,7 @@ import data from "./content/sararim-stories.js";
 import { logEvent } from "./src/progress.js";
 import { robo } from "./src/robo-companion.js";
 import { sayBtn, wireSay, autoRead } from "./src/read-aloud.js"; // «اسمعِ السؤال» لمن لا يقرأ (v1.10)
+import { armAutoNext } from "./src/auto-next.js"; // «السؤال التالي» تلقائيًّا (v1.10)
 import { attachReader } from "./src/reader-recorder.js";
 import { isStoryReadOn, showTashkeel, setShowTashkeel, stripTashkeel } from "./src/sound-prefs.js";
 import { attachStoryReader } from "./src/story-reader.js";
@@ -218,7 +219,7 @@ function openStory(id){
       if(q.opts[k].correct){ logEvent("comprehension_ok"); robo.cheer(); }
       else { b.classList.add("wrong"); b.insertAdjacentHTML("beforeend",' <span class="mk">✗</span>'); robo.encourage(); }
       const after = document.getElementById("qAfter");
-      if(i < qs.length-1){ after.innerHTML = `<button class="nextq" id="nextQ">السؤال التالي ⏭️</button>`; document.getElementById("nextQ").onclick = ()=>showQ(i+1); }
+      if(i < qs.length-1){ after.innerHTML = `<button class="nextq" id="nextQ">السؤال التالي ⏭️</button>`; document.getElementById("nextQ").onclick = ()=>showQ(i+1); armAutoNext(document.getElementById("nextQ")); }
       else { after.innerHTML = `<div class="qend">🌟 أَحْسَنْتَ! أَكْمَلْتَ كُلَّ الْأَسْئِلَةِ.</div>`; }
     });
   }

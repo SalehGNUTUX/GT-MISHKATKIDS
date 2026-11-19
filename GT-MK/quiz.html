@@ -93,6 +93,8 @@ import data from "./content/quiz.js";
 import { logEvent, recordMastery, getChildAge } from "./src/progress.js";
 import { robo } from "./src/robo-companion.js";
 import { sayBtn, wireSay, autoRead } from "./src/read-aloud.js"; // «اسمعِ السؤال» لمن لا يقرأ (v1.10)
+import { armAutoNext, getLevel, setLevel, levelResult, announceLevelUp } from "./src/auto-next.js"; // انتقالٌ تلقائيٌّ + مستوياتٌ متدرّجة (v1.10)
+import { NOTICES } from "./src/robo-phrases.js";
 import { autoToggleHtml, wireAuto } from "./src/quiz-flow.js";
 import { isAutoNext } from "./src/sound-prefs.js";
 robo.mount();
@@ -102,7 +104,8 @@ const SESSION_SIZE = 10;
 const view = document.getElementById("view");
 
 // فئات الاختبار العمرية تختلف عن فئات التطبيق، فنطبّق الافتراض الذكيّ فقط إن طابق.
-let fCat = "all", fAge = ({"4-6":"4-6","7-10":"6-8"})[getChildAge()] || "all"; // فئاتُ الحسابِ (4-6/7-10) ← أقربُ فئةِ أسئلة؛ كان 7-10 يسقطُ إلى «الكل»
+const QZ_BANDS = ["4-6","6-8","9-12"];
+let fCat = "all", fAge = getLevel("quiz", ({"4-6":"4-6","7-10":"6-8"})[getChildAge()] || "all"); // المستوى المحفوظُ للطفل، وإلّا فئةُ عمرِه // فئاتُ الحسابِ (4-6/7-10) ← أقربُ فئةِ أسئلة؛ كان 7-10 يسقطُ إلى «الكل»
 let session = [], qi = 0, score = 0, answered = false;
 
 const shuffle = a => { for(let k=a.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [a[k],a[j]]=[a[j],a[k]]; } return a; };
@@ -139,7 +142,7 @@ function renderSetup(){
   document.getElementById("age").addEventListener("click", e=>{
     const b=e.target.closest("button[data-v]"); if(!b) return;
     document.querySelectorAll("#age .chip").forEach(x=>x.classList.toggle("on", x===b));
-    fAge = b.getAttribute("data-v"); updateAvail();
+    fAge = b.getAttribute("data-v"); if(QZ_BANDS.includes(fAge)) setLevel("quiz", fAge); updateAvail();
   });
   document.getElementById("start").onclick = startQuiz;
   updateAvail();
@@ -188,7 +191,6 @@ function renderQuestion(){
   const rev = document.getElementById("reveal");
   rev.addEventListener("click", ()=>{ document.getElementById("opts").classList.remove("hidden"); rev.style.display="none"; });
   const advance = ()=>{ if(qi < session.length-1){ qi++; renderQuestion(); } else { renderResult(); } };
-  const autoAdvance = ()=>{ if(isAutoNext()) advance(); };  // ينتقل تلقائياً بعد انتهاء ردّة فعل الآلي (إن فُعِّل)
   document.getElementById("opts").addEventListener("click", e=>{
     const b = e.target.closest("button.opt"); if(!b || answered) return;
     answered = true;
@@ -198,9 +200,9 @@ function renderQuestion(){
       el.disabled = true;
       if(session[qi].opts[idx].correct){ el.classList.add("correct"); el.querySelector(".mk")||el.insertAdjacentHTML("beforeend",' <span class="mk">✓</span>'); }
     });
-    if(session[qi].opts[k].correct){ score++; document.getElementById("scoreVal").textContent = score; recordMastery("Q:"+(session[qi].cat||"عام"),true); robo.read(session[qi].opts[k].t, { then:()=>robo.cheer(undefined,{then:autoAdvance}) }); }
-    else { b.classList.add("wrong"); b.insertAdjacentHTML("beforeend",' <span class="mk">✗</span>'); recordMastery("Q:"+(session[qi].cat||"عام"),false); robo.recall({then:autoAdvance}); }
-    const nx = document.getElementById("next"); nx.style.display = "block";
+    if(session[qi].opts[k].correct){ score++; document.getElementById("scoreVal").textContent = score; recordMastery("Q:"+(session[qi].cat||"عام"),true); robo.read(session[qi].opts[k].t, { then:()=>robo.cheer() }); }
+    else { b.classList.add("wrong"); b.insertAdjacentHTML("beforeend",' <span class="mk">✗</span>'); recordMastery("Q:"+(session[qi].cat||"عام"),false); robo.recall(); }
+    const nx = document.getElementById("next"); nx.style.display = "block"; armAutoNext(nx);
   });
   document.getElementById("next").onclick = advance;
 }
@@ -208,6 +210,9 @@ function renderQuestion(){
 function renderResult(){
   const total = session.length, pct = Math.round((score/total)*100);
   logEvent("quiz_done", { add: { quiz_score: score, quiz_total: total } });
+  // الإتقانُ يرفعُ الفئة: جولةٌ بـ80٪ فأكثر ⇒ الجولةُ التاليةُ من الفئةِ الأعلى (والضعيفةُ تُنقِصُ السلسلةَ فقط)
+  if(QZ_BANDS.includes(fAge)){ const up = levelResult("quiz", fAge, pct>=80, QZ_BANDS, 1);
+    if(up){ fAge = up; setTimeout(()=>announceLevelUp(robo, `الاختبارُ التالي من فئةِ ${up.replace("-","–")}`, NOTICES.levelUp), 900); } }
   let msg, emoji;
   if(pct>=80){ msg="ممتاز! عقلٌ متوقّد 🌟"; emoji="🏆"; }
   else if(pct>=50){ msg="أحسنت! واصِل التعلّم"; emoji="👏"; }

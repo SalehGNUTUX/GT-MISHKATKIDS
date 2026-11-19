@@ -1386,12 +1386,13 @@ async function openDashboard(){
       <div style="font-size:12px;color:var(--muted);margin:10px 2px 4px">🎙️ تسجيلاتُ تمرّنِ القراءةِ لكلّ طفل (محفوظةٌ محليًّا في حسابه):</div>
       <div id="voiceMgmt"><p class="muted" style="font-size:12px">…</p></div>
       <div id="sec-backup" style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:12px 0 4px;scroll-margin-top:12px">
-        <div style="font-size:13px;margin-bottom:4px">💾 نسخةٌ احتياطيّة — تصدير/استيراد الحسابات</div>
-        <div class="muted" style="font-size:12px;margin-bottom:8px">صدّرْ ملفَّ JSON يحفظُ كلَّ الحساباتِ والتقدّمِ وإعداداتِ اللوحة، أو استوردْه على جهازٍ جديدٍ لئلّا تفقدَ بياناتِك. (الاستيرادُ يستبدلُ البياناتِ الحاليّةَ على هذا الجهاز.)</div>
+        <div style="font-size:13px;margin-bottom:4px">💾 نسخةٌ احتياطيّة — الحساباتُ والتقدّمُ والتسجيلاتُ والصور</div>
+        <div class="muted" style="font-size:12px;margin-bottom:8px;line-height:1.7"><b>الكاملةُ (ZIP)</b> تحفظُ كلَّ شيء: الحساباتِ والتقدّمَ والإعداداتِ <b>وتسجيلاتِ القراءةِ وصوتِ التطبيقِ وصورَ «أعمالي» والرسومات</b> — لنقلِها إلى جهازٍ آخر أو حفظِها. <b>الخفيفةُ (JSON)</b> بلا وسائط. عند الاستيرادِ تختارُ: <b>دمج</b> (يُضيفُ الناقص) أو <b>استبدال</b>.</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="topbtn" id="bkExport" style="font-size:13px">⬇️ تصدير JSON</button>
-          <button class="topbtn" id="bkImport" style="font-size:13px">⬆️ استيراد JSON</button>
-          <input id="bkFile" type="file" accept="application/json,.json" hidden>
+          <button class="topbtn" id="bkFull" style="font-size:13px">⬇️ نسخةٌ كاملة (ZIP)</button>
+          <button class="topbtn" id="bkExport" style="font-size:13px">⬇️ خفيفة (JSON)</button>
+          <button class="topbtn" id="bkImport" style="font-size:13px">⬆️ استيراد</button>
+          <input id="bkFile" type="file" accept="application/json,.json,application/zip,.zip" hidden>
         </div>
         <div id="bkMsg" style="font-size:12px;min-height:16px;margin-top:6px"></div>
       </div>
@@ -1459,6 +1460,7 @@ async function openDashboard(){
   document.querySelectorAll(".qoKid").forEach(b=>b.addEventListener("click",()=>{ const on=!isQuranOnlineAllowedFor(b.dataset.id); setQuranOnlineAllowedFor(b.dataset.id,on); b.classList.toggle("on",on); })); // إذنُ القرآنِ الكاملِ لكلِّ حساب
   const vnt=document.getElementById("voiceNavToggle"); if(vnt) vnt.addEventListener("click",()=>{ const on=!isVoiceNavOn(); setVoiceNavOn(on); vnt.classList.toggle("on",on); });
   const bkE=document.getElementById("bkExport"); if(bkE) bkE.addEventListener("click",()=>backupExport(bkMsg));
+  const bkFu=document.getElementById("bkFull"); if(bkFu) bkFu.addEventListener("click",()=>backupExport(bkMsg,{full:true}));
   const bkI=document.getElementById("bkImport"), bkF=document.getElementById("bkFile");
   if(bkI&&bkF){ bkI.addEventListener("click",()=>bkF.click()); bkF.addEventListener("change",()=>{ if(bkF.files&&bkF.files[0]) backupImport(bkF.files[0], bkMsg); bkF.value=""; }); }
   // تفريغُ حسابِ الضيف: تقدّمُه + التقاطاتُه + تسجيلاتُه. الالتقاطاتُ لا تحملُ هويّةَ حسابٍ فتُطابَقُ

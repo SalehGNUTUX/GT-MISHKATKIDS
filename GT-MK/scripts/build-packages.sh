@@ -182,13 +182,17 @@ build_apk() {
       filter('android:scheme="content" android:mimeType="text/plain" android:pathPattern=".*\\\\.json"'),
       filter('android:scheme="file" android:mimeType="text/plain" android:pathPattern=".*\\\\.json"'),
       filter('android:scheme="content" android:mimeType="application/octet-stream" android:pathPattern=".*\\\\.json"'),
+      // v1.11: النسخةُ الكاملةُ ZIP (تسجيلاتٌ وصور) — application/zip والمبهمُ octet-stream بامتداد .zip
+      filter('android:scheme="content" android:mimeType="application/zip"'),
+      filter('android:scheme="file" android:mimeType="application/zip"'),
+      filter('android:scheme="content" android:mimeType="application/octet-stream" android:pathPattern=".*\\\\.zip"'),
       IND + '<!-- BACKUP-JSON-FILTERS:END -->',
     ].join("\n");
     // احقِنْ بعدَ أوّلِ </intent-filter> (وهو مُرشِّحُ MAIN/LAUNCHER)
     m = m.replace(/<\/intent-filter>/, "</intent-filter>\n" + block);
     fs.writeFileSync(p, m);
 NODE
-    step "حُقِنت intent-filters لاستقبالِ .json (json + content/file + octet-stream/text·pathPattern لواتساب)"
+    step "حُقِنت intent-filters لاستقبالِ .json و.zip (النسخةُ الاحتياطيّة: json/zip + content/file + octet-stream/text·pathPattern لواتساب)"
   fi
   # التحديثُ من داخلِ التطبيق: صلاحيّةُ تسليمِ APK لمثبِّتِ النظام + المكوّنُ الأصليُّ MishkatUpdater
   # (مصدرُه مُلتزَمٌ في scripts/android/ لأنّ android/ مولَّد) + تسجيلُه في MainActivity قبل super.onCreate.

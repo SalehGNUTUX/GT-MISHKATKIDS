@@ -81,6 +81,12 @@ export default defineConfig({
           options: { cacheName: "quran-online-text", expiration: { maxEntries: 260 }, cacheableResponse: { statuses: [0, 200] } },
         }],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        // تطبيقٌ متعدّدُ الصفحات تقرأُ كلُّ صفحةٍ معاملاتِها بنفسِها (?mission=1 · ?only= · ?story= · ?lng=…):
+        // (1) يُطابَقُ المخبَّأُ مع تجاهلِ كلِّ المعاملات (الافتراضُ utm_/fbclid فقط، فـ«quran.html?mission=1» لم يُطابِقْ شيئًا)،
+        // (2) ولا صفحةَ احتياطيّة: الافتراضُ index.html (نمطُ التطبيقِ أحاديِّ الصفحة) فكانت كلُّ صفحةٍ بمعاملٍ تُفتَحُ «علّمِ الآليّ»
+        //     في النسخةِ المثبَّتة (PWA) — مهمّةُ اليوم وروابطُ القصصِ واللغاتِ والألعاب (pitfalls ز‑13).
+        ignoreURLParametersMatching: [/.*/],
+        navigateFallback: null,
         // يتولّى الإصدارُ الجديد السيطرةَ فورًا عند التحديث (يمنع تقديمَ مقاطع/كود قديمٍ مُخبَّأ بعد إعادة البناء).
         skipWaiting: true,
         clientsClaim: true,

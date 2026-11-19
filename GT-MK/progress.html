@@ -38,6 +38,12 @@
   .mrow .lbl{flex:1;font-weight:700}
   .mrow .ck{font-size:20px}
   .mrow.done .lbl{color:var(--muted);text-decoration:line-through}
+  .mrow .lbl small{display:block;font-size:12px;font-weight:600;color:var(--muted);text-decoration:none}
+  .week{display:flex;gap:6px;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+  .wd{flex:1;text-align:center;font-size:11px;color:var(--muted)}
+  .wd i{display:block;margin:0 auto 4px;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);background:var(--card);font-style:normal;line-height:22px;font-weight:800;font-size:11px;color:var(--ink)}
+  .wd.full i{background:#7BB661;border-color:#7BB661;color:#fff} .wd.part i{background:#F4C95D;border-color:#F4C95D;color:#5a4300}
+  .wd.act i{border-color:#7BB661} .wd.today i{box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 35%,transparent)}
 
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
   .stat{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:12px 6px;text-align:center}
@@ -179,9 +185,13 @@ function render(){
   const m = getDailyMission();
   document.getElementById("mission").innerHTML =
     `<div class="mission ${m.complete?"done":""}">
-      <div class="mtitle">${m.complete?"🎉 أكملتَ مهمّة اليوم!":"✨ ثلاث مهامّ لهذا اليوم"}</div>
+      <div class="mtitle">${m.complete?"🎉 أكملتَ مهمّة اليوم!":`✨ ${m.tasks.length} مهامّ لهذا اليوم — اخترناها لك بحسبِ ما أنجزتَه`}</div>
       ${m.tasks.map(t=>{ const sep=t.href.includes("?")?"&":"?"; return `<a class="mrow ${t.done?"done":""}" href="${t.done?t.href:t.href+sep+"mission=1"}">
-        <span class="ic">${t.ic}</span><span class="lbl">${t.label}</span><span class="ck">${t.done?"✅":"⬜"}</span></a>`; }).join("")}
+        <span class="ic">${t.ic}</span><span class="lbl">${t.label}<small>${t.done?"أُنجِزَت اليوم":t.why}</small></span><span class="ck">${t.done?"✅":"⬜"}</span></a>`; }).join("")}
+      <div class="week" title="مهامُّ آخرِ سبعةِ أيّام">${m.history.map(d=>{
+        const cls=d.total&&d.done===d.total?"full":d.done?"part":d.active?"act":"";
+        const wd=["أحد","إثنين","ثلاثاء","أربعاء","خميس","جمعة","سبت"][new Date(d.date+"T12:00").getDay()];
+        return `<div class="wd ${cls} ${d.today?"today":""}"><i>${d.total?d.done+"/"+d.total:""}</i>${d.today?"اليوم":wd}</div>`; }).join("")}</div>
     </div>`;
 
   // stats
@@ -189,7 +199,7 @@ function render(){
     ["🔥", s.streak, "أيّام متتالية"],
     ["⭐", s.total, "مجموع النجوم"],
     ["📅", s.activeDays, "أيّام نشاط"],
-    ["🧭", s.sections+"/7", "أقسام جُرّبت"],
+    ["🧭", s.sections+"/"+new Set(Object.values(SECTION_OF)).size, "أقسام جُرّبت"],
   ].map(([i,v,l])=>`<div class="stat"><div class="v">${i} ${v}</div><div class="l">${l}</div></div>`).join("");
 
   // sections

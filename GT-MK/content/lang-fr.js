@@ -163,6 +163,21 @@ export default {
 
   // القصص المصوّرة (نفسُ رسوم العربيّة ومعرّفاتها — مترجمةً للفرنسيّة).
   stories: [
+    // «الكتابُ السحريّ — رحلةُ الأرقام» بلوحاتِها المصوّرة (نصُّ اللوحاتِ المرسومُ عربيّ؛ الترجمةُ في النصِّ تحتَها) — v1.10
+    { id: "magic-numbers", coverImg: "stories/magic-numbers/panel_01.webp", title: "Le livre magique — Le voyage des chiffres", pages: [
+      { img: "stories/magic-numbers/panel_01.webp", text: "Par une nuit calme, Adam a ouvert un vieux livre, et les chiffres en ont jailli en riant, l'invitant à écouter leur incroyable voyage à travers le temps." },
+      { img: "stories/magic-numbers/panel_02.webp", text: "Les dix chiffres se sont alignés devant Adam, menés par le petit Zéro — et Adam s'est étonné de sa grande assurance !" },
+      { img: "stories/magic-numbers/panel_03.webp", text: "Seul, le zéro ne vaut rien ; mais placé à côté d'un chiffre, il le rend dix fois plus grand : cinq devient cinquante, puis cinq cents !" },
+      { img: "stories/magic-numbers/panel_04.webp", text: "Adam et les chiffres sont montés dans la machine à remonter le temps et sont partis ensemble vers le passé lointain, à la recherche de l'origine des chiffres." },
+      { img: "stories/magic-numbers/panel_05.webp", text: "Dans l'Inde ancienne, des savants ont tracé les premières formes des chiffres et ont eu l'idée du zéro : ce fut le début de toute l'histoire." },
+      { img: "stories/magic-numbers/panel_06.webp", text: "Dans la Maison de la Sagesse, à Bagdad, les livres de l'Inde ont été traduits en arabe, et les savants se sont réunis pour les étudier et répandre la science du calcul." },
+      { img: "stories/magic-numbers/panel_07.webp", text: "Al-Khwarizmi a développé le calcul avec les chiffres et a bâti dessus la science de l'algèbre ; de son nom vient le mot « algorithme », et de son livre le mot « algèbre »." },
+      { img: "stories/magic-numbers/panel_08.webp", text: "Al-Kindi a écrit des livres sur l'usage des chiffres et du zéro ; les gens les ont appris, et ils se sont répandus dans toutes les terres musulmanes." },
+      { img: "stories/magic-numbers/panel_09.webp", text: "Au Maghreb et en Andalousie, les savants ont affiné la forme des chiffres (les chiffres ghubar) jusqu'à ce qu'ils deviennent ceux que le monde écrit aujourd'hui." },
+      { img: "stories/magic-numbers/panel_10.webp", text: "L'Italien Fibonacci a appris ces chiffres à Béjaïa, en Algérie, et les a transmis dans son livre ; ils ont alors remplacé les chiffres romains." },
+      { img: "stories/magic-numbers/panel_11.webp", text: "Les chiffres romains n'avaient ni zéro ni valeur de position, et calculer avec eux était difficile ; nos chiffres ont rendu le calcul facile et rapide." },
+      { img: "stories/magic-numbers/panel_12.webp", text: "Louange à Allah ! Les musulmans ont servi l'humanité avec des chiffres qui ont facilité toutes les sciences ; cherchons donc le savoir, remercions Allah pour lui, et soyons utiles." } ],
+      lesson: "Les chiffres sont un bienfait qui a facilité le savoir, et les musulmans les ont mis au service de tous. 🔢" },
     { id: "numerals-journey", cover: "numerals-2", title: "Le Voyage des Chiffres", pages: [
       { art: "numerals-1", caption: "Compter était difficile…", text: "Autrefois, les gens comptaient avec des cailloux et des marques sur la pierre. Mais les grands nombres étaient très difficiles à écrire !" },
       { art: "numerals-2", caption: "Dix signes faciles !", text: "Puis de savants musulmans ont créé une façon facile d'écrire tout nombre avec seulement dix signes : 0 1 2 3 4 5 6 7 8 9." },
@@ -301,6 +316,36 @@ export default {
       { t: "Je suis très content aujourd'hui.", ar: "أنا سعيدٌ جدّاً اليوم." },
       { t: "Peux-tu m'aider, s'il te plaît ?", ar: "هل يمكنك مساعدتي، من فضلك؟" },
       { t: "Merci beaucoup, mon ami.",       ar: "شكراً جزيلاً يا صديقي." },
+    ] },
+    { id: "feelings", ar: "مشاعري", items: [
+      { t: "Je suis content parce que mon ami est venu jouer avec moi.", ar: "أنا سعيدٌ لأنّ صديقي جاء ليلعبَ معي." },
+      { t: "Je suis un peu triste parce que mon jouet s'est cassé.", ar: "أنا حزينٌ قليلًا لأنّ لعبتي انكسرت." },
+      { t: "J'ai peur du noir, tu restes avec moi ?", ar: "أنا خائفٌ من الظلام، هل تبقى معي؟" },
+      { t: "Je me sens fatigué, je veux me coucher tôt.", ar: "أشعرُ بالتعب، أريدُ أن أنامَ مبكّرًا." },
+      { t: "Je suis fier de moi parce que j'ai fini mes devoirs.", ar: "أنا فخورٌ بنفسي لأنّني أنهيتُ واجبي." },
+      { t: "Quand je suis en colère, je respire doucement et je compte jusqu'à dix.", ar: "حين أغضبُ، أتنفّسُ بهدوءٍ وأعدُّ إلى عشرة." },
+      { t: "Je suis très impatient pour la sortie de demain !", ar: "أنا متحمّسٌ جدًّا لرحلةِ الغد!" },
+      { t: "Ma grand-mère me manque, je veux lui rendre visite.", ar: "أشتاقُ إلى جدّتي، أريدُ أن أزورَها." },
+    ] },
+    { id: "myday", ar: "يومي", items: [
+      { t: "Je me réveille le matin et je dis : Louange à Allah.", ar: "أستيقظُ في الصباح وأقولُ: الحمدُ لله." },
+      { t: "Je me lave le visage, je me brosse les dents et je m'habille.", ar: "أغسلُ وجهي، وأفرشُ أسناني، وأرتدي ملابسي." },
+      { t: "Je prends le petit-déjeuner avec ma famille avant l'école.", ar: "أتناولُ الفطورَ مع عائلتي قبل المدرسة." },
+      { t: "À l'école, j'apprends à lire et à compter, et je joue avec mes amis.", ar: "في المدرسة أتعلّمُ القراءةَ والحسابَ وألعبُ مع أصدقائي." },
+      { t: "L'après-midi, je fais mes devoirs, puis j'aide ma mère.", ar: "بعد الظهر أنجزُ واجباتي ثمّ أساعدُ أمّي." },
+      { t: "Le soir, nous lisons une histoire ensemble avant de dormir.", ar: "في المساء نقرأُ قصّةً معًا قبل النوم." },
+      { t: "Je range mes jouets avant d'aller au lit.", ar: "أرتّبُ ألعابي قبل أن أذهبَ إلى السرير." },
+      { t: "Bonne nuit, à demain, si Dieu le veut.", ar: "تصبحُ على خير، أراكَ غدًا إن شاء الله." },
+    ] },
+    { id: "kindness", ar: "كلماتٌ طيّبة", items: [
+      { t: "As-tu besoin d'aide ? Je peux porter ceci pour toi.", ar: "هل تحتاجُ إلى مساعدة؟ يمكنني أن أحملَ هذا عنك." },
+      { t: "Tiens, tu peux jouer avec mon jouet.", ar: "تفضّل، يمكنكَ أن تلعبَ بلعبتي." },
+      { t: "Je suis désolé, je ne voulais pas faire tomber ton crayon.", ar: "أنا آسف، لم أقصدْ أن أوقعَ قلمك." },
+      { t: "Ce n'est pas grave, tout le monde se trompe, essayons encore.", ar: "لا بأس، كلُّنا نخطئ، هيّا نحاولُ مرّةً أخرى." },
+      { t: "Ton dessin est très joli, j'aime les couleurs que tu as choisies.", ar: "رسمُكَ جميلٌ جدًّا، أحبُّ الألوانَ التي اخترتَها." },
+      { t: "Merci de m'avoir attendu, tu es un super ami.", ar: "شكرًا لأنّكَ انتظرتني، أنتَ صديقٌ رائع." },
+      { t: "Viens, assieds-toi avec nous, il y a de la place pour toi.", ar: "تعالَ، اجلسْ معنا، هناك مكانٌ لك." },
+      { t: "Qu'Allah te récompense pour ton aide.", ar: "جزاكَ اللهُ خيرًا على مساعدتك." },
     ] },
   ],
 

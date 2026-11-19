@@ -144,6 +144,21 @@ export default {
 
   // القصص المصوّرة (نفسُ رسوم العربيّة ومعرّفاتها — content/stories.js — مترجمةً).
   stories: [
+    // «الكتابُ السحريّ — رحلةُ الأرقام» بلوحاتِها المصوّرة (نصُّ اللوحاتِ المرسومُ عربيّ؛ الترجمةُ في النصِّ تحتَها) — v1.10
+    { id: "magic-numbers", coverImg: "stories/magic-numbers/panel_01.webp", title: "The Magic Book — The Journey of Numbers", pages: [
+      { img: "stories/magic-numbers/panel_01.webp", text: "On a quiet night, Adam opened an old book, and the numbers jumped out laughing, inviting him to hear the story of their amazing journey through time." },
+      { img: "stories/magic-numbers/panel_02.webp", text: "The ten numbers stood in a row in front of Adam, led by little Zero — and Adam was amazed at how confident it was!" },
+      { img: "stories/magic-numbers/panel_03.webp", text: "Zero on its own is worth nothing, but when it stands next to a number it makes it ten times bigger: five becomes fifty, then five hundred!" },
+      { img: "stories/magic-numbers/panel_04.webp", text: "Adam and the numbers climbed into the time machine and set off together on an exciting trip into the distant past, looking for where numbers came from." },
+      { img: "stories/magic-numbers/panel_05.webp", text: "In ancient India, scholars drew the first shapes of the numbers and came up with the idea of zero — and that was the start of the whole story." },
+      { img: "stories/magic-numbers/panel_06.webp", text: "In the House of Wisdom in Baghdad, the books of India were translated into Arabic, and scholars gathered to study them and spread the science of arithmetic." },
+      { img: "stories/magic-numbers/panel_07.webp", text: "Al-Khwarizmi developed calculation with numbers and built the science of algebra on it; from his name came the word «algorithm», and from his book the word «algebra»." },
+      { img: "stories/magic-numbers/panel_08.webp", text: "Al-Kindi wrote books on using numbers and zero, so people learned them, and they spread across all the Muslim lands." },
+      { img: "stories/magic-numbers/panel_09.webp", text: "In the Maghreb and Andalusia, scholars refined the shape of the numbers (the Ghubar numerals) until they became the numbers the world writes today." },
+      { img: "stories/magic-numbers/panel_10.webp", text: "The Italian Fibonacci learned these numbers in the city of Béjaïa in Algeria and passed them on in his book, so they replaced Roman numerals." },
+      { img: "stories/magic-numbers/panel_11.webp", text: "Roman numerals had no zero and no place value, so calculating with them was hard; our numbers made calculation easy and quick." },
+      { img: "stories/magic-numbers/panel_12.webp", text: "Praise be to Allah! Muslims served humanity with numbers that made every science easier; so let us seek knowledge, thank Allah for it, and be useful." } ],
+      lesson: "Numbers are a blessing that made learning easier, and Muslims used them to serve all people. 🔢" },
     { id: "numerals-journey", cover: "numerals-2", title: "The Journey of Numbers", pages: [
       { art: "numerals-1", caption: "Counting was so hard…", text: "Long ago, people counted with pebbles and marks on stone. But big numbers were very hard to write!" },
       { art: "numerals-2", caption: "Ten easy signs!", text: "Then clever Muslim scholars created an easy way to write any number with just ten signs: 0 1 2 3 4 5 6 7 8 9." },
@@ -282,6 +297,36 @@ export default {
       { t: "I am very happy today.",     ar: "أنا سعيدٌ جدّاً اليوم." },
       { t: "Can you help me, please?",   ar: "هل يمكنك مساعدتي، من فضلك؟" },
       { t: "Thank you very much, my friend.", ar: "شكراً جزيلاً يا صديقي." },
+    ] },
+    { id: "feelings", ar: "مشاعري", items: [
+      { t: "I am happy because my friend came to play with me.", ar: "أنا سعيدٌ لأنّ صديقي جاء ليلعبَ معي." },
+      { t: "I am a little sad because my toy broke.", ar: "أنا حزينٌ قليلًا لأنّ لعبتي انكسرت." },
+      { t: "I am afraid of the dark, will you stay with me?", ar: "أنا خائفٌ من الظلام، هل تبقى معي؟" },
+      { t: "I feel tired, I want to go to bed early.", ar: "أشعرُ بالتعب، أريدُ أن أنامَ مبكّرًا." },
+      { t: "I am proud of myself because I finished my homework.", ar: "أنا فخورٌ بنفسي لأنّني أنهيتُ واجبي." },
+      { t: "When I get angry, I breathe slowly and count to ten.", ar: "حين أغضبُ، أتنفّسُ بهدوءٍ وأعدُّ إلى عشرة." },
+      { t: "I am very excited about tomorrow's trip!", ar: "أنا متحمّسٌ جدًّا لرحلةِ الغد!" },
+      { t: "I miss my grandmother, I want to visit her.", ar: "أشتاقُ إلى جدّتي، أريدُ أن أزورَها." },
+    ] },
+    { id: "myday", ar: "يومي", items: [
+      { t: "I wake up in the morning and say: Praise be to Allah.", ar: "أستيقظُ في الصباح وأقولُ: الحمدُ لله." },
+      { t: "I wash my face, brush my teeth and get dressed.", ar: "أغسلُ وجهي، وأفرشُ أسناني، وأرتدي ملابسي." },
+      { t: "I have breakfast with my family before school.", ar: "أتناولُ الفطورَ مع عائلتي قبل المدرسة." },
+      { t: "At school I learn to read and count, and I play with my friends.", ar: "في المدرسة أتعلّمُ القراءةَ والحسابَ وألعبُ مع أصدقائي." },
+      { t: "In the afternoon I do my homework, then I help my mother.", ar: "بعد الظهر أنجزُ واجباتي ثمّ أساعدُ أمّي." },
+      { t: "In the evening we read a story together before bed.", ar: "في المساء نقرأُ قصّةً معًا قبل النوم." },
+      { t: "I tidy up my toys before I go to bed.", ar: "أرتّبُ ألعابي قبل أن أذهبَ إلى السرير." },
+      { t: "Good night, see you tomorrow, God willing.", ar: "تصبحُ على خير، أراكَ غدًا إن شاء الله." },
+    ] },
+    { id: "kindness", ar: "كلماتٌ طيّبة", items: [
+      { t: "Do you need help? I can carry this for you.", ar: "هل تحتاجُ إلى مساعدة؟ يمكنني أن أحملَ هذا عنك." },
+      { t: "Here you are, you can play with my toy.", ar: "تفضّل، يمكنكَ أن تلعبَ بلعبتي." },
+      { t: "I am sorry, I did not mean to drop your pencil.", ar: "أنا آسف، لم أقصدْ أن أوقعَ قلمك." },
+      { t: "It's okay, we all make mistakes, let's try again.", ar: "لا بأس، كلُّنا نخطئ، هيّا نحاولُ مرّةً أخرى." },
+      { t: "Your drawing is very nice, I love the colours you chose.", ar: "رسمُكَ جميلٌ جدًّا، أحبُّ الألوانَ التي اخترتَها." },
+      { t: "Thank you for waiting for me, you are a great friend.", ar: "شكرًا لأنّكَ انتظرتني، أنتَ صديقٌ رائع." },
+      { t: "Come, sit with us, there is room for you.", ar: "تعالَ، اجلسْ معنا، هناك مكانٌ لك." },
+      { t: "May Allah reward you for your help.", ar: "جزاكَ اللهُ خيرًا على مساعدتك." },
     ] },
   ],
 

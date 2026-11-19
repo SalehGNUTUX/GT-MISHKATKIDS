@@ -8,7 +8,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { SENTENCE_UNITS } from "../src/vocab.js";
-import { forSynthesis } from "../src/arabic-normalize.js";
+import { forSynthesis, waslFix } from "../src/arabic-normalize.js"; // waslFix: همزةُ الوصلِ في «ال» (v1.10، تدقيقٌ فونيميّ — tools/audit-piper.mjs)
 import stories from "../content/stories.js";
 import sararim from "../content/sararim-stories.js";
 import { allClockPhrases } from "../content/clock-time.js"; // جُمَلُ الوقت (v1.5) — نطقُ الساعةِ العربيّ
@@ -82,7 +82,7 @@ const SYNTH_FIX = {
   "اَلسَّمَكُ يَسْبَحُ": "اَلسَّمَكُ يَسْبَحُو",     // تثبيتُ ضمّةِ الحاءِ الأخيرة
   "يَسْبَحُ": "يَسْبَحُو",
 };
-const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: forSynthesis(SYNTH_FIX[t] || (ORIENT_AR.has(t) ? t + " ." : t)), out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
+const tasks = texts.map(t => ({ key: SET.id + SEP + t, text: forSynthesis(waslFix(SYNTH_FIX[t] || (ORIENT_AR.has(t) ? t + " ." : t))), out: join(setDir, sha(t) + ".mp3"), file: `tts/voices/${setHash}/${sha(t)}.mp3` }));
 
 console.log(`🔊 توليد ${tasks.length} مقطعًا بصوت Piper العصبيّ (${SET.id})…`);
 const tasksFile = join(ROOT, ".piper-tasks.json");

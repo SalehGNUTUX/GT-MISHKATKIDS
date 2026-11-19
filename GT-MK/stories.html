@@ -78,6 +78,7 @@ import { STORY_ART } from "./src/story-art.js";
 import { attachReader } from "./src/reader-recorder.js";
 import { isStoryReadOn, showTashkeel, setShowTashkeel, stripTashkeel } from "./src/sound-prefs.js";
 import { attachStoryReader } from "./src/story-reader.js";
+import { logEvent } from "./src/progress.js"; // قراءةُ قصّةٍ مصوّرةٍ تُحتسَبُ في التقدّمِ ومهمّةِ اليوم (v1.10)
 const disp = t => showTashkeel() ? t : stripTashkeel(t); // عرضٌ مع/بلا شكل (لا يؤثّر في القراءة)
 const tashBtn = () => `<button class="back" id="tashToggle" style="font-size:13px">🔡 الشكل: ${showTashkeel()?"ظاهر":"مخفيّ"}</button>`;
 
@@ -101,7 +102,7 @@ function renderCovers(){
   view.querySelectorAll(".cover").forEach(c=>c.addEventListener("click",()=>openStory(+c.getAttribute("data-i"))));
 }
 
-function openStory(i){ si=i; pi=0; renderPage(); }
+function openStory(i){ si=i; pi=0; try{ logEvent("picture_story_open"); }catch(e){} renderPage(); }
 
 function renderPage(){
   const s = STORIES[si], last = pi === s.pages.length-1, p = s.pages[pi];

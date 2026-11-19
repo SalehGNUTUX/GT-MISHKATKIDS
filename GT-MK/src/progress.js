@@ -19,6 +19,7 @@ export const SECTION_OF = {
   memory_win: "play", basics_correct: "basics", read_practice: "read",
   math_correct: "math", craft_done: "math", quran_listen: "quran",
   math_dots_done: "math", math_balance_win: "math", math_geo_free: "math",
+  picture_story_open: "stories",
   oddone_correct: "play", oddone_win: "play", jigsaw_done: "play", color_done: "play", color_saved: "play", soundmem_match: "play", soundmem_win: "play",
 };
 
@@ -82,16 +83,76 @@ export function getBadges() { const s = getStats(); return BADGES.map(b => ({ id
 export function getBadgesFor(id) { const s = getStatsFor(id); return BADGES.map(b => ({ id: b.id, ic: b.ic, label: b.label, earned: !!b.cond(s) })); }
 
 // Daily mission: 3 fixed tasks, "done" if an event of its type fired today.
-export const MISSION = [
-  { key: "quran",  ic: "📖", label: "اقرأ من القرآن",        href: "quran.html",  types: ["quran_open", "quran_listen"] },
-  { key: "tales",  ic: "📚", label: "اقرأ قصّة",            href: "tales.html",  types: ["story_open"] },
-  { key: "play",   ic: "🔤", label: "العب لعبة حروف",       href: "play.html?only=letters", types: ["word_win"] },
-  { key: "basics", ic: "🔍", label: "تدرّب على الأساسيّات",  href: "basics.html", types: ["basics_correct"] },
+// ── مهمّةُ اليومِ الذكيّة (v1.10) ───────────────────────────────────────────────────────────
+// مجموعةُ مهامٍّ تغطّي كلَّ الأقسام؛ لكلٍّ رابطُ قسمِها الدقيق وأحداثُه الحقيقيّة (تُحتسَبُ منجزةً بأيٍّ منها اليوم).
+// كلَّ يومٍ: القرآنُ مرساةٌ ثابتة + ثلاثُ مهامّ تُختارُ بذكاء ← ما لم يُجرَّبْ منذ أطولِ مدّة (أو قطّ)،
+// وما بقيَ غيرَ منجَزٍ أمس، مع تجنّبِ تكرارِ ما أُنجِزَ أمس. الاختيارُ يُحفَظُ لليوم فيبقى ثابتًا حتّى الغد.
+export const MISSION_POOL = [
+  { key: "quran",   ic: "📖", label: "اقرأ من القرآن",         href: "quran.html",   types: ["quran_open", "quran_listen"] },
+  { key: "tales",   ic: "📜", label: "اقرأ قصّةً وعِبرة",       href: "tales.html",   types: ["story_open", "comprehension_ok"] },
+  { key: "stories", ic: "📚", label: "اقرأ قصّةً مصوّرة",       href: "stories.html", types: ["picture_story_open"] },
+  { key: "letters", ic: "🔤", label: "العب لعبةَ حروف",         href: "play.html?only=letters", types: ["word_win", "wordgrid_win", "wheel_win"] },
+  { key: "basics",  ic: "🔍", label: "تدرّبْ على الأساسيّات",   href: "basics.html",  types: ["basics_correct"] },
+  { key: "read",    ic: "📘", label: "اصعدْ سُلّمَ القراءة",     href: "read.html",    types: ["read_practice"] },
+  { key: "math",    ic: "🔢", label: "تمرينُ أرقامٍ وهندسة",     href: "math.html",    types: ["math_correct", "math_arith_win", "math_pattern_win", "math_balance_win", "math_dots_done", "math_geo_free", "craft_done"] },
+  { key: "puzzles", ic: "🧩", label: "حُلَّ لغزًا",              href: "puzzles.html", types: ["puzzle_solved", "puzzle_seen"] },
+  { key: "quiz",    ic: "🎯", label: "أجِبْ عن اختبار",          href: "quiz.html",    types: ["quiz_done"] },
+  { key: "teach",   ic: "🤖", label: "علّمِ الآليَّ ذكرى",       href: "index.html",   types: ["memory_heal"] },
+  { key: "lang",    ic: "🌍", label: "تعلّمْ من لغةٍ أخرى",       href: "lang.html",    types: ["lang_open", "lang_spell_win", "lang_alphaorder_win", "lang_orientquiz", "lang_clock_win"] },
+  { key: "skill",   ic: "⚡", label: "العبْ لعبةَ مهارةٍ وتركيز", href: "play.html?only=skill", types: ["hunt_win", "smatch_win", "oddone_correct", "oddone_win", "soundmem_match", "soundmem_win", "numrace_win"] },
 ];
+const POOL = Object.fromEntries(MISSION_POOL.map(m => [m.key, m]));
+export const MISSION = MISSION_POOL;          // توافقٌ مع الاستيرادِ القديم
+const ANCHOR = "quran", PICK = 3;
+const dayNum = d => Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / 864e5;
+const shiftDay = (d, n) => { const x = new Date(dayNum(d) * 864e5 + n * 864e5); return x.getUTCFullYear() + "-" + String(x.getUTCMonth() + 1).padStart(2, "0") + "-" + String(x.getUTCDate()).padStart(2, "0"); };
+const doneOn = (s, d, m) => { const dt = (s.dayTypes || {})[d] || {}; return m.types.some(x => dt[x]); };
+// آخرُ يومٍ (قبلَ اليوم) أُنجِزَت فيه المهمّة ← عددُ الأيّامِ منذه، أو null إن لم تُنجَزْ قطّ
+function daysSince(s, m, t) {
+  let best = null;
+  for (const d of Object.keys(s.dayTypes || {})) if (d < t && doneOn(s, d, m) && (!best || d > best)) best = d;
+  return best ? dayNum(t) - dayNum(best) : null;
+}
+const jitter = str => { let h = 0; for (const c of str) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h) % 7; };
+function pickMissions(s, t) {
+  const y = shiftDay(t, -1), yKeys = (s.missions || {})[y] || [];
+  const scored = MISSION_POOL.filter(m => m.key !== ANCHOR).map(m => {
+    const ago = daysSince(s, m, t), inY = yKeys.includes(m.key), yDone = inY && doneOn(s, y, m);
+    const practice = m.types.reduce((a, x) => a + ((s.counts || {})[x] || 0), 0);
+    let score = ago === null ? 100 : Math.min(ago, 30) * 3;   // الأطولُ غيابًا أوّلًا
+    if (inY && !yDone) score += 40;                            // بقيت أمسِ غيرَ منجَزة ← تُرحَّل
+    if (yDone) score -= 50;                                    // أُنجِزَت أمس ← تنويع
+    score += Math.max(0, 10 - practice);                       // القليلُ التدرّبِ أَولى
+    return { k: m.key, score: score + jitter(t + m.key) };
+  }).sort((a, b) => b.score - a.score);
+  return [ANCHOR, ...scored.slice(0, PICK).map(x => x.k)];
+}
+// سببٌ قصيرٌ يُعرَضُ تحتَ المهمّة (لماذا اختيرت اليوم)
+function reasonFor(s, m, t) {
+  if (m.key === ANCHOR) return "وِردُك اليوميّ";
+  const y = shiftDay(t, -1), yKeys = (s.missions || {})[y] || [];
+  if (yKeys.includes(m.key) && !doneOn(s, y, m)) return "لم تُكمِلْها أمس — هيّا اليوم!";
+  const ago = daysSince(s, m, t);
+  if (ago === null) return "لم تُجرّبْها بعد";
+  if (ago >= 2) return `آخرَ مرّةٍ قبلَ ${ago} أيّام`;
+  return "لتبقى مهارتُك قويّة";
+}
 export function getDailyMission() {
-  const s = load(); const t = today(); const dt = (s.dayTypes && s.dayTypes[t]) || {};
-  const tasks = MISSION.map(m => ({ ...m, done: m.types.some(x => dt[x]) }));
-  return { tasks, complete: tasks.every(x => x.done), date: t };
+  const s = load(), t = today();
+  s.missions = s.missions || {};
+  let keys = s.missions[t];
+  if (!Array.isArray(keys) || !keys.every(k => POOL[k])) {      // أوّلُ فتحٍ اليوم ← اختيارٌ ثابتٌ لليوم
+    keys = pickMissions(s, t); s.missions[t] = keys;
+    for (const d of Object.keys(s.missions)) if (dayNum(t) - dayNum(d) > 30) delete s.missions[d];   // تقليمٌ
+    save(s);
+  }
+  const tasks = keys.map(k => ({ ...POOL[k], done: doneOn(s, t, POOL[k]), why: reasonFor(s, POOL[k], t) }));
+  // آخرُ سبعةِ أيّام: كم أُنجِزَ من مهامِّ كلِّ يوم (يومٌ بلا سجلِّ مهامّ ⇒ نشاطُه فقط)
+  const history = Array.from({ length: 7 }, (_, i) => {
+    const d = shiftDay(t, i - 6), ks = s.missions[d] || [];
+    return { date: d, today: d === t, total: ks.length, done: ks.filter(k => POOL[k] && doneOn(s, d, POOL[k])).length, active: !!(s.days || {})[d] };
+  });
+  return { tasks, complete: tasks.every(x => x.done), date: t, history };
 }
 
 // --- تتبّع الإتقان لكل مهارة (يغذّي المراجعة بالفواصل في المرحلة 4) ---
